@@ -2,18 +2,30 @@
 
 #include <sstream>
 
+#include "graphics/Renderer.hpp"
 #include "log/log.hpp"
 #include "network/NetworkInterface.hpp"
 #include "xr/XRDisplay.hpp"
 
 bool client_session_run(const char* serverAddress, int port)
 {
+    Renderer renderer;
+
+    if(!renderer.initialize()) {
+        log_err("Failed to initialize renderer.");
+        return false;
+    }
+
+    log_dbg("Renderer initialized.");
+
     XRDisplay xr;
 
     if(!xr.initialize()) {
         log_err("Failed to initialize XR display.");
         return false;
     }
+
+    log_dbg("XR display initialized.");
 
     NetworkInterface network;
 
@@ -45,6 +57,7 @@ bool client_session_run(const char* serverAddress, int port)
     log_dbg("Ending client session.");
     network.disconnect();
     xr.cleanup();
+    renderer.cleanup();
 
     return true;
 }

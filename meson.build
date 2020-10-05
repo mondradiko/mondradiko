@@ -1,6 +1,7 @@
 project('mondradiko', 'cpp')
 
 src = [
+    'src/graphics/Renderer.cpp',
     'src/log/log.cpp',
     'src/network/NetworkInterface.cpp',
     'src/session/client_session.cpp',
