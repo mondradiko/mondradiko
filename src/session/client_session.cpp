@@ -5,7 +5,7 @@
 #include "graphics/Renderer.hpp"
 #include "log/log.hpp"
 #include "network/NetworkInterface.hpp"
-#include "xr/XRDisplay.hpp"
+#include "xr/XrDisplay.hpp"
 
 bool client_session_run(const char* serverAddress, int port)
 {
@@ -18,7 +18,7 @@ bool client_session_run(const char* serverAddress, int port)
 
     log_dbg("Renderer initialized.");
 
-    XRDisplay xr;
+    XrDisplay xr;
 
     if(!xr.initialize()) {
         log_err("Failed to initialize XR display.");
@@ -38,7 +38,7 @@ bool client_session_run(const char* serverAddress, int port)
     }
 
     log_dbg("Connected to server.");
-    log_inf("Verifying...");
+    log_dbg("Verifying...");
 
     if(!network.verify()) {
         std::ostringstream err;
