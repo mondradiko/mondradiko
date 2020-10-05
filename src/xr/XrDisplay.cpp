@@ -1,6 +1,7 @@
 #include "xr/XrDisplay.hpp"
 
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -9,10 +10,39 @@
 #include "log/log.hpp"
 #include "graphics/Renderer.hpp"
 
+static XRAPI_ATTR XrBool32 XRAPI_CALL debugCallback(
+    XrDebugUtilsMessageSeverityFlagsEXT messageSeverity,
+    XrDebugUtilsMessageTypeFlagsEXT messageType,
+    const XrDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData) {
+    
+    Log::LogLevel severity;
+
+    switch(messageSeverity) {
+    case XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        severity = Log::LOG_LEVEL_INFO;
+        break;
+    case XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        severity = Log::LOG_LEVEL_WARNING;
+        break;
+    case XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+    default:
+        severity = Log::LOG_LEVEL_ERROR;
+        break;
+    }
+
+    Log::log("OpenXRValidation", 0, severity, pCallbackData->message);
+    return VK_FALSE;
+}
+
 XrDisplay::~XrDisplay()
 {
     log_dbg("Cleaning up XrDisplay.");
     if(session != XR_NULL_HANDLE) xrDestroySession(session);
+
+    if(enableValidationLayers && debugMessenger != VK_NULL_HANDLE)
+        ext_xrDestroyDebugUtilsMessengerEXT(debugMessenger);
+
     if(instance != XR_NULL_HANDLE) xrDestroyInstance(instance);
 }
 
@@ -22,6 +52,12 @@ bool XrDisplay::initialize()
 
     if(!createInstance()) {
         return false;
+    }
+
+    if(enableValidationLayers) {
+        if(!setupDebugMessenger()) {
+            return false;
+        }
     }
 
     if(!findSystem()) {
@@ -123,6 +159,21 @@ bool XrDisplay::createSession(Renderer* renderer)
     return true;
 }
 
+void XrDisplay::populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT* createInfo)
+{
+    *createInfo = {
+        .type = XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+        .messageSeverities = XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
+                             | XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+                             | XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+        .messageTypes = XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+                        | XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+                        | XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
+                        | XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT,
+        .userCallback = debugCallback
+    };
+}
+
 bool XrDisplay::createInstance()
 {
     log_inf("Creating OpenXR instance.");
@@ -137,7 +188,8 @@ bool XrDisplay::createInstance()
     sprintf(appInfo.engineName, "Mondradiko");
 
     std::vector<const char*> extensions{
-        "XR_KHR_vulkan_enable"
+        XR_KHR_VULKAN_ENABLE_EXTENSION_NAME,
+        XR_EXT_DEBUG_UTILS_EXTENSION_NAME
     };
 
     // TODO Validation layers
@@ -156,10 +208,25 @@ bool XrDisplay::createInstance()
         return false;
     }
 
+    xrGetInstanceProcAddr(instance, "xrCreateDebugUtilsMessengerEXT", (PFN_xrVoidFunction *)(&ext_xrCreateDebugUtilsMessengerEXT));
+    xrGetInstanceProcAddr(instance, "xrDestroyDebugUtilsMessengerEXT", (PFN_xrVoidFunction *)(&ext_xrDestroyDebugUtilsMessengerEXT));
     xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsRequirementsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanGraphicsRequirementsKHR));
     xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanInstanceExtensionsKHR));
     xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanGraphicsDeviceKHR));
     xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanDeviceExtensionsKHR));
+
+    return true;
+}
+
+bool XrDisplay::setupDebugMessenger()
+{
+    XrDebugUtilsMessengerCreateInfoEXT createInfo;
+    populateDebugMessengerCreateInfo(&createInfo);
+
+    if(ext_xrCreateDebugUtilsMessengerEXT(instance, &createInfo, &debugMessenger) != XR_SUCCESS) {
+        log_err("Failed to create OpenXR debug messenger.");
+        return false;
+    }
 
     return true;
 }
