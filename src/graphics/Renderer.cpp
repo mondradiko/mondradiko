@@ -1,9 +1,35 @@
 #include "graphics/Renderer.hpp"
 
+#include <cstring>
 #include <set>
 
 #include "log/log.hpp"
 #include "xr/XrDisplay.hpp"
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData) {
+    
+    Log::LogLevel severity;
+
+    switch(messageSeverity) {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        severity = Log::LOG_LEVEL_INFO;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        severity = Log::LOG_LEVEL_WARNING;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+    default:
+        severity = Log::LOG_LEVEL_ERROR;
+        break;
+    }
+
+    Log::log("Vulkan Validation Layer", 0, severity, pCallbackData->pMessage);
+    return VK_FALSE;
+}
 
 Renderer::~Renderer()
 {
@@ -20,6 +46,12 @@ bool Renderer::initialize(XrDisplay* display)
 
     if(!display->getRequirements(&requirements)) {
         return false;
+    }
+
+    if(enableValidationLayers) {
+        if(!checkValidationLayerSupport()) {
+            log_wrn("Vulkan validation layers requested, but not available.");
+        }
     }
 
     if(!createInstance(&requirements)) {
@@ -39,6 +71,46 @@ bool Renderer::initialize(XrDisplay* display)
     }
 
     return true;
+}
+
+bool Renderer::checkValidationLayerSupport()
+{
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for(const char* layerName : validationLayers) {
+        bool layerFound = false;
+
+        for(const auto& layerProperties : availableLayers) {
+            if(strcmp(layerName, layerProperties.layerName) == 0) {
+                layerFound = true;
+                break;
+            }
+        }
+
+        if(!layerFound) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT* createInfo)
+{
+    *createInfo = {
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+        .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
+                           | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+                           | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+        .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+                       | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+                       | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+        .pfnUserCallback = debugCallback
+    };
 }
 
 bool Renderer::createInstance(RendererRequirements* requirements)
@@ -65,6 +137,15 @@ bool Renderer::createInstance(RendererRequirements* requirements)
         .enabledExtensionCount = static_cast<uint32_t>(extensionNames.size()),
         .ppEnabledExtensionNames = extensionNames.data()
     };
+
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+    if(enableValidationLayers) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+
+        populateDebugMessengerCreateInfo(&debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
+    }
 
     if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         log_err("Failed to create Vulkan instance.");
@@ -112,6 +193,8 @@ bool Renderer::createLogicalDevice(RendererRequirements* requirements)
     for(uint32_t i = 0; i < requirements->deviceExtensions.size(); i++) {
         extensionNames.push_back(requirements->deviceExtensions[i].c_str());
     }
+
+    extensionNames.push_back("VK_EXT_debug_utils");
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {graphicsQueueFamily};
