@@ -15,6 +15,8 @@ struct RendererRequirements
     uint32_t maxApiVersion;
 
     std::vector<std::string> instanceExtensions;
+
+    VkPhysicalDevice physicalDevice;
 };
 
 class XrDisplay
@@ -22,17 +24,19 @@ class XrDisplay
 public:
     ~XrDisplay();
 
-    bool initialize(RendererRequirements*);
+    bool initialize();
+    bool getRequirements(RendererRequirements*);
+    bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
     bool createSession(class Renderer*);
 
     bool shouldQuit = false;
 private:
     bool createInstance();
     bool findSystem();
-    bool getRequirements(RendererRequirements*);
 
     PFN_xrGetVulkanGraphicsRequirementsKHR ext_xrGetVulkanGraphicsRequirementsKHR = nullptr;
     PFN_xrGetVulkanInstanceExtensionsKHR ext_xrGetVulkanInstanceExtensionsKHR = nullptr;
+    PFN_xrGetVulkanGraphicsDeviceKHR ext_xrGetVulkanGraphicsDeviceKHR = nullptr;
     
     XrInstance instance = XR_NULL_HANDLE;
     XrSystemId systemId = XR_NULL_SYSTEM_ID;

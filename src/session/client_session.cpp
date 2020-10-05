@@ -10,24 +10,23 @@
 bool client_session_run(const char* serverAddress, int port)
 {
     XrDisplay xr;
-    RendererRequirements requirements;
 
-    if(!xr.initialize(&requirements)) {
+    if(!xr.initialize()) {
         log_err("Failed to initialize XR display.");
         return false;
     }
 
     Renderer renderer;
 
-    if(!renderer.initialize(&requirements)) {
+    if(!renderer.initialize(&xr)) {
         log_err("Failed to initialize renderer.");
         return false;
     }
 
-    if(!xr.createSession(&renderer)) {
+    /*if(!xr.createSession(&renderer)) {
         log_err("Failed to create XR session.");
         return false;
-    }
+    }*/
 
     NetworkInterface network;
 

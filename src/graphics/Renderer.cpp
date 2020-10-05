@@ -9,11 +9,21 @@ Renderer::~Renderer()
     if(instance != VK_NULL_HANDLE) vkDestroyInstance(instance, nullptr);
 }
 
-bool Renderer::initialize(RendererRequirements* requirements)
+bool Renderer::initialize(XrDisplay* display)
 {
     log_dbg("Initializing renderer.");
 
-    if(!createInstance(requirements)) {
+    RendererRequirements requirements;
+
+    if(!display->getRequirements(&requirements)) {
+        return false;
+    }
+
+    if(!createInstance(&requirements)) {
+        return false;
+    }
+
+    if(!findPhysicalDevice(display)) {
         return false;
     }
 
@@ -22,6 +32,8 @@ bool Renderer::initialize(RendererRequirements* requirements)
 
 bool Renderer::createInstance(RendererRequirements* requirements)
 {
+    log_inf("Creating Vulkan instance.");
+
     std::vector<const char*> extensionNames;
     for(uint32_t i = 0; i < requirements->instanceExtensions.size(); i++) {
         extensionNames.push_back(requirements->instanceExtensions[i].c_str());
@@ -45,6 +57,17 @@ bool Renderer::createInstance(RendererRequirements* requirements)
 
     if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         log_err("Failed to create Vulkan instance.");
+        return false;
+    }
+
+    return true;
+}
+
+bool Renderer::findPhysicalDevice(XrDisplay* display)
+{
+    log_inf("Finding Vulkan physical device.");
+
+    if(!display->getVulkanDevice(instance, &physicalDevice)) {
         return false;
     }
 

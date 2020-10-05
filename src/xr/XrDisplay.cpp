@@ -16,7 +16,7 @@ XrDisplay::~XrDisplay()
     if(instance != XR_NULL_HANDLE) xrDestroyInstance(instance);
 }
 
-bool XrDisplay::initialize(RendererRequirements* requirements)
+bool XrDisplay::initialize()
 {
     log_dbg("Initializing XrDisplay.");
 
@@ -28,11 +28,53 @@ bool XrDisplay::initialize(RendererRequirements* requirements)
         return false;
     }
 
-    if(!getRequirements(requirements)) {
+    shouldQuit = true;
+
+    return true;
+}
+
+bool XrDisplay::getRequirements(RendererRequirements* requirements)
+{
+    XrGraphicsRequirementsVulkanKHR vulkanRequirements{
+        .type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR
+    };
+
+    if(ext_xrGetVulkanGraphicsRequirementsKHR(instance, systemId, &vulkanRequirements) != XR_SUCCESS) {
+        log_err("Failed to get OpenXR Vulkan requirements.");
         return false;
     }
 
-    shouldQuit = true;
+    requirements->minApiVersion = vulkanRequirements.minApiVersionSupported;
+    requirements->maxApiVersion = vulkanRequirements.maxApiVersionSupported;
+
+    uint32_t instanceExtensionsLength;
+    ext_xrGetVulkanInstanceExtensionsKHR(instance, systemId, 0, &instanceExtensionsLength, nullptr);
+    std::vector<char> instanceExtensionsList(instanceExtensionsLength);
+    ext_xrGetVulkanInstanceExtensionsKHR(instance, systemId, instanceExtensionsLength, &instanceExtensionsLength, instanceExtensionsList.data());
+    std::string instanceExtensionNames = instanceExtensionsList.data();
+
+    // The list of required instance extensions is separated by spaces, so parse it out
+    log_inf("Vulkan instance extensions required by OpenXR:");
+    requirements->instanceExtensions.clear();
+    uint32_t startIndex = 0;
+    for(uint32_t endIndex = 0; endIndex <= instanceExtensionNames.size(); endIndex++) {
+        if(instanceExtensionNames[endIndex] == ' ' || instanceExtensionNames[endIndex] == '\0') {
+            std::string extension = instanceExtensionNames.substr(startIndex, endIndex-startIndex);
+            log_inf(extension.c_str());
+            requirements->instanceExtensions.push_back(extension);
+            startIndex = endIndex + 1;
+        }
+    }
+
+    return true;
+}
+
+bool XrDisplay::getVulkanDevice(VkInstance vkInstance, VkPhysicalDevice* vkPhysicalDevice)
+{
+    if(ext_xrGetVulkanGraphicsDeviceKHR(instance, systemId, vkInstance, vkPhysicalDevice) != XR_SUCCESS) {
+        log_err("Failed to get Vulkan physical device.");
+        return false;
+    }
 
     return true;
 }
@@ -97,6 +139,7 @@ bool XrDisplay::createInstance()
 
     xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsRequirementsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanGraphicsRequirementsKHR));
     xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanInstanceExtensionsKHR));
+    xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanGraphicsDeviceKHR));
 
     return true;
 }
@@ -113,42 +156,6 @@ bool XrDisplay::findSystem()
     if(xrGetSystem(instance, &systemInfo, &systemId) != XR_SUCCESS) {
         log_err("Failed to find OpenXR HMD.");
         return false;
-    }
-
-    return true;
-}
-
-bool XrDisplay::getRequirements(RendererRequirements* requirements)
-{
-    XrGraphicsRequirementsVulkanKHR vulkanRequirements{
-        .type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR
-    };
-
-    if(ext_xrGetVulkanGraphicsRequirementsKHR(instance, systemId, &vulkanRequirements) != XR_SUCCESS) {
-        log_err("Failed to get OpenXR Vulkan requirements.");
-        return false;
-    }
-
-    requirements->minApiVersion = vulkanRequirements.minApiVersionSupported;
-    requirements->maxApiVersion = vulkanRequirements.maxApiVersionSupported;
-
-    uint32_t instanceExtensionsLength;
-    ext_xrGetVulkanInstanceExtensionsKHR(instance, systemId, 0, &instanceExtensionsLength, nullptr);
-    std::vector<char> instanceExtensionsList(instanceExtensionsLength);
-    ext_xrGetVulkanInstanceExtensionsKHR(instance, systemId, instanceExtensionsLength, &instanceExtensionsLength, instanceExtensionsList.data());
-    std::string instanceExtensionNames = instanceExtensionsList.data();
-
-    // The list of required instance extensions is separated by spaces, so parse it out
-    log_inf("Vulkan instance extensions required by OpenXR:");
-    requirements->instanceExtensions.clear();
-    uint32_t startIndex = 0;
-    for(uint32_t endIndex = 0; endIndex <= instanceExtensionNames.size(); endIndex++) {
-        if(instanceExtensionNames[endIndex] == ' ' || instanceExtensionNames[endIndex] == '\0') {
-            std::string extension = instanceExtensionNames.substr(startIndex, endIndex-startIndex);
-            log_inf(extension.c_str());
-            requirements->instanceExtensions.push_back(extension);
-            startIndex = endIndex + 1;
-        }
     }
 
     return true;
