@@ -17,6 +17,7 @@ public:
     bool enableValidationLayers = true;
 
     VkInstance instance = VK_NULL_HANDLE;
+    VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device = VK_NULL_HANDLE;
 
@@ -29,7 +30,11 @@ private:
     bool checkValidationLayerSupport();
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT*);
     bool createInstance(RendererRequirements*);
+    bool setupDebugMessenger();
     bool findPhysicalDevice(XrDisplay*);
     bool findQueueFamilies();
     bool createLogicalDevice(RendererRequirements*);
+
+    PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT = nullptr;
+    PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT = nullptr;
 };

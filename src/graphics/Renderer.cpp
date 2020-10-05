@@ -27,7 +27,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         break;
     }
 
-    Log::log("Vulkan Validation Layer", 0, severity, pCallbackData->pMessage);
+    Log::log("VulkanValidation", 0, severity, pCallbackData->pMessage);
     return VK_FALSE;
 }
 
@@ -35,6 +35,10 @@ Renderer::~Renderer()
 {
     log_dbg("Cleaning up renderer.");
     if(device != VK_NULL_HANDLE) vkDestroyDevice(device, nullptr);
+
+    if(enableValidationLayers && debugMessenger != VK_NULL_HANDLE)
+        ext_vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+
     if(instance != VK_NULL_HANDLE) vkDestroyInstance(instance, nullptr);
 }
 
@@ -51,11 +55,18 @@ bool Renderer::initialize(XrDisplay* display)
     if(enableValidationLayers) {
         if(!checkValidationLayerSupport()) {
             log_wrn("Vulkan validation layers requested, but not available.");
+            enableValidationLayers = false;
         }
     }
 
     if(!createInstance(&requirements)) {
         return false;
+    }
+
+    if(enableValidationLayers) {
+        if(!setupDebugMessenger()) {
+            return false;
+        }
     }
 
     if(!findPhysicalDevice(display)) {
@@ -122,6 +133,8 @@ bool Renderer::createInstance(RendererRequirements* requirements)
         extensionNames.push_back(requirements->instanceExtensions[i].c_str());
     }
 
+    extensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
     VkApplicationInfo appInfo{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pApplicationName = "Mondradiko",
@@ -149,6 +162,22 @@ bool Renderer::createInstance(RendererRequirements* requirements)
 
     if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         log_err("Failed to create Vulkan instance.");
+        return false;
+    }
+
+    ext_vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    ext_vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+
+    return true;
+}
+
+bool Renderer::setupDebugMessenger()
+{
+    VkDebugUtilsMessengerCreateInfoEXT createInfo;
+    populateDebugMessengerCreateInfo(&createInfo);
+
+    if(ext_vkCreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+        log_err("Failed to create Vulkan debug messenger.");
         return false;
     }
 
@@ -194,8 +223,6 @@ bool Renderer::createLogicalDevice(RendererRequirements* requirements)
         extensionNames.push_back(requirements->deviceExtensions[i].c_str());
     }
 
-    extensionNames.push_back("VK_EXT_debug_utils");
-
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {graphicsQueueFamily};
 
@@ -229,7 +256,12 @@ bool Renderer::createLogicalDevice(RendererRequirements* requirements)
         .pEnabledFeatures = &deviceFeatures
     };
 
-    if(!vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+    if(enableValidationLayers) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    }
+
+    if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
         log_err("Failed to create Vulkan logical device.");
         return false;
     }
