@@ -16,8 +16,6 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    log_dbg("Renderer initialized.");
-
     XrDisplay xr;
 
     if(!xr.initialize()) {
@@ -25,7 +23,10 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    log_dbg("XR display initialized.");
+    if(!xr.createSession(&renderer)) {
+        log_err("Failed to create XR session.");
+        return false;
+    }
 
     NetworkInterface network;
 
@@ -37,9 +38,6 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    log_dbg("Connected to server.");
-    log_dbg("Verifying...");
-
     if(!network.verify()) {
         std::ostringstream err;
         err << "Failed to verify on server ";
@@ -48,16 +46,9 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    log_dbg("Verified on server.");
-
     while(true) {
         if(xr.shouldQuit) break;
     }
-
-    log_dbg("Ending client session.");
-    network.disconnect();
-    xr.cleanup();
-    renderer.cleanup();
 
     return true;
 }

@@ -13,7 +13,8 @@ inc = include_directories(
 )
 
 dependencies = [
-    dependency('openxr', version: '>=1.0')
+    dependency('openxr', version: '>=1.0'),
+    dependency('vulkan')
 ]
 
 executable(

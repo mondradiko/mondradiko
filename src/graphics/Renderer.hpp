@@ -3,7 +3,8 @@
 class Renderer
 {
 public:
+    ~Renderer();
+
     bool initialize();
-    void cleanup();
 private:
 };
