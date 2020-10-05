@@ -9,17 +9,18 @@
 
 bool client_session_run(const char* serverAddress, int port)
 {
-    Renderer renderer;
+    XrDisplay xr;
+    RendererRequirements requirements;
 
-    if(!renderer.initialize()) {
-        log_err("Failed to initialize renderer.");
+    if(!xr.initialize(&requirements)) {
+        log_err("Failed to initialize XR display.");
         return false;
     }
 
-    XrDisplay xr;
+    Renderer renderer;
 
-    if(!xr.initialize()) {
-        log_err("Failed to initialize XR display.");
+    if(!renderer.initialize(&requirements)) {
+        log_err("Failed to initialize renderer.");
         return false;
     }
 

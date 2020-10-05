@@ -5,6 +5,6 @@ class Renderer
 public:
     ~Renderer();
 
-    bool initialize();
+    bool initialize(struct RendererRequirements*);
 private:
 };

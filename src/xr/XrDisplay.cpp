@@ -15,7 +15,7 @@ XrDisplay::~XrDisplay()
     if(instance != XR_NULL_HANDLE) xrDestroyInstance(instance);
 }
 
-bool XrDisplay::initialize()
+bool XrDisplay::initialize(RendererRequirements* requirements)
 {
     log_dbg("Initializing OpenXR.");
 
@@ -24,6 +24,10 @@ bool XrDisplay::initialize()
     }
 
     if(!findSystem()) {
+        return false;
+    }
+
+    if(!getRequirements(requirements)) {
         return false;
     }
 
@@ -87,6 +91,8 @@ bool XrDisplay::createInstance()
         return false;
     }
 
+    xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsRequirementsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanGraphicsRequirementsKHR));
+
     return true;
 }
 
@@ -103,6 +109,23 @@ bool XrDisplay::findSystem()
         log_err("Failed to find OpenXR HMD.");
         return false;
     }
+
+    return true;
+}
+
+bool XrDisplay::getRequirements(RendererRequirements* requirements)
+{
+    XrGraphicsRequirementsVulkanKHR vulkanRequirements{
+        .type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR
+    };
+
+    if(ext_xrGetVulkanGraphicsRequirementsKHR(instance, systemId, &vulkanRequirements) != XR_SUCCESS) {
+        log_err("Failed to get OpenXR Vulkan requirements.");
+        return false;
+    }
+
+    requirements->minApiVersion = vulkanRequirements.minApiVersionSupported;
+    requirements->maxApiVersion = vulkanRequirements.maxApiVersionSupported;
 
     return true;
 }
