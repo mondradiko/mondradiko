@@ -38,9 +38,9 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    if(!network.verify()) {
+    if(!network.authenticate()) {
         std::ostringstream err;
-        err << "Failed to verify on server ";
+        err << "Failed to authenticate to server ";
         err << serverAddress << ":" << port << ".";
         log_err(err.str().c_str());
         return false;

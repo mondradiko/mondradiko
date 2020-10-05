@@ -6,6 +6,6 @@ public:
     ~NetworkInterface();
 
     bool connect(const char*, int);
-    bool verify();
+    bool authenticate();
 private:
 };

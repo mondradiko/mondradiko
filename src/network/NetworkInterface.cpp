@@ -9,10 +9,14 @@ NetworkInterface::~NetworkInterface()
 
 bool NetworkInterface::connect(const char* serverAddress, int port)
 {
+    log_dbg("Connecting to server.");
+
     return true;
 }
 
-bool NetworkInterface::verify()
+bool NetworkInterface::authenticate()
 {
+    log_dbg("Authenticating client identity.");
+
     return true;
 }
