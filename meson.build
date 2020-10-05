@@ -3,7 +3,8 @@ project('mondradiko', 'cpp')
 src = [
     'src/log/log.cpp',
     'src/network/NetworkInterface.cpp',
-    'src/session/client_session.cpp'
+    'src/session/client_session.cpp',
+    'src/xr/XRDisplay.cpp'
 ]
 
 inc = include_directories(
