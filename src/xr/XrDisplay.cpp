@@ -134,15 +134,16 @@ bool XrDisplay::getVulkanDevice(VkInstance vkInstance, VkPhysicalDevice* vkPhysi
     return true;
 }
 
-bool XrDisplay::createSession(Renderer* renderer)
+bool XrDisplay::startSession(Renderer* renderer)
 {
-    log_dbg("Creating OpenXR session.");
+    log_dbg("Starting OpenXR session.");
 
     XrGraphicsBindingVulkanKHR vulkanBindings{
         .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
         .instance = renderer->instance,
         .physicalDevice = renderer->physicalDevice,
-        .device = renderer->device
+        .device = renderer->device,
+        .queueFamilyIndex = renderer->graphicsQueueFamily
     };
 
     XrSessionCreateInfo createInfo{
@@ -157,6 +158,16 @@ bool XrDisplay::createSession(Renderer* renderer)
     }
 
     return true;
+}
+
+void XrDisplay::endSession()
+{
+    log_dbg("Ending OpenXR session.");
+
+    if(session != XR_NULL_HANDLE) {
+        xrDestroySession(session);
+        session = XR_NULL_HANDLE;
+    }
 }
 
 void XrDisplay::populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT* createInfo)

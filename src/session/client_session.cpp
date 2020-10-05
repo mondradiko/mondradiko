@@ -23,10 +23,10 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    /*if(!xr.createSession(&renderer)) {
-        log_err("Failed to create XR session.");
+    if(!xr.startSession(&renderer)) {
+        log_err("Failed to start XR session.");
         return false;
-    }*/
+    }
 
     NetworkInterface network;
 
@@ -49,6 +49,8 @@ bool client_session_run(const char* serverAddress, int port)
     while(true) {
         if(xr.shouldQuit) break;
     }
+
+    xr.endSession();
 
     return true;
 }

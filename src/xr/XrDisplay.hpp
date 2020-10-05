@@ -29,7 +29,8 @@ public:
     bool initialize();
     bool getRequirements(RendererRequirements*);
     bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
-    bool createSession(class Renderer*);
+    bool startSession(class Renderer*);
+    void endSession();
 
     bool shouldQuit = false;
     bool enableValidationLayers = true;
