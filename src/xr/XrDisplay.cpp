@@ -66,6 +66,25 @@ bool XrDisplay::getRequirements(RendererRequirements* requirements)
         }
     }
 
+    uint32_t deviceExtensionsLength;
+    ext_xrGetVulkanDeviceExtensionsKHR(instance, systemId, 0, &deviceExtensionsLength, nullptr);
+    std::vector<char> deviceExtensionsList(deviceExtensionsLength);
+    ext_xrGetVulkanDeviceExtensionsKHR(instance, systemId, deviceExtensionsLength, &deviceExtensionsLength, deviceExtensionsList.data());
+    std::string deviceExtensionNames = deviceExtensionsList.data();
+
+    // The list of required device extensions is separated by spaces, so parse it out
+    log_inf("Vulkan device extensions required by OpenXR:");
+    requirements->deviceExtensions.clear();
+    startIndex = 0;
+    for(uint32_t endIndex = 0; endIndex <= deviceExtensionNames.size(); endIndex++) {
+        if(deviceExtensionNames[endIndex] == ' ' || deviceExtensionNames[endIndex] == '\0') {
+            std::string extension = deviceExtensionNames.substr(startIndex, endIndex-startIndex);
+            log_inf(extension.c_str());
+            requirements->deviceExtensions.push_back(extension);
+            startIndex = endIndex + 1;
+        }
+    }
+
     return true;
 }
 
@@ -140,6 +159,7 @@ bool XrDisplay::createInstance()
     xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsRequirementsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanGraphicsRequirementsKHR));
     xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanInstanceExtensionsKHR));
     xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanGraphicsDeviceKHR));
+    xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanDeviceExtensionsKHR));
 
     return true;
 }

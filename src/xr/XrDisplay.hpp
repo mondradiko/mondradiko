@@ -17,6 +17,8 @@ struct RendererRequirements
     std::vector<std::string> instanceExtensions;
 
     VkPhysicalDevice physicalDevice;
+
+    std::vector<std::string> deviceExtensions;
 };
 
 class XrDisplay
@@ -37,6 +39,7 @@ private:
     PFN_xrGetVulkanGraphicsRequirementsKHR ext_xrGetVulkanGraphicsRequirementsKHR = nullptr;
     PFN_xrGetVulkanInstanceExtensionsKHR ext_xrGetVulkanInstanceExtensionsKHR = nullptr;
     PFN_xrGetVulkanGraphicsDeviceKHR ext_xrGetVulkanGraphicsDeviceKHR = nullptr;
+    PFN_xrGetVulkanDeviceExtensionsKHR ext_xrGetVulkanDeviceExtensionsKHR = nullptr;
     
     XrInstance instance = XR_NULL_HANDLE;
     XrSystemId systemId = XR_NULL_SYSTEM_ID;
