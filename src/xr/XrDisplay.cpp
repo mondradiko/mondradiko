@@ -64,8 +64,6 @@ bool XrDisplay::initialize()
         return false;
     }
 
-    shouldQuit = true;
-
     return true;
 }
 
@@ -134,9 +132,9 @@ bool XrDisplay::getVulkanDevice(VkInstance vkInstance, VkPhysicalDevice* vkPhysi
     return true;
 }
 
-bool XrDisplay::startSession(Renderer* renderer)
+bool XrDisplay::createSession(Renderer* renderer)
 {
-    log_dbg("Starting OpenXR session.");
+    log_dbg("Creating OpenXR session.");
 
     XrGraphicsBindingVulkanKHR vulkanBindings{
         .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
@@ -160,9 +158,74 @@ bool XrDisplay::startSession(Renderer* renderer)
     return true;
 }
 
-void XrDisplay::endSession()
+void XrDisplay::beginFrame(double* dt, bool* shouldQuit)
 {
-    log_dbg("Ending OpenXR session.");
+    XrEventDataBuffer event{
+        .type = XR_TYPE_EVENT_DATA_BUFFER
+    };
+
+    while(xrPollEvent(instance, &event) == XR_SUCCESS) {
+        switch(event.type) {
+        // Handle session state change events
+        // Quitting, app focus, ready, etc.
+        case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
+            XrEventDataSessionStateChanged* changed = 
+                (XrEventDataSessionStateChanged*) &event;
+            sessionState = changed->state;
+
+            switch(sessionState) {
+            case XR_SESSION_STATE_READY: {
+                log_dbg("OpenXR session ready; beginning session.");
+
+                XrSessionBeginInfo beginInfo{
+                    .type = XR_TYPE_SESSION_BEGIN_INFO,
+                    .primaryViewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO
+                };
+
+                xrBeginSession(session, &beginInfo);
+
+                // Temp exit code until I add interrupt
+                *shouldQuit = true;
+                
+                break;
+            }
+
+            case XR_SESSION_STATE_STOPPING:
+            case XR_SESSION_STATE_EXITING:
+            case XR_SESSION_STATE_LOSS_PENDING: {
+                log_dbg("Ending OpenXR session.");
+                *shouldQuit = true;
+                xrEndSession(session);
+                break;
+            }
+
+            default: break;
+            }
+
+            break;
+        }
+        // If the instance is about to be lost,
+        // just exit.
+        case XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING:  {
+            *shouldQuit = true;
+            break;
+        }
+
+        default: break;
+        }
+
+        event = {.type = XR_TYPE_EVENT_DATA_BUFFER};
+    }
+}
+
+void XrDisplay::endFrame()
+{
+
+}
+
+void XrDisplay::destroySession()
+{
+    log_dbg("Destroying OpenXR session.");
 
     if(session != XR_NULL_HANDLE) {
         xrDestroySession(session);

@@ -23,7 +23,7 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    if(!xr.startSession(&renderer)) {
+    if(!xr.createSession(&renderer)) {
         log_err("Failed to start XR session.");
         return false;
     }
@@ -46,11 +46,16 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    while(true) {
-        if(xr.shouldQuit) break;
+    double dt;
+    bool shouldQuit = false;
+
+    while(!shouldQuit) {
+        xr.beginFrame(&dt, &shouldQuit);
+
+        xr.endFrame();
     }
 
-    xr.endSession();
+    xr.destroySession();
 
     return true;
 }

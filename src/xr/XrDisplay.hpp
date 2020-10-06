@@ -29,10 +29,11 @@ public:
     bool initialize();
     bool getRequirements(RendererRequirements*);
     bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
-    bool startSession(class Renderer*);
-    void endSession();
+    bool createSession(class Renderer*);
+    void beginFrame(double*, bool*);
+    void endFrame();
+    void destroySession();
 
-    bool shouldQuit = false;
     bool enableValidationLayers = true;
 private:
     void populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT*);
@@ -51,4 +52,6 @@ private:
     XrDebugUtilsMessengerEXT debugMessenger = XR_NULL_HANDLE;
     XrSystemId systemId = XR_NULL_SYSTEM_ID;
     XrSession session = XR_NULL_HANDLE;
+
+    XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
 };
