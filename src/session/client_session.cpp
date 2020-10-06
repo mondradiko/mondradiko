@@ -1,11 +1,22 @@
 #include "session/client_session.hpp"
 
+#include <csignal>
+#include <iostream>
 #include <sstream>
 
 #include "graphics/Renderer.hpp"
 #include "log/log.hpp"
 #include "network/NetworkInterface.hpp"
 #include "xr/XrDisplay.hpp"
+
+bool shouldQuit = false;
+
+void signalHandler(int signum) {
+   std::cout << "Interrupt signal (" << signum << ") received.\n";
+   shouldQuit = true;
+
+   return;
+}
 
 bool client_session_run(const char* serverAddress, int port)
 {
@@ -24,7 +35,7 @@ bool client_session_run(const char* serverAddress, int port)
     }
 
     if(!xr.createSession(&renderer)) {
-        log_err("Failed to start XR session.");
+        log_err("Failed to create XR session.");
         return false;
     }
 
@@ -46,8 +57,15 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
+    if(signal(SIGTERM, signalHandler) == SIG_ERR) {
+        log_wrn("Can't catch SIGTERM");
+    }
+
+    if(signal(SIGINT, signalHandler) == SIG_ERR) {
+        log_wrn("Can't catch SIGINT");
+    }
+
     while(true) {
-        bool shouldQuit = false;
         xr.pollEvents(&shouldQuit);
         if(shouldQuit) break;
 
@@ -60,9 +78,6 @@ bool client_session_run(const char* serverAddress, int port)
         }
 
         xr.endFrame();
-
-        // Temp exit code until I add interrupt
-        break;
     }
 
     xr.destroySession();
