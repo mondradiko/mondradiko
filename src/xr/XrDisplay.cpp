@@ -158,7 +158,7 @@ bool XrDisplay::createSession(Renderer* renderer)
     return true;
 }
 
-void XrDisplay::pollEvents(bool* shouldQuit)
+void XrDisplay::pollEvents(bool* shouldRun, bool* shouldQuit)
 {
     XrEventDataBuffer event{
         .type = XR_TYPE_EVENT_DATA_BUFFER
@@ -183,6 +183,7 @@ void XrDisplay::pollEvents(bool* shouldQuit)
                 };
 
                 xrBeginSession(session, &beginInfo);
+                *shouldRun = true;
                 
                 break;
             }
@@ -192,6 +193,7 @@ void XrDisplay::pollEvents(bool* shouldQuit)
             case XR_SESSION_STATE_LOSS_PENDING: {
                 log_dbg("Ending OpenXR session.");
                 *shouldQuit = true;
+                *shouldRun = false;
                 xrEndSession(session);
                 break;
             }

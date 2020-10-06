@@ -30,7 +30,7 @@ public:
     bool getRequirements(RendererRequirements*);
     bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
     bool createSession(class Renderer*);
-    void pollEvents(bool*);
+    void pollEvents(bool*, bool*);
     void beginFrame(double*, bool*);
     void endFrame();
     void destroySession();

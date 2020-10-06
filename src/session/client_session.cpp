@@ -65,19 +65,23 @@ bool client_session_run(const char* serverAddress, int port)
         log_wrn("Can't catch SIGINT");
     }
 
+    bool shouldRun = false;
+
     while(true) {
-        xr.pollEvents(&shouldQuit);
+        xr.pollEvents(&shouldRun, &shouldQuit);
         if(shouldQuit) break;
 
-        double dt;
-        bool shouldRender;
-        xr.beginFrame(&dt, &shouldRender);
+        if(shouldRun) {
+            double dt;
+            bool shouldRender;
+            xr.beginFrame(&dt, &shouldRender);
 
-        if(shouldRender) {
-            log_dbg("Rendering scene.");
+            if(shouldRender) {
+                log_dbg("Rendering scene.");
+            }
+
+            xr.endFrame();
         }
-
-        xr.endFrame();
     }
 
     xr.destroySession();
