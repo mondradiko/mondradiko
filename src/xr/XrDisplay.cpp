@@ -158,7 +158,7 @@ bool XrDisplay::createSession(Renderer* renderer)
     return true;
 }
 
-void XrDisplay::beginFrame(double* dt, bool* shouldQuit)
+void XrDisplay::pollEvents(bool* shouldQuit)
 {
     XrEventDataBuffer event{
         .type = XR_TYPE_EVENT_DATA_BUFFER
@@ -183,9 +183,6 @@ void XrDisplay::beginFrame(double* dt, bool* shouldQuit)
                 };
 
                 xrBeginSession(session, &beginInfo);
-
-                // Temp exit code until I add interrupt
-                *shouldQuit = true;
                 
                 break;
             }
@@ -218,9 +215,33 @@ void XrDisplay::beginFrame(double* dt, bool* shouldQuit)
     }
 }
 
+void XrDisplay::beginFrame(double* dt, bool* shouldRender)
+{
+    currentFrameState = {
+        .type = XR_TYPE_FRAME_STATE
+    };
+
+    xrWaitFrame(session, nullptr, &currentFrameState);
+
+    if(currentFrameState.shouldRender == XR_TRUE) {
+        *shouldRender = true;
+    } else {
+        *shouldRender = false;
+    }
+
+    xrBeginFrame(session, nullptr);
+}
+
 void XrDisplay::endFrame()
 {
+    XrFrameEndInfo endInfo{
+        .type = XR_TYPE_FRAME_END_INFO,
+        .displayTime = currentFrameState.predictedDisplayTime,
+        .environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
+        .layerCount = 0
+    };
 
+    xrEndFrame(session, &endInfo);
 }
 
 void XrDisplay::destroySession()

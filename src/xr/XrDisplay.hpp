@@ -30,6 +30,7 @@ public:
     bool getRequirements(RendererRequirements*);
     bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
     bool createSession(class Renderer*);
+    void pollEvents(bool*);
     void beginFrame(double*, bool*);
     void endFrame();
     void destroySession();
@@ -54,4 +55,5 @@ private:
     XrSession session = XR_NULL_HANDLE;
 
     XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
+    XrFrameState currentFrameState;
 };

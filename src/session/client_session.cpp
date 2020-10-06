@@ -46,13 +46,23 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    double dt;
-    bool shouldQuit = false;
+    while(true) {
+        bool shouldQuit = false;
+        xr.pollEvents(&shouldQuit);
+        if(shouldQuit) break;
 
-    while(!shouldQuit) {
-        xr.beginFrame(&dt, &shouldQuit);
+        double dt;
+        bool shouldRender;
+        xr.beginFrame(&dt, &shouldRender);
+
+        if(shouldRender) {
+            log_dbg("Rendering scene.");
+        }
 
         xr.endFrame();
+
+        // Temp exit code until I add interrupt
+        break;
     }
 
     xr.destroySession();
