@@ -55,6 +55,7 @@ VulkanInstance::VulkanInstance(XrDisplay* display)
     findPhysicalDevice(display);
     findQueueFamilies();
     createLogicalDevice(&requirements);
+    createCommandPool();
 }
 
 VulkanInstance::~VulkanInstance()
@@ -64,6 +65,8 @@ VulkanInstance::~VulkanInstance()
     for(uint32_t i = 0; i < viewports.size(); i++) {
         viewports[i].destroy();
     }
+
+    if(commandPool != VK_NULL_HANDLE) vkDestroyCommandPool(device, commandPool, nullptr);
 
     if(device != VK_NULL_HANDLE) vkDestroyDevice(device, nullptr);
 
@@ -261,4 +264,16 @@ void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements)
     }
 
     vkGetDeviceQueue(device, graphicsQueueFamily, 0, &graphicsQueue);
+}
+
+void VulkanInstance::createCommandPool()
+{
+    VkCommandPoolCreateInfo createInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .queueFamilyIndex = graphicsQueueFamily
+    };
+
+    if(vkCreateCommandPool(device, &createInfo, nullptr, &commandPool) != VK_SUCCESS) {
+        log_ftl("Failed to create Vulkan command pool.");
+    }
 }

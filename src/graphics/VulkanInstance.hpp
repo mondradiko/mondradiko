@@ -27,6 +27,8 @@ public:
     uint32_t graphicsQueueFamily;
     VkQueue graphicsQueue;
 
+    VkCommandPool commandPool = VK_NULL_HANDLE;
+
     std::vector<Viewport> viewports;
 private:
     const std::vector<const char*> validationLayers = {
@@ -40,6 +42,7 @@ private:
     void findPhysicalDevice(XrDisplay*);
     void findQueueFamilies();
     void createLogicalDevice(VulkanRequirements*);
+    void createCommandPool();
 
     PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT = nullptr;
     PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT = nullptr;
