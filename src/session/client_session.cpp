@@ -21,12 +21,6 @@ void signalHandler(int signum) {
 bool client_session_run(const char* serverAddress, int port)
 {
     XrDisplay xr;
-
-    if(!xr.initialize()) {
-        log_err("Failed to initialize XR display.");
-        return false;
-    }
-
     VulkanInstance vulkanInstance(&xr);
 
     /*if(!renderer.prepareRender(&xr)) {

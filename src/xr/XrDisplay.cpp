@@ -36,6 +36,17 @@ static XRAPI_ATTR XrBool32 XRAPI_CALL debugCallback(
     return VK_FALSE;
 }
 
+XrDisplay::XrDisplay()
+{
+    createInstance();
+
+    if(enableValidationLayers) {
+        setupDebugMessenger();
+    }
+
+    findSystem();
+}
+
 XrDisplay::~XrDisplay()
 {
     log_dbg("Cleaning up XrDisplay.");
@@ -45,25 +56,6 @@ XrDisplay::~XrDisplay()
         ext_xrDestroyDebugUtilsMessengerEXT(debugMessenger);
 
     if(instance != XR_NULL_HANDLE) xrDestroyInstance(instance);
-}
-
-bool XrDisplay::initialize()
-{
-    if(!createInstance()) {
-        return false;
-    }
-
-    if(enableValidationLayers) {
-        if(!setupDebugMessenger()) {
-            return false;
-        }
-    }
-
-    if(!findSystem()) {
-        return false;
-    }
-
-    return true;
 }
 
 bool XrDisplay::getRequirements(RendererRequirements* requirements)
@@ -301,7 +293,7 @@ void XrDisplay::populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfo
     };
 }
 
-bool XrDisplay::createInstance()
+void XrDisplay::createInstance()
 {
     log_dbg("Creating OpenXR instance.");
 
@@ -331,8 +323,7 @@ bool XrDisplay::createInstance()
     XrResult result = xrCreateInstance(&createInfo, &instance);
 
     if(result != XR_SUCCESS || instance == nullptr) {
-        log_err("Failed to create OpenXR instance. Is an OpenXR runtime running?");
-        return false;
+        log_ftl("Failed to create OpenXR instance. Is an OpenXR runtime running?");
     }
 
     xrGetInstanceProcAddr(instance, "xrCreateDebugUtilsMessengerEXT", (PFN_xrVoidFunction *)(&ext_xrCreateDebugUtilsMessengerEXT));
@@ -341,24 +332,19 @@ bool XrDisplay::createInstance()
     xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanInstanceExtensionsKHR));
     xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanGraphicsDeviceKHR));
     xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR", (PFN_xrVoidFunction *)(&ext_xrGetVulkanDeviceExtensionsKHR));
-
-    return true;
 }
 
-bool XrDisplay::setupDebugMessenger()
+void XrDisplay::setupDebugMessenger()
 {
     XrDebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(&createInfo);
 
     if(ext_xrCreateDebugUtilsMessengerEXT(instance, &createInfo, &debugMessenger) != XR_SUCCESS) {
-        log_err("Failed to create OpenXR debug messenger.");
-        return false;
+        log_ftl("Failed to create OpenXR debug messenger.");
     }
-
-    return true;
 }
 
-bool XrDisplay::findSystem()
+void XrDisplay::findSystem()
 {
     log_dbg("Choosing OpenXR system.");
 
@@ -368,9 +354,6 @@ bool XrDisplay::findSystem()
     };
 
     if(xrGetSystem(instance, &systemInfo, &systemId) != XR_SUCCESS) {
-        log_err("Failed to find OpenXR HMD.");
-        return false;
+        log_ftl("Failed to find OpenXR HMD.");
     }
-
-    return true;
 }

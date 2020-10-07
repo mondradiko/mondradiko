@@ -27,9 +27,9 @@ struct RendererRequirements
 class XrDisplay
 {
 public:
+    XrDisplay();
     ~XrDisplay();
 
-    bool initialize();
     bool getRequirements(RendererRequirements*);
     bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
     bool createSession(class VulkanInstance*);
@@ -52,9 +52,9 @@ public:
     XrFrameState currentFrameState;
 private:
     void populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT*);
-    bool createInstance();
-    bool setupDebugMessenger();
-    bool findSystem();
+    void createInstance();
+    void setupDebugMessenger();
+    void findSystem();
 
     PFN_xrCreateDebugUtilsMessengerEXT ext_xrCreateDebugUtilsMessengerEXT = nullptr;
     PFN_xrDestroyDebugUtilsMessengerEXT ext_xrDestroyDebugUtilsMessengerEXT = nullptr;
