@@ -1,5 +1,6 @@
 #include "xr/Session.hpp"
 
+#include "graphics/Renderer.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 #include "xr/XrDisplay.hpp"
@@ -28,12 +29,26 @@ Session::Session(XrDisplay* _display, VulkanInstance* _vulkanInstance)
     if(xrCreateSession(display->instance, &createInfo, &session) != XR_SUCCESS) {
         log_ftl("Failed to create OpenXR session.");
     }
+
+    XrReferenceSpaceCreateInfo stageSpaceCreateInfo{
+        .type = XR_TYPE_REFERENCE_SPACE_CREATE_INFO,
+        .referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE,
+        .poseInReferenceSpace = {
+            .orientation = { 0.0, 0.0, 0.0, 1.0},
+            .position = { 0.0, 0.0, 0.0 }
+        }
+    };
+
+    if(xrCreateReferenceSpace(session, &stageSpaceCreateInfo, &stageSpace) != XR_SUCCESS) {
+        log_ftl("Failed to create OpenXR stage reference space.");
+    }
 }
 
 Session::~Session()
 {
     log_dbg("Destroying OpenXR session.");
 
+    if(stageSpace != XR_NULL_HANDLE) xrDestroySpace(stageSpace);
     if(session != XR_NULL_HANDLE) xrDestroySession(session);
 }
 
@@ -113,13 +128,45 @@ void Session::beginFrame(double* dt, bool* shouldRender)
     xrBeginFrame(session, nullptr);
 }
 
-void Session::endFrame()
+void Session::endFrame(Renderer* renderer, bool didRender)
 {
+    XrCompositionLayerBaseHeader* layer = nullptr;
+    XrCompositionLayerProjection projectionLayer{
+        .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION
+    };
+
+    std::vector<XrCompositionLayerProjectionView> projectionViews;
+    if(didRender) {
+        layer = (XrCompositionLayerBaseHeader*) &projectionLayer;
+
+        XrViewState viewState{
+            .type = XR_TYPE_VIEW_STATE
+        };
+
+        XrViewLocateInfo locateInfo{
+            .type = XR_TYPE_VIEW_LOCATE_INFO,
+            .viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
+            .displayTime = currentFrameState.predictedDisplayTime,
+            .space = stageSpace
+        };
+
+        uint32_t viewCount = views.size();
+        xrLocateViews(session, &locateInfo, &viewState, viewCount, &viewCount, views.data());
+        projectionViews.resize(viewCount);
+
+        renderer->finishRender(&views, &projectionViews);
+
+        projectionLayer.space = stageSpace;
+        projectionLayer.viewCount = projectionViews.size();
+        projectionLayer.views = projectionViews.data();
+    }
+
     XrFrameEndInfo endInfo{
         .type = XR_TYPE_FRAME_END_INFO,
         .displayTime = currentFrameState.predictedDisplayTime,
         .environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
-        .layerCount = 0
+        .layerCount = static_cast<uint32_t>((layer == nullptr)? 0 : 1),
+        .layers = &layer
     };
 
     xrEndFrame(session, &endInfo);
@@ -148,6 +195,7 @@ bool Session::createViewports(std::vector<Viewport>* viewports, VkFormat format,
     xrEnumerateViewConfigurationViews(display->instance, display->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewportCount, &viewportCount, viewConfigs.data());
 
     viewports->resize(viewportCount);
+    views.resize(viewportCount);
 
     for(uint32_t i = 0; i < viewportCount; i++) {
         (*viewports)[i].initialize(format, renderPass, &viewConfigs[i], this, vulkanInstance);
