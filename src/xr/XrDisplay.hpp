@@ -9,6 +9,9 @@
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 
+class VulkanInstance;
+class Viewport;
+
 struct RendererRequirements
 {
     uint32_t minApiVersion;
@@ -29,15 +32,24 @@ public:
     bool initialize();
     bool getRequirements(RendererRequirements*);
     bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
-    bool createSession(class Renderer*);
+    bool createSession(class VulkanInstance*);
     void pollEvents(bool*, bool*);
     void beginFrame(double*, bool*);
     void endFrame();
     void destroySession();
 
     void enumerateSwapchainFormats(std::vector<VkFormat>*);
+    bool createViewports(VulkanInstance*, std::vector<Viewport>*, VkFormat);
 
     bool enableValidationLayers = true;
+
+    XrInstance instance = XR_NULL_HANDLE;
+    XrDebugUtilsMessengerEXT debugMessenger = XR_NULL_HANDLE;
+    XrSystemId systemId = XR_NULL_SYSTEM_ID;
+    XrSession session = XR_NULL_HANDLE;
+
+    XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
+    XrFrameState currentFrameState;
 private:
     void populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT*);
     bool createInstance();
@@ -50,12 +62,4 @@ private:
     PFN_xrGetVulkanInstanceExtensionsKHR ext_xrGetVulkanInstanceExtensionsKHR = nullptr;
     PFN_xrGetVulkanGraphicsDeviceKHR ext_xrGetVulkanGraphicsDeviceKHR = nullptr;
     PFN_xrGetVulkanDeviceExtensionsKHR ext_xrGetVulkanDeviceExtensionsKHR = nullptr;
-    
-    XrInstance instance = XR_NULL_HANDLE;
-    XrDebugUtilsMessengerEXT debugMessenger = XR_NULL_HANDLE;
-    XrSystemId systemId = XR_NULL_SYSTEM_ID;
-    XrSession session = XR_NULL_HANDLE;
-
-    XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
-    XrFrameState currentFrameState;
 };

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "graphics/Renderer.hpp"
+#include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 #include "network/NetworkInterface.hpp"
 #include "xr/XrDisplay.hpp"
@@ -27,7 +27,7 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    Renderer renderer;
+    VulkanInstance renderer;
 
     if(!renderer.initialize(&xr)) {
         log_err("Failed to initialize renderer.");

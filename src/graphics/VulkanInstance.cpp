@@ -1,4 +1,4 @@
-#include "graphics/Renderer.hpp"
+#include "graphics/VulkanInstance.hpp"
 
 #include <cstring>
 #include <set>
@@ -31,9 +31,14 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     return VK_FALSE;
 }
 
-Renderer::~Renderer()
+VulkanInstance::~VulkanInstance()
 {
     log_dbg("Cleaning up renderer.");
+
+    for(uint32_t i = 0; i < viewports.size(); i++) {
+        viewports[i].destroy();
+    }
+
     if(device != VK_NULL_HANDLE) vkDestroyDevice(device, nullptr);
 
     if(enableValidationLayers && debugMessenger != VK_NULL_HANDLE)
@@ -42,7 +47,7 @@ Renderer::~Renderer()
     if(instance != VK_NULL_HANDLE) vkDestroyInstance(instance, nullptr);
 }
 
-bool Renderer::initialize(XrDisplay* display)
+bool VulkanInstance::initialize(XrDisplay* display)
 {
     RendererRequirements requirements;
 
@@ -82,16 +87,16 @@ bool Renderer::initialize(XrDisplay* display)
     return true;
 }
 
-bool Renderer::prepareRender(XrDisplay* display)
+bool VulkanInstance::prepareRender(XrDisplay* display)
 {
-    if(!createSwapchain(display)) {
+    if(!createViewports(display)) {
         return false;
     }
 
     return true;
 }
 
-bool Renderer::findFormatFromOptions(const std::vector<VkFormat>* options, const std::vector<VkFormat>* candidates, VkFormat* selected)
+bool VulkanInstance::findFormatFromOptions(const std::vector<VkFormat>* options, const std::vector<VkFormat>* candidates, VkFormat* selected)
 {
     for(auto candidate : *candidates) {
         for(auto option : *options) {
@@ -105,7 +110,7 @@ bool Renderer::findFormatFromOptions(const std::vector<VkFormat>* options, const
     return false;
 }
 
-bool Renderer::checkValidationLayerSupport()
+bool VulkanInstance::checkValidationLayerSupport()
 {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -131,7 +136,7 @@ bool Renderer::checkValidationLayerSupport()
     return true;
 }
 
-void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT* createInfo)
+void VulkanInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT* createInfo)
 {
     *createInfo = {
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
@@ -145,7 +150,7 @@ void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoE
     };
 }
 
-bool Renderer::createInstance(RendererRequirements* requirements)
+bool VulkanInstance::createInstance(RendererRequirements* requirements)
 {
     log_dbg("Creating Vulkan instance.");
 
@@ -192,7 +197,7 @@ bool Renderer::createInstance(RendererRequirements* requirements)
     return true;
 }
 
-bool Renderer::setupDebugMessenger()
+bool VulkanInstance::setupDebugMessenger()
 {
     log_dbg("Setting up Vulkan debug messenger.");
 
@@ -207,7 +212,7 @@ bool Renderer::setupDebugMessenger()
     return true;
 }
 
-bool Renderer::findPhysicalDevice(XrDisplay* display)
+bool VulkanInstance::findPhysicalDevice(XrDisplay* display)
 {
     log_dbg("Finding Vulkan physical device.");
 
@@ -218,7 +223,7 @@ bool Renderer::findPhysicalDevice(XrDisplay* display)
     return true;
 }
 
-bool Renderer::findQueueFamilies()
+bool VulkanInstance::findQueueFamilies()
 {
     log_dbg("Finding Vulkan queue families.");
 
@@ -237,7 +242,7 @@ bool Renderer::findQueueFamilies()
     return true;
 }
 
-bool Renderer::createLogicalDevice(RendererRequirements* requirements)
+bool VulkanInstance::createLogicalDevice(RendererRequirements* requirements)
 {
     log_dbg("Creating Vulkan logical device.");
 
@@ -292,9 +297,9 @@ bool Renderer::createLogicalDevice(RendererRequirements* requirements)
     return true;
 }
 
-bool Renderer::createSwapchain(XrDisplay* display)
+bool VulkanInstance::createViewports(XrDisplay* display)
 {
-    log_dbg("Creating Vulkan swapchain.");
+    log_dbg("Creating renderer viewports.");
 
     std::vector<VkFormat> formatOptions;
     display->enumerateSwapchainFormats(&formatOptions);
@@ -307,6 +312,10 @@ bool Renderer::createSwapchain(XrDisplay* display)
     VkFormat swapchainFormat;
     if(!findFormatFromOptions(&formatOptions, &formatCandidates, &swapchainFormat)) {
         log_err("Failed to find suitable swapchain format.");
+        return false;
+    }
+
+    if(!display->createViewports(this, &viewports, swapchainFormat)) {
         return false;
     }
 

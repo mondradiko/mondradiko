@@ -8,7 +8,8 @@
 #include <vulkan/vulkan.h>
 
 #include "log/log.hpp"
-#include "graphics/Renderer.hpp"
+#include "graphics/VulkanInstance.hpp"
+#include "graphics/Viewport.hpp"
 
 static XRAPI_ATTR XrBool32 XRAPI_CALL debugCallback(
     XrDebugUtilsMessageSeverityFlagsEXT messageSeverity,
@@ -130,7 +131,7 @@ bool XrDisplay::getVulkanDevice(VkInstance vkInstance, VkPhysicalDevice* vkPhysi
     return true;
 }
 
-bool XrDisplay::createSession(Renderer* renderer)
+bool XrDisplay::createSession(VulkanInstance* renderer)
 {
     log_dbg("Creating OpenXR session.");
 
@@ -266,6 +267,23 @@ void XrDisplay::enumerateSwapchainFormats(std::vector<VkFormat>* formats)
     for(uint32_t i = 0; i < formatCount; i++) {
         (*formats)[i] = (VkFormat) formatCodes[i];
     }
+}
+
+bool XrDisplay::createViewports(VulkanInstance* renderer, std::vector<Viewport>* viewports, VkFormat format)
+{
+    // TODO findViewConfiguration()
+    uint32_t viewportCount;
+    xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewportCount, nullptr);
+    std::vector<XrViewConfigurationView> viewConfigs(viewportCount);
+    xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewportCount, &viewportCount, viewConfigs.data());
+
+    viewports->resize(viewportCount);
+
+    for(uint32_t i = 0; i < viewportCount; i++) {
+        (*viewports)[i].initialize(format, &viewConfigs[i], this, renderer);
+    }
+
+    return true;
 }
 
 void XrDisplay::populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT* createInfo)

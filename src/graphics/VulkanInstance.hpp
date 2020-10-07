@@ -4,13 +4,15 @@
 
 #include <vulkan/vulkan.h>
 
+#include "graphics/Viewport.hpp"
+
 class XrDisplay;
 struct RendererRequirements;
 
-class Renderer
+class VulkanInstance
 {
 public:
-    ~Renderer();
+    ~VulkanInstance();
 
     bool initialize(XrDisplay*);
     bool prepareRender(XrDisplay*);
@@ -25,6 +27,8 @@ public:
     VkDevice device = VK_NULL_HANDLE;
 
     uint32_t graphicsQueueFamily;
+
+    std::vector<Viewport> viewports;
 private:
     const std::vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
@@ -40,7 +44,7 @@ private:
     bool createLogicalDevice(RendererRequirements*);
 
     // prepareRender() steps
-    bool createSwapchain(XrDisplay*);
+    bool createViewports(XrDisplay*);
 
     PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT = nullptr;
     PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT = nullptr;
