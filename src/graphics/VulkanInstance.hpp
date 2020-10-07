@@ -7,7 +7,7 @@
 #include "graphics/Viewport.hpp"
 
 class XrDisplay;
-struct RendererRequirements;
+struct VulkanRequirements;
 
 class VulkanInstance
 {
@@ -36,11 +36,11 @@ private:
 
     bool checkValidationLayerSupport();
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT*);
-    void createInstance(RendererRequirements*);
+    void createInstance(VulkanRequirements*);
     void setupDebugMessenger();
     void findPhysicalDevice(XrDisplay*);
     void findQueueFamilies();
-    void createLogicalDevice(RendererRequirements*);
+    void createLogicalDevice(VulkanRequirements*);
 
     // prepareRender() steps
     bool createViewports(XrDisplay*);

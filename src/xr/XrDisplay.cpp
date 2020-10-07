@@ -58,7 +58,7 @@ XrDisplay::~XrDisplay()
     if(instance != XR_NULL_HANDLE) xrDestroyInstance(instance);
 }
 
-bool XrDisplay::getRequirements(RendererRequirements* requirements)
+bool XrDisplay::getRequirements(VulkanRequirements* requirements)
 {
     XrGraphicsRequirementsVulkanKHR vulkanRequirements{
         .type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR

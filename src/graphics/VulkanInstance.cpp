@@ -33,7 +33,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 
 VulkanInstance::VulkanInstance(XrDisplay* display)
 {
-    RendererRequirements requirements;
+    VulkanRequirements requirements;
 
     display->getRequirements(&requirements);
 
@@ -134,7 +134,7 @@ void VulkanInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreat
     };
 }
 
-void VulkanInstance::createInstance(RendererRequirements* requirements)
+void VulkanInstance::createInstance(VulkanRequirements* requirements)
 {
     log_dbg("Creating Vulkan instance.");
 
@@ -214,7 +214,7 @@ void VulkanInstance::findQueueFamilies()
     }
 }
 
-void VulkanInstance::createLogicalDevice(RendererRequirements* requirements)
+void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements)
 {
     log_dbg("Creating Vulkan logical device.");
 

@@ -12,7 +12,7 @@
 class VulkanInstance;
 class Viewport;
 
-struct RendererRequirements
+struct VulkanRequirements
 {
     uint32_t minApiVersion;
     uint32_t maxApiVersion;
@@ -30,7 +30,7 @@ public:
     XrDisplay();
     ~XrDisplay();
 
-    bool getRequirements(RendererRequirements*);
+    bool getRequirements(VulkanRequirements*);
     bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
     bool createSession(class VulkanInstance*);
     void pollEvents(bool*, bool*);
