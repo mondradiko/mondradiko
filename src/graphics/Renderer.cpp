@@ -84,14 +84,25 @@ bool Renderer::initialize(XrDisplay* display)
 
 bool Renderer::prepareRender(XrDisplay* display)
 {
-    log_dbg("Creating renderer swapchain.");
-
-    // Find a suitable format
-    // Create XR swapchain
-    // Get images
-    // Create image views
+    if(!createSwapchain(display)) {
+        return false;
+    }
 
     return true;
+}
+
+bool Renderer::findFormatFromOptions(const std::vector<VkFormat>* options, const std::vector<VkFormat>* candidates, VkFormat* selected)
+{
+    for(auto candidate : *candidates) {
+        for(auto option : *options) {
+            if(candidate == option) {
+                *selected = option;
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 bool Renderer::checkValidationLayerSupport()
@@ -275,6 +286,27 @@ bool Renderer::createLogicalDevice(RendererRequirements* requirements)
 
     if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
         log_err("Failed to create Vulkan logical device.");
+        return false;
+    }
+
+    return true;
+}
+
+bool Renderer::createSwapchain(XrDisplay* display)
+{
+    log_dbg("Creating Vulkan swapchain.");
+
+    std::vector<VkFormat> formatOptions;
+    display->enumerateSwapchainFormats(&formatOptions);
+
+    std::vector<VkFormat> formatCandidates = {
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VK_FORMAT_R8G8B8A8_UNORM
+    };
+
+    VkFormat swapchainFormat;
+    if(!findFormatFromOptions(&formatOptions, &formatCandidates, &swapchainFormat)) {
+        log_err("Failed to find suitable swapchain format.");
         return false;
     }
 

@@ -35,6 +35,8 @@ public:
     void endFrame();
     void destroySession();
 
+    void enumerateSwapchainFormats(std::vector<VkFormat>*);
+
     bool enableValidationLayers = true;
 private:
     void populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT*);

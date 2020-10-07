@@ -254,6 +254,20 @@ void XrDisplay::destroySession()
     }
 }
 
+void XrDisplay::enumerateSwapchainFormats(std::vector<VkFormat>* formats)
+{
+    uint32_t formatCount;
+    xrEnumerateSwapchainFormats(session, 0, &formatCount, nullptr);
+    formats->resize(formatCount);
+
+    std::vector<int64_t> formatCodes(formatCount);
+    xrEnumerateSwapchainFormats(session, formatCount, &formatCount, formatCodes.data());
+
+    for(uint32_t i = 0; i < formatCount; i++) {
+        (*formats)[i] = (VkFormat) formatCodes[i];
+    }
+}
+
 void XrDisplay::populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT* createInfo)
 {
     *createInfo = {

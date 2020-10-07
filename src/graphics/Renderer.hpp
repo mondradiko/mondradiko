@@ -15,6 +15,8 @@ public:
     bool initialize(XrDisplay*);
     bool prepareRender(XrDisplay*);
 
+    bool findFormatFromOptions(const std::vector<VkFormat>*, const std::vector<VkFormat>*, VkFormat*);
+
     bool enableValidationLayers = true;
 
     VkInstance instance = VK_NULL_HANDLE;
@@ -28,6 +30,7 @@ private:
         "VK_LAYER_KHRONOS_validation"
     };
 
+    // initialize() steps
     bool checkValidationLayerSupport();
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT*);
     bool createInstance(RendererRequirements*);
@@ -35,6 +38,9 @@ private:
     bool findPhysicalDevice(XrDisplay*);
     bool findQueueFamilies();
     bool createLogicalDevice(RendererRequirements*);
+
+    // prepareRender() steps
+    bool createSwapchain(XrDisplay*);
 
     PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT = nullptr;
     PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT = nullptr;
