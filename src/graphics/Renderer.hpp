@@ -13,6 +13,7 @@ public:
     ~Renderer();
 
     bool initialize(XrDisplay*);
+    bool prepareRender(XrDisplay*);
 
     bool enableValidationLayers = true;
 

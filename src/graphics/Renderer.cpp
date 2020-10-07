@@ -84,6 +84,18 @@ bool Renderer::initialize(XrDisplay* display)
     return true;
 }
 
+bool Renderer::prepareRender(XrDisplay* display)
+{
+    log_inf("Creating renderer swapchain.");
+
+    // Find a suitable format
+    // Create XR swapchain
+    // Get images
+    // Create image views
+
+    return true;
+}
+
 bool Renderer::checkValidationLayerSupport()
 {
     uint32_t layerCount;

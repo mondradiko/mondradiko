@@ -39,6 +39,11 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
+    if(!renderer.prepareRender(&xr)) {
+        log_err("Failed to prepare renderer.");
+        return false;
+    }
+
     NetworkInterface network;
 
     if(!network.connect(serverAddress, port)) {
@@ -77,7 +82,8 @@ bool client_session_run(const char* serverAddress, int port)
             xr.beginFrame(&dt, &shouldRender);
 
             if(shouldRender) {
-                log_dbg("Rendering scene.");
+                //log_dbg("Rendering scene.");
+                
             }
 
             xr.endFrame();
