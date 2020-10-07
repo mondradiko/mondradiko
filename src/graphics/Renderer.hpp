@@ -23,7 +23,6 @@ public:
 
     VkFormat swapchainFormat;
     VkRenderPass compositePass = VK_NULL_HANDLE;
-    VkCommandPool commandPool = VK_NULL_HANDLE;
     std::vector<Viewport> viewports;
 private:
     VulkanInstance* vulkanInstance;
@@ -31,5 +30,4 @@ private:
 
     void findSwapchainFormat();
     void createRenderPasses();
-    void createCommandPool();
 };

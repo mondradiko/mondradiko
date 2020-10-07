@@ -96,7 +96,7 @@ void Viewport::destroy()
     if(swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
 }
 
-VkFramebuffer Viewport::acquireSwapchainImage()
+void Viewport::acquireSwapchainImage(VkCommandBuffer* commandBuffer, VkFramebuffer* framebuffer)
 {
     XrSwapchainImageAcquireInfo acquireInfo{
         .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO,
@@ -113,11 +113,50 @@ VkFramebuffer Viewport::acquireSwapchainImage()
 
     xrWaitSwapchainImage(swapchain, &waitInfo);
 
-    return images[index].framebuffer;
+    *framebuffer = images[index].framebuffer;
+
+    VkCommandBufferAllocateInfo allocInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = vulkanInstance->commandPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1
+    };
+
+    vkAllocateCommandBuffers(vulkanInstance->device, &allocInfo, commandBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+    };
+
+    vkBeginCommandBuffer(*commandBuffer, &beginInfo);
 }
 
-void Viewport::releaseSwapchainImage()
+void Viewport::releaseSwapchainImage(VkCommandBuffer commandBuffer)
 {
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 0;
+    submitInfo.pWaitSemaphores = nullptr;
+    submitInfo.pWaitDstStageMask = waitStages;
+
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    submitInfo.signalSemaphoreCount = 0;
+    submitInfo.pSignalSemaphores = nullptr;
+
+    if(vkQueueSubmit(vulkanInstance->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+        log_ftl("Failed to submit draw command buffer!");
+    }
+
+    vkQueueWaitIdle(vulkanInstance->graphicsQueue);
+    vkFreeCommandBuffers(vulkanInstance->device, vulkanInstance->commandPool, 1, &commandBuffer);
+
     XrSwapchainImageReleaseInfo releaseInfo{
         .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO,
         .next = nullptr
