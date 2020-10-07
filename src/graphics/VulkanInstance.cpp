@@ -33,6 +33,8 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 
 VulkanInstance::VulkanInstance(XrDisplay* display)
 {
+    log_dbg("Initializing Vulkan.");
+
     VulkanRequirements requirements;
 
     display->getRequirements(&requirements);
@@ -57,7 +59,7 @@ VulkanInstance::VulkanInstance(XrDisplay* display)
 
 VulkanInstance::~VulkanInstance()
 {
-    log_dbg("Cleaning up renderer.");
+    log_dbg("Cleaning up Vulkan.");
 
     for(uint32_t i = 0; i < viewports.size(); i++) {
         viewports[i].destroy();
