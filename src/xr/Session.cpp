@@ -150,7 +150,7 @@ bool Session::createViewports(std::vector<Viewport>* viewports, VkFormat format)
     viewports->resize(viewportCount);
 
     for(uint32_t i = 0; i < viewportCount; i++) {
-        (*viewports)[i].initialize(format, &viewConfigs[i], display, vulkanInstance);
+        (*viewports)[i].initialize(format, &viewConfigs[i], this, vulkanInstance);
     }
 
     return true;

@@ -8,7 +8,7 @@
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 
-class XrDisplay;
+class Session;
 class VulkanInstance;
 
 struct ViewportImage
@@ -21,7 +21,7 @@ struct ViewportImage
 class Viewport
 {
 public:
-    bool initialize(VkFormat, XrViewConfigurationView*, XrDisplay*, VulkanInstance*);
+    bool initialize(VkFormat, XrViewConfigurationView*, Session*, VulkanInstance*);
     void destroy();
 
     XrSwapchain swapchain = XR_NULL_HANDLE;

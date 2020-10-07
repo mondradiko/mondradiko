@@ -2,9 +2,9 @@
 
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
-#include "xr/XrDisplay.hpp"
+#include "xr/Session.hpp"
 
-bool Viewport::initialize(VkFormat format, XrViewConfigurationView* viewConfig, XrDisplay* display, VulkanInstance* renderer)
+bool Viewport::initialize(VkFormat format, XrViewConfigurationView* viewConfig, Session* session, VulkanInstance* VulkanInstance)
 {
     log_dbg("Creating viewport.");
 
@@ -20,10 +20,10 @@ bool Viewport::initialize(VkFormat format, XrViewConfigurationView* viewConfig, 
         .mipCount = 1
     };
 
-    /*if(xrCreateSwapchain(display->session, &swapchainCreateInfo, &swapchain) != XR_SUCCESS) {
+    if(xrCreateSwapchain(session->session, &swapchainCreateInfo, &swapchain) != XR_SUCCESS) {
         log_err("Failed to create swapchain.");
         return false;
-    }*/
+    }
 
     return true;
 }
