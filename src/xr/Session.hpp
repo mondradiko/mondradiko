@@ -9,6 +9,7 @@
 #include <openxr/openxr_platform.h>
 
 class XrDisplay;
+class Viewport;
 class VulkanInstance;
 
 class Session
@@ -22,10 +23,12 @@ public:
     void endFrame();
 
     void enumerateSwapchainFormats(std::vector<VkFormat>*);
+    bool createViewports(std::vector<Viewport>*, VkFormat);
 
     XrSession session = XR_NULL_HANDLE;
     XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
     XrFrameState currentFrameState;
 private:
     XrDisplay* display;
+    VulkanInstance* vulkanInstance;
 };

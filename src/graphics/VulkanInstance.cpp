@@ -71,15 +71,6 @@ VulkanInstance::~VulkanInstance()
     if(instance != VK_NULL_HANDLE) vkDestroyInstance(instance, nullptr);
 }
 
-bool VulkanInstance::prepareRender(XrDisplay* display)
-{
-    if(!createViewports(display)) {
-        return false;
-    }
-
-    return true;
-}
-
 bool VulkanInstance::findFormatFromOptions(const std::vector<VkFormat>* options, const std::vector<VkFormat>* candidates, VkFormat* selected)
 {
     for(auto candidate : *candidates) {
@@ -264,24 +255,4 @@ void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements)
     if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
         log_ftl("Failed to create Vulkan logical device.");
     }
-}
-
-bool VulkanInstance::createViewports(XrDisplay* display)
-{
-    log_dbg("Creating renderer viewports.");
-
-    /*std::vector<VkFormat> formatOptions;
-    display->enumerateSwapchainFormats(&formatOptions);
-
-    std::vector<VkFormat> formatCandidates = {
-        VK_FORMAT_R8G8B8A8_SRGB,
-        VK_FORMAT_R8G8B8A8_UNORM
-    };
-
-    VkFormat swapchainFormat;
-    if(!findFormatFromOptions(&formatOptions, &formatCandidates, &swapchainFormat)) {
-        log_err("Failed to find suitable swapchain format.");
-    }
-
-    display->createViewports(this, &viewports, swapchainFormat);*/
 }

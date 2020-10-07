@@ -33,8 +33,6 @@ public:
     bool getRequirements(VulkanRequirements*);
     bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
 
-    bool createViewports(VulkanInstance*, std::vector<Viewport>*, VkFormat);
-
     bool enableValidationLayers = true;
 
     XrInstance instance = XR_NULL_HANDLE;

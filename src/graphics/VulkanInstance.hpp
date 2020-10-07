@@ -15,8 +15,6 @@ public:
     VulkanInstance(XrDisplay*);
     ~VulkanInstance();
 
-    bool prepareRender(XrDisplay*);
-
     bool findFormatFromOptions(const std::vector<VkFormat>*, const std::vector<VkFormat>*, VkFormat*);
 
     bool enableValidationLayers = true;
@@ -41,9 +39,6 @@ private:
     void findPhysicalDevice(XrDisplay*);
     void findQueueFamilies();
     void createLogicalDevice(VulkanRequirements*);
-
-    // prepareRender() steps
-    bool createViewports(XrDisplay*);
 
     PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT = nullptr;
     PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT = nullptr;

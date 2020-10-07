@@ -4,11 +4,12 @@
 #include "log/log.hpp"
 #include "xr/XrDisplay.hpp"
 
-Session::Session(XrDisplay* _display, VulkanInstance* vulkanInstance)
+Session::Session(XrDisplay* _display, VulkanInstance* _vulkanInstance)
 {
     log_dbg("Creating OpenXR session.");
 
     display = _display;
+    vulkanInstance = _vulkanInstance;
 
     XrGraphicsBindingVulkanKHR vulkanBindings{
         .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
@@ -136,4 +137,21 @@ void Session::enumerateSwapchainFormats(std::vector<VkFormat>* formats)
     for(uint32_t i = 0; i < formatCount; i++) {
         (*formats)[i] = (VkFormat) formatCodes[i];
     }
+}
+
+bool Session::createViewports(std::vector<Viewport>* viewports, VkFormat format)
+{
+    // TODO findViewConfiguration()
+    uint32_t viewportCount;
+    xrEnumerateViewConfigurationViews(display->instance, display->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewportCount, nullptr);
+    std::vector<XrViewConfigurationView> viewConfigs(viewportCount);
+    xrEnumerateViewConfigurationViews(display->instance, display->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewportCount, &viewportCount, viewConfigs.data());
+
+    viewports->resize(viewportCount);
+
+    for(uint32_t i = 0; i < viewportCount; i++) {
+        (*viewports)[i].initialize(format, &viewConfigs[i], display, vulkanInstance);
+    }
+
+    return true;
 }

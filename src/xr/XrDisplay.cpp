@@ -122,23 +122,6 @@ bool XrDisplay::getVulkanDevice(VkInstance vkInstance, VkPhysicalDevice* vkPhysi
     return true;
 }
 
-bool XrDisplay::createViewports(VulkanInstance* renderer, std::vector<Viewport>* viewports, VkFormat format)
-{
-    // TODO findViewConfiguration()
-    uint32_t viewportCount;
-    xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewportCount, nullptr);
-    std::vector<XrViewConfigurationView> viewConfigs(viewportCount);
-    xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewportCount, &viewportCount, viewConfigs.data());
-
-    viewports->resize(viewportCount);
-
-    for(uint32_t i = 0; i < viewportCount; i++) {
-        (*viewports)[i].initialize(format, &viewConfigs[i], this, renderer);
-    }
-
-    return true;
-}
-
 void XrDisplay::populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT* createInfo)
 {
     *createInfo = {
