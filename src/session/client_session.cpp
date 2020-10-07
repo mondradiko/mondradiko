@@ -41,6 +41,7 @@ bool client_session_run(const char* serverAddress, int port)
 
     if(!renderer.prepareRender(&xr)) {
         log_err("Failed to prepare renderer.");
+        xr.destroySession();
         return false;
     }
 
