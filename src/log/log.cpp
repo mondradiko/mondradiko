@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <stdexcept>
 
 const char* Log::getLogPrefix(LogLevel level)
 {
@@ -27,4 +28,8 @@ void Log::log(const char* file, int line, LogLevel level, const char* message)
 
     std::cerr << std::left << std::setw(55) << header.str();
     std::cerr << message << "\e[0m" << std::endl;
+
+    if(level == Log::LOG_LEVEL_FATAL) {
+        throw std::runtime_error(message);
+    }
 }
