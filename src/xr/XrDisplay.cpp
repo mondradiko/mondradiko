@@ -48,8 +48,6 @@ XrDisplay::~XrDisplay()
 
 bool XrDisplay::initialize()
 {
-    log_dbg("Initializing XrDisplay.");
-
     if(!createInstance()) {
         return false;
     }
@@ -273,7 +271,7 @@ void XrDisplay::populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfo
 
 bool XrDisplay::createInstance()
 {
-    log_inf("Creating OpenXR instance.");
+    log_dbg("Creating OpenXR instance.");
 
     XrApplicationInfo appInfo{
         .applicationVersion = XR_MAKE_VERSION(0, 0, 0),
@@ -330,7 +328,7 @@ bool XrDisplay::setupDebugMessenger()
 
 bool XrDisplay::findSystem()
 {
-    log_inf("Choosing OpenXR system.");
+    log_dbg("Choosing OpenXR system.");
 
     XrSystemGetInfo systemInfo{
         .type = XR_TYPE_SYSTEM_GET_INFO,

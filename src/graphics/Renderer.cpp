@@ -44,8 +44,6 @@ Renderer::~Renderer()
 
 bool Renderer::initialize(XrDisplay* display)
 {
-    log_dbg("Initializing renderer.");
-
     RendererRequirements requirements;
 
     if(!display->getRequirements(&requirements)) {
@@ -86,7 +84,7 @@ bool Renderer::initialize(XrDisplay* display)
 
 bool Renderer::prepareRender(XrDisplay* display)
 {
-    log_inf("Creating renderer swapchain.");
+    log_dbg("Creating renderer swapchain.");
 
     // Find a suitable format
     // Create XR swapchain
@@ -138,7 +136,7 @@ void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoE
 
 bool Renderer::createInstance(RendererRequirements* requirements)
 {
-    log_inf("Creating Vulkan instance.");
+    log_dbg("Creating Vulkan instance.");
 
     std::vector<const char*> extensionNames;
     for(uint32_t i = 0; i < requirements->instanceExtensions.size(); i++) {
@@ -185,6 +183,8 @@ bool Renderer::createInstance(RendererRequirements* requirements)
 
 bool Renderer::setupDebugMessenger()
 {
+    log_dbg("Setting up Vulkan debug messenger.");
+
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(&createInfo);
 
@@ -198,7 +198,7 @@ bool Renderer::setupDebugMessenger()
 
 bool Renderer::findPhysicalDevice(XrDisplay* display)
 {
-    log_inf("Finding Vulkan physical device.");
+    log_dbg("Finding Vulkan physical device.");
 
     if(!display->getVulkanDevice(instance, &physicalDevice)) {
         return false;
@@ -209,7 +209,7 @@ bool Renderer::findPhysicalDevice(XrDisplay* display)
 
 bool Renderer::findQueueFamilies()
 {
-    log_inf("Finding Vulkan queue families.");
+    log_dbg("Finding Vulkan queue families.");
 
     uint32_t queueFamilyCount;
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
@@ -228,7 +228,7 @@ bool Renderer::findQueueFamilies()
 
 bool Renderer::createLogicalDevice(RendererRequirements* requirements)
 {
-    log_inf("Creating Vulkan logical device.");
+    log_dbg("Creating Vulkan logical device.");
 
     std::vector<const char*> extensionNames;
     for(uint32_t i = 0; i < requirements->deviceExtensions.size(); i++) {
