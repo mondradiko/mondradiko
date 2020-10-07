@@ -25,6 +25,7 @@ public:
     VkDevice device = VK_NULL_HANDLE;
 
     uint32_t graphicsQueueFamily;
+    VkQueue graphicsQueue;
 
     std::vector<Viewport> viewports;
 private:

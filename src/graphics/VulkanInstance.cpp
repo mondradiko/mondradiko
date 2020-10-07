@@ -259,4 +259,6 @@ void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements)
     if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
         log_ftl("Failed to create Vulkan logical device.");
     }
+
+    vkGetDeviceQueue(device, graphicsQueueFamily, 0, &graphicsQueue);
 }
