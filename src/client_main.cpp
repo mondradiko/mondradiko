@@ -7,12 +7,13 @@ int main(int argc, const char* argv[])
 {
     log_inf("Hello VR!");
 
-    bool ranSuccessfully = client_session_run("127.0.0.1", 10555);
-
-    if(ranSuccessfully) {
-        return 0;
-    } else {
-        log_ftl("Mondradiko client failed.");
+    try {
+        client_session_run("127.0.0.1", 10555);
+    } catch(const std::exception& e) {
+        log_err("Mondradiko client failed with message:");
+        log_err(e.what());
         return 1;
     }
+
+    return 0;
 }
