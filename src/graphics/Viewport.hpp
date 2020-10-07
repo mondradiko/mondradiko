@@ -21,10 +21,12 @@ struct ViewportImage
 class Viewport
 {
 public:
-    bool initialize(VkFormat, XrViewConfigurationView*, Session*, VulkanInstance*);
+    bool initialize(VkFormat, VkRenderPass, XrViewConfigurationView*, Session*, VulkanInstance*);
     void destroy();
 
     XrSwapchain swapchain = XR_NULL_HANDLE;
     std::vector<ViewportImage> images;
 private:
+    Session* session;
+    VulkanInstance* vulkanInstance;
 };

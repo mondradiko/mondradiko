@@ -139,7 +139,7 @@ void Session::enumerateSwapchainFormats(std::vector<VkFormat>* formats)
     }
 }
 
-bool Session::createViewports(std::vector<Viewport>* viewports, VkFormat format)
+bool Session::createViewports(std::vector<Viewport>* viewports, VkFormat format, VkRenderPass renderPass)
 {
     // TODO findViewConfiguration()
     uint32_t viewportCount;
@@ -150,7 +150,7 @@ bool Session::createViewports(std::vector<Viewport>* viewports, VkFormat format)
     viewports->resize(viewportCount);
 
     for(uint32_t i = 0; i < viewportCount; i++) {
-        (*viewports)[i].initialize(format, &viewConfigs[i], this, vulkanInstance);
+        (*viewports)[i].initialize(format, renderPass, &viewConfigs[i], this, vulkanInstance);
     }
 
     return true;

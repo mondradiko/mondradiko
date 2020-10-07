@@ -22,7 +22,7 @@ Renderer::Renderer(VulkanInstance* vulkanInstance, Session* session)
         log_err("Failed to find suitable swapchain format.");
     }
 
-    session->createViewports(&viewports, swapchainFormat);
+    session->createViewports(&viewports, swapchainFormat, VK_NULL_HANDLE);
 }
 
 Renderer::~Renderer()

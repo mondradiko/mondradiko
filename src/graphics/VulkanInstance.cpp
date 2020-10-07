@@ -89,6 +89,8 @@ bool VulkanInstance::findFormatFromOptions(const std::vector<VkFormat>* options,
 
 bool VulkanInstance::checkValidationLayerSupport()
 {
+    log_dbg("Checking for Vulkan validation layer support.");
+
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
