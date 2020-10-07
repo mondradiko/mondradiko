@@ -11,13 +11,16 @@ bool Viewport::initialize(VkFormat format, VkRenderPass renderPass, XrViewConfig
     session = _session;
     vulkanInstance = _vulkanInstance;
 
+    width = viewConfig->recommendedImageRectWidth;
+    height = viewConfig->recommendedImageRectHeight;
+
     XrSwapchainCreateInfo swapchainCreateInfo{
         .type = XR_TYPE_SWAPCHAIN_CREATE_INFO,
         .usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
         .format = (int64_t) format,
         .sampleCount = 1,
-        .width = viewConfig->recommendedImageRectWidth,
-        .height = viewConfig->recommendedImageRectHeight,
+        .width = width,
+        .height = height,
         .faceCount = 1,
         .arraySize = 1,
         .mipCount = 1
@@ -67,8 +70,8 @@ bool Viewport::initialize(VkFormat format, VkRenderPass renderPass, XrViewConfig
             .renderPass = renderPass,
             .attachmentCount = 1,
             .pAttachments = &images[i].imageView,
-            .width = viewConfig->recommendedImageRectWidth,
-            .height = viewConfig->recommendedImageRectHeight,
+            .width = width,
+            .height = height,
             .layers = 1
         };
 
@@ -91,4 +94,34 @@ void Viewport::destroy()
     }
 
     if(swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
+}
+
+VkFramebuffer Viewport::acquireSwapchainImage()
+{
+    XrSwapchainImageAcquireInfo acquireInfo{
+        .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO,
+        .next = nullptr
+    };
+
+    uint32_t index;
+    xrAcquireSwapchainImage(swapchain, &acquireInfo, &index);
+
+    XrSwapchainImageWaitInfo waitInfo{
+        .type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
+        .timeout = XR_INFINITE_DURATION
+    };
+
+    xrWaitSwapchainImage(swapchain, &waitInfo);
+
+    return images[index].framebuffer;
+}
+
+void Viewport::releaseSwapchainImage()
+{
+    XrSwapchainImageReleaseInfo releaseInfo{
+        .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO,
+        .next = nullptr
+    };
+
+    xrReleaseSwapchainImage(swapchain, &releaseInfo);
 }

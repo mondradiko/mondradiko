@@ -24,8 +24,14 @@ public:
     bool initialize(VkFormat, VkRenderPass, XrViewConfigurationView*, Session*, VulkanInstance*);
     void destroy();
 
+    VkFramebuffer acquireSwapchainImage();
+    void releaseSwapchainImage();
+
     XrSwapchain swapchain = XR_NULL_HANDLE;
     std::vector<ViewportImage> images;
+
+    uint32_t width;
+    uint32_t height;
 private:
     Session* session;
     VulkanInstance* vulkanInstance;
