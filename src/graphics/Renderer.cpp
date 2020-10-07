@@ -31,6 +31,32 @@ Renderer::~Renderer()
     if(compositePass != VK_NULL_HANDLE) vkDestroyRenderPass(vulkanInstance->device, compositePass, nullptr);
 }
 
+void Renderer::renderFrame()
+{
+    for(uint32_t viewportIndex = 0; viewportIndex < viewports.size(); viewportIndex++) {
+        auto framebuffer = viewports[viewportIndex].acquireSwapchainImage();
+        viewports[viewportIndex].releaseSwapchainImage();
+    }
+}
+
+void Renderer::finishRender(std::vector<XrView>* views, std::vector<XrCompositionLayerProjectionView>* projectionViews)
+{
+    for(uint32_t i = 0; i < views->size(); i++) {
+        (*projectionViews)[i] = {
+            .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW,
+            .pose = (*views)[i].pose,
+            .fov = (*views)[i].fov,
+            .subImage = {
+                viewports[i].swapchain,
+                .imageRect = {
+                    .offset = { 0, 0 },
+                    .extent = { (int32_t) viewports[i].width, (int32_t) viewports[i].height }
+                }
+            }
+        };
+    }
+}
+
 void Renderer::findSwapchainFormat()
 {
     std::vector<VkFormat> formatOptions;
