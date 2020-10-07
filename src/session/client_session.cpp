@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "graphics/Renderer.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 #include "network/NetworkInterface.hpp"
@@ -19,17 +20,12 @@ void signalHandler(int signum) {
    return;
 }
 
-bool client_session_run(const char* serverAddress, int port)
+void client_session_run(const char* serverAddress, int port)
 {
     XrDisplay xr;
     VulkanInstance vulkanInstance(&xr);
     Session session(&xr, &vulkanInstance);
-
-    /*if(!renderer.prepareRender(&xr)) {
-        log_err("Failed to prepare renderer.");
-        xr.destroySession();
-        return false;
-    }*/
+    Renderer renderer(&vulkanInstance, &session);
 
     NetworkInterface network;
 
@@ -37,16 +33,14 @@ bool client_session_run(const char* serverAddress, int port)
         std::ostringstream err;
         err << "Failed to connect to server ";
         err << serverAddress << ":" << port << ".";
-        log_err(err.str().c_str());
-        return false;
+        log_ftl(err.str().c_str());
     }
 
     if(!network.authenticate()) {
         std::ostringstream err;
         err << "Failed to authenticate to server ";
         err << serverAddress << ":" << port << ".";
-        log_err(err.str().c_str());
-        return false;
+        log_ftl(err.str().c_str());
     }
 
     if(signal(SIGTERM, signalHandler) == SIG_ERR) {
@@ -76,6 +70,4 @@ bool client_session_run(const char* serverAddress, int port)
             session.endFrame();
         }
     }
-
-    return true;
 }

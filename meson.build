@@ -1,6 +1,7 @@
 project('mondradiko', 'cpp')
 
 src = [
+    'src/graphics/Renderer.cpp',
     'src/graphics/Viewport.cpp',
     'src/graphics/VulkanInstance.cpp',
     'src/log/log.cpp',
