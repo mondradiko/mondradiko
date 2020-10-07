@@ -14,6 +14,7 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
 
     findSwapchainFormat();
     createRenderPasses();
+    createCommandPool();
 
     if(!session->createViewports(&viewports, swapchainFormat, compositePass)) {
         log_ftl("Failed to create Renderer viewports.");
@@ -28,6 +29,7 @@ Renderer::~Renderer()
         viewports[i].destroy();
     }
 
+    if(commandPool != VK_NULL_HANDLE) vkDestroyCommandPool(vulkanInstance->device, commandPool, nullptr);
     if(compositePass != VK_NULL_HANDLE) vkDestroyRenderPass(vulkanInstance->device, compositePass, nullptr);
 }
 
@@ -108,5 +110,17 @@ void Renderer::createRenderPasses()
 
     if(vkCreateRenderPass(vulkanInstance->device, &compositePassCreateInfo, nullptr, &compositePass) != VK_SUCCESS) {
         log_ftl("Failed to create Renderer composite render pass.");
+    }
+}
+
+void Renderer::createCommandPool()
+{
+    VkCommandPoolCreateInfo createInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .queueFamilyIndex = vulkanInstance->graphicsQueueFamily
+    };
+
+    if(vkCreateCommandPool(vulkanInstance->device, &createInfo, nullptr, &commandPool) != VK_SUCCESS) {
+        log_ftl("Failed to create Vulkan command pool.");
     }
 }
