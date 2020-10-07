@@ -12,9 +12,9 @@ struct RendererRequirements;
 class VulkanInstance
 {
 public:
+    VulkanInstance(XrDisplay*);
     ~VulkanInstance();
 
-    bool initialize(XrDisplay*);
     bool prepareRender(XrDisplay*);
 
     bool findFormatFromOptions(const std::vector<VkFormat>*, const std::vector<VkFormat>*, VkFormat*);
@@ -34,14 +34,13 @@ private:
         "VK_LAYER_KHRONOS_validation"
     };
 
-    // initialize() steps
     bool checkValidationLayerSupport();
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT*);
-    bool createInstance(RendererRequirements*);
-    bool setupDebugMessenger();
-    bool findPhysicalDevice(XrDisplay*);
-    bool findQueueFamilies();
-    bool createLogicalDevice(RendererRequirements*);
+    void createInstance(RendererRequirements*);
+    void setupDebugMessenger();
+    void findPhysicalDevice(XrDisplay*);
+    void findQueueFamilies();
+    void createLogicalDevice(RendererRequirements*);
 
     // prepareRender() steps
     bool createViewports(XrDisplay*);

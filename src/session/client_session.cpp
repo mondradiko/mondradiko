@@ -27,23 +27,13 @@ bool client_session_run(const char* serverAddress, int port)
         return false;
     }
 
-    VulkanInstance renderer;
+    VulkanInstance vulkanInstance(&xr);
 
-    if(!renderer.initialize(&xr)) {
-        log_err("Failed to initialize renderer.");
-        return false;
-    }
-
-    if(!xr.createSession(&renderer)) {
-        log_err("Failed to create XR session.");
-        return false;
-    }
-
-    if(!renderer.prepareRender(&xr)) {
+    /*if(!renderer.prepareRender(&xr)) {
         log_err("Failed to prepare renderer.");
         xr.destroySession();
         return false;
-    }
+    }*/
 
     NetworkInterface network;
 

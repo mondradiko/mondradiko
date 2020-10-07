@@ -31,6 +31,30 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     return VK_FALSE;
 }
 
+VulkanInstance::VulkanInstance(XrDisplay* display)
+{
+    RendererRequirements requirements;
+
+    display->getRequirements(&requirements);
+
+    if(enableValidationLayers) {
+        if(!checkValidationLayerSupport()) {
+            log_wrn("Vulkan validation layers requested, but not available.");
+            enableValidationLayers = false;
+        }
+    }
+
+    createInstance(&requirements);
+
+    if(enableValidationLayers) {
+        setupDebugMessenger();
+    }
+
+    findPhysicalDevice(display);
+    findQueueFamilies();
+    createLogicalDevice(&requirements);
+}
+
 VulkanInstance::~VulkanInstance()
 {
     log_dbg("Cleaning up renderer.");
@@ -45,46 +69,6 @@ VulkanInstance::~VulkanInstance()
         ext_vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 
     if(instance != VK_NULL_HANDLE) vkDestroyInstance(instance, nullptr);
-}
-
-bool VulkanInstance::initialize(XrDisplay* display)
-{
-    RendererRequirements requirements;
-
-    if(!display->getRequirements(&requirements)) {
-        return false;
-    }
-
-    if(enableValidationLayers) {
-        if(!checkValidationLayerSupport()) {
-            log_wrn("Vulkan validation layers requested, but not available.");
-            enableValidationLayers = false;
-        }
-    }
-
-    if(!createInstance(&requirements)) {
-        return false;
-    }
-
-    if(enableValidationLayers) {
-        if(!setupDebugMessenger()) {
-            return false;
-        }
-    }
-
-    if(!findPhysicalDevice(display)) {
-        return false;
-    }
-
-    if(!findQueueFamilies()) {
-        return false;
-    }
-
-    if(!createLogicalDevice(&requirements)) {
-        return false;
-    }
-
-    return true;
 }
 
 bool VulkanInstance::prepareRender(XrDisplay* display)
@@ -150,7 +134,7 @@ void VulkanInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreat
     };
 }
 
-bool VulkanInstance::createInstance(RendererRequirements* requirements)
+void VulkanInstance::createInstance(RendererRequirements* requirements)
 {
     log_dbg("Creating Vulkan instance.");
 
@@ -187,17 +171,14 @@ bool VulkanInstance::createInstance(RendererRequirements* requirements)
     }
 
     if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-        log_err("Failed to create Vulkan instance.");
-        return false;
+        log_ftl("Failed to create Vulkan instance.");
     }
 
     ext_vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     ext_vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-
-    return true;
 }
 
-bool VulkanInstance::setupDebugMessenger()
+void VulkanInstance::setupDebugMessenger()
 {
     log_dbg("Setting up Vulkan debug messenger.");
 
@@ -205,25 +186,18 @@ bool VulkanInstance::setupDebugMessenger()
     populateDebugMessengerCreateInfo(&createInfo);
 
     if(ext_vkCreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-        log_err("Failed to create Vulkan debug messenger.");
-        return false;
+        log_ftl("Failed to create Vulkan debug messenger.");
     }
-
-    return true;
 }
 
-bool VulkanInstance::findPhysicalDevice(XrDisplay* display)
+void VulkanInstance::findPhysicalDevice(XrDisplay* display)
 {
     log_dbg("Finding Vulkan physical device.");
 
-    if(!display->getVulkanDevice(instance, &physicalDevice)) {
-        return false;
-    }
-
-    return true;
+    display->getVulkanDevice(instance, &physicalDevice);
 }
 
-bool VulkanInstance::findQueueFamilies()
+void VulkanInstance::findQueueFamilies()
 {
     log_dbg("Finding Vulkan queue families.");
 
@@ -238,11 +212,9 @@ bool VulkanInstance::findQueueFamilies()
             break;
         }
     }
-
-    return true;
 }
 
-bool VulkanInstance::createLogicalDevice(RendererRequirements* requirements)
+void VulkanInstance::createLogicalDevice(RendererRequirements* requirements)
 {
     log_dbg("Creating Vulkan logical device.");
 
@@ -290,11 +262,8 @@ bool VulkanInstance::createLogicalDevice(RendererRequirements* requirements)
     }
 
     if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
-        log_err("Failed to create Vulkan logical device.");
-        return false;
+        log_ftl("Failed to create Vulkan logical device.");
     }
-
-    return true;
 }
 
 bool VulkanInstance::createViewports(XrDisplay* display)
@@ -312,12 +281,7 @@ bool VulkanInstance::createViewports(XrDisplay* display)
     VkFormat swapchainFormat;
     if(!findFormatFromOptions(&formatOptions, &formatCandidates, &swapchainFormat)) {
         log_err("Failed to find suitable swapchain format.");
-        return false;
     }
 
-    if(!display->createViewports(this, &viewports, swapchainFormat)) {
-        return false;
-    }
-
-    return true;
+    display->createViewports(this, &viewports, swapchainFormat);
 }
