@@ -16,6 +16,7 @@ struct ViewportImage
     VkImage image;
     VkImageView imageView;
     VkFramebuffer framebuffer;
+    VkCommandBuffer commandBuffer;
 };
 
 class Viewport
