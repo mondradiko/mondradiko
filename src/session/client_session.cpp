@@ -8,6 +8,7 @@
 #include "log/log.hpp"
 #include "network/NetworkInterface.hpp"
 #include "xr/XrDisplay.hpp"
+#include "xr/Session.hpp"
 
 bool shouldQuit = false;
 
@@ -22,6 +23,7 @@ bool client_session_run(const char* serverAddress, int port)
 {
     XrDisplay xr;
     VulkanInstance vulkanInstance(&xr);
+    Session session(&xr, &vulkanInstance);
 
     /*if(!renderer.prepareRender(&xr)) {
         log_err("Failed to prepare renderer.");
@@ -58,24 +60,22 @@ bool client_session_run(const char* serverAddress, int port)
     bool shouldRun = false;
 
     while(true) {
-        xr.pollEvents(&shouldRun, &shouldQuit);
+        session.pollEvents(&shouldRun, &shouldQuit);
         if(shouldQuit) break;
 
         if(shouldRun) {
             double dt;
             bool shouldRender;
-            xr.beginFrame(&dt, &shouldRender);
+            session.beginFrame(&dt, &shouldRender);
 
             if(shouldRender) {
                 //log_dbg("Rendering scene.");
                 
             }
 
-            xr.endFrame();
+            session.endFrame();
         }
     }
-
-    xr.destroySession();
 
     return true;
 }

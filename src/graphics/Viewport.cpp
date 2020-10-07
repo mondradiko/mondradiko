@@ -20,10 +20,10 @@ bool Viewport::initialize(VkFormat format, XrViewConfigurationView* viewConfig, 
         .mipCount = 1
     };
 
-    if(xrCreateSwapchain(display->session, &swapchainCreateInfo, &swapchain) != XR_SUCCESS) {
+    /*if(xrCreateSwapchain(display->session, &swapchainCreateInfo, &swapchain) != XR_SUCCESS) {
         log_err("Failed to create swapchain.");
         return false;
-    }
+    }*/
 
     return true;
 }

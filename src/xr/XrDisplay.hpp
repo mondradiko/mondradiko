@@ -32,13 +32,7 @@ public:
 
     bool getRequirements(VulkanRequirements*);
     bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
-    bool createSession(class VulkanInstance*);
-    void pollEvents(bool*, bool*);
-    void beginFrame(double*, bool*);
-    void endFrame();
-    void destroySession();
 
-    void enumerateSwapchainFormats(std::vector<VkFormat>*);
     bool createViewports(VulkanInstance*, std::vector<Viewport>*, VkFormat);
 
     bool enableValidationLayers = true;
@@ -46,10 +40,6 @@ public:
     XrInstance instance = XR_NULL_HANDLE;
     XrDebugUtilsMessengerEXT debugMessenger = XR_NULL_HANDLE;
     XrSystemId systemId = XR_NULL_SYSTEM_ID;
-    XrSession session = XR_NULL_HANDLE;
-
-    XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
-    XrFrameState currentFrameState;
 private:
     void populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT*);
     void createInstance();

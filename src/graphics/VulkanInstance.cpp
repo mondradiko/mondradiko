@@ -270,7 +270,7 @@ bool VulkanInstance::createViewports(XrDisplay* display)
 {
     log_dbg("Creating renderer viewports.");
 
-    std::vector<VkFormat> formatOptions;
+    /*std::vector<VkFormat> formatOptions;
     display->enumerateSwapchainFormats(&formatOptions);
 
     std::vector<VkFormat> formatCandidates = {
@@ -283,5 +283,5 @@ bool VulkanInstance::createViewports(XrDisplay* display)
         log_err("Failed to find suitable swapchain format.");
     }
 
-    display->createViewports(this, &viewports, swapchainFormat);
+    display->createViewports(this, &viewports, swapchainFormat);*/
 }
