@@ -26,6 +26,7 @@ public:
     void destroy();
 
     void acquireSwapchainImage(VkCommandBuffer*, VkFramebuffer*);
+    void beginRenderPass(VkCommandBuffer, VkFramebuffer, VkRenderPass);
     void releaseSwapchainImage(VkCommandBuffer);
 
     XrSwapchain swapchain = XR_NULL_HANDLE;

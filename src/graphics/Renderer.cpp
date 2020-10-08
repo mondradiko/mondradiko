@@ -38,6 +38,9 @@ void Renderer::renderFrame()
         VkFramebuffer framebuffer;
         viewports[viewportIndex].acquireSwapchainImage(&commandBuffer, &framebuffer);
 
+        viewports[viewportIndex].beginRenderPass(commandBuffer, framebuffer, compositePass);
+        vkCmdEndRenderPass(commandBuffer);
+
         viewports[viewportIndex].releaseSwapchainImage(commandBuffer);
     }
 }
@@ -83,7 +86,7 @@ void Renderer::createRenderPasses()
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+        .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
     };
 
     VkAttachmentReference swapchainTargetReference{

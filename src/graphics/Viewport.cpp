@@ -1,5 +1,7 @@
 #include "graphics/Viewport.hpp"
 
+#include <array>
+
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 #include "xr/Session.hpp"
@@ -135,6 +137,27 @@ void Viewport::acquireSwapchainImage(VkCommandBuffer* commandBuffer, VkFramebuff
     };
 
     vkBeginCommandBuffer(*commandBuffer, &beginInfo);
+}
+
+void Viewport::beginRenderPass(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer, VkRenderPass renderPass)
+{
+    std::array<VkClearValue, 1> clearValues;
+
+    clearValues[0].color = {0.2, 0.0, 0.0, 1.0};
+
+    VkRenderPassBeginInfo renderPassInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = renderPass,
+        .framebuffer = framebuffer,
+        .renderArea = {
+            .offset = {0, 0},
+            .extent = {width, height}
+        },
+        .clearValueCount = static_cast<uint32_t>(clearValues.size()),
+        .pClearValues = clearValues.data()
+    };
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void Viewport::releaseSwapchainImage(VkCommandBuffer commandBuffer)
