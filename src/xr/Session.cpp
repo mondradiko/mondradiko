@@ -119,6 +119,9 @@ void Session::beginFrame(double* dt, bool* shouldRender)
 
     xrWaitFrame(session, nullptr, &currentFrameState);
 
+    // Convert nanoseconds to seconds
+    *dt = currentFrameState.predictedDisplayPeriod/1000000000.0;
+
     if(currentFrameState.shouldRender == XR_TRUE) {
         *shouldRender = true;
     } else {
