@@ -54,7 +54,6 @@ void client_session_run(const char* serverAddress, int port)
     bool shouldRun = false;
 
     while(true) {
-        log_dbg("Polling events.");
         session.pollEvents(&shouldRun, &shouldQuit);
         if(shouldQuit) break;
 
@@ -64,7 +63,6 @@ void client_session_run(const char* serverAddress, int port)
             session.beginFrame(&dt, &shouldRender);
 
             if(shouldRender) {
-                log_dbg("Rendering frame.");
                 renderer.renderFrame();
             }
 
