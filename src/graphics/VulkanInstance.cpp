@@ -57,11 +57,14 @@ VulkanInstance::VulkanInstance(XrDisplay* display)
     findQueueFamilies();
     createLogicalDevice(&requirements);
     createCommandPool();
+    createAllocator();
 }
 
 VulkanInstance::~VulkanInstance()
 {
     log_dbg("Cleaning up Vulkan.");
+
+    if(allocator != nullptr) vmaDestroyAllocator(allocator);
 
     if(commandPool != VK_NULL_HANDLE) vkDestroyCommandPool(device, commandPool, nullptr);
 
@@ -273,5 +276,18 @@ void VulkanInstance::createCommandPool()
 
     if(vkCreateCommandPool(device, &createInfo, nullptr, &commandPool) != VK_SUCCESS) {
         log_ftl("Failed to create Vulkan command pool.");
+    }
+}
+
+void VulkanInstance::createAllocator()
+{
+    VmaAllocatorCreateInfo createInfo{
+        .physicalDevice = physicalDevice,
+        .device = device,
+        .instance = instance
+    };
+
+    if(vmaCreateAllocator(&createInfo, &allocator) != VK_SUCCESS) {
+        log_ftl("Failed to create Vulkan memory allocator.");
     }
 }

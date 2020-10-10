@@ -27,6 +27,8 @@ public:
 
     VkCommandPool commandPool = VK_NULL_HANDLE;
 
+    VmaAllocator allocator = nullptr;
+
 private:
     const std::vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
@@ -40,6 +42,7 @@ private:
     void findQueueFamilies();
     void createLogicalDevice(VulkanRequirements*);
     void createCommandPool();
+    void createAllocator();
 
     PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT = nullptr;
     PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT = nullptr;
