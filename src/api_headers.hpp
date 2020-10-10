@@ -5,3 +5,5 @@
 #define XR_USE_GRAPHICS_API_VULKAN
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
+
+#include <shaderc/shaderc.hpp>
