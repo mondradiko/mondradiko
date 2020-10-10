@@ -10,6 +10,7 @@ public:
     MeshPipeline(VulkanInstance*);
     ~MeshPipeline();
 
+    void initialize(VkRenderPass, uint32_t);
     void render(VkCommandBuffer);
 private:
     VulkanInstance* vulkanInstance;
