@@ -62,10 +62,6 @@ VulkanInstance::~VulkanInstance()
 {
     log_dbg("Cleaning up Vulkan.");
 
-    for(uint32_t i = 0; i < viewports.size(); i++) {
-        viewports[i].destroy();
-    }
-
     if(commandPool != VK_NULL_HANDLE) vkDestroyCommandPool(device, commandPool, nullptr);
 
     if(device != VK_NULL_HANDLE) vkDestroyDevice(device, nullptr);

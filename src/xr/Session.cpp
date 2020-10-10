@@ -1,6 +1,7 @@
 #include "xr/Session.hpp"
 
 #include "graphics/Renderer.hpp"
+#include "graphics/Viewport.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 #include "xr/XrDisplay.hpp"

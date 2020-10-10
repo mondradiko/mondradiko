@@ -4,8 +4,6 @@
 
 #include <vulkan/vulkan.h>
 
-#include "graphics/Viewport.hpp"
-
 class XrDisplay;
 struct VulkanRequirements;
 
@@ -29,7 +27,6 @@ public:
 
     VkCommandPool commandPool = VK_NULL_HANDLE;
 
-    std::vector<Viewport> viewports;
 private:
     const std::vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
