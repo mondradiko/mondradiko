@@ -5,6 +5,8 @@ src = [
     'src/graphics/Viewport.cpp',
     'src/graphics/VulkanInstance.cpp',
     'src/graphics/pipelines/MeshPipeline.cpp',
+    'src/graphics/shaders/MeshShader.cpp',
+    'src/graphics/shaders/ShaderModule.cpp',
     'src/log/log.cpp',
     'src/network/NetworkInterface.cpp',
     'src/session/client_session.cpp',
