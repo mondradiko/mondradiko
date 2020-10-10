@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <vulkan/vulkan.h>
+#include "api_headers.hpp"
 
 class XrDisplay;
 struct VulkanRequirements;
