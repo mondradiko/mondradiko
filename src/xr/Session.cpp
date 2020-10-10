@@ -83,6 +83,21 @@ void Session::pollEvents(bool* shouldRun, bool* shouldQuit)
                 break;
             }
 
+            case XR_SESSION_STATE_VISIBLE: {
+                log_dbg("OpenXR session is visible.");
+                break;
+            }
+
+            case XR_SESSION_STATE_FOCUSED: {
+                log_dbg("OpenXR session is focused.");
+                break;
+            }
+
+            case XR_SESSION_STATE_IDLE: {
+                log_dbg("OpenXR session is idle.");
+                break;
+            }
+
             case XR_SESSION_STATE_STOPPING:
             case XR_SESSION_STATE_EXITING:
             case XR_SESSION_STATE_LOSS_PENDING: {
