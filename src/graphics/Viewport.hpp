@@ -23,6 +23,7 @@ public:
 
     void acquireSwapchainImage(VkCommandBuffer*, VkFramebuffer*);
     void beginRenderPass(VkCommandBuffer, VkFramebuffer, VkRenderPass);
+    void setCommandViewport(VkCommandBuffer);
     void releaseSwapchainImage(VkCommandBuffer);
 
     XrSwapchain swapchain = XR_NULL_HANDLE;

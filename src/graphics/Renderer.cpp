@@ -40,6 +40,8 @@ void Renderer::renderFrame()
         VkFramebuffer framebuffer;
         viewports[viewportIndex].acquireSwapchainImage(&commandBuffer, &framebuffer);
 
+        viewports[viewportIndex].setViewport(commandBuffer);
+
         viewports[viewportIndex].beginRenderPass(commandBuffer, framebuffer, compositePass);
         meshPipeline.render(commandBuffer);
         vkCmdEndRenderPass(commandBuffer);

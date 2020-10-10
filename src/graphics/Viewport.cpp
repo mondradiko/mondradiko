@@ -160,6 +160,26 @@ void Viewport::beginRenderPass(VkCommandBuffer commandBuffer, VkFramebuffer fram
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
+void Viewport::setCommandViewport(VkCommandBuffer commandBuffer)
+{
+    VkViewport viewport{
+        .x = 0,
+        .y = 0,
+        .width = static_cast<float>(width),
+        .height = static_cast<float>(height),
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f
+    };
+
+    VkRect2D scissor{
+        .offset = {0, 0},
+        .extent = {width, height}
+    };
+
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+}
+
 void Viewport::releaseSwapchainImage(VkCommandBuffer commandBuffer)
 {
     vkEndCommandBuffer(commandBuffer);
