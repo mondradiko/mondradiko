@@ -4,6 +4,8 @@
 
 #include "api_headers.hpp"
 
+#include "graphics/pipelines/MeshPipeline.hpp"
+
 class Session;
 class Viewport;
 class VulkanInstance;
@@ -20,6 +22,8 @@ public:
     VkFormat swapchainFormat;
     VkRenderPass compositePass = VK_NULL_HANDLE;
     std::vector<Viewport> viewports;
+
+    MeshPipeline meshPipeline;
 private:
     VulkanInstance* vulkanInstance;
     Session* session;

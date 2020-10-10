@@ -6,6 +6,7 @@
 #include "xr/Session.hpp"
 
 Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
+ : meshPipeline(_vulkanInstance)
 {
     log_dbg("Creating renderer.");
 
@@ -39,6 +40,7 @@ void Renderer::renderFrame()
         viewports[viewportIndex].acquireSwapchainImage(&commandBuffer, &framebuffer);
 
         viewports[viewportIndex].beginRenderPass(commandBuffer, framebuffer, compositePass);
+        meshPipeline.render(commandBuffer);
         vkCmdEndRenderPass(commandBuffer);
 
         viewports[viewportIndex].releaseSwapchainImage(commandBuffer);
