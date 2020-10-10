@@ -24,8 +24,8 @@ Renderer::~Renderer()
 {
     log_dbg("Destroying renderer.");
 
-    for(uint32_t i = 0; i < viewports.size(); i++) {
-        viewports[i].destroy();
+    for(Viewport& viewport : viewports) {
+        viewport.destroy();
     }
 
     if(compositePass != VK_NULL_HANDLE) vkDestroyRenderPass(vulkanInstance->device, compositePass, nullptr);

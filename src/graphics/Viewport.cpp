@@ -102,10 +102,10 @@ void Viewport::destroy()
 {
     log_dbg("Destroying viewport.");
     
-    for(uint32_t i = 0; i < images.size(); i++) {
-        vkDestroyFramebuffer(vulkanInstance->device, images[i].framebuffer, nullptr);
-        vkDestroyImageView(vulkanInstance->device, images[i].imageView, nullptr);
-        vkFreeCommandBuffers(vulkanInstance->device, vulkanInstance->commandPool, 1, &images[i].commandBuffer);
+    for(ViewportImage& image : images) {
+        vkDestroyFramebuffer(vulkanInstance->device, image.framebuffer, nullptr);
+        vkDestroyImageView(vulkanInstance->device, image.imageView, nullptr);
+        vkFreeCommandBuffers(vulkanInstance->device, vulkanInstance->commandPool, 1, &image.commandBuffer);
     }
 
     if(swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
