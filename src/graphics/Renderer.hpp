@@ -30,4 +30,5 @@ private:
 
     void findSwapchainFormat();
     void createRenderPasses();
+    void initializePipelines();
 };

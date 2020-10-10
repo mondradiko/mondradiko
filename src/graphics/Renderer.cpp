@@ -15,6 +15,7 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
 
     findSwapchainFormat();
     createRenderPasses();
+    initializePipelines();
 
     if(!session->createViewports(&viewports, swapchainFormat, compositePass)) {
         log_ftl("Failed to create Renderer viewports.");
@@ -117,4 +118,9 @@ void Renderer::createRenderPasses()
     if(vkCreateRenderPass(vulkanInstance->device, &compositePassCreateInfo, nullptr, &compositePass) != VK_SUCCESS) {
         log_ftl("Failed to create Renderer composite render pass.");
     }
+}
+
+void Renderer::initializePipelines()
+{
+    meshPipeline.initialize(compositePass, 0);
 }
