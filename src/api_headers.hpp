@@ -7,3 +7,5 @@
 #include <openxr/openxr_platform.h>
 
 #include <shaderc/shaderc.hpp>
+
+#include "vk_mem_alloc.h"

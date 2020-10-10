@@ -7,6 +7,7 @@ src = [
     'src/graphics/pipelines/MeshPipeline.cpp',
     'src/graphics/shaders/MeshShader.cpp',
     'src/graphics/shaders/ShaderModule.cpp',
+    'src/library_implementation.cpp',
     'src/log/log.cpp',
     'src/network/NetworkInterface.cpp',
     'src/session/client_session.cpp',
@@ -15,7 +16,8 @@ src = [
 ]
 
 inc = include_directories(
-    ['src']
+    ['src',
+     'lib']
 )
 
 dependencies = [
