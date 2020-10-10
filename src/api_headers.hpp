@@ -8,4 +8,7 @@
 
 #include <shaderc/shaderc.hpp>
 
-#include "vk_mem_alloc.h"
+#include <vk_mem_alloc.h>
+
+#include <assimp/Importer.hpp>
+#include <assimp/mesh.h>

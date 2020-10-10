@@ -1,6 +1,7 @@
 project('mondradiko', 'cpp')
 
 src = [
+    'src/assets/MeshAsset.hpp',
     'src/graphics/Renderer.cpp',
     'src/graphics/Viewport.cpp',
     'src/graphics/VulkanInstance.cpp',
@@ -23,7 +24,8 @@ inc = include_directories(
 dependencies = [
     dependency('openxr', version: '>=1.0'),
     dependency('vulkan'),
-    dependency('shaderc')
+    dependency('shaderc'),
+    dependency('assimp')
 ]
 
 executable(
