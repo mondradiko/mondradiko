@@ -20,11 +20,14 @@ const char* Log::getLogPrefix(LogLevel level)
     }
 }
 
-void Log::log(const char* file, int line, LogLevel level, const char* message)
+void Log::log(const char* filePath, int line, LogLevel level, const char* message)
 {
     const char* prefix = getLogPrefix(level);
     std::ostringstream header;
-    header << prefix << file << ":" << line << "]";
+    std::string fileName(filePath);
+
+    // Remove "../src/" from file path
+    header << prefix << fileName.substr(7) << ":" << line << "]";
 
     std::cerr << std::left << std::setw(55) << header.str();
     std::cerr << message << "\e[0m" << std::endl;

@@ -27,7 +27,8 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         break;
     }
 
-    Log::log("VulkanValidation", 0, severity, pCallbackData->pMessage);
+    // Add "../src/" so that it's clipped off in logging
+    Log::log("../src/VulkanValidation", 0, severity, pCallbackData->pMessage);
     return VK_FALSE;
 }
 
