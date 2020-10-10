@@ -20,7 +20,7 @@ public:
     void endFrame(Renderer*, bool);
 
     void enumerateSwapchainFormats(std::vector<VkFormat>*);
-    bool createViewports(std::vector<Viewport>*, VkFormat, VkRenderPass);
+    bool createViewports(std::vector<Viewport*>*, VkFormat, VkRenderPass);
 
     XrSession session = XR_NULL_HANDLE;
     XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;

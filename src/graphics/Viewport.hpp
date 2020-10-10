@@ -18,8 +18,8 @@ struct ViewportImage
 class Viewport
 {
 public:
-    bool initialize(VkFormat, VkRenderPass, XrViewConfigurationView*, Session*, VulkanInstance*);
-    void destroy();
+    Viewport(VkFormat, VkRenderPass, XrViewConfigurationView*, Session*, VulkanInstance*);
+    ~Viewport();
 
     void acquireSwapchainImage(VkCommandBuffer*, VkFramebuffer*);
     void beginRenderPass(VkCommandBuffer, VkFramebuffer, VkRenderPass);

@@ -205,7 +205,7 @@ void Session::enumerateSwapchainFormats(std::vector<VkFormat>* formats)
     }
 }
 
-bool Session::createViewports(std::vector<Viewport>* viewports, VkFormat format, VkRenderPass renderPass)
+bool Session::createViewports(std::vector<Viewport*>* viewports, VkFormat format, VkRenderPass renderPass)
 {
     // TODO findViewConfiguration()
     uint32_t viewportCount;
@@ -213,11 +213,12 @@ bool Session::createViewports(std::vector<Viewport>* viewports, VkFormat format,
     std::vector<XrViewConfigurationView> viewConfigs(viewportCount);
     xrEnumerateViewConfigurationViews(display->instance, display->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewportCount, &viewportCount, viewConfigs.data());
 
-    viewports->resize(viewportCount);
+    viewports->resize(0);
     views.resize(viewportCount);
 
     for(uint32_t i = 0; i < viewportCount; i++) {
-        (*viewports)[i].initialize(format, renderPass, &viewConfigs[i], this, vulkanInstance);
+        Viewport* viewport = new Viewport(format, renderPass, &viewConfigs[i], this, vulkanInstance);
+        viewports->push_back(viewport);
     }
 
     return true;

@@ -6,7 +6,7 @@
 #include "log/log.hpp"
 #include "xr/Session.hpp"
 
-bool Viewport::initialize(VkFormat format, VkRenderPass renderPass, XrViewConfigurationView* viewConfig, Session* _session, VulkanInstance* _vulkanInstance)
+Viewport::Viewport(VkFormat format, VkRenderPass renderPass, XrViewConfigurationView* viewConfig, Session* _session, VulkanInstance* _vulkanInstance)
 {
     log_dbg("Creating viewport.");
 
@@ -29,8 +29,7 @@ bool Viewport::initialize(VkFormat format, VkRenderPass renderPass, XrViewConfig
     };
 
     if(xrCreateSwapchain(session->session, &swapchainCreateInfo, &swapchain) != XR_SUCCESS) {
-        log_err("Failed to create swapchain.");
-        return false;
+        log_ftl("Failed to create swapchain.");
     }
 
     uint32_t imageCount;
@@ -63,8 +62,7 @@ bool Viewport::initialize(VkFormat format, VkRenderPass renderPass, XrViewConfig
         };
 
         if(vkCreateImageView(vulkanInstance->device, &viewCreateInfo, nullptr, &images[i].imageView) != VK_SUCCESS) {
-            log_err("Failed to create viewport image view.");
-            return false;
+            log_ftl("Failed to create viewport image view.");
         }
 
         VkFramebufferCreateInfo framebufferCreateInfo{
@@ -78,8 +76,7 @@ bool Viewport::initialize(VkFormat format, VkRenderPass renderPass, XrViewConfig
         };
 
         if(vkCreateFramebuffer(vulkanInstance->device, &framebufferCreateInfo, nullptr, &images[i].framebuffer) != VK_SUCCESS) {
-            log_err("Failed to create viewport framebuffer.");
-            return false;
+            log_ftl("Failed to create viewport framebuffer.");
         }
 
         VkCommandBufferAllocateInfo allocInfo{
@@ -90,15 +87,12 @@ bool Viewport::initialize(VkFormat format, VkRenderPass renderPass, XrViewConfig
         };
 
         if(vkAllocateCommandBuffers(vulkanInstance->device, &allocInfo, &images[i].commandBuffer) != VK_SUCCESS) {
-            log_err("Failed to allocate viewport command buffer.");
-            return false;
+            log_ftl("Failed to allocate viewport command buffer.");
         }
     }
-
-    return true;
 }
 
-void Viewport::destroy()
+Viewport::~Viewport()
 {
     log_dbg("Destroying viewport.");
     

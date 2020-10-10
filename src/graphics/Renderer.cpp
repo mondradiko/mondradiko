@@ -26,8 +26,8 @@ Renderer::~Renderer()
 {
     log_dbg("Destroying renderer.");
 
-    for(Viewport& viewport : viewports) {
-        viewport.destroy();
+    for(Viewport* viewport : viewports) {
+        delete viewport;
     }
 
     if(compositePass != VK_NULL_HANDLE) vkDestroyRenderPass(vulkanInstance->device, compositePass, nullptr);
@@ -38,15 +38,15 @@ void Renderer::renderFrame()
     for(uint32_t viewportIndex = 0; viewportIndex < viewports.size(); viewportIndex++) {
         VkCommandBuffer commandBuffer;
         VkFramebuffer framebuffer;
-        viewports[viewportIndex].acquireSwapchainImage(&commandBuffer, &framebuffer);
+        viewports[viewportIndex]->acquireSwapchainImage(&commandBuffer, &framebuffer);
 
-        viewports[viewportIndex].setCommandViewport(commandBuffer);
+        viewports[viewportIndex]->setCommandViewport(commandBuffer);
 
-        viewports[viewportIndex].beginRenderPass(commandBuffer, framebuffer, compositePass);
+        viewports[viewportIndex]->beginRenderPass(commandBuffer, framebuffer, compositePass);
         meshPipeline.render(commandBuffer);
         vkCmdEndRenderPass(commandBuffer);
 
-        viewports[viewportIndex].releaseSwapchainImage(commandBuffer);
+        viewports[viewportIndex]->releaseSwapchainImage(commandBuffer);
     }
 }
 
@@ -58,10 +58,10 @@ void Renderer::finishRender(std::vector<XrView>* views, std::vector<XrCompositio
             .pose = (*views)[i].pose,
             .fov = (*views)[i].fov,
             .subImage = {
-                viewports[i].swapchain,
+                viewports[i]->swapchain,
                 .imageRect = {
                     .offset = { 0, 0 },
-                    .extent = { (int32_t) viewports[i].width, (int32_t) viewports[i].height }
+                    .extent = { (int32_t) viewports[i]->width, (int32_t) viewports[i]->height }
                 }
             }
         };

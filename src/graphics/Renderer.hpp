@@ -21,7 +21,7 @@ public:
 
     VkFormat swapchainFormat;
     VkRenderPass compositePass = VK_NULL_HANDLE;
-    std::vector<Viewport> viewports;
+    std::vector<Viewport*> viewports;
 
     MeshPipeline meshPipeline;
 private:
