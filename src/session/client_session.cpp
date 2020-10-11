@@ -49,6 +49,13 @@ void client_session_run(const char* serverAddress, int port)
             bool shouldRender;
             session.beginFrame(&dt, &shouldRender);
 
+            client.update();
+
+            ClientEvent event;
+            while(client.readEvent(&event)) {
+                log_dbg("Received client event.");
+            }
+
             if(shouldRender) {
                 renderer.renderFrame();
             }
