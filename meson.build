@@ -13,6 +13,7 @@ src = [
     'src/graphics/shaders/ShaderModule.cpp',
     'src/library_implementation.cpp',
     'src/log/log.cpp',
+    'src/network/ClientInterface.cpp',
     'src/network/NetworkInterface.cpp',
     'src/session/client_session.cpp',
     'src/xr/XrDisplay.cpp',

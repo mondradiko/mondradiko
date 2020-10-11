@@ -8,7 +8,7 @@
 #include "graphics/Renderer.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
-#include "network/NetworkInterface.hpp"
+#include "network/ClientInterface.hpp"
 #include "xr/XrDisplay.hpp"
 #include "xr/Session.hpp"
 
@@ -28,22 +28,7 @@ void client_session_run(const char* serverAddress, int port)
     VulkanInstance vulkanInstance(&xr);
     Session session(&xr, &vulkanInstance);
     Renderer renderer(&vulkanInstance, &session);
-
-    NetworkInterface network;
-
-    if(!network.connect(serverAddress, port)) {
-        std::ostringstream err;
-        err << "Failed to connect to server ";
-        err << serverAddress << ":" << port << ".";
-        log_ftl(err.str().c_str());
-    }
-
-    if(!network.authenticate()) {
-        std::ostringstream err;
-        err << "Failed to authenticate to server ";
-        err << serverAddress << ":" << port << ".";
-        log_ftl(err.str().c_str());
-    }
+    ClientInterface client(serverAddress, port);
 
     if(signal(SIGTERM, signalHandler) == SIG_ERR) {
         log_wrn("Can't catch SIGTERM");
