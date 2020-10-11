@@ -5,21 +5,31 @@
 
 FrameData::FrameData(VulkanInstance* vulkanInstance, uint32_t framesInFlightCount)
  : vulkanInstance(vulkanInstance),
-   framesInFlightCount(framesInFlightCount)
+   framesInFlight(framesInFlightCount)
 {
     log_dbg("Creating frame data.");
 
-    commandBuffers.resize(framesInFlightCount);
+    for(FrameInFlight& frame : framesInFlight) {
+        VkCommandBufferAllocateInfo allocInfo{
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .commandPool = vulkanInstance->commandPool,
+            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = 1
+        };
 
-    VkCommandBufferAllocateInfo allocInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = vulkanInstance->commandPool,
-        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = framesInFlightCount
-    };
+        if(vkAllocateCommandBuffers(vulkanInstance->device, &allocInfo, &frame.commandBuffer) != VK_SUCCESS) {
+            log_ftl("Failed to allocate frame command buffers.");
+        }
 
-    if(vkAllocateCommandBuffers(vulkanInstance->device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
-        log_ftl("Failed to allocate frame command buffers.");
+        VkFenceCreateInfo fenceInfo{
+            .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+        };
+
+        if(vkCreateFence(vulkanInstance->device, &fenceInfo, nullptr, &frame.isInUse) != VK_SUCCESS) {
+            log_ftl("Failed to create frame fence.");
+        }
+
+        frame.submitted = false;
     }
 }
 
@@ -27,18 +37,24 @@ FrameData::~FrameData()
 {
     log_dbg("Destroying frame data.");
 
-    if(commandBuffers.size() > 0) {
-        vkFreeCommandBuffers(vulkanInstance->device, vulkanInstance->commandPool, commandBuffers.size(), commandBuffers.data());
+    for(FrameInFlight& frame : framesInFlight) {
+        vkFreeCommandBuffers(vulkanInstance->device, vulkanInstance->commandPool, 1, &frame.commandBuffer);
+        vkDestroyFence(vulkanInstance->device, frame.isInUse, nullptr);
     }
 }
 
 VkCommandBuffer FrameData::beginPrimaryCommand()
 {
-    if(++currentFrame >= framesInFlightCount) {
+    if(framesInFlight[currentFrame].submitted) {
+        vkWaitForFences(vulkanInstance->device, 1, &framesInFlight[currentFrame].isInUse, VK_TRUE, UINT64_MAX);
+        framesInFlight[currentFrame].submitted = false;
+    }
+
+    if(++currentFrame >= framesInFlight.size()) {
         currentFrame = 0;
     }
 
-    VkCommandBuffer commandBuffer = commandBuffers[currentFrame];
+    VkCommandBuffer commandBuffer = framesInFlight[currentFrame].commandBuffer;
 
     VkCommandBufferBeginInfo beginInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -52,7 +68,7 @@ VkCommandBuffer FrameData::beginPrimaryCommand()
 
 void FrameData::endPrimaryCommand()
 {
-    vkEndCommandBuffer(commandBuffers[currentFrame]);
+    vkEndCommandBuffer(framesInFlight[currentFrame].commandBuffer);
 }
 
 void FrameData::submitPrimaryCommand()
@@ -66,12 +82,16 @@ void FrameData::submitPrimaryCommand()
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
+    submitInfo.pCommandBuffers = &framesInFlight[currentFrame].commandBuffer;
 
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = nullptr;
 
-    if(vkQueueSubmit(vulkanInstance->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    vkResetFences(vulkanInstance->device, 1, &framesInFlight[currentFrame].isInUse);
+
+    if(vkQueueSubmit(vulkanInstance->graphicsQueue, 1, &submitInfo, framesInFlight[currentFrame].isInUse) != VK_SUCCESS) {
         log_ftl("Failed to submit primary frame command buffer.");
     }
+
+    framesInFlight[currentFrame].submitted = true;
 }

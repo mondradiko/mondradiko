@@ -46,8 +46,6 @@ Renderer::~Renderer()
 
 void Renderer::renderFrame()
 {
-    vkDeviceWaitIdle(vulkanInstance->device);
-
     for(uint32_t viewportIndex = 0; viewportIndex < viewports.size(); viewportIndex++) {
         viewports[viewportIndex]->acquireSwapchainImage();
     }

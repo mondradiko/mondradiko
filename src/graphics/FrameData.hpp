@@ -6,6 +6,13 @@
 
 class VulkanInstance;
 
+struct FrameInFlight
+{
+    VkCommandBuffer commandBuffer;
+    VkFence isInUse;
+    bool submitted;
+};
+
 class FrameData
 {
 public:
@@ -18,8 +25,6 @@ public:
 private:
     VulkanInstance* vulkanInstance;
 
-    uint32_t framesInFlightCount;
     uint32_t currentFrame = 0;
-
-    std::vector<VkCommandBuffer> commandBuffers;
+    std::vector<FrameInFlight> framesInFlight;
 };
