@@ -20,7 +20,7 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
         log_ftl("Failed to create Renderer viewports.");
     }
 
-    cameraDescriptorSet = new CameraDescriptorSet(vulkanInstance);
+    cameraDescriptorSet = new CameraDescriptorSet(vulkanInstance, viewports.size());
 
     createPipelines();
 }
@@ -42,8 +42,6 @@ Renderer::~Renderer()
 
 void Renderer::renderFrame()
 {
-    cameraDescriptorSet->update();
-
     for(uint32_t viewportIndex = 0; viewportIndex < viewports.size(); viewportIndex++) {
         VkCommandBuffer commandBuffer;
         VkFramebuffer framebuffer;
@@ -51,7 +49,8 @@ void Renderer::renderFrame()
 
         viewports[viewportIndex]->setCommandViewport(commandBuffer);
 
-        cameraDescriptorSet->bind(commandBuffer, meshPipeline->pipelineLayout);
+        cameraDescriptorSet->update(viewportIndex);
+        cameraDescriptorSet->bind(commandBuffer, viewportIndex, meshPipeline->pipelineLayout);
 
         viewports[viewportIndex]->beginRenderPass(commandBuffer, framebuffer, compositePass);
         meshPipeline->render(commandBuffer);

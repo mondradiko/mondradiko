@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "api_headers.hpp"
 
 class VulkanInstance;
@@ -13,14 +15,14 @@ struct CameraUniform
 class CameraDescriptorSet
 {
 public:
-    CameraDescriptorSet(VulkanInstance*);
+    CameraDescriptorSet(VulkanInstance*, uint32_t);
     ~CameraDescriptorSet();
 
-    void update();
-    void bind(VkCommandBuffer, VkPipelineLayout);
+    void update(uint32_t);
+    void bind(VkCommandBuffer, uint32_t, VkPipelineLayout);
 
     VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
-    VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+    std::vector<VkDescriptorSet> descriptorSets;
     VmaAllocation uniformAllocation = nullptr;
     VmaAllocationInfo uniformAllocationInfo;
     VkBuffer uniformBuffer = VK_NULL_HANDLE;
