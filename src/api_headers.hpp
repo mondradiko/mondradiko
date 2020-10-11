@@ -12,3 +12,5 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/mesh.h>
+
+#include <glm/glm.hpp>
