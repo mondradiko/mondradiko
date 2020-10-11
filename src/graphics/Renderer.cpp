@@ -6,7 +6,6 @@
 #include "xr/Session.hpp"
 
 Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
- : meshPipeline(_vulkanInstance)
 {
     log_dbg("Creating renderer.");
 
@@ -16,7 +15,7 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
     findSwapchainFormat();
     createRenderPasses();
     createCameraDescriptor();
-    initializePipelines();
+    createPipelines();
 
     if(!session->createViewports(&viewports, swapchainFormat, compositePass)) {
         log_ftl("Failed to create Renderer viewports.");
@@ -26,6 +25,8 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
 Renderer::~Renderer()
 {
     log_dbg("Destroying renderer.");
+
+    if(meshPipeline != nullptr) delete meshPipeline;
 
     for(Viewport* viewport : viewports) {
         delete viewport;
@@ -56,10 +57,10 @@ void Renderer::renderFrame()
 
         viewports[viewportIndex]->setCommandViewport(commandBuffer);
 
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipeline.pipelineLayout, 0, 1, &cameraSet, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipeline->pipelineLayout, 0, 1, &cameraSet, 0, nullptr);
 
         viewports[viewportIndex]->beginRenderPass(commandBuffer, framebuffer, compositePass);
-        meshPipeline.render(commandBuffer);
+        meshPipeline->render(commandBuffer);
         vkCmdEndRenderPass(commandBuffer);
 
         viewports[viewportIndex]->releaseSwapchainImage(commandBuffer);
@@ -202,7 +203,7 @@ void Renderer::createCameraDescriptor()
     vkUpdateDescriptorSets(vulkanInstance->device, 1, &descriptorWrite, 0, nullptr);
 }
 
-void Renderer::initializePipelines()
+void Renderer::createPipelines()
 {
-    meshPipeline.initialize(cameraSetLayout, compositePass, 0);
+    meshPipeline = new MeshPipeline(vulkanInstance, cameraSetLayout, compositePass, 0);
 }

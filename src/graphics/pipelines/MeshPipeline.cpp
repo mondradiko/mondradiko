@@ -4,11 +4,14 @@
 #include "graphics/shaders/MeshShader.hpp"
 #include "log/log.hpp"
 
-MeshPipeline::MeshPipeline(VulkanInstance* _vulkanInstance)
+MeshPipeline::MeshPipeline(VulkanInstance* _vulkanInstance, VkDescriptorSetLayout cameraSetLayout, VkRenderPass renderPass, uint32_t subpassIndex)
 {
     log_dbg("Creating mesh pipeline.");
 
     vulkanInstance = _vulkanInstance;
+
+    createPipelineLayout(cameraSetLayout);
+    createPipeline(renderPass, subpassIndex);
 }
 
 MeshPipeline::~MeshPipeline()
@@ -19,10 +22,29 @@ MeshPipeline::~MeshPipeline()
     if(pipelineLayout != VK_NULL_HANDLE) vkDestroyPipelineLayout(vulkanInstance->device, pipelineLayout, nullptr);
 }
 
-void MeshPipeline::initialize(VkDescriptorSetLayout cameraSetLayout, VkRenderPass renderPass, uint32_t subpass)
+void MeshPipeline::render(VkCommandBuffer commandBuffer)
 {
-    createPipelineLayout(cameraSetLayout);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    //render(); lol
+}
 
+void MeshPipeline::createPipelineLayout(VkDescriptorSetLayout cameraSetLayout)
+{
+    VkPipelineLayoutCreateInfo createInfo{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+        .setLayoutCount = 1,
+        .pSetLayouts = &cameraSetLayout,
+        .pushConstantRangeCount = 0
+    };
+
+    if(vkCreatePipelineLayout(vulkanInstance->device, &createInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+        log_ftl("Failed to create mesh pipeline layout.");
+    }
+}
+
+void MeshPipeline::createPipeline(VkRenderPass renderPass, uint32_t subpass)
+{
     MeshShader shader(vulkanInstance);
     auto shaderStages = shader.getStages();
 
@@ -131,26 +153,5 @@ void MeshPipeline::initialize(VkDescriptorSetLayout cameraSetLayout, VkRenderPas
 
     if(vkCreateGraphicsPipelines(vulkanInstance->device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline) != VK_SUCCESS) {
         log_ftl("Failed to create mesh pipeline.");
-    }
-}
-
-void MeshPipeline::render(VkCommandBuffer commandBuffer)
-{
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-    //render(); lol
-}
-
-void MeshPipeline::createPipelineLayout(VkDescriptorSetLayout cameraSetLayout)
-{
-    VkPipelineLayoutCreateInfo createInfo{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .setLayoutCount = 1,
-        .pSetLayouts = &cameraSetLayout,
-        .pushConstantRangeCount = 0
-    };
-
-    if(vkCreatePipelineLayout(vulkanInstance->device, &createInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        log_ftl("Failed to create mesh pipeline layout.");
     }
 }

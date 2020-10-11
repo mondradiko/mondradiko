@@ -7,10 +7,9 @@ class VulkanInstance;
 class MeshPipeline
 {
 public:
-    MeshPipeline(VulkanInstance*);
+    MeshPipeline(VulkanInstance*, VkDescriptorSetLayout, VkRenderPass, uint32_t);
     ~MeshPipeline();
 
-    void initialize(VkDescriptorSetLayout, VkRenderPass, uint32_t);
     void render(VkCommandBuffer);
 
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -19,5 +18,5 @@ private:
     VulkanInstance* vulkanInstance;
 
     void createPipelineLayout(VkDescriptorSetLayout);
-    void createPipeline();
+    void createPipeline(VkRenderPass, uint32_t);
 };

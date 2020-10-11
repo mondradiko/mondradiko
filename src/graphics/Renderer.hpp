@@ -29,7 +29,7 @@ public:
     VkRenderPass compositePass = VK_NULL_HANDLE;
     std::vector<Viewport*> viewports;
 
-    MeshPipeline meshPipeline;
+    MeshPipeline* meshPipeline = nullptr;
 
     VkDescriptorSetLayout cameraSetLayout = VK_NULL_HANDLE;
     VkDescriptorSet cameraSet = VK_NULL_HANDLE;
@@ -43,5 +43,5 @@ private:
     void findSwapchainFormat();
     void createRenderPasses();
     void createCameraDescriptor();
-    void initializePipelines();
+    void createPipelines();
 };
