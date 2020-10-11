@@ -7,6 +7,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "build_config.h"
 #include "log/log.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/Viewport.hpp"
@@ -143,12 +144,12 @@ void XrDisplay::createInstance()
 
     XrApplicationInfo appInfo{
         .applicationVersion = XR_MAKE_VERSION(0, 0, 0),
-        .engineVersion = XR_MAKE_VERSION(0, 0, 0),
+        .engineVersion = MONDRADIKO_OPENXR_VERSION,
         .apiVersion = XR_MAKE_VERSION(1, 0, 0)
     };
 
     sprintf(appInfo.applicationName, "Mondradiko Client");
-    sprintf(appInfo.engineName, "Mondradiko");
+    sprintf(appInfo.engineName, MONDRADIKO_NAME);
 
     std::vector<const char*> extensions{
         XR_KHR_VULKAN_ENABLE_EXTENSION_NAME,

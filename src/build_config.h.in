@@ -1,0 +1,9 @@
+#pragma once
+
+// This file is automatically filled out during Meson project configuration
+
+#define MONDRADIKO_NAME "@name@"
+#define MONDRADIKO_VERSION "@version@"
+
+#define MONDRADIKO_OPENXR_VERSION XR_MAKE_VERSION(@majorVersion@, @minorVersion@, @patchVersion@)
+#define MONDRADIKO_VULKAN_VERSION VK_MAKE_VERSION(@majorVersion@, @minorVersion@, @patchVersion@)

@@ -3,6 +3,7 @@
 #include <cstring>
 #include <set>
 
+#include "build_config.h"
 #include "log/log.hpp"
 #include "xr/XrDisplay.hpp"
 
@@ -150,8 +151,8 @@ void VulkanInstance::createInstance(VulkanRequirements* requirements)
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pApplicationName = "Mondradiko",
         .applicationVersion = VK_MAKE_VERSION(0, 0, 0),
-        .pEngineName = "Mondradiko",
-        .engineVersion = VK_MAKE_VERSION(0, 0, 0),
+        .pEngineName = MONDRADIKO_NAME,
+        .engineVersion = MONDRADIKO_VULKAN_VERSION,
         .apiVersion = requirements->minApiVersion
     };
 

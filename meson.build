@@ -1,5 +1,26 @@
 project('mondradiko', 'cpp')
 
+majorVersion = 0
+minorVersion = 0
+patchVersion = 1
+
+versionTemplate = 'v@0@.@1@.@2@'
+versionString = versionTemplate.format(majorVersion, minorVersion, patchVersion)
+
+configData = configuration_data()
+
+configData.set('name', 'Mondradiko')
+configData.set('version', versionString)
+configData.set('majorVersion', majorVersion)
+configData.set('minorVersion', minorVersion)
+configData.set('patchVersion', patchVersion)
+
+configure_file(
+    input: 'src/build_config.h.in',
+    output: 'build_config.h',
+    configuration: configData
+)
+
 src = [
     'src/assets/MeshAsset.cpp',
     'src/filesystem/Filesystem.cpp',
@@ -22,7 +43,8 @@ src = [
 
 inc = include_directories(
     ['src',
-     'lib']
+     'lib',
+     '.']
 )
 
 dependencies = [
