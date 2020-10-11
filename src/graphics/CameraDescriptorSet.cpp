@@ -3,6 +3,36 @@
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 
+static glm::mat4 createProjectionFromFOV(const XrFovf fov, const float near_z, const float far_z)
+{
+    const float tan_left = tanf(fov.angleLeft);
+    const float tan_right = tanf(fov.angleRight);
+
+    const float tan_down = tanf(fov.angleDown);
+    const float tan_up = tanf(fov.angleUp);
+
+    const float tan_width = tan_right - tan_left;
+    const float tan_height = tan_up - tan_down;
+
+    const float a11 = 2 / tan_width;
+    const float a22 = 2 / tan_height;
+
+    const float a31 = (tan_right + tan_left) / tan_width;
+    const float a32 = (tan_up + tan_down) / tan_height;
+    const float a33 = -far_z / (far_z - near_z);
+
+    const float a43 = -(far_z * near_z) / (far_z - near_z);
+
+    const float mat[16] = {
+        a11, 0, 0, 0,
+        0, -a22, 0, 0,
+        a31, a32, a33, -1,
+        0, 0, a43, 0
+    };
+
+    return glm::make_mat4(mat);
+}
+
 CameraDescriptorSet::CameraDescriptorSet(VulkanInstance* vulkanInstance, uint32_t viewCount)
  : vulkanInstance(vulkanInstance)
 {
@@ -101,8 +131,7 @@ void CameraDescriptorSet::update(std::vector<XrView>* views)
         );
 
         ubos[i].view = glm::translate(glm::mat4(viewOrientation), -viewPosition);
-        ubos[i].projection = glm::perspective(glm::radians(45.0), 1.0, 0.001, 1000.0);
-        ubos[i].projection[1][1] *= -1;
+        ubos[i].projection = createProjectionFromFOV(view.fov, 0.001, 1000.0);
     }
 
     void* data;
