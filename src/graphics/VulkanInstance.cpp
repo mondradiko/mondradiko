@@ -58,11 +58,14 @@ VulkanInstance::VulkanInstance(XrDisplay* display)
     createLogicalDevice(&requirements);
     createCommandPool();
     createAllocator();
+    createDescriptorPool();
 }
 
 VulkanInstance::~VulkanInstance()
 {
     log_dbg("Cleaning up Vulkan.");
+
+    if(descriptorPool != VK_NULL_HANDLE) vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
     if(allocator != nullptr) vmaDestroyAllocator(allocator);
 
@@ -289,5 +292,27 @@ void VulkanInstance::createAllocator()
 
     if(vmaCreateAllocator(&createInfo, &allocator) != VK_SUCCESS) {
         log_ftl("Failed to create Vulkan memory allocator.");
+    }
+}
+
+void VulkanInstance::createDescriptorPool()
+{
+    // TODO Make wrapper class for descriptor management
+    std::vector<VkDescriptorPoolSize> poolSizes;
+
+    poolSizes.push_back({
+        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1000
+    });
+
+    VkDescriptorPoolCreateInfo createInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        .maxSets = 1000,
+        .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
+        .pPoolSizes = poolSizes.data()
+    };
+
+    if(vkCreateDescriptorPool(device, &createInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+        log_ftl("Failed to create Vulkan descriptor pool.");
     }
 }

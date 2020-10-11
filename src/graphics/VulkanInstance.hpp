@@ -29,6 +29,7 @@ public:
 
     VmaAllocator allocator = nullptr;
 
+    VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 private:
     const std::vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
@@ -43,6 +44,7 @@ private:
     void createLogicalDevice(VulkanRequirements*);
     void createCommandPool();
     void createAllocator();
+    void createDescriptorPool();
 
     PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT = nullptr;
     PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT = nullptr;
