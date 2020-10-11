@@ -15,6 +15,7 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
 
     findSwapchainFormat();
     createRenderPasses();
+    createCameraDescriptor();
     initializePipelines();
 
     if(!session->createViewports(&viewports, swapchainFormat, compositePass)) {
@@ -31,16 +32,31 @@ Renderer::~Renderer()
     }
 
     if(compositePass != VK_NULL_HANDLE) vkDestroyRenderPass(vulkanInstance->device, compositePass, nullptr);
+
+    if(cameraAllocation != nullptr) vmaDestroyBuffer(vulkanInstance->allocator, cameraBuffer, cameraAllocation);
+
+    if(cameraSetLayout != VK_NULL_HANDLE) vkDestroyDescriptorSetLayout(vulkanInstance->device, cameraSetLayout, nullptr);
 }
 
 void Renderer::renderFrame()
 {
+    CameraUniform ubo;
+    ubo.view = glm::mat4(1.0);
+    ubo.projection = glm::mat4(1.0);
+
+    void* data;
+    vkMapMemory(vulkanInstance->device, cameraAllocationInfo.deviceMemory, cameraAllocationInfo.offset, sizeof(ubo), 0, &data);
+        memcpy(data, &ubo, sizeof(ubo));
+    vkUnmapMemory(vulkanInstance->device, cameraAllocationInfo.deviceMemory);
+
     for(uint32_t viewportIndex = 0; viewportIndex < viewports.size(); viewportIndex++) {
         VkCommandBuffer commandBuffer;
         VkFramebuffer framebuffer;
         viewports[viewportIndex]->acquireSwapchainImage(&commandBuffer, &framebuffer);
 
         viewports[viewportIndex]->setCommandViewport(commandBuffer);
+
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipeline.pipelineLayout, 0, 1, &cameraSet, 0, nullptr);
 
         viewports[viewportIndex]->beginRenderPass(commandBuffer, framebuffer, compositePass);
         meshPipeline.render(commandBuffer);
@@ -122,7 +138,71 @@ void Renderer::createRenderPasses()
     }
 }
 
+void Renderer::createCameraDescriptor()
+{
+    VkDescriptorSetLayoutBinding uboBinding{
+        .binding = 0,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .descriptorCount = 1,
+        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+    };
+
+    VkDescriptorSetLayoutCreateInfo setLayoutInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .bindingCount = 1,
+        .pBindings = &uboBinding
+    };
+
+    if(vkCreateDescriptorSetLayout(vulkanInstance->device, &setLayoutInfo, nullptr, &cameraSetLayout) != VK_SUCCESS) {
+        log_ftl("Failed to create camera descriptor set layout.");
+    }
+
+    VkDescriptorSetAllocateInfo setInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .descriptorPool = vulkanInstance->descriptorPool,
+        .descriptorSetCount = 1,
+        .pSetLayouts = &cameraSetLayout
+    };
+
+    if(vkAllocateDescriptorSets(vulkanInstance->device, &setInfo, &cameraSet) != VK_SUCCESS) {
+        log_ftl("Failed to allocate camera descriptor set.");
+    }
+
+    VkBufferCreateInfo bufferInfo{
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = sizeof(CameraUniform),
+        .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
+    };
+
+    VmaAllocationCreateInfo allocationInfo{
+        .usage = VMA_MEMORY_USAGE_CPU_TO_GPU
+    };
+
+    if(vmaCreateBuffer(vulkanInstance->allocator, &bufferInfo, &allocationInfo, &cameraBuffer, &cameraAllocation, &cameraAllocationInfo) != VK_SUCCESS) {
+        log_ftl("Failed to allocate camera uniform buffer.");
+    }
+
+    VkDescriptorBufferInfo bufferDescriptorInfo{
+        .buffer = cameraBuffer,
+        .offset = 0,
+        .range = sizeof(CameraUniform)
+    };
+
+    VkWriteDescriptorSet descriptorWrite{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = cameraSet,
+        .dstBinding = 0,
+        .dstArrayElement = 0,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        .pBufferInfo = &bufferDescriptorInfo
+    };
+
+    vkUpdateDescriptorSets(vulkanInstance->device, 1, &descriptorWrite, 0, nullptr);
+}
+
 void Renderer::initializePipelines()
 {
-    meshPipeline.initialize(compositePass, 0);
+    meshPipeline.initialize(cameraSetLayout, compositePass, 0);
 }

@@ -9,8 +9,6 @@ MeshPipeline::MeshPipeline(VulkanInstance* _vulkanInstance)
     log_dbg("Creating mesh pipeline.");
 
     vulkanInstance = _vulkanInstance;
-
-    createPipelineLayout();
 }
 
 MeshPipeline::~MeshPipeline()
@@ -21,8 +19,10 @@ MeshPipeline::~MeshPipeline()
     if(pipelineLayout != VK_NULL_HANDLE) vkDestroyPipelineLayout(vulkanInstance->device, pipelineLayout, nullptr);
 }
 
-void MeshPipeline::initialize(VkRenderPass renderPass, uint32_t subpass)
+void MeshPipeline::initialize(VkDescriptorSetLayout cameraSetLayout, VkRenderPass renderPass, uint32_t subpass)
 {
+    createPipelineLayout(cameraSetLayout);
+
     MeshShader shader(vulkanInstance);
     auto shaderStages = shader.getStages();
 
@@ -141,11 +141,12 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer)
     //render(); lol
 }
 
-void MeshPipeline::createPipelineLayout()
+void MeshPipeline::createPipelineLayout(VkDescriptorSetLayout cameraSetLayout)
 {
     VkPipelineLayoutCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .setLayoutCount = 0,
+        .setLayoutCount = 1,
+        .pSetLayouts = &cameraSetLayout,
         .pushConstantRangeCount = 0
     };
 

@@ -10,14 +10,14 @@ public:
     MeshPipeline(VulkanInstance*);
     ~MeshPipeline();
 
-    void initialize(VkRenderPass, uint32_t);
+    void initialize(VkDescriptorSetLayout, VkRenderPass, uint32_t);
     void render(VkCommandBuffer);
-private:
-    VulkanInstance* vulkanInstance;
-
-    void createPipelineLayout();
-    void createPipeline();
 
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     VkPipeline pipeline = VK_NULL_HANDLE;
+private:
+    VulkanInstance* vulkanInstance;
+
+    void createPipelineLayout(VkDescriptorSetLayout);
+    void createPipeline();
 };
