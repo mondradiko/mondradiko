@@ -49,7 +49,6 @@ void Renderer::renderFrame()
 
         viewports[viewportIndex]->setCommandViewport(commandBuffer);
 
-        cameraDescriptorSet->update(viewportIndex);
         cameraDescriptorSet->bind(commandBuffer, viewportIndex, meshPipeline->pipelineLayout);
 
         viewports[viewportIndex]->beginRenderPass(commandBuffer, framebuffer, compositePass);
@@ -62,6 +61,8 @@ void Renderer::renderFrame()
 
 void Renderer::finishRender(std::vector<XrView>* views, std::vector<XrCompositionLayerProjectionView>* projectionViews)
 {
+    cameraDescriptorSet->update(views);
+
     for(uint32_t i = 0; i < views->size(); i++) {
         (*projectionViews)[i] = {
             .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW,

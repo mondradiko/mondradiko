@@ -80,15 +80,35 @@ CameraDescriptorSet::~CameraDescriptorSet()
     if(setLayout != VK_NULL_HANDLE) vkDestroyDescriptorSetLayout(vulkanInstance->device, setLayout, nullptr);
 }
 
-void CameraDescriptorSet::update(uint32_t viewIndex)
+void CameraDescriptorSet::update(std::vector<XrView>* views)
 {
-    CameraUniform ubo;
-    ubo.view = glm::mat4(1.0);
-    ubo.projection = glm::mat4(1.0);
+    std::vector<CameraUniform> ubos(views->size());
+
+    for(uint32_t i = 0; i < views->size(); i++) {
+        XrView& view = (*views)[i];
+
+        glm::quat viewOrientation = glm::quat(
+            view.pose.orientation.w,
+            view.pose.orientation.x,
+            view.pose.orientation.y,
+            view.pose.orientation.z
+        );
+
+        glm::vec3 viewPosition = glm::vec3(
+            view.pose.position.x,
+            view.pose.position.y,
+            view.pose.position.z
+        );
+
+        ubos[i].view = glm::translate(glm::mat4(viewOrientation), -viewPosition);
+        ubos[i].projection = glm::perspective(glm::radians(45.0), 1.0, 0.001, 1000.0);
+        ubos[i].projection[1][1] *= -1;
+    }
 
     void* data;
-    vkMapMemory(vulkanInstance->device, uniformAllocationInfo.deviceMemory, uniformAllocationInfo.offset + sizeof(ubo) * viewIndex, sizeof(ubo), 0, &data);
-        memcpy(data, &ubo, sizeof(ubo));
+    size_t copySize = sizeof(CameraUniform) * ubos.size();
+    vkMapMemory(vulkanInstance->device, uniformAllocationInfo.deviceMemory, uniformAllocationInfo.offset, copySize, 0, &data);
+        memcpy(data, ubos.data(), copySize);
     vkUnmapMemory(vulkanInstance->device, uniformAllocationInfo.deviceMemory);
 }
 

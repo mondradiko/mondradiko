@@ -18,7 +18,7 @@ public:
     CameraDescriptorSet(VulkanInstance*, uint32_t);
     ~CameraDescriptorSet();
 
-    void update(uint32_t);
+    void update(std::vector<XrView>*);
     void bind(VkCommandBuffer, uint32_t, VkPipelineLayout);
 
     VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
