@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "filesystem/Filesystem.hpp"
 #include "graphics/Renderer.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
@@ -22,6 +23,7 @@ void signalHandler(int signum) {
 
 void client_session_run(const char* serverAddress, int port)
 {
+    Filesystem fs("../test-folder/");
     XrDisplay xr;
     VulkanInstance vulkanInstance(&xr);
     Session session(&xr, &vulkanInstance);
