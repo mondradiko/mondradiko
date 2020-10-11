@@ -28,7 +28,8 @@ dependencies = [
     dependency('vulkan'),
     dependency('shaderc'),
     dependency('assimp'),
-    dependency('glm')
+    dependency('glm'),
+    dependency('physfs')
 ]
 
 executable(
