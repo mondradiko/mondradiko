@@ -196,8 +196,6 @@ void Viewport::releaseSwapchainImage(VkCommandBuffer commandBuffer)
         log_ftl("Failed to submit draw command buffer!");
     }
 
-    vkQueueWaitIdle(vulkanInstance->graphicsQueue);
-
     XrSwapchainImageReleaseInfo releaseInfo{
         .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO,
         .next = nullptr

@@ -29,6 +29,8 @@ Renderer::~Renderer()
 {
     log_dbg("Destroying renderer.");
 
+    vkDeviceWaitIdle(vulkanInstance->device);
+
     if(cameraDescriptorSet != nullptr) delete cameraDescriptorSet;
 
     if(meshPipeline != nullptr) delete meshPipeline;
@@ -42,6 +44,8 @@ Renderer::~Renderer()
 
 void Renderer::renderFrame()
 {
+    vkQueueWaitIdle(vulkanInstance->graphicsQueue);
+
     for(uint32_t viewportIndex = 0; viewportIndex < viewports.size(); viewportIndex++) {
         VkCommandBuffer commandBuffer;
         VkFramebuffer framebuffer;
