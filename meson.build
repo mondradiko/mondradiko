@@ -1,6 +1,8 @@
 project('mondradiko', 'cpp')
 
 src = [
+    'src/assets/MeshAsset.cpp',
+    'src/graphics/CameraDescriptorSet.cpp',
     'src/graphics/Renderer.cpp',
     'src/graphics/Viewport.cpp',
     'src/graphics/VulkanInstance.cpp',

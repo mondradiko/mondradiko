@@ -1,5 +1,6 @@
 #include "graphics/pipelines/MeshPipeline.hpp"
 
+#include "assets/MeshAsset.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/shaders/MeshShader.hpp"
 #include "log/log.hpp"
@@ -18,6 +19,10 @@ MeshPipeline::~MeshPipeline()
 {
     log_dbg("Destroying mesh pipeline.");
 
+    for(auto meshAsset : meshAssets) {
+        delete meshAsset.second;
+    }
+
     if(pipeline != VK_NULL_HANDLE) vkDestroyPipeline(vulkanInstance->device, pipeline, nullptr);
     if(pipelineLayout != VK_NULL_HANDLE) vkDestroyPipelineLayout(vulkanInstance->device, pipelineLayout, nullptr);
 }
@@ -27,6 +32,20 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     //render(); lol
+}
+
+MeshAsset* MeshPipeline::loadMesh(std::string fileName, aiMesh* mesh)
+{
+    std::string meshName = fileName + '/' + std::string(mesh->mName.C_Str());
+    auto cachedMesh = meshAssets.find(meshName);
+
+    if(cachedMesh == meshAssets.end()) {
+        MeshAsset* newMesh = new MeshAsset(meshName, vulkanInstance, mesh);
+        meshAssets.emplace(meshName, newMesh);
+        return newMesh;
+    } else {
+        return cachedMesh->second;
+    }
 }
 
 void MeshPipeline::createPipelineLayout(VkDescriptorSetLayout cameraSetLayout)
