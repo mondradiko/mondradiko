@@ -4,9 +4,9 @@
 
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
-#include "xr/Session.hpp"
+#include "xr/PlayerSession.hpp"
 
-Viewport::Viewport(VkFormat format, VkRenderPass renderPass, XrViewConfigurationView* viewConfig, Session* _session, VulkanInstance* _vulkanInstance)
+Viewport::Viewport(VkFormat format, VkRenderPass renderPass, XrViewConfigurationView* viewConfig, PlayerSession* _session, VulkanInstance* _vulkanInstance)
 {
     log_dbg("Creating viewport.");
 

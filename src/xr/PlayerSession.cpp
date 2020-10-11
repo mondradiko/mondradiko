@@ -1,4 +1,4 @@
-#include "xr/Session.hpp"
+#include "xr/PlayerSession.hpp"
 
 #include "graphics/Renderer.hpp"
 #include "graphics/Viewport.hpp"
@@ -6,7 +6,7 @@
 #include "log/log.hpp"
 #include "xr/XrDisplay.hpp"
 
-Session::Session(XrDisplay* _display, VulkanInstance* _vulkanInstance)
+PlayerSession::PlayerSession(XrDisplay* _display, VulkanInstance* _vulkanInstance)
 {
     log_dbg("Creating OpenXR session.");
 
@@ -45,7 +45,7 @@ Session::Session(XrDisplay* _display, VulkanInstance* _vulkanInstance)
     }
 }
 
-Session::~Session()
+PlayerSession::~PlayerSession()
 {
     log_dbg("Destroying OpenXR session.");
 
@@ -53,7 +53,7 @@ Session::~Session()
     if(session != XR_NULL_HANDLE) xrDestroySession(session);
 }
 
-void Session::pollEvents(bool* shouldRun, bool* shouldQuit)
+void PlayerSession::pollEvents(bool* shouldRun, bool* shouldQuit)
 {
     XrEventDataBuffer event{
         .type = XR_TYPE_EVENT_DATA_BUFFER
@@ -127,7 +127,7 @@ void Session::pollEvents(bool* shouldRun, bool* shouldQuit)
     }
 }
 
-void Session::beginFrame(double* dt, bool* shouldRender)
+void PlayerSession::beginFrame(double* dt, bool* shouldRender)
 {
     currentFrameState = {
         .type = XR_TYPE_FRAME_STATE
@@ -147,7 +147,7 @@ void Session::beginFrame(double* dt, bool* shouldRender)
     xrBeginFrame(session, nullptr);
 }
 
-void Session::endFrame(Renderer* renderer, bool didRender)
+void PlayerSession::endFrame(Renderer* renderer, bool didRender)
 {
     XrCompositionLayerBaseHeader* layer = nullptr;
     XrCompositionLayerProjection projectionLayer{
@@ -191,7 +191,7 @@ void Session::endFrame(Renderer* renderer, bool didRender)
     xrEndFrame(session, &endInfo);
 }
 
-void Session::enumerateSwapchainFormats(std::vector<VkFormat>* formats)
+void PlayerSession::enumerateSwapchainFormats(std::vector<VkFormat>* formats)
 {
     uint32_t formatCount;
     xrEnumerateSwapchainFormats(session, 0, &formatCount, nullptr);
@@ -205,7 +205,7 @@ void Session::enumerateSwapchainFormats(std::vector<VkFormat>* formats)
     }
 }
 
-bool Session::createViewports(std::vector<Viewport*>* viewports, VkFormat format, VkRenderPass renderPass)
+bool PlayerSession::createViewports(std::vector<Viewport*>* viewports, VkFormat format, VkRenderPass renderPass)
 {
     // TODO findViewConfiguration()
     uint32_t viewportCount;

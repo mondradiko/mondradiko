@@ -9,11 +9,11 @@ class XrDisplay;
 class Viewport;
 class VulkanInstance;
 
-class Session
+class PlayerSession
 {
 public:
-    Session(XrDisplay*, VulkanInstance*);
-    ~Session();
+    PlayerSession(XrDisplay*, VulkanInstance*);
+    ~PlayerSession();
 
     void pollEvents(bool*, bool*);
     void beginFrame(double*, bool*);

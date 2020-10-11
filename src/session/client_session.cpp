@@ -9,8 +9,8 @@
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 #include "network/ClientInterface.hpp"
+#include "xr/PlayerSession.hpp"
 #include "xr/XrDisplay.hpp"
-#include "xr/Session.hpp"
 
 bool shouldQuit = false;
 
@@ -26,7 +26,7 @@ void client_session_run(const char* serverAddress, int port)
     Filesystem fs("../test-folder/");
     XrDisplay xr;
     VulkanInstance vulkanInstance(&xr);
-    Session session(&xr, &vulkanInstance);
+    PlayerSession session(&xr, &vulkanInstance);
     Renderer renderer(&vulkanInstance, &session);
     ClientInterface client(serverAddress, port);
 

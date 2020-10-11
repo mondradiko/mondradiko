@@ -8,14 +8,14 @@
 
 class CameraDescriptorSet;
 class FrameData;
-class Session;
+class PlayerSession;
 class Viewport;
 class VulkanInstance;
 
 class Renderer
 {
 public:
-    Renderer(VulkanInstance*, Session*);
+    Renderer(VulkanInstance*, PlayerSession*);
     ~Renderer();
 
     void renderFrame();
@@ -30,7 +30,7 @@ public:
     CameraDescriptorSet* cameraDescriptorSet = nullptr;
 private:
     VulkanInstance* vulkanInstance;
-    Session* session;
+    PlayerSession* session;
 
     void findSwapchainFormat();
     void createRenderPasses();

@@ -5,9 +5,9 @@
 #include "graphics/Viewport.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
-#include "xr/Session.hpp"
+#include "xr/PlayerSession.hpp"
 
-Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
+Renderer::Renderer(VulkanInstance* _vulkanInstance, PlayerSession* _session)
 {
     log_dbg("Creating renderer.");
 

@@ -16,8 +16,8 @@ src = [
     'src/network/ClientInterface.cpp',
     'src/network/NetworkInterface.cpp',
     'src/session/client_session.cpp',
-    'src/xr/XrDisplay.cpp',
-    'src/xr/Session.cpp'
+    'src/xr/PlayerSession.cpp',
+    'src/xr/XrDisplay.cpp'
 ]
 
 inc = include_directories(

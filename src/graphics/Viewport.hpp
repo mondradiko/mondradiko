@@ -4,7 +4,7 @@
 
 #include "api_headers.hpp"
 
-class Session;
+class PlayerSession;
 class VulkanInstance;
 
 struct ViewportImage
@@ -17,7 +17,7 @@ struct ViewportImage
 class Viewport
 {
 public:
-    Viewport(VkFormat, VkRenderPass, XrViewConfigurationView*, Session*, VulkanInstance*);
+    Viewport(VkFormat, VkRenderPass, XrViewConfigurationView*, PlayerSession*, VulkanInstance*);
     ~Viewport();
 
     void acquireSwapchainImage();
@@ -31,7 +31,7 @@ public:
     uint32_t width;
     uint32_t height;
 private:
-    Session* session;
+    PlayerSession* session;
     VulkanInstance* vulkanInstance;
 
     uint32_t currentIndex;
