@@ -78,17 +78,6 @@ Viewport::Viewport(VkFormat format, VkRenderPass renderPass, XrViewConfiguration
         if(vkCreateFramebuffer(vulkanInstance->device, &framebufferCreateInfo, nullptr, &images[i].framebuffer) != VK_SUCCESS) {
             log_ftl("Failed to create viewport framebuffer.");
         }
-
-        VkCommandBufferAllocateInfo allocInfo{
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-            .commandPool = vulkanInstance->commandPool,
-            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            .commandBufferCount = 1
-        };
-
-        if(vkAllocateCommandBuffers(vulkanInstance->device, &allocInfo, &images[i].commandBuffer) != VK_SUCCESS) {
-            log_ftl("Failed to allocate viewport command buffer.");
-        }
     }
 }
 
@@ -97,23 +86,21 @@ Viewport::~Viewport()
     log_dbg("Destroying viewport.");
     
     for(ViewportImage& image : images) {
-        vkDestroyFramebuffer(vulkanInstance->device, image.framebuffer, nullptr);
         vkDestroyImageView(vulkanInstance->device, image.imageView, nullptr);
-        vkFreeCommandBuffers(vulkanInstance->device, vulkanInstance->commandPool, 1, &image.commandBuffer);
+        vkDestroyFramebuffer(vulkanInstance->device, image.framebuffer, nullptr);
     }
 
     if(swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
 }
 
-void Viewport::acquireSwapchainImage(VkCommandBuffer* commandBuffer, VkFramebuffer* framebuffer)
+void Viewport::acquireSwapchainImage()
 {
     XrSwapchainImageAcquireInfo acquireInfo{
         .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO,
         .next = nullptr
     };
 
-    uint32_t index;
-    xrAcquireSwapchainImage(swapchain, &acquireInfo, &index);
+    xrAcquireSwapchainImage(swapchain, &acquireInfo, &currentIndex);
 
     XrSwapchainImageWaitInfo waitInfo{
         .type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
@@ -121,19 +108,9 @@ void Viewport::acquireSwapchainImage(VkCommandBuffer* commandBuffer, VkFramebuff
     };
 
     xrWaitSwapchainImage(swapchain, &waitInfo);
-
-    *framebuffer = images[index].framebuffer;
-    *commandBuffer = images[index].commandBuffer;
-
-    VkCommandBufferBeginInfo beginInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-    };
-
-    vkBeginCommandBuffer(*commandBuffer, &beginInfo);
 }
 
-void Viewport::beginRenderPass(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer, VkRenderPass renderPass)
+void Viewport::beginRenderPass(VkCommandBuffer commandBuffer, VkRenderPass renderPass)
 {
     std::array<VkClearValue, 1> clearValues;
 
@@ -142,7 +119,7 @@ void Viewport::beginRenderPass(VkCommandBuffer commandBuffer, VkFramebuffer fram
     VkRenderPassBeginInfo renderPassInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .renderPass = renderPass,
-        .framebuffer = framebuffer,
+        .framebuffer = images[currentIndex].framebuffer,
         .renderArea = {
             .offset = {0, 0},
             .extent = {width, height}
@@ -174,28 +151,8 @@ void Viewport::setCommandViewport(VkCommandBuffer commandBuffer)
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void Viewport::releaseSwapchainImage(VkCommandBuffer commandBuffer)
+void Viewport::releaseSwapchainImage()
 {
-    vkEndCommandBuffer(commandBuffer);
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 0;
-    submitInfo.pWaitSemaphores = nullptr;
-    submitInfo.pWaitDstStageMask = waitStages;
-
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    submitInfo.signalSemaphoreCount = 0;
-    submitInfo.pSignalSemaphores = nullptr;
-
-    if(vkQueueSubmit(vulkanInstance->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
-        log_ftl("Failed to submit draw command buffer!");
-    }
-
     XrSwapchainImageReleaseInfo releaseInfo{
         .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO,
         .next = nullptr

@@ -7,6 +7,7 @@
 #include "graphics/pipelines/MeshPipeline.hpp"
 
 class CameraDescriptorSet;
+class FrameData;
 class Session;
 class Viewport;
 class VulkanInstance;
@@ -24,8 +25,8 @@ public:
     VkRenderPass compositePass = VK_NULL_HANDLE;
     std::vector<Viewport*> viewports;
 
+    FrameData* frameData = nullptr;
     MeshPipeline* meshPipeline = nullptr;
-
     CameraDescriptorSet* cameraDescriptorSet = nullptr;
 private:
     VulkanInstance* vulkanInstance;

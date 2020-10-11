@@ -12,7 +12,6 @@ struct ViewportImage
     VkImage image;
     VkImageView imageView;
     VkFramebuffer framebuffer;
-    VkCommandBuffer commandBuffer;
 };
 
 class Viewport
@@ -21,10 +20,10 @@ public:
     Viewport(VkFormat, VkRenderPass, XrViewConfigurationView*, Session*, VulkanInstance*);
     ~Viewport();
 
-    void acquireSwapchainImage(VkCommandBuffer*, VkFramebuffer*);
-    void beginRenderPass(VkCommandBuffer, VkFramebuffer, VkRenderPass);
+    void acquireSwapchainImage();
+    void beginRenderPass(VkCommandBuffer, VkRenderPass);
     void setCommandViewport(VkCommandBuffer);
-    void releaseSwapchainImage(VkCommandBuffer);
+    void releaseSwapchainImage();
 
     XrSwapchain swapchain = XR_NULL_HANDLE;
     std::vector<ViewportImage> images;
@@ -34,4 +33,6 @@ public:
 private:
     Session* session;
     VulkanInstance* vulkanInstance;
+
+    uint32_t currentIndex;
 };

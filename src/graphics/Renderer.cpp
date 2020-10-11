@@ -1,6 +1,7 @@
 #include "graphics/Renderer.hpp"
 
 #include "graphics/CameraDescriptorSet.hpp"
+#include "graphics/FrameData.hpp"
 #include "graphics/Viewport.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
@@ -21,6 +22,7 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, Session* _session)
     }
 
     cameraDescriptorSet = new CameraDescriptorSet(vulkanInstance, viewports.size());
+    frameData = new FrameData(vulkanInstance, 2); // Pipeline two frames
 
     createPipelines();
 }
@@ -32,7 +34,7 @@ Renderer::~Renderer()
     vkDeviceWaitIdle(vulkanInstance->device);
 
     if(cameraDescriptorSet != nullptr) delete cameraDescriptorSet;
-
+    if(frameData != nullptr) delete frameData;
     if(meshPipeline != nullptr) delete meshPipeline;
 
     for(Viewport* viewport : viewports) {
@@ -44,28 +46,33 @@ Renderer::~Renderer()
 
 void Renderer::renderFrame()
 {
-    vkQueueWaitIdle(vulkanInstance->graphicsQueue);
+    vkDeviceWaitIdle(vulkanInstance->device);
 
     for(uint32_t viewportIndex = 0; viewportIndex < viewports.size(); viewportIndex++) {
-        VkCommandBuffer commandBuffer;
-        VkFramebuffer framebuffer;
-        viewports[viewportIndex]->acquireSwapchainImage(&commandBuffer, &framebuffer);
+        viewports[viewportIndex]->acquireSwapchainImage();
+    }
 
+    VkCommandBuffer commandBuffer = frameData->beginPrimaryCommand();
+
+    for(uint32_t viewportIndex = 0; viewportIndex < viewports.size(); viewportIndex++) {
+        viewports[viewportIndex]->beginRenderPass(commandBuffer, compositePass);
         viewports[viewportIndex]->setCommandViewport(commandBuffer);
-
         cameraDescriptorSet->bind(commandBuffer, viewportIndex, meshPipeline->pipelineLayout);
-
-        viewports[viewportIndex]->beginRenderPass(commandBuffer, framebuffer, compositePass);
         meshPipeline->render(commandBuffer);
         vkCmdEndRenderPass(commandBuffer);
+    }
 
-        viewports[viewportIndex]->releaseSwapchainImage(commandBuffer);
+    frameData->endPrimaryCommand();
+
+    for(uint32_t viewportIndex = 0; viewportIndex < viewports.size(); viewportIndex++) {
+        viewports[viewportIndex]->releaseSwapchainImage();
     }
 }
 
 void Renderer::finishRender(std::vector<XrView>* views, std::vector<XrCompositionLayerProjectionView>* projectionViews)
 {
     cameraDescriptorSet->update(views);
+    frameData->submitPrimaryCommand();
 
     for(uint32_t i = 0; i < views->size(); i++) {
         (*projectionViews)[i] = {
