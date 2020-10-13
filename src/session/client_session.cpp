@@ -9,6 +9,7 @@
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 #include "network/ClientInterface.hpp"
+#include "scene/Scene.hpp"
 #include "xr/PlayerSession.hpp"
 #include "xr/XrDisplay.hpp"
 
@@ -29,6 +30,7 @@ void client_session_run(const char* serverAddress, int port)
     PlayerSession session(&xr, &vulkanInstance);
     Renderer renderer(&vulkanInstance, &session);
     ClientInterface client(serverAddress, port);
+    Scene scene(&fs);
 
     if(signal(SIGTERM, signalHandler) == SIG_ERR) {
         log_wrn("Can't catch SIGTERM");
@@ -50,6 +52,7 @@ void client_session_run(const char* serverAddress, int port)
             session.beginFrame(&dt, &shouldRender);
 
             client.update();
+            scene.update(dt);
 
             ClientEvent event;
             while(client.readEvent(&event)) {
