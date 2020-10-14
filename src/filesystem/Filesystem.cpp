@@ -1,5 +1,7 @@
 #include "filesystem/Filesystem.hpp"
 
+#include <sstream>
+
 #include "log/log.hpp"
 
 Filesystem::Filesystem(const char* archive)
@@ -17,4 +19,33 @@ Filesystem::Filesystem(const char* archive)
 Filesystem::~Filesystem()
 {
     PHYSFS_unmount(archive);
+}
+
+bool Filesystem::loadBinaryFile(const char* fileName, std::vector<char>* buffer)
+{
+    std::ostringstream infoMessage;
+    infoMessage << "Loading file '" << fileName << "'.";
+    log_inf(infoMessage.str().c_str());
+
+    if(!PHYSFS_exists(fileName)) {
+        std::ostringstream errorMessage;
+        errorMessage << "File '" << fileName << "' does not exist.";
+        log_err(errorMessage.str().c_str());
+        return false;
+    }
+
+    PHYSFS_file* f = PHYSFS_openRead(fileName);
+
+    if(!f) {
+        std::ostringstream errorMessage;
+        errorMessage << "Failed to open file '" << fileName << "'.";
+        log_err(errorMessage.str().c_str());
+        return false;
+    }
+
+    buffer->resize(PHYSFS_fileLength(f));
+    PHYSFS_readBytes(f, buffer->data(), buffer->size());
+    PHYSFS_close(f);
+
+    return true;
 }
