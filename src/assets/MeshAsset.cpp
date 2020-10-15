@@ -36,7 +36,8 @@ MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance, aiMes
     }
 
     // Three indices per triangle face
-    std::vector<MeshIndex> indices(mesh->mNumFaces * 3);
+    indexCount = mesh->mNumFaces * 3;
+    std::vector<MeshIndex> indices(indexCount);
 
     uint32_t indexIndex = 0;
     for(uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; faceIndex++) {

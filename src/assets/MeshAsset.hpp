@@ -56,6 +56,7 @@ public:
 
     VulkanBuffer* vertexBuffer = nullptr;
     VulkanBuffer* indexBuffer = nullptr;
+    size_t indexCount = 0;
 
     std::string meshName = nullptr;
 private:
