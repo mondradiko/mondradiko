@@ -1,5 +1,7 @@
 #pragma once
 
+#include "api_headers.hpp"
+
 class Filesystem;
 
 class Scene
@@ -13,4 +15,6 @@ public:
     bool loadModel(const char*);
 private:
     Filesystem* fs;
+
+    Assimp::Importer importer;
 };
