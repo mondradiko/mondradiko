@@ -12,6 +12,11 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/mesh.h>
+#include <assimp/scene.h>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/IOStream.hpp>
+#include <assimp/IOSystem.hpp>
+#include <assimp/Logger.hpp>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>

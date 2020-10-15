@@ -23,6 +23,8 @@ configure_file(
 
 src = [
     'src/assets/MeshAsset.cpp',
+    'src/filesystem/AssimpIOStream.cpp',
+    'src/filesystem/AssimpIOSystem.cpp',
     'src/filesystem/Filesystem.cpp',
     'src/graphics/CameraDescriptorSet.cpp',
     'src/graphics/FrameData.cpp',
