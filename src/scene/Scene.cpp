@@ -1,12 +1,16 @@
 #include "scene/Scene.hpp"
 
+#include <iostream>
+
 #include "filesystem/AssimpIOSystem.hpp"
 #include "filesystem/Filesystem.hpp"
+#include "graphics/Renderer.hpp"
 #include "log/AssimpLogStream.hpp"
 #include "log/log.hpp"
 
-Scene::Scene(Filesystem* fs)
- : fs(fs)
+Scene::Scene(Filesystem* fs, Renderer* renderer)
+ : fs(fs),
+   renderer(renderer)
 {
     log_dbg("Creating scene.");
 
@@ -39,6 +43,10 @@ bool Scene::loadModel(const char* fileName)
     if(!modelScene) {
         log_err("Failed to read model scene.");
         return false;
+    }
+
+    for(uint32_t i = 0; i < modelScene->mNumMeshes; i++) {
+        renderer->meshPipeline->loadMesh(fileName, modelScene->mMeshes[i]);
     }
 
     // aiScene is freed automatically

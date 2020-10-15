@@ -1,13 +1,16 @@
 #pragma once
 
+#include <map>
+
 #include "api_headers.hpp"
 
 class Filesystem;
+class Renderer;
 
 class Scene
 {
 public:
-    Scene(Filesystem*);
+    Scene(Filesystem*, Renderer*);
     ~Scene();
 
     void update(double);
@@ -15,6 +18,7 @@ public:
     bool loadModel(const char*);
 private:
     Filesystem* fs;
+    Renderer* renderer;
 
     Assimp::Importer importer;
 };
