@@ -19,11 +19,20 @@ MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance, aiMes
         log_ftl("Mesh vertices have no positions.");
     }
 
+    if(!mesh->HasNormals()) {
+        log_ftl("Mesh vertices have no normals.");
+    }
+
     std::vector<MeshVertex> vertices(mesh->mNumVertices);
 
     for(uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; vertexIndex++) {
         aiVector3D position = mesh->mVertices[vertexIndex];
         vertices[vertexIndex].position = glm::vec3(position.x, position.y, position.z);
+    }
+
+    for(uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; vertexIndex++) {
+        aiVector3D normal = mesh->mNormals[vertexIndex];
+        vertices[vertexIndex].normal = glm::vec3(normal.x, normal.y, normal.z);
     }
 
     aiColor4D vertexColor = aiColor4D(1.0, 1.0, 1.0, 1.0);
