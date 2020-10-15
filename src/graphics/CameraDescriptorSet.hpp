@@ -4,6 +4,7 @@
 
 #include "api_headers.hpp"
 
+class VulkanBuffer;
 class VulkanInstance;
 
 struct CameraUniform
@@ -23,9 +24,8 @@ public:
 
     VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
     std::vector<VkDescriptorSet> descriptorSets;
-    VmaAllocation uniformAllocation = nullptr;
-    VmaAllocationInfo uniformAllocationInfo;
-    VkBuffer uniformBuffer = VK_NULL_HANDLE;
+
+    VulkanBuffer* uniformBuffer = nullptr;
 private:
     VulkanInstance* vulkanInstance;
 };

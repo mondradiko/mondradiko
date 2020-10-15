@@ -1,5 +1,6 @@
 #include "graphics/CameraDescriptorSet.hpp"
 
+#include "graphics/VulkanBuffer.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 
@@ -67,24 +68,11 @@ CameraDescriptorSet::CameraDescriptorSet(VulkanInstance* vulkanInstance, uint32_
         log_ftl("Failed to allocate camera descriptor set.");
     }
 
-    VkBufferCreateInfo bufferInfo{
-        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = sizeof(CameraUniform) * viewCount,
-        .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
-    };
-
-    VmaAllocationCreateInfo allocationInfo{
-        .usage = VMA_MEMORY_USAGE_CPU_TO_GPU
-    };
-
-    if(vmaCreateBuffer(vulkanInstance->allocator, &bufferInfo, &allocationInfo, &uniformBuffer, &uniformAllocation, &uniformAllocationInfo) != VK_SUCCESS) {
-        log_ftl("Failed to allocate camera uniform buffer.");
-    }
+    uniformBuffer = new VulkanBuffer(vulkanInstance, viewCount * sizeof(CameraUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
     for(uint32_t i = 0; i < viewCount; i++) {
         VkDescriptorBufferInfo bufferDescriptorInfo{
-            .buffer = uniformBuffer,
+            .buffer = uniformBuffer->buffer,
             .offset = sizeof(CameraUniform) * i,
             .range = sizeof(CameraUniform)
         };
@@ -105,7 +93,7 @@ CameraDescriptorSet::CameraDescriptorSet(VulkanInstance* vulkanInstance, uint32_
 
 CameraDescriptorSet::~CameraDescriptorSet()
 {
-    if(uniformAllocation != nullptr) vmaDestroyBuffer(vulkanInstance->allocator, uniformBuffer, uniformAllocation);
+    if(uniformBuffer != nullptr) delete uniformBuffer;
 
     if(setLayout != VK_NULL_HANDLE) vkDestroyDescriptorSetLayout(vulkanInstance->device, setLayout, nullptr);
 }
@@ -134,11 +122,7 @@ void CameraDescriptorSet::update(std::vector<XrView>* views)
         ubos[i].projection = createProjectionFromFOV(view.fov, 0.001, 1000.0);
     }
 
-    void* data;
-    size_t copySize = sizeof(CameraUniform) * ubos.size();
-    vkMapMemory(vulkanInstance->device, uniformAllocationInfo.deviceMemory, uniformAllocationInfo.offset, copySize, 0, &data);
-        memcpy(data, ubos.data(), copySize);
-    vkUnmapMemory(vulkanInstance->device, uniformAllocationInfo.deviceMemory);
+    uniformBuffer->writeData(ubos.data());
 }
 
 void CameraDescriptorSet::bind(VkCommandBuffer commandBuffer, uint32_t viewIndex, VkPipelineLayout pipelineLayout)
