@@ -4,6 +4,7 @@
 
 #include "api_headers.hpp"
 
+class VulkanBuffer;
 class VulkanInstance;
 
 struct MeshVertex
@@ -20,10 +21,8 @@ public:
     MeshAsset(std::string, VulkanInstance*, aiMesh*);
     ~MeshAsset();
 
-    VmaAllocation vertexAllocation = nullptr;
-    VmaAllocation indexAllocation = nullptr;
-    VkBuffer vertexBuffer = VK_NULL_HANDLE;
-    VkBuffer indexBuffer = VK_NULL_HANDLE;
+    VulkanBuffer* vertexBuffer = nullptr;
+    VulkanBuffer* indexBuffer = nullptr;
 
     std::string meshName = nullptr;
 private:

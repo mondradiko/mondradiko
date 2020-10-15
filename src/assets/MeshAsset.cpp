@@ -1,5 +1,6 @@
 #include "assets/MeshAsset.hpp"
 
+#include "graphics/VulkanBuffer.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "log/log.hpp"
 
@@ -14,14 +15,24 @@ MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance, aiMes
         log_ftl("Mesh topology is not exclusively triangles.");
     }
 
+    if(!mesh->HasPositions()) {
+        log_ftl("Mesh vertices have no positions.");
+    }
+
     std::vector<MeshVertex> vertices(mesh->mNumVertices);
 
     for(uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; vertexIndex++) {
         aiVector3D position = mesh->mVertices[vertexIndex];
-        aiColor4D color = mesh->mColors[vertexIndex][0];
-
         vertices[vertexIndex].position = glm::vec3(position.x, position.y, position.z);
-        vertices[vertexIndex].color = glm::vec3(color.r, color.g, color.b);
+    }
+
+    aiColor4D vertexColor = aiColor4D(1.0, 1.0, 1.0, 1.0);
+    for(uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; vertexIndex++) {
+        if(mesh->HasVertexColors(0)) {
+            vertexColor = mesh->mColors[0][vertexIndex];
+        }
+
+        vertices[vertexIndex].color = glm::vec3(vertexColor.r, vertexColor.g, vertexColor.b);
     }
 
     // Three indices per triangle face
@@ -36,11 +47,20 @@ MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance, aiMes
             indexIndex++;
         }
     }
+
+    size_t vertexSize = sizeof(MeshVertex) * vertices.size();
+    vertexBuffer = new VulkanBuffer(vulkanInstance, vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+    vertexBuffer->writeData(vertices.data());
+
+    size_t indexSize = sizeof(indices[0]) * indices.size();
+    indexBuffer = new VulkanBuffer(vulkanInstance, indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+    indexBuffer->writeData(indices.data());
 }
 
 MeshAsset::~MeshAsset()
 {
     log_dbg("Destroying mesh asset.");
-    if(indexAllocation != nullptr) vmaDestroyBuffer(vulkanInstance->allocator, indexBuffer, indexAllocation);
-    if(vertexAllocation != nullptr) vmaDestroyBuffer(vulkanInstance->allocator, vertexBuffer, vertexAllocation);
+    
+    if(vertexBuffer != nullptr) delete vertexBuffer;
+    if(indexBuffer != nullptr) delete indexBuffer;
 }
