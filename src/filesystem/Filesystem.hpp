@@ -12,6 +12,7 @@ public:
 
     const char* archive;
 
+    bool exists(const char*);
     bool loadBinaryFile(const char*, std::vector<char>*);
 private:
 };

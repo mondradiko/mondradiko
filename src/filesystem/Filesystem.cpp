@@ -21,6 +21,11 @@ Filesystem::~Filesystem()
     PHYSFS_unmount(archive);
 }
 
+bool Filesystem::exists(const char* fileName)
+{
+    return PHYSFS_exists(fileName);
+}
+
 bool Filesystem::loadBinaryFile(const char* fileName, std::vector<char>* buffer)
 {
     std::ostringstream infoMessage;
