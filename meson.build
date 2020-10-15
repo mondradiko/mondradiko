@@ -30,6 +30,7 @@ src = [
     'src/graphics/FrameData.cpp',
     'src/graphics/Renderer.cpp',
     'src/graphics/Viewport.cpp',
+    'src/graphics/VulkanBuffer.cpp',
     'src/graphics/VulkanInstance.cpp',
     'src/graphics/pipelines/MeshPipeline.cpp',
     'src/graphics/shaders/MeshShader.cpp',
