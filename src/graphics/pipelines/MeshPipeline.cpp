@@ -1,6 +1,7 @@
 #include "graphics/pipelines/MeshPipeline.hpp"
 
 #include "assets/MeshAsset.hpp"
+#include "graphics/VulkanBuffer.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/shaders/MeshShader.hpp"
 #include "log/log.hpp"
@@ -30,8 +31,15 @@ MeshPipeline::~MeshPipeline()
 void MeshPipeline::render(VkCommandBuffer commandBuffer)
 {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-    //render(); lol
+
+    // TODO Obviously, this is just a stand-in until I get actual entities.
+    for(auto mesh : meshAssets) {
+        VkBuffer vertexBuffers[] = {mesh.second->vertexBuffer->buffer};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(commandBuffer, mesh.second->indexBuffer->buffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(commandBuffer, mesh.second->indexCount, 1, 0, 0, 0);
+    }
 }
 
 MeshAsset* MeshPipeline::loadMesh(std::string fileName, aiMesh* mesh)
@@ -67,12 +75,15 @@ void MeshPipeline::createPipeline(VkRenderPass renderPass, uint32_t subpass)
     MeshShader shader(vulkanInstance);
     auto shaderStages = shader.getStages();
 
+    auto bindingDescription = MeshVertex::getBindingDescription();
+    auto attributeDescriptions = MeshVertex::getAttributeDescriptions();
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .vertexBindingDescriptionCount = 0,
-        .pVertexBindingDescriptions = nullptr,
-        .vertexAttributeDescriptionCount = 0,
-        .pVertexAttributeDescriptions = nullptr
+        .vertexBindingDescriptionCount = 1,
+        .pVertexBindingDescriptions = &bindingDescription,
+        .vertexAttributeDescriptionCount = attributeDescriptions.size(),
+        .pVertexAttributeDescriptions = attributeDescriptions.data()
     };
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{
