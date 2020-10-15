@@ -15,23 +15,15 @@ layout(set = 0, binding = 0) uniform CameraUniform {
     mat4 projection;
 } camera;
 
+layout(location = 0) in vec3 vertPosition;
+layout(location = 1) in vec3 vertNormal;
+layout(location = 2) in vec3 vertColor;
+
 layout(location = 0) out vec3 fragColor;
 
-vec3 positions[3] = vec3[](
-    vec3(0.0, 1.6, -2.0),
-    vec3(0.5, 0.5, -2.0),
-    vec3(-0.5, 0.5, -2.0)
-);
-
-vec3 colors[3] = vec3[](
-    vec3(1.0, 0.0, 0.0),
-    vec3(0.0, 1.0, 0.0),
-    vec3(0.0, 0.0, 1.0)
-);
-
 void main() {
-    gl_Position = camera.projection * camera.view * vec4(positions[gl_VertexIndex], 1.0);
-    fragColor = colors[gl_VertexIndex];
+    gl_Position = camera.projection * camera.view * vec4(vertPosition + vec3(0.0, 2.0, -2.0), 1.0);
+    fragColor = vertNormal;
 }
     )""");
 
