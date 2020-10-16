@@ -23,6 +23,7 @@ configure_file(
 
 src = [
     'src/assets/MeshAsset.cpp',
+    'src/assets/TextureAsset.cpp',
     'src/filesystem/AssimpIOStream.cpp',
     'src/filesystem/AssimpIOSystem.cpp',
     'src/filesystem/Filesystem.cpp',
