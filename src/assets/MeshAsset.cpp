@@ -44,6 +44,16 @@ MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance, aiMes
         vertices[vertexIndex].color = glm::vec3(vertexColor.r, vertexColor.g, vertexColor.b);
     }
 
+    // 3D vector because that's how texture coords are stored in assimp
+    aiVector3D texCoord = aiVector3D(0.0, 0.0, 0.0);
+    for(uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; vertexIndex++) {
+        if(mesh->HasTextureCoords(0)) {
+            texCoord = mesh->mTextureCoords[0][vertexIndex];
+        }
+
+        vertices[vertexIndex].texCoord = glm::vec2(texCoord.x, texCoord.y);
+    }
+
     // Three indices per triangle face
     indexCount = mesh->mNumFaces * 3;
     std::vector<MeshIndex> indices(indexCount);
