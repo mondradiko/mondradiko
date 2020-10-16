@@ -51,7 +51,7 @@ MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance, aiMes
             texCoord = mesh->mTextureCoords[0][vertexIndex];
         }
 
-        vertices[vertexIndex].texCoord = glm::vec2(texCoord.x, texCoord.y);
+        vertices[vertexIndex].texCoord = glm::vec2(texCoord.x, -texCoord.y);
     }
 
     // Three indices per triangle face
