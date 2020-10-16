@@ -17,8 +17,7 @@ layout(set = 0, binding = 0) uniform CameraUniform {
 
 layout(location = 0) in vec3 vertPosition;
 layout(location = 1) in vec3 vertNormal;
-layout(location = 2) in vec3 vertColor;
-layout(location = 3) in vec2 vertTexCoord;
+layout(location = 2) in vec2 vertTexCoord;
 
 layout(location = 0) out vec3 fragColor;
 
