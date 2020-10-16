@@ -66,7 +66,8 @@ MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance, aiMes
 
 MeshAsset::~MeshAsset()
 {
-    log_dbg("Destroying mesh asset.");
+    log_dbg("Destroying mesh asset:");
+    log_dbg(meshName.c_str());
     
     if(vertexBuffer != nullptr) delete vertexBuffer;
     if(indexBuffer != nullptr) delete indexBuffer;
