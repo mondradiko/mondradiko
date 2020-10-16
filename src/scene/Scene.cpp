@@ -10,7 +10,8 @@
 
 Scene::Scene(Filesystem* fs, Renderer* renderer)
  : fs(fs),
-   renderer(renderer)
+   renderer(renderer),
+   rootEntity(this)
 {
     log_dbg("Creating scene.");
 
@@ -46,13 +47,7 @@ bool Scene::loadModel(const char* fileName)
         return false;
     }
 
-    for(uint32_t i = 0; i < modelScene->mNumMeshes; i++) {
-        renderer->meshPipeline->loadMesh(fileName, modelScene->mMeshes[i]);
-    }
-
-    for(uint32_t i = 0; i < modelScene->mNumTextures; i++) {
-        renderer->meshPipeline->loadTexture(fileName, modelScene->mTextures[i]);
-    }
+    rootEntity.addChild(new Entity(this, fileName, modelScene, modelScene->mRootNode));
 
     // aiScene is freed automatically
     return true;

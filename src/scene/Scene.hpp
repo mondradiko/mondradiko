@@ -4,6 +4,8 @@
 
 #include "api_headers.hpp"
 
+#include "scene/Entity.hpp"
+
 class Filesystem;
 class Renderer;
 
@@ -16,9 +18,11 @@ public:
     void update(double);
 
     bool loadModel(const char*);
-private:
+
     Filesystem* fs;
     Renderer* renderer;
+private:
+    Entity rootEntity;
 
     Assimp::Importer importer;
 };
