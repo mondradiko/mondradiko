@@ -23,34 +23,21 @@ MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance, aiMes
         log_ftl("Mesh vertices have no normals.");
     }
 
+    if(!mesh->HasTextureCoords(0)) {
+        log_ftl("Mesh vertices have no texture coordinates.");
+    }
+
     std::vector<MeshVertex> vertices(mesh->mNumVertices);
 
     for(uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; vertexIndex++) {
         aiVector3D position = mesh->mVertices[vertexIndex];
-        vertices[vertexIndex].position = glm::vec3(position.x, position.y, position.z);
-    }
-
-    for(uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; vertexIndex++) {
         aiVector3D normal = mesh->mNormals[vertexIndex];
+        aiVector3D texCoord = mesh->mTextureCoords[0][vertexIndex];
+
+        vertices[vertexIndex].position = glm::vec3(position.x, position.y, position.z);
         vertices[vertexIndex].normal = glm::vec3(normal.x, normal.y, normal.z);
-    }
-
-    aiColor4D vertexColor = aiColor4D(1.0, 1.0, 1.0, 1.0);
-    for(uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; vertexIndex++) {
-        if(mesh->HasVertexColors(0)) {
-            vertexColor = mesh->mColors[0][vertexIndex];
-        }
-
-        vertices[vertexIndex].color = glm::vec3(vertexColor.r, vertexColor.g, vertexColor.b);
-    }
-
-    // 3D vector because that's how texture coords are stored in assimp
-    aiVector3D texCoord = aiVector3D(0.0, 0.0, 0.0);
-    for(uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; vertexIndex++) {
-        if(mesh->HasTextureCoords(0)) {
-            texCoord = mesh->mTextureCoords[0][vertexIndex];
-        }
-
+        // Take only the UV coordinates
+        // Invert the Y coordinate into range [0, 1]
         vertices[vertexIndex].texCoord = glm::vec2(texCoord.x, -texCoord.y);
     }
 
