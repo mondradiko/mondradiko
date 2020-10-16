@@ -38,7 +38,8 @@ void Scene::update(double dt)
 
 bool Scene::loadModel(const char* fileName)
 {
-    const aiScene* modelScene = importer.ReadFile(fileName, 0);
+    // TODO Go into more detail on flags
+    const aiScene* modelScene = importer.ReadFile(fileName, aiProcessPreset_TargetRealtime_Fast);
 
     if(!modelScene) {
         log_err("Failed to read model scene.");
