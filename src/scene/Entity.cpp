@@ -1,5 +1,6 @@
 #include "scene/Entity.hpp"
 
+#include "components/Component.hpp"
 #include "log/log.hpp"
 #include "graphics/Renderer.hpp"
 #include "scene/Scene.hpp"
@@ -43,6 +44,8 @@ Entity::~Entity()
     if(parent) parent->child = nextSibling;
     if(prevSibling) prevSibling->nextSibling = nextSibling;
     if(nextSibling) nextSibling->prevSibling = prevSibling;
+
+    while(firstComponent) delete firstComponent;
 }
 
 void Entity::addChild(Entity* newChild)
@@ -51,4 +54,11 @@ void Entity::addChild(Entity* newChild)
     newChild->nextSibling = child;
     if(child) child->prevSibling = newChild;
     child = newChild;
+}
+
+void Entity::addComponent(Component* component)
+{
+    component->parent = this;
+    component->next = firstComponent;
+    firstComponent = component;
 }
