@@ -1,6 +1,7 @@
 #include "graphics/pipelines/MeshPipeline.hpp"
 
 #include "assets/MeshAsset.hpp"
+#include "assets/TextureAsset.hpp"
 #include "graphics/VulkanBuffer.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/shaders/MeshShader.hpp"
@@ -22,6 +23,10 @@ MeshPipeline::~MeshPipeline()
 
     for(auto meshAsset : meshAssets) {
         delete meshAsset.second;
+    }
+
+    for(auto textureAsset : textureAssets) {
+        delete textureAsset.second;
     }
 
     if(pipeline != VK_NULL_HANDLE) vkDestroyPipeline(vulkanInstance->device, pipeline, nullptr);
@@ -51,6 +56,20 @@ MeshAsset* MeshPipeline::loadMesh(std::string fileName, aiMesh* mesh)
         MeshAsset* newMesh = new MeshAsset(meshName, vulkanInstance, mesh);
         meshAssets.emplace(meshName, newMesh);
         return newMesh;
+    } else {
+        return cachedMesh->second;
+    }
+}
+
+TextureAsset* MeshPipeline::loadTexture(std::string fileName, aiTexture* texture)
+{
+    std::string textureName = fileName + '/' + std::string(texture->mFilename.C_Str());
+    auto cachedMesh = textureAssets.find(textureName);
+
+    if(cachedMesh == textureAssets.end()) {
+        TextureAsset* newTexture = new TextureAsset(textureName, vulkanInstance, texture);
+        textureAssets.emplace(textureName, newTexture);
+        return newTexture;
     } else {
         return cachedMesh->second;
     }

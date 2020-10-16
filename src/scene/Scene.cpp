@@ -50,6 +50,10 @@ bool Scene::loadModel(const char* fileName)
         renderer->meshPipeline->loadMesh(fileName, modelScene->mMeshes[i]);
     }
 
+    for(uint32_t i = 0; i < modelScene->mNumTextures; i++) {
+        renderer->meshPipeline->loadTexture(fileName, modelScene->mTextures[i]);
+    }
+
     // aiScene is freed automatically
     return true;
 }
