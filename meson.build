@@ -40,6 +40,7 @@ src = [
     'src/log/log.cpp',
     'src/network/ClientInterface.cpp',
     'src/network/NetworkInterface.cpp',
+    'src/scene/Entity.cpp',
     'src/scene/Scene.cpp',
     'src/session/client_session.cpp',
     'src/xr/PlayerSession.cpp',
