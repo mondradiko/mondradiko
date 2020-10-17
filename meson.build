@@ -22,6 +22,7 @@ configure_file(
 )
 
 src = [
+    'src/assets/MaterialAsset.cpp',
     'src/assets/MeshAsset.cpp',
     'src/assets/TextureAsset.cpp',
     'src/components/Component.cpp',
