@@ -1,6 +1,7 @@
 #include "scene/Entity.hpp"
 
 #include "components/Component.hpp"
+#include "components/MeshRendererComponent.hpp"
 #include "log/log.hpp"
 #include "graphics/Renderer.hpp"
 #include "scene/Scene.hpp"
@@ -25,7 +26,7 @@ Entity::Entity(Scene* scene, std::string parentName, const aiScene* modelScene, 
 
     for(uint32_t i = 0; i < node->mNumMeshes; i++) {
         aiMesh* mesh = modelScene->mMeshes[node->mMeshes[i]];
-        scene->renderer->meshPipeline->loadMesh(nodePath, mesh);
+        addComponent(scene->renderer->meshPipeline->createMeshRenderer(modelScene, mesh));
     }
 
     // Recursively add subnodes

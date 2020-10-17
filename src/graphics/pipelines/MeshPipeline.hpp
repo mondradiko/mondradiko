@@ -6,6 +6,7 @@
 #include "api_headers.hpp"
 
 class MeshAsset;
+class MeshRendererComponent;
 class TextureAsset;
 class VulkanInstance;
 
@@ -17,8 +18,10 @@ public:
 
     void render(VkCommandBuffer);
 
+    MeshRendererComponent* createMeshRenderer(const aiScene*, aiMesh*);
+
     MeshAsset* loadMesh(std::string, aiMesh*);
-    TextureAsset* loadTexture(std::string, aiTexture*);
+    TextureAsset* loadTexture(std::string, aiTexture*, uint32_t);
 
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     VkPipeline pipeline = VK_NULL_HANDLE;

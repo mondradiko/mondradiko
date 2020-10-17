@@ -2,6 +2,7 @@
 
 #include "assets/MeshAsset.hpp"
 #include "assets/TextureAsset.hpp"
+#include "components/MeshRendererComponent.hpp"
 #include "graphics/VulkanBuffer.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/shaders/MeshShader.hpp"
@@ -47,6 +48,11 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer)
     }
 }
 
+MeshRendererComponent* MeshPipeline::createMeshRenderer(const aiScene* modelScene, aiMesh* mesh)
+{
+    return new MeshRendererComponent(this, modelScene, mesh);
+}
+
 MeshAsset* MeshPipeline::loadMesh(std::string fileName, aiMesh* mesh)
 {
     std::string meshName = fileName + '/' + std::string(mesh->mName.C_Str());
@@ -61,9 +67,14 @@ MeshAsset* MeshPipeline::loadMesh(std::string fileName, aiMesh* mesh)
     }
 }
 
-TextureAsset* MeshPipeline::loadTexture(std::string fileName, aiTexture* texture)
+TextureAsset* MeshPipeline::loadTexture(std::string fileName, aiTexture* texture, uint32_t index)
 {
-    std::string textureName = fileName + '/' + std::string(texture->mFilename.C_Str());
+    std::ostringstream textureFormat;
+    textureFormat << fileName + '/';
+    textureFormat << texture->mFilename.C_Str() << "_";
+    textureFormat << index;
+
+    std::string textureName = textureFormat.str();
     auto cachedMesh = textureAssets.find(textureName);
 
     if(cachedMesh == textureAssets.end()) {
