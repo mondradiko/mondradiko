@@ -25,6 +25,7 @@ src = [
     'src/assets/MeshAsset.cpp',
     'src/assets/TextureAsset.cpp',
     'src/components/Component.cpp',
+    'src/components/MeshRendererComponent.cpp',
     'src/filesystem/AssimpIOStream.cpp',
     'src/filesystem/AssimpIOSystem.cpp',
     'src/filesystem/Filesystem.cpp',

@@ -45,6 +45,7 @@ MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance, aiMes
     indexCount = mesh->mNumFaces * 3;
     std::vector<MeshIndex> indices(indexCount);
 
+    // lol
     uint32_t indexIndex = 0;
     for(uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; faceIndex++) {
         aiFace& face = mesh->mFaces[faceIndex];
