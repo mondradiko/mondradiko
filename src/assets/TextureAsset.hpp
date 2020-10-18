@@ -3,10 +3,11 @@
 #include <string>
 
 #include "api_headers.hpp"
+#include "assets/Asset.hpp"
 
 class VulkanInstance;
 
-class TextureAsset
+class TextureAsset : public Asset
 {
 public:
     TextureAsset(std::string, VulkanInstance*, aiTexture*);

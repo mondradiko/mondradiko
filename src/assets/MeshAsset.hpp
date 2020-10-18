@@ -4,6 +4,7 @@
 #include <string>
 
 #include "api_headers.hpp"
+#include "assets/Asset.hpp"
 
 class VulkanBuffer;
 class VulkanInstance;
@@ -56,7 +57,7 @@ struct MeshVertex
 
 using MeshIndex = uint32_t;
 
-class MeshAsset
+class MeshAsset : public Asset
 {
 public:
     MeshAsset(std::string, VulkanInstance*, aiMesh*);
