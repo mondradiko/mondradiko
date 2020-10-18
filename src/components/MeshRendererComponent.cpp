@@ -9,5 +9,10 @@ MeshRendererComponent::MeshRendererComponent(MeshPipeline* meshPipeline, AssetHa
    materialAsset(materialAsset),
    meshPipeline(meshPipeline)
 {
+    meshPipeline->meshRenderers.insert(this);
+}
 
+MeshRendererComponent::~MeshRendererComponent()
+{
+    meshPipeline->meshRenderers.erase(this);
 }

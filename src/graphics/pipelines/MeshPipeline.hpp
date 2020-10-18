@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "api_headers.hpp"
@@ -29,6 +30,8 @@ public:
 
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     VkPipeline pipeline = VK_NULL_HANDLE;
+
+    std::set<MeshRendererComponent*> meshRenderers;
 private:
     VulkanInstance* vulkanInstance;
 

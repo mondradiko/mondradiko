@@ -31,14 +31,13 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer)
 {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-    // TODO Obviously, this is just a stand-in until I get actual entities.
-    /*for(auto mesh : meshAssets) {
-        VkBuffer vertexBuffers[] = {mesh.second->vertexBuffer->buffer};
+    for(auto meshRenderer : meshRenderers) {
+        VkBuffer vertexBuffers[] = {meshRenderer->meshAsset->vertexBuffer->buffer};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, mesh.second->indexBuffer->buffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, mesh.second->indexCount, 1, 0, 0, 0);
-    }*/
+        vkCmdBindIndexBuffer(commandBuffer, meshRenderer->meshAsset->indexBuffer->buffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(commandBuffer, meshRenderer->meshAsset->indexCount, 1, 0, 0, 0);
+    }
 }
 
 MeshRendererComponent* MeshPipeline::createMeshRenderer(std::string fileName, const aiScene* modelScene, uint32_t meshIndex)

@@ -13,6 +13,7 @@ class MeshRendererComponent : public Component
 {
 public:
     MeshRendererComponent(MeshPipeline*, AssetHandle<MeshAsset>&, AssetHandle<MaterialAsset>&);
+    ~MeshRendererComponent();
 
     AssetHandle<MeshAsset> meshAsset;
     AssetHandle<MaterialAsset> materialAsset;
