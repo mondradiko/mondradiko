@@ -2,13 +2,20 @@
 
 #include "api_headers.hpp"
 
+#include "assets/AssetHandle.hpp"
 #include "components/Component.hpp"
 
+class MaterialAsset;
+class MeshAsset;
 class MeshPipeline;
 
 class MeshRendererComponent : public Component
 {
 public:
-    MeshRendererComponent(MeshPipeline*, const aiScene*, aiMesh*);
+    MeshRendererComponent(MeshPipeline*, AssetHandle<MeshAsset>&, AssetHandle<MaterialAsset>&);
+
+    AssetHandle<MeshAsset> meshAsset;
+    AssetHandle<MaterialAsset> materialAsset;
 private:
+    MeshPipeline* meshPipeline;
 };
