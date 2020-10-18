@@ -4,7 +4,10 @@
 #include <string>
 
 #include "api_headers.hpp"
+#include "assets/AssetHandle.hpp"
+#include "assets/AssetPool.hpp"
 
+class MaterialAsset;
 class MeshAsset;
 class MeshRendererComponent;
 class TextureAsset;
@@ -18,18 +21,20 @@ public:
 
     void render(VkCommandBuffer);
 
-    MeshRendererComponent* createMeshRenderer(const aiScene*, aiMesh*);
+    MeshRendererComponent* createMeshRenderer(std::string, const aiScene*, uint32_t);
 
-    MeshAsset* loadMesh(std::string, aiMesh*);
-    TextureAsset* loadTexture(std::string, aiTexture*, uint32_t);
+    AssetHandle<MaterialAsset> loadMaterial(std::string, const aiScene*, uint32_t);
+    AssetHandle<MeshAsset> loadMesh(std::string, const aiScene*, uint32_t);
+    AssetHandle<TextureAsset> loadTexture(std::string, const aiScene*, uint32_t);
 
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     VkPipeline pipeline = VK_NULL_HANDLE;
 private:
     VulkanInstance* vulkanInstance;
 
-    std::map<std::string, MeshAsset*> meshAssets;
-    std::map<std::string, TextureAsset*> textureAssets;
+    AssetPool<MaterialAsset> materialAssets;
+    AssetPool<MeshAsset> meshAssets;
+    AssetPool<TextureAsset> textureAssets;
 
     void createPipelineLayout(VkDescriptorSetLayout);
     void createPipeline(VkRenderPass, uint32_t);

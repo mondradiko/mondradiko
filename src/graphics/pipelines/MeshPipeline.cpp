@@ -1,5 +1,6 @@
 #include "graphics/pipelines/MeshPipeline.hpp"
 
+#include "assets/MaterialAsset.hpp"
 #include "assets/MeshAsset.hpp"
 #include "assets/TextureAsset.hpp"
 #include "components/MeshRendererComponent.hpp"
@@ -22,14 +23,6 @@ MeshPipeline::~MeshPipeline()
 {
     log_dbg("Destroying mesh pipeline.");
 
-    for(auto meshAsset : meshAssets) {
-        delete meshAsset.second;
-    }
-
-    for(auto textureAsset : textureAssets) {
-        delete textureAsset.second;
-    }
-
     if(pipeline != VK_NULL_HANDLE) vkDestroyPipeline(vulkanInstance->device, pipeline, nullptr);
     if(pipelineLayout != VK_NULL_HANDLE) vkDestroyPipelineLayout(vulkanInstance->device, pipelineLayout, nullptr);
 }
@@ -39,51 +32,69 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
     // TODO Obviously, this is just a stand-in until I get actual entities.
-    for(auto mesh : meshAssets) {
+    /*for(auto mesh : meshAssets) {
         VkBuffer vertexBuffers[] = {mesh.second->vertexBuffer->buffer};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
         vkCmdBindIndexBuffer(commandBuffer, mesh.second->indexBuffer->buffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdDrawIndexed(commandBuffer, mesh.second->indexCount, 1, 0, 0, 0);
+    }*/
+}
+
+MeshRendererComponent* MeshPipeline::createMeshRenderer(std::string fileName, const aiScene* modelScene, uint32_t meshIndex)
+{
+    aiMesh* mesh = modelScene->mMeshes[meshIndex];
+    auto meshAsset = loadMesh(fileName, modelScene, meshIndex);
+    auto materialAsset = loadMaterial(fileName, modelScene, mesh->mMaterialIndex);
+
+    return new MeshRendererComponent(this, meshAsset, materialAsset);
+}
+
+AssetHandle<MaterialAsset> MeshPipeline::loadMaterial(std::string fileName, const aiScene* modelScene, uint32_t materialIndex)
+{
+    aiMaterial* material = modelScene->mMaterials[materialIndex];
+    std::string materialName = fileName + '/' + std::string(material->GetName().C_Str());
+
+    auto cachedMaterial = materialAssets.findCached(materialName);
+
+    if(!cachedMaterial) {
+        cachedMaterial = materialAssets.load(materialName, new MaterialAsset(modelScene, material));
     }
+
+    return cachedMaterial;
 }
 
-MeshRendererComponent* MeshPipeline::createMeshRenderer(const aiScene* modelScene, aiMesh* mesh)
+AssetHandle<MeshAsset> MeshPipeline::loadMesh(std::string fileName, const aiScene* modelScene, uint32_t meshIndex)
 {
-    return new MeshRendererComponent(this, modelScene, mesh);
-}
-
-MeshAsset* MeshPipeline::loadMesh(std::string fileName, aiMesh* mesh)
-{
+    aiMesh* mesh = modelScene->mMeshes[meshIndex];
     std::string meshName = fileName + '/' + std::string(mesh->mName.C_Str());
-    auto cachedMesh = meshAssets.find(meshName);
 
-    if(cachedMesh == meshAssets.end()) {
-        MeshAsset* newMesh = new MeshAsset(meshName, vulkanInstance, mesh);
-        meshAssets.emplace(meshName, newMesh);
-        return newMesh;
-    } else {
-        return cachedMesh->second;
+    auto cachedMesh = meshAssets.findCached(meshName);
+
+    if(!cachedMesh) {
+        cachedMesh = meshAssets.load(meshName, new MeshAsset(meshName, vulkanInstance, mesh));
     }
+
+    return cachedMesh;
 }
 
-TextureAsset* MeshPipeline::loadTexture(std::string fileName, aiTexture* texture, uint32_t index)
+AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName, const aiScene* modelScene, uint32_t textureIndex)
 {
+    aiTexture* texture = modelScene->mTextures[textureIndex];
     std::ostringstream textureFormat;
     textureFormat << fileName + '/';
     textureFormat << texture->mFilename.C_Str() << "_";
-    textureFormat << index;
+    textureFormat << textureIndex;
 
     std::string textureName = textureFormat.str();
-    auto cachedMesh = textureAssets.find(textureName);
+    
+    auto cachedTexture = textureAssets.findCached(textureName);
 
-    if(cachedMesh == textureAssets.end()) {
-        TextureAsset* newTexture = new TextureAsset(textureName, vulkanInstance, texture);
-        textureAssets.emplace(textureName, newTexture);
-        return newTexture;
-    } else {
-        return cachedMesh->second;
+    if(!cachedTexture) {
+        cachedTexture = textureAssets.load(textureName, new TextureAsset(fileName, vulkanInstance, texture));
     }
+
+    return cachedTexture;
 }
 
 void MeshPipeline::createPipelineLayout(VkDescriptorSetLayout cameraSetLayout)
