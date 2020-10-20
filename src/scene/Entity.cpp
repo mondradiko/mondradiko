@@ -26,7 +26,7 @@ Entity::Entity(Scene* scene, std::string parentName, const aiScene* modelScene, 
 
     for(uint32_t i = 0; i < node->mNumMeshes; i++) {
         uint32_t meshIndex = node->mMeshes[i];
-        addComponent(scene->renderer->meshPipeline->createMeshRenderer(nodePath, modelScene, meshIndex));
+        addComponent(scene->renderer->meshPipeline->createMeshRenderer(parentName, modelScene, meshIndex));
     }
 
     // Recursively add subnodes
