@@ -22,33 +22,33 @@ configure_file(
 )
 
 src = [
-    'src/assets/MaterialAsset.cpp',
-    'src/assets/MeshAsset.cpp',
-    'src/assets/TextureAsset.cpp',
-    'src/components/Component.cpp',
-    'src/components/MeshRendererComponent.cpp',
-    'src/filesystem/AssimpIOStream.cpp',
-    'src/filesystem/AssimpIOSystem.cpp',
-    'src/filesystem/Filesystem.cpp',
-    'src/graphics/CameraDescriptorSet.cpp',
-    'src/graphics/FrameData.cpp',
-    'src/graphics/Renderer.cpp',
-    'src/graphics/Viewport.cpp',
-    'src/graphics/VulkanBuffer.cpp',
-    'src/graphics/VulkanImage.cpp',
-    'src/graphics/VulkanInstance.cpp',
-    'src/graphics/pipelines/MeshPipeline.cpp',
-    'src/graphics/shaders/MeshShader.cpp',
-    'src/graphics/shaders/ShaderModule.cpp',
-    'src/library_implementation.cpp',
-    'src/log/log.cpp',
-    'src/network/ClientInterface.cpp',
-    'src/network/NetworkInterface.cpp',
-    'src/scene/Entity.cpp',
-    'src/scene/Scene.cpp',
-    'src/session/client_session.cpp',
-    'src/xr/PlayerSession.cpp',
-    'src/xr/XrDisplay.cpp'
+    'src/assets/MaterialAsset.cc',
+    'src/assets/MeshAsset.cc',
+    'src/assets/TextureAsset.cc',
+    'src/components/Component.cc',
+    'src/components/MeshRendererComponent.cc',
+    'src/filesystem/AssimpIOStream.cc',
+    'src/filesystem/AssimpIOSystem.cc',
+    'src/filesystem/Filesystem.cc',
+    'src/graphics/CameraDescriptorSet.cc',
+    'src/graphics/FrameData.cc',
+    'src/graphics/Renderer.cc',
+    'src/graphics/Viewport.cc',
+    'src/graphics/VulkanBuffer.cc',
+    'src/graphics/VulkanImage.cc',
+    'src/graphics/VulkanInstance.cc',
+    'src/graphics/pipelines/MeshPipeline.cc',
+    'src/graphics/shaders/MeshShader.cc',
+    'src/graphics/shaders/ShaderModule.cc',
+    'src/library_implementation.cc',
+    'src/log/log.cc',
+    'src/network/ClientInterface.cc',
+    'src/network/NetworkInterface.cc',
+    'src/scene/Entity.cc',
+    'src/scene/Scene.cc',
+    'src/session/client_session.cc',
+    'src/xr/PlayerSession.cc',
+    'src/xr/XrDisplay.cc'
 ]
 
 inc = include_directories(
@@ -68,7 +68,7 @@ dependencies = [
 
 executable(
     'mondradiko-client',
-    ['src/client_main.cpp'] + src,
+    ['src/client_main.cc'] + src,
     include_directories: inc,
     dependencies: dependencies
 )
