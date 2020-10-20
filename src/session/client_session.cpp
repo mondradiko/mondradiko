@@ -30,7 +30,7 @@ void client_session_run(const char* serverAddress, int port)
     PlayerSession session(&xr, &vulkanInstance);
     Renderer renderer(&vulkanInstance, &session);
     ClientInterface client(serverAddress, port);
-    Scene scene(&fs);
+    Scene scene(&fs, &renderer);
 
     if(signal(SIGTERM, signalHandler) == SIG_ERR) {
         log_wrn("Can't catch SIGTERM");
