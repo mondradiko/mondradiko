@@ -26,7 +26,7 @@ public:
 
     AssetHandle<MaterialAsset> loadMaterial(std::string, const aiScene*, uint32_t);
     AssetHandle<MeshAsset> loadMesh(std::string, const aiScene*, uint32_t);
-    AssetHandle<TextureAsset> loadTexture(std::string, const aiScene*, uint32_t);
+    AssetHandle<TextureAsset> loadTexture(std::string, const aiScene*, aiString);
 
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     VkPipeline pipeline = VK_NULL_HANDLE;

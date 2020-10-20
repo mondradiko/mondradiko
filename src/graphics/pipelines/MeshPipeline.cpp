@@ -57,7 +57,7 @@ AssetHandle<MaterialAsset> MeshPipeline::loadMaterial(std::string fileName, cons
     auto cachedMaterial = materialAssets.findCached(materialName);
 
     if(!cachedMaterial) {
-        cachedMaterial = materialAssets.load(materialName, new MaterialAsset(modelScene, material));
+        cachedMaterial = materialAssets.load(materialName, new MaterialAsset(this, fileName, modelScene, material));
     }
 
     return cachedMaterial;
@@ -77,23 +77,35 @@ AssetHandle<MeshAsset> MeshPipeline::loadMesh(std::string fileName, const aiScen
     return cachedMesh;
 }
 
-AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName, const aiScene* modelScene, uint32_t textureIndex)
+AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName, const aiScene* modelScene, aiString textureString)
 {
-    aiTexture* texture = modelScene->mTextures[textureIndex];
-    std::ostringstream textureFormat;
-    textureFormat << fileName + '/';
-    textureFormat << texture->mFilename.C_Str() << "_";
-    textureFormat << textureIndex;
+    log_dbg(textureString.C_Str());
 
-    std::string textureName = textureFormat.str();
-    
-    auto cachedTexture = textureAssets.findCached(textureName);
+    // If the texture is embedded, it'll begin with a '*'
+    if(textureString.C_Str()[0] == '*') {
+        // The rest of the string contains the index
+        uint32_t textureIndex = atoi(textureString.C_Str() + 1);
 
-    if(!cachedTexture) {
-        cachedTexture = textureAssets.load(textureName, new TextureAsset(fileName, vulkanInstance, texture));
+        aiTexture* texture = modelScene->mTextures[textureIndex];
+        std::ostringstream textureFormat;
+        textureFormat << fileName + '/';
+        textureFormat << texture->mFilename.C_Str() << "_";
+        textureFormat << textureIndex;
+
+        std::string textureName = textureFormat.str();
+        log_err(textureName.c_str());
+
+        auto cachedTexture = textureAssets.findCached(textureName);
+
+        if(!cachedTexture) {
+            cachedTexture = textureAssets.load(textureName, new TextureAsset(vulkanInstance, texture));
+        }
+
+        return cachedTexture;
+    } else {
+        log_ftl("Unable to load non-embedded textures.");
+        return nullptr;
     }
-
-    return cachedTexture;
 }
 
 void MeshPipeline::createPipelineLayout(VkDescriptorSetLayout cameraSetLayout)
