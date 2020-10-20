@@ -5,15 +5,16 @@
 #include "api_headers.hpp"
 #include "assets/Asset.hpp"
 
+class VulkanImage;
 class VulkanInstance;
 
 class TextureAsset : public Asset
 {
 public:
-    TextureAsset(std::string, VulkanInstance*, aiTexture*);
+    TextureAsset(VulkanInstance*, aiTexture*);
     ~TextureAsset();
 
-    std::string textureName;
+    VulkanImage* image = nullptr;
 private:
     VulkanInstance* vulkanInstance;
 };

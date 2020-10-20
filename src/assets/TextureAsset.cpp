@@ -1,17 +1,20 @@
 #include "assets/TextureAsset.hpp"
 
+#include "graphics/VulkanImage.hpp"
 #include "log/log.hpp"
 
-TextureAsset::TextureAsset(std::string textureName, VulkanInstance* vulkanInstance, aiTexture* texture)
- : textureName(textureName),
-   vulkanInstance(vulkanInstance)
+TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture)
+ : vulkanInstance(vulkanInstance)
 {
-    log_dbg("Loading texture asset with name:");
-    log_dbg(textureName.c_str());
+    image = new VulkanImage(vulkanInstance,
+        VK_FORMAT_R8G8B8A8_UNORM,
+        texture->mWidth, texture->mHeight,
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VMA_MEMORY_USAGE_GPU_ONLY
+    );
 }
 
 TextureAsset::~TextureAsset()
 {
-    log_dbg("Destroying texture asset:");
-    log_dbg(textureName.c_str());
+    if(image) delete image;
 }
