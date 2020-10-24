@@ -1,15 +1,37 @@
+/**
+ * @file MeshShader.cc
+ * @author Marceline Cramer (cramermarceline@gmail.com)
+ * @brief Contains pipeline state for the MeshPipeline.
+ * @date 2020-10-24
+ *
+ * @copyright Copyright (c) 2020 Marceline Cramer
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https: //www.gnu.org/licenses/>.
+ *
+ */
+
 #include "graphics/shaders/MeshShader.h"
 
 #include "log/log.h"
 
 MeshShader::MeshShader(VulkanInstance* vulkanInstance)
- : vulkanInstance(vulkanInstance),
-   vertShader(vulkanInstance, "MeshShader.vert", shaderc_vertex_shader),
-   fragShader(vulkanInstance, "MeshShader.frag", shaderc_fragment_shader)
-{
-    log_dbg("Creating mesh shader.");
+    : vulkanInstance(vulkanInstance),
+      vertShader(vulkanInstance, "MeshShader.vert", shaderc_vertex_shader),
+      fragShader(vulkanInstance, "MeshShader.frag", shaderc_fragment_shader) {
+  log_dbg("Creating mesh shader.");
 
-    vertShader.pushCustom(R"""(
+  vertShader.pushCustom(R"""(
 layout(set = 0, binding = 0) uniform CameraUniform {
     mat4 view;
     mat4 projection;
@@ -27,7 +49,7 @@ void main() {
 }
     )""");
 
-    fragShader.pushCustom(R"""(
+  fragShader.pushCustom(R"""(
 layout(location = 0) in vec3 fragColor;
 
 layout(location = 0) out vec4 outColor;
@@ -37,19 +59,12 @@ void main() {
 }
     )""");
 
-    vertShader.compile();
-    fragShader.compile();
+  vertShader.compile();
+  fragShader.compile();
 }
 
-MeshShader::~MeshShader()
-{
-    log_dbg("Destroying mesh shader.");
-}
+MeshShader::~MeshShader() { log_dbg("Destroying mesh shader."); }
 
-ShaderStages MeshShader::getStages()
-{
-    return{
-        vertShader.getStageCreateInfo(),
-        fragShader.getStageCreateInfo()
-    };
+ShaderStages MeshShader::getStages() {
+  return {vertShader.getStageCreateInfo(), fragShader.getStageCreateInfo()};
 }
