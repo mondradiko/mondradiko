@@ -1,38 +1,63 @@
-#pragma once
+/**
+ * @file Viewport.h
+ * @author Marceline Cramer (cramermarceline@gmail.com)
+ * @brief Provides access to cameras, from OpenXR eyes or otherwise.
+ * @date 2020-10-24
+ *
+ * @copyright Copyright (c) 2020 Marceline Cramer
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https: //www.gnu.org/licenses/>.
+ *
+ */
+
+#ifndef SRC_GRAPHICS_VIEWPORT_H_
+#define SRC_GRAPHICS_VIEWPORT_H_
 
 #include <vector>
 
-#include "api_headers.h"
+#include "graphics/VulkanInstance.h"
+#include "src/api_headers.h"
+#include "xr/PlayerSession.h"
 
-class PlayerSession;
-class VulkanInstance;
-
-struct ViewportImage
-{
-    VkImage image;
-    VkImageView imageView;
-    VkFramebuffer framebuffer;
+struct ViewportImage {
+  VkImage image;
+  VkImageView imageView;
+  VkFramebuffer framebuffer;
 };
 
-class Viewport
-{
-public:
-    Viewport(VkFormat, VkRenderPass, XrViewConfigurationView*, PlayerSession*, VulkanInstance*);
-    ~Viewport();
+class Viewport {
+ public:
+  Viewport(VkFormat, VkRenderPass, XrViewConfigurationView*, PlayerSession*,
+           VulkanInstance*);
+  ~Viewport();
 
-    void acquireSwapchainImage();
-    void beginRenderPass(VkCommandBuffer, VkRenderPass);
-    void setCommandViewport(VkCommandBuffer);
-    void releaseSwapchainImage();
+  void acquireSwapchainImage();
+  void beginRenderPass(VkCommandBuffer, VkRenderPass);
+  void setCommandViewport(VkCommandBuffer);
+  void releaseSwapchainImage();
 
-    XrSwapchain swapchain = XR_NULL_HANDLE;
-    std::vector<ViewportImage> images;
+  XrSwapchain swapchain = XR_NULL_HANDLE;
+  std::vector<ViewportImage> images;
 
-    uint32_t width;
-    uint32_t height;
-private:
-    PlayerSession* session;
-    VulkanInstance* vulkanInstance;
+  uint32_t width;
+  uint32_t height;
 
-    uint32_t currentIndex;
+ private:
+  PlayerSession* session;
+  VulkanInstance* vulkanInstance;
+
+  uint32_t currentIndex;
 };
+
+#endif  // SRC_GRAPHICS_VIEWPORT_H_
