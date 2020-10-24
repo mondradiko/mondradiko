@@ -28,8 +28,9 @@
 #include "assets/MaterialAsset.h"
 #include "assets/MeshAsset.h"
 #include "components/Component.h"
-#include "graphics/pipelines/MeshPipeline.h"
 #include "src/api_headers.h"
+
+class MeshPipeline; // Forward declaration because of codependence
 
 class MeshRendererComponent : public Component {
  public:
