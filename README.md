@@ -1,3 +1,5 @@
+![Discord](https://img.shields.io/discord/750058861578289347?label=Discord)
+
 # Mondradiko
 Mondradiko is a future-proof VR engine for creating multiplayer virtual reality experiences.
 
