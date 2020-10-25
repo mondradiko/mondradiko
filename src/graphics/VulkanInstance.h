@@ -1,51 +1,80 @@
-#pragma once
+/**
+ * @file VulkanInstance.h
+ * @author Marceline Cramer (cramermarceline@gmail.com)
+ * @brief Manages all low-level Vulkan objects such as device, debug messenger,
+ * VMA allocator, etc.
+ * @date 2020-10-24
+ *
+ * @copyright Copyright (c) 2020 Marceline Cramer
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https: //www.gnu.org/licenses/>.
+ *
+ */
+
+#ifndef SRC_GRAPHICS_VULKANINSTANCE_H_
+#define SRC_GRAPHICS_VULKANINSTANCE_H_
 
 #include <vector>
 
-#include "api_headers.h"
+#include "src/api_headers.h"
 
 class XrDisplay;
 struct VulkanRequirements;
 
-class VulkanInstance
-{
-public:
-    VulkanInstance(XrDisplay*);
-    ~VulkanInstance();
+class VulkanInstance {
+ public:
+  explicit VulkanInstance(XrDisplay*);
+  ~VulkanInstance();
 
-    bool findFormatFromOptions(const std::vector<VkFormat>*, const std::vector<VkFormat>*, VkFormat*);
+  bool findFormatFromOptions(const std::vector<VkFormat>*,
+                             const std::vector<VkFormat>*, VkFormat*);
 
-    bool enableValidationLayers = true;
+  bool enableValidationLayers = true;
 
-    VkInstance instance = VK_NULL_HANDLE;
-    VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice device = VK_NULL_HANDLE;
+  VkInstance instance = VK_NULL_HANDLE;
+  VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
+  VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+  VkDevice device = VK_NULL_HANDLE;
 
-    uint32_t graphicsQueueFamily;
-    VkQueue graphicsQueue;
+  uint32_t graphicsQueueFamily;
+  VkQueue graphicsQueue;
 
-    VkCommandPool commandPool = VK_NULL_HANDLE;
+  VkCommandPool commandPool = VK_NULL_HANDLE;
 
-    VmaAllocator allocator = nullptr;
+  VmaAllocator allocator = nullptr;
 
-    VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-private:
-    const std::vector<const char*> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"
-    };
+  VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 
-    bool checkValidationLayerSupport();
-    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT*);
-    void createInstance(VulkanRequirements*);
-    void setupDebugMessenger();
-    void findPhysicalDevice(XrDisplay*);
-    void findQueueFamilies();
-    void createLogicalDevice(VulkanRequirements*);
-    void createCommandPool();
-    void createAllocator();
-    void createDescriptorPool();
+ private:
+  const std::vector<const char*> validationLayers = {
+      "VK_LAYER_KHRONOS_validation"};
 
-    PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT = nullptr;
-    PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT = nullptr;
+  bool checkValidationLayerSupport();
+  void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT*);
+  void createInstance(VulkanRequirements*);
+  void setupDebugMessenger();
+  void findPhysicalDevice(XrDisplay*);
+  void findQueueFamilies();
+  void createLogicalDevice(VulkanRequirements*);
+  void createCommandPool();
+  void createAllocator();
+  void createDescriptorPool();
+
+  PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT =
+      nullptr;
+  PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT =
+      nullptr;
 };
+
+#endif  // SRC_GRAPHICS_VULKANINSTANCE_H_
