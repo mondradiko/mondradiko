@@ -27,12 +27,13 @@
 
 #include <vector>
 
-#include "graphics/Viewport.h"
 #include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 #include "xr/XrDisplay.h"
 
-class Renderer; // Forward declaration because of codependency
+// Forward declarations because of codependency
+class Renderer;
+class Viewport;
 
 class PlayerSession {
  public:
