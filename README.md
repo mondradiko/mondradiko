@@ -1,3 +1,8 @@
+<div>
+<img src="./docs/assets/emblem.svg" width="300">
+</div>
+<br>
+
 ![Discord](https://img.shields.io/discord/750058861578289347?label=Discord) ![GitHub](https://img.shields.io/github/license/marceline-cramer/mondradiko)
 
 # Mondradiko
