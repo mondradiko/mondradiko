@@ -136,7 +136,7 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName,
     return cachedTexture;
   } else {
     log_ftl("Unable to load non-embedded textures.");
-    return nullptr;
+    return AssetHandle<TextureAsset>(nullptr);
   }
 }
 
