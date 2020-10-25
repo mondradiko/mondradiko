@@ -36,6 +36,10 @@
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
+#define XR_LOAD_FN_PTR(name, fnPtr) \
+  xrGetInstanceProcAddr(instance, name,   \
+                        reinterpret_cast<PFN_xrVoidFunction *>(&fnPtr))
+
 static XRAPI_ATTR XrBool32 XRAPI_CALL
 debugCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity,
               XrDebugUtilsMessageTypeFlagsEXT messageType,
@@ -200,24 +204,23 @@ void XrDisplay::createInstance() {
     log_ftl("Failed to create OpenXR instance. Is an OpenXR runtime running?");
   }
 
-  xrGetInstanceProcAddr(instance, "xrCreateDebugUtilsMessengerEXT",
-                        reinterpret_cast<PFN_xrVoidFunction *>(
-                            &ext_xrCreateDebugUtilsMessengerEXT));
-  xrGetInstanceProcAddr(instance, "xrDestroyDebugUtilsMessengerEXT",
-                        reinterpret_cast<PFN_xrVoidFunction *>(
-                            &ext_xrDestroyDebugUtilsMessengerEXT));
-  xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsRequirementsKHR",
-                        reinterpret_cast<PFN_xrVoidFunction *>(
-                            &ext_xrGetVulkanGraphicsRequirementsKHR));
-  xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR",
-                        reinterpret_cast<PFN_xrVoidFunction *>(
-                            &ext_xrGetVulkanInstanceExtensionsKHR));
-  xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR",
-                        reinterpret_cast<PFN_xrVoidFunction *>(
-                            &ext_xrGetVulkanGraphicsDeviceKHR));
-  xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR",
-                        reinterpret_cast<PFN_xrVoidFunction *>(
-                            &ext_xrGetVulkanDeviceExtensionsKHR));
+  XR_LOAD_FN_PTR("xrCreateDebugUtilsMessengerEXT",
+                 ext_xrCreateDebugUtilsMessengerEXT);
+
+  XR_LOAD_FN_PTR("xrDestroyDebugUtilsMessengerEXT",
+                 ext_xrDestroyDebugUtilsMessengerEXT);
+
+  XR_LOAD_FN_PTR("xrGetVulkanGraphicsRequirementsKHR",
+                 ext_xrGetVulkanGraphicsRequirementsKHR);
+
+  XR_LOAD_FN_PTR("xrGetVulkanInstanceExtensionsKHR",
+                 ext_xrGetVulkanInstanceExtensionsKHR);
+
+  XR_LOAD_FN_PTR("xrGetVulkanGraphicsDeviceKHR",
+                 ext_xrGetVulkanGraphicsDeviceKHR);
+
+  XR_LOAD_FN_PTR("xrGetVulkanDeviceExtensionsKHR",
+                 ext_xrGetVulkanDeviceExtensionsKHR);
 }
 
 void XrDisplay::setupDebugMessenger() {
