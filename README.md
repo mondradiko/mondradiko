@@ -17,5 +17,29 @@ Before making any major changes, please raise an issue to discuss the planned ch
 
 The best way to keep in touch with Mondradiko's development is to join [our Discord server](https://discord.gg/NENngxc).
 
+# Building
+
+## Dependencies
+
+- [OpenXR SDK](https://github.com/KhronosGroup/OpenXR-SDK)
+- [Vulkan](https://www.lunarg.com/vulkan-sdk/)
+- [shaderc](https://github.com/google/shaderc)
+- [Assimp](http://assimp.org/)
+- [GLM](https://github.com/g-truc/glm)
+- [PhysFS](https://www.icculus.org/physfs/)
+
+All of these packages should be available through your package manager, but if not, links are provided for convenience.
+
+## Compiling
+
+Built with [meson](https://mesonbuild.com/):
+
+```
+mkdir builddir
+cd builddir
+meson ..
+ninja
+```
+
 # License
 Mondradiko's source code is licensed under the [GPL-v3](https://www.gnu.org/licenses/).
