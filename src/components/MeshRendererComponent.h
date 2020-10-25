@@ -30,7 +30,7 @@
 #include "components/Component.h"
 #include "src/api_headers.h"
 
-class MeshPipeline; // Forward declaration because of codependence
+class MeshPipeline;  // Forward declaration because of codependence
 
 class MeshRendererComponent : public Component {
  public:

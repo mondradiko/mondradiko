@@ -24,7 +24,7 @@
 #ifndef SRC_COMPONENTS_COMPONENT_H_
 #define SRC_COMPONENTS_COMPONENT_H_
 
-class Entity; // Forward declaration because of codependence
+class Entity;  // Forward declaration because of codependence
 
 class Component {
  public:
