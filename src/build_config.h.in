@@ -1,9 +1,36 @@
-#pragma once
+/**
+ * @file build_config.h.in
+ * @author Marceline Cramer (cramermarceline@gmail.com)
+ * @brief Contains build configuration info. This file is automatically filled
+ * out during Meson project configuration.
+ * @date 2020-10-24
+ *
+ * @copyright Copyright (c) 2020 Marceline Cramer
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https: //www.gnu.org/licenses/>.
+ *
+ */
 
-// This file is automatically filled out during Meson project configuration
+#ifndef SRC_BUILD_CONFIG_H_
+#define SRC_BUILD_CONFIG_H_
 
 #define MONDRADIKO_NAME "@name@"
 #define MONDRADIKO_VERSION "@version@"
 
-#define MONDRADIKO_OPENXR_VERSION XR_MAKE_VERSION(@majorVersion@, @minorVersion@, @patchVersion@)
-#define MONDRADIKO_VULKAN_VERSION VK_MAKE_VERSION(@majorVersion@, @minorVersion@, @patchVersion@)
+#define MONDRADIKO_OPENXR_VERSION \
+  XR_MAKE_VERSION(@majorVersion@, @minorVersion@, @patchVersion@)
+#define MONDRADIKO_VULKAN_VERSION \
+  VK_MAKE_VERSION(@majorVersion@, @minorVersion@, @patchVersion@)
+
+#endif  // SRC_BUILD_CONFIG_H_
