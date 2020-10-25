@@ -50,3 +50,5 @@ ninja
 
 # License
 Mondradiko's source code is licensed under the [GPL-v3](https://www.gnu.org/licenses/).
+
+Mondradiko's emblem is licensed under [CCBY-4.0](https://creativecommons.org/licenses/by/4.0/).
