@@ -31,7 +31,7 @@
 #include "graphics/Renderer.h"
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
-#include "network/ClientInterface.h"
+#include "network/NetworkClient.h"
 #include "scene/Scene.h"
 #include "xr/PlayerSession.h"
 #include "xr/XrDisplay.h"
@@ -51,7 +51,7 @@ void client_session_run(const char *serverAddress, int port) {
   VulkanInstance vulkanInstance(&xr);
   PlayerSession session(&xr, &vulkanInstance);
   Renderer renderer(&vulkanInstance, &session);
-  ClientInterface client(serverAddress, port);
+  NetworkClient client(serverAddress, port);
   Scene scene(&fs, &renderer);
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
