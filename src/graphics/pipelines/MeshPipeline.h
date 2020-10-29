@@ -60,6 +60,8 @@ class MeshPipeline {
   VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
   VkPipeline pipeline = VK_NULL_HANDLE;
 
+  VkSampler textureSampler = VK_NULL_HANDLE;
+
   std::set<MeshRendererComponent*> meshRenderers;
 
  private:
@@ -71,6 +73,7 @@ class MeshPipeline {
 
   void createPipelineLayout(VkDescriptorSetLayout);
   void createPipeline(VkRenderPass, uint32_t);
+  void createTextureSampler();
 };
 
 }  // namespace mondradiko

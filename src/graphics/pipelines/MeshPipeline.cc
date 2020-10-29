@@ -43,11 +43,14 @@ MeshPipeline::MeshPipeline(VulkanInstance* _vulkanInstance,
 
   createPipelineLayout(cameraSetLayout);
   createPipeline(renderPass, subpassIndex);
+  createTextureSampler();
 }
 
 MeshPipeline::~MeshPipeline() {
   log_dbg("Destroying mesh pipeline.");
 
+  if (textureSampler != VK_NULL_HANDLE)
+    vkDestroySampler(vulkanInstance->device, textureSampler, nullptr);
   if (pipeline != VK_NULL_HANDLE)
     vkDestroyPipeline(vulkanInstance->device, pipeline, nullptr);
   if (pipelineLayout != VK_NULL_HANDLE)
@@ -256,6 +259,30 @@ void MeshPipeline::createPipeline(VkRenderPass renderPass, uint32_t subpass) {
                                 &createInfo, nullptr,
                                 &pipeline) != VK_SUCCESS) {
     log_ftl("Failed to create mesh pipeline.");
+  }
+}
+
+void MeshPipeline::createTextureSampler() {
+  VkSamplerCreateInfo samplerInfo{
+      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+      .magFilter = VK_FILTER_LINEAR,
+      .minFilter = VK_FILTER_LINEAR,
+      .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+      .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+      .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+      .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+      .mipLodBias = 0.0f,
+      // TODO(marceline-cramer) Anisotropy support
+      .anisotropyEnable = VK_FALSE,
+      .compareEnable = VK_FALSE,
+      .minLod = 0.0f,
+      .maxLod = 0.0f,
+      .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+      .unnormalizedCoordinates = VK_FALSE};
+
+  if (vkCreateSampler(vulkanInstance->device, &samplerInfo, nullptr,
+                      &textureSampler) != VK_SUCCESS) {
+    log_ftl("Failed to create texture sampler.");
   }
 }
 
