@@ -32,11 +32,43 @@ namespace mondradiko {
 
 TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture)
     : vulkanInstance(vulkanInstance) {
-  image = new VulkanImage(
-      vulkanInstance, VK_FORMAT_R8G8B8A8_UNORM, texture->mWidth,
-      texture->mHeight,
-      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-      VMA_MEMORY_USAGE_GPU_ONLY);
+  // If the height of the texture is 0,
+  // that means that it's stored in a compressed format
+  // like PNG, JPG, etc., and mWidth is size in bytes
+  if (texture->mHeight == 0) {
+    int texWidth, texHeight, texChannels;
+    void* pixels;
+    VkDeviceSize imageSize;
+
+    const stbi_uc* texData = reinterpret_cast<const stbi_uc*>(texture->pcData);
+
+    if (stbi_is_hdr_from_memory(texData, texture->mWidth)) {
+      // TODO(marceline-cramer) Add HDR support
+      log_ftl("TextureAsset does not support HDR yet.");
+    } else {
+      pixels = stbi_loadf_from_memory(texData, texture->mWidth, &texWidth,
+                                      &texHeight, &texChannels, STBI_rgb_alpha);
+
+      imageSize = texWidth * texHeight * 4;
+
+      if (!pixels) {
+        log_ftl("Failed to load texture image.");
+      }
+    }
+
+    image = new VulkanImage(
+        vulkanInstance, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight,
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VMA_MEMORY_USAGE_GPU_ONLY);
+  } else {
+    image = new VulkanImage(
+        vulkanInstance, VK_FORMAT_R8G8B8A8_UNORM, texture->mWidth,
+        texture->mHeight,
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VMA_MEMORY_USAGE_GPU_ONLY);
+  }
+
+  // TODO(marceline-cramer) transfer image data to VulkanImage
 }
 
 TextureAsset::~TextureAsset() {
