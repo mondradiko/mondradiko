@@ -43,6 +43,8 @@ class VulkanInstance {
 
   bool findFormatFromOptions(const std::vector<VkFormat>*,
                              const std::vector<VkFormat>*, VkFormat*);
+  VkCommandBuffer beginSingleTimeCommands();
+  void endSingleTimeCommands(VkCommandBuffer);
 
   bool enableValidationLayers = true;
 
