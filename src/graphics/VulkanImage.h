@@ -38,8 +38,10 @@ class VulkanImage {
   ~VulkanImage();
 
   void writeData(void*);
+  void transitionLayout(VkImageLayout);
 
   VkFormat format;
+  VkImageLayout layout;
   uint32_t width;
   uint32_t height;
   VmaAllocation allocation = nullptr;

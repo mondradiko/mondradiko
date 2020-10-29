@@ -35,6 +35,7 @@ VulkanImage::VulkanImage(VulkanInstance* vulkanInstance, VkFormat format,
                          VkImageUsageFlags imageUsage,
                          VmaMemoryUsage memoryUsage)
     : format(format),
+      layout(VK_IMAGE_LAYOUT_UNDEFINED),
       width(height),
       height(height),
       vulkanInstance(vulkanInstance) {
@@ -49,7 +50,7 @@ VulkanImage::VulkanImage(VulkanInstance* vulkanInstance, VkFormat format,
       .tiling = VK_IMAGE_TILING_OPTIMAL,
       .usage = imageUsage,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED};
+      .initialLayout = layout};
 
   VmaAllocationCreateInfo allocationCreateInfo{
       .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memoryUsage};
@@ -70,6 +71,49 @@ void VulkanImage::writeData(void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
   memcpy(allocationInfo.pMappedData, src, allocationInfo.size);
+}
+
+void VulkanImage::transitionLayout(VkImageLayout targetLayout) {
+  VkImageMemoryBarrier barrier{
+      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      .oldLayout = layout,
+      .newLayout = targetLayout,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .image = image,
+      .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                           .baseMipLevel = 0,
+                           .levelCount = 1,
+                           .baseArrayLayer = 0,
+                           .layerCount = 1}};
+
+  VkPipelineStageFlags sourceStage;
+  VkPipelineStageFlags destinationStage;
+
+  if (layout == VK_IMAGE_LAYOUT_UNDEFINED &&
+      targetLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+    sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+  } else if (layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+             targetLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+    sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+  } else {
+    log_err("Unsupported layout transition.");
+    return;
+  }
+
+  VkCommandBuffer commandBuffer = vulkanInstance->beginSingleTimeCommands();
+  layout = targetLayout;
+  vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0,
+                       nullptr, 0, nullptr, 1, &barrier);
+  vulkanInstance->endSingleTimeCommands(commandBuffer);
 }
 
 }  // namespace mondradiko
