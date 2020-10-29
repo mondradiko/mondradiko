@@ -37,6 +37,8 @@ class VulkanImage {
               VmaMemoryUsage);
   ~VulkanImage();
 
+  void writeData(void*);
+
   VkFormat format;
   uint32_t width;
   uint32_t height;

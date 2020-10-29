@@ -34,7 +34,10 @@ VulkanImage::VulkanImage(VulkanInstance* vulkanInstance, VkFormat format,
                          uint32_t width, uint32_t height,
                          VkImageUsageFlags imageUsage,
                          VmaMemoryUsage memoryUsage)
-    : format(format), width(height), height(height) {
+    : format(format),
+      width(height),
+      height(height),
+      vulkanInstance(vulkanInstance) {
   VkImageCreateInfo imageCreateInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .imageType = VK_IMAGE_TYPE_2D,
@@ -48,7 +51,8 @@ VulkanImage::VulkanImage(VulkanInstance* vulkanInstance, VkFormat format,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
       .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED};
 
-  VmaAllocationCreateInfo allocationCreateInfo{.usage = memoryUsage};
+  VmaAllocationCreateInfo allocationCreateInfo{
+      .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memoryUsage};
 
   if (vmaCreateImage(vulkanInstance->allocator, &imageCreateInfo,
                      &allocationCreateInfo, &image, &allocation,
@@ -60,6 +64,12 @@ VulkanImage::VulkanImage(VulkanInstance* vulkanInstance, VkFormat format,
 VulkanImage::~VulkanImage() {
   if (allocation != nullptr)
     vmaDestroyImage(vulkanInstance->allocator, image, allocation);
+}
+
+void VulkanImage::writeData(void* src) {
+  // TODO(marceline-cramer) This function is bad, please replace
+  // Consider a streaming job system for all static GPU assets
+  memcpy(allocationInfo.pMappedData, src, allocationInfo.size);
 }
 
 }  // namespace mondradiko
