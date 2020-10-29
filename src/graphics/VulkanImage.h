@@ -29,6 +29,8 @@
 #include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class VulkanImage {
  public:
   VulkanImage(VulkanInstance*, VkFormat, uint32_t, uint32_t, VkImageUsageFlags,
@@ -45,5 +47,7 @@ class VulkanImage {
  private:
   VulkanInstance* vulkanInstance;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_VULKANIMAGE_H_

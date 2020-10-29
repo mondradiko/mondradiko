@@ -30,6 +30,8 @@
 
 #include "log/log.h"
 
+namespace mondradiko {
+
 NetworkClient::NetworkClient(const char* serverAddress, int port) {
   state = ClientState::Connecting;
 
@@ -69,3 +71,5 @@ bool NetworkClient::readEvent(ClientEvent* event) {
 }
 
 void NetworkClient::disconnect() { state = ClientState::Disconnected; }
+
+}  // namespace mondradiko

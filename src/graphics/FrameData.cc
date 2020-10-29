@@ -28,6 +28,8 @@
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 FrameData::FrameData(VulkanInstance* vulkanInstance,
                      uint32_t framesInFlightCount)
     : vulkanInstance(vulkanInstance), framesInFlight(framesInFlightCount) {
@@ -118,3 +120,5 @@ void FrameData::submitPrimaryCommand() {
 
   framesInFlight[currentFrame].submitted = true;
 }
+
+}  // namespace mondradiko

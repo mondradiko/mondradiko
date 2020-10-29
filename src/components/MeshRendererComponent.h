@@ -32,6 +32,8 @@
 #include "components/Component.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class MeshPipeline;  // Forward declaration because of codependence
 
 class MeshRendererComponent : public Component {
@@ -46,5 +48,7 @@ class MeshRendererComponent : public Component {
  private:
   MeshPipeline* meshPipeline;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_COMPONENTS_MESHRENDERERCOMPONENT_H_

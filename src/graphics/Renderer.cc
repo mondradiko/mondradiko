@@ -27,6 +27,8 @@
 
 #include "log/log.h"
 
+namespace mondradiko {
+
 Renderer::Renderer(VulkanInstance* _vulkanInstance, PlayerSession* _session) {
   log_dbg("Creating renderer.");
 
@@ -158,3 +160,5 @@ void Renderer::createPipelines() {
   meshPipeline = new MeshPipeline(
       vulkanInstance, cameraDescriptorSet->setLayout, compositePass, 0);
 }
+
+}  // namespace mondradiko

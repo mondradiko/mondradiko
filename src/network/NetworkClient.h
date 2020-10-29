@@ -31,6 +31,8 @@
 
 #include "network/NetworkShared.h"
 
+namespace mondradiko {
+
 enum class ClientEventType { Ping };
 
 struct ClientEvent {
@@ -53,5 +55,7 @@ class NetworkClient : public NetworkShared {
  private:
   std::queue<ClientEvent> eventQueue;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_NETWORK_NETWORKCLIENT_H_

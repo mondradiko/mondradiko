@@ -27,6 +27,8 @@
 
 #include "log/log.h"
 
+namespace mondradiko {
+
 MeshShader::MeshShader(VulkanInstance* vulkanInstance)
     : vulkanInstance(vulkanInstance),
       vertShader(vulkanInstance, "MeshShader.vert", shaderc_vertex_shader),
@@ -70,3 +72,5 @@ MeshShader::~MeshShader() { log_dbg("Destroying mesh shader."); }
 ShaderStages MeshShader::getStages() {
   return {vertShader.getStageCreateInfo(), fragShader.getStageCreateInfo()};
 }
+
+}  // namespace mondradiko

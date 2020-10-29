@@ -31,6 +31,8 @@
 #include "log/log.h"
 #include "xr/PlayerSession.h"
 
+namespace mondradiko {
+
 Viewport::Viewport(VkFormat format, VkRenderPass renderPass,
                    XrViewConfigurationView* viewConfig, PlayerSession* _session,
                    VulkanInstance* _vulkanInstance) {
@@ -166,3 +168,5 @@ void Viewport::releaseSwapchainImage() {
 
   xrReleaseSwapchainImage(swapchain, &releaseInfo);
 }
+
+}  // namespace mondradiko

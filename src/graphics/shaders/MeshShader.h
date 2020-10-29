@@ -28,6 +28,8 @@
 
 #include "graphics/shaders/ShaderModule.h"
 
+namespace mondradiko {
+
 class MeshShader {
  public:
   explicit MeshShader(VulkanInstance*);
@@ -41,5 +43,7 @@ class MeshShader {
   ShaderModule vertShader;
   ShaderModule fragShader;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_SHADERS_MESHSHADER_H_

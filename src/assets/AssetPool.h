@@ -30,6 +30,8 @@
 #include <unordered_map>
 #include <string>
 
+namespace mondradiko {
+
 template<class T>
 class AssetPool {
  public:
@@ -65,5 +67,7 @@ AssetHandle<T> AssetPool<T>::load(std::string key, T* newAsset) {
     pool.emplace(key, newAsset);
     return AssetHandle<T>(newAsset);
 }
+
+}  // namespace mondradiko
 
 #endif  // SRC_ASSETS_ASSETPOOL_H_

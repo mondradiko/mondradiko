@@ -34,6 +34,8 @@
 #include "scene/Entity.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class Scene {
  public:
   Scene(Filesystem*, Renderer*);
@@ -51,5 +53,7 @@ class Scene {
 
   Assimp::Importer importer;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_SCENE_SCENE_H_

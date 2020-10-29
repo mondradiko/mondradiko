@@ -31,6 +31,8 @@
 #include "components/Component.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class Scene;  // Forward declaration because of codependence
 
 // This is probably the least thread-friendly class in existence
@@ -54,5 +56,7 @@ class Entity {
  private:
   Scene* scene;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_SCENE_ENTITY_H_

@@ -28,6 +28,8 @@
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 VulkanBuffer::VulkanBuffer(VulkanInstance* vulkanInstance, size_t bufferSize,
                            VkBufferUsageFlags bufferUsageFlags,
                            VmaMemoryUsage memoryUsage)
@@ -59,3 +61,5 @@ void VulkanBuffer::writeData(void* src) {
   memcpy(dst, src, bufferSize);
   vkUnmapMemory(vulkanInstance->device, allocationInfo.deviceMemory);
 }
+
+}  // namespace mondradiko

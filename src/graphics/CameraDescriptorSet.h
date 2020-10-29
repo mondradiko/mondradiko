@@ -32,6 +32,8 @@
 #include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 struct CameraUniform {
   glm::mat4 view;
   glm::mat4 projection;
@@ -53,5 +55,7 @@ class CameraDescriptorSet {
  private:
   VulkanInstance* vulkanInstance;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_CAMERADESCRIPTORSET_H_

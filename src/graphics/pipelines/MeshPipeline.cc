@@ -32,6 +32,8 @@
 #include "graphics/shaders/MeshShader.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 MeshPipeline::MeshPipeline(VulkanInstance* _vulkanInstance,
                            VkDescriptorSetLayout cameraSetLayout,
                            VkRenderPass renderPass, uint32_t subpassIndex) {
@@ -256,3 +258,5 @@ void MeshPipeline::createPipeline(VkRenderPass renderPass, uint32_t subpass) {
     log_ftl("Failed to create mesh pipeline.");
   }
 }
+
+}  // namespace mondradiko

@@ -26,6 +26,8 @@
 #ifndef SRC_COMPONENTS_COMPONENT_H_
 #define SRC_COMPONENTS_COMPONENT_H_
 
+namespace mondradiko {
+
 class Entity;  // Forward declaration because of codependence
 
 class Component {
@@ -39,5 +41,7 @@ class Component {
   Component* prev = nullptr;
   Component* next = nullptr;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_COMPONENTS_COMPONENT_H_

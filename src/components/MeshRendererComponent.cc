@@ -29,6 +29,8 @@
 #include "assets/MeshAsset.h"
 #include "graphics/pipelines/MeshPipeline.h"
 
+namespace mondradiko {
+
 MeshRendererComponent::MeshRendererComponent(
     MeshPipeline* meshPipeline, AssetHandle<MeshAsset>& meshAsset,
     AssetHandle<MaterialAsset>& materialAsset)
@@ -41,3 +43,5 @@ MeshRendererComponent::MeshRendererComponent(
 MeshRendererComponent::~MeshRendererComponent() {
   meshPipeline->meshRenderers.erase(this);
 }
+
+}  // namespace mondradiko

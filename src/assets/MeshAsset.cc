@@ -31,6 +31,8 @@
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 MeshAsset::MeshAsset(std::string meshName, VulkanInstance* vulkanInstance,
                      aiMesh* mesh)
     : meshName(meshName), vulkanInstance(vulkanInstance) {
@@ -106,3 +108,5 @@ MeshAsset::~MeshAsset() {
   if (vertexBuffer != nullptr) delete vertexBuffer;
   if (indexBuffer != nullptr) delete indexBuffer;
 }
+
+}  // namespace mondradiko

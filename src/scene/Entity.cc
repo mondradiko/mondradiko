@@ -31,6 +31,8 @@
 #include "log/log.h"
 #include "scene/Scene.h"
 
+namespace mondradiko {
+
 Entity::Entity(Scene* scene) : name("root"), scene(scene) {}
 
 Entity::Entity(Scene* scene, std::string parentName, const aiScene* modelScene,
@@ -80,3 +82,5 @@ void Entity::addComponent(Component* component) {
   component->next = firstComponent;
   firstComponent = component;
 }
+
+}  // namespace mondradiko

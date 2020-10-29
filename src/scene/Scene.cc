@@ -34,6 +34,8 @@
 #include "log/AssimpLogStream.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 Scene::Scene(Filesystem* fs, Renderer* renderer)
     : fs(fs), renderer(renderer), rootEntity(this) {
   log_dbg("Creating scene.");
@@ -41,13 +43,13 @@ Scene::Scene(Filesystem* fs, Renderer* renderer)
   // Abandon all hope, ye who enter here.
   Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
   Assimp::DefaultLogger::get()->attachStream(
-      new AssimpLogStream(Log::LOG_LEVEL_INFO), Assimp::Logger::Info);
+      new AssimpLogStream(LOG_LEVEL_INFO), Assimp::Logger::Info);
   Assimp::DefaultLogger::get()->attachStream(
-      new AssimpLogStream(Log::LOG_LEVEL_DEBUG), Assimp::Logger::Debugging);
+      new AssimpLogStream(LOG_LEVEL_DEBUG), Assimp::Logger::Debugging);
   Assimp::DefaultLogger::get()->attachStream(
-      new AssimpLogStream(Log::LOG_LEVEL_WARNING), Assimp::Logger::Warn);
+      new AssimpLogStream(LOG_LEVEL_WARNING), Assimp::Logger::Warn);
   Assimp::DefaultLogger::get()->attachStream(
-      new AssimpLogStream(Log::LOG_LEVEL_ERROR), Assimp::Logger::Err);
+      new AssimpLogStream(LOG_LEVEL_ERROR), Assimp::Logger::Err);
 
   importer.SetIOHandler(new AssimpIOSystem(fs));
 }
@@ -76,3 +78,5 @@ bool Scene::loadModel(const char* fileName) {
   // aiScene is freed automatically
   return true;
 }
+
+}  // namespace mondradiko

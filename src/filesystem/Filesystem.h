@@ -30,6 +30,8 @@
 
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class Filesystem {
  public:
   explicit Filesystem(const char*);
@@ -42,5 +44,7 @@ class Filesystem {
 
  private:
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_FILESYSTEM_FILESYSTEM_H_

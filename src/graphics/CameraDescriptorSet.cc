@@ -29,6 +29,8 @@
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 static glm::mat4 createProjectionFromFOV(const XrFovf fov, const float near_z,
                                          const float far_z) {
   const float tan_left = tanf(fov.angleLeft);
@@ -146,3 +148,5 @@ void CameraDescriptorSet::bind(VkCommandBuffer commandBuffer,
                           pipelineLayout, 0, 1, &descriptorSets[viewIndex], 0,
                           nullptr);
 }
+
+}  // namespace mondradiko

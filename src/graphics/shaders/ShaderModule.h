@@ -33,6 +33,8 @@
 #include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 using ShaderStages = std::vector<VkPipelineShaderStageCreateInfo>;
 
 class ShaderModule {
@@ -54,5 +56,7 @@ class ShaderModule {
   VkShaderModule shaderModule;
   bool compiled;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_SHADERS_SHADERMODULE_H_

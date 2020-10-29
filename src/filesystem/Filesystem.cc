@@ -29,6 +29,8 @@
 
 #include "log/log.h"
 
+namespace mondradiko {
+
 Filesystem::Filesystem(const char* archive) : archive(archive) {
   log_dbg("Mounting filesystem from path:");
   log_dbg(archive);
@@ -74,3 +76,5 @@ bool Filesystem::loadBinaryFile(const char* fileName,
 
   return true;
 }
+
+}  // namespace mondradiko

@@ -28,6 +28,8 @@
 
 #include "log/log.h"
 
+namespace mondradiko {
+
 NetworkShared::~NetworkShared() { log_dbg("Disconnecting from server."); }
 
 bool NetworkShared::connect(const char* serverAddress, int port) {
@@ -41,3 +43,5 @@ bool NetworkShared::authenticate() {
 
   return true;
 }
+
+}  // namespace mondradiko

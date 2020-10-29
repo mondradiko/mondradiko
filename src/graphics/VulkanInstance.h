@@ -31,6 +31,8 @@
 
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class XrDisplay;
 struct VulkanRequirements;
 
@@ -78,5 +80,7 @@ class VulkanInstance {
   PFN_vkDestroyDebugUtilsMessengerEXT ext_vkDestroyDebugUtilsMessengerEXT =
       nullptr;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_VULKANINSTANCE_H_

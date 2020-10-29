@@ -33,6 +33,8 @@
 #include "src/api_headers.h"
 #include "xr/XrDisplay.h"
 
+namespace mondradiko {
+
 // Forward declarations because of codependency
 class Renderer;
 class Viewport;
@@ -61,5 +63,7 @@ class PlayerSession {
   XrDisplay* display;
   VulkanInstance* vulkanInstance;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_XR_PLAYERSESSION_H_

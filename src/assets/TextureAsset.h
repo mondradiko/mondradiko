@@ -31,6 +31,8 @@
 #include "assets/Asset.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class VulkanImage;
 class VulkanInstance;
 
@@ -44,5 +46,7 @@ class TextureAsset : public Asset {
  private:
   VulkanInstance* vulkanInstance;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_ASSETS_TEXTUREASSET_H_

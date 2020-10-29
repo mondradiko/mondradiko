@@ -31,6 +31,8 @@
 #include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 struct FrameInFlight {
   VkCommandBuffer commandBuffer;
   VkFence isInUse;
@@ -52,5 +54,7 @@ class FrameData {
   uint32_t currentFrame = 0;
   std::vector<FrameInFlight> framesInFlight;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_FRAMEDATA_H_

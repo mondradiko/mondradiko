@@ -27,8 +27,12 @@
 
 #include "scene/Entity.h"
 
+namespace mondradiko {
+
 Component::~Component() {
   parent->firstComponent = next;
   if (prev) prev->next = next;
   if (next) next->prev = prev;
 }
+
+}  // namespace mondradiko

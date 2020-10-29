@@ -29,6 +29,8 @@
 #include "log/log.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 // I am so sorry to whoever reading this
 // that this class has to exist and that
 // it exists in the way that it does,
@@ -37,12 +39,14 @@
 
 class AssimpLogStream : public Assimp::LogStream {
  public:
-  explicit AssimpLogStream(Log::LogLevel logLevel) : logLevel(logLevel) {}
+  explicit AssimpLogStream(LogLevel logLevel) : logLevel(logLevel) {}
 
   void write(const char* message) { log_at(logLevel, message); }
 
  private:
-  Log::LogLevel logLevel;
+  LogLevel logLevel;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_LOG_ASSIMPLOGSTREAM_H_

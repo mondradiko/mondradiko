@@ -29,6 +29,8 @@
 #include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class VulkanBuffer {
  public:
   VulkanBuffer(VulkanInstance*, size_t, VkBufferUsageFlags, VmaMemoryUsage);
@@ -44,5 +46,7 @@ class VulkanBuffer {
  private:
   VulkanInstance* vulkanInstance;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_VULKANBUFFER_H_

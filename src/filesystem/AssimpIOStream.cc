@@ -27,6 +27,8 @@
 
 #include "filesystem/Filesystem.h"
 
+namespace mondradiko {
+
 AssimpIOStream::AssimpIOStream(Filesystem* fs, const char* fileName,
                                const char* mode)
     : fs(fs) {
@@ -71,3 +73,5 @@ size_t AssimpIOStream::FileSize() const { return contents.size(); }
 void AssimpIOStream::Flush() {
   // We're not allowing writing, so flushing is not necessary
 }
+
+}  // namespace mondradiko

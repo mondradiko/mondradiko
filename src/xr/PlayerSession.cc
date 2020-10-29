@@ -29,6 +29,8 @@
 #include "graphics/Renderer.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 PlayerSession::PlayerSession(XrDisplay* _display,
                              VulkanInstance* _vulkanInstance) {
   log_dbg("Creating OpenXR session.");
@@ -237,3 +239,5 @@ bool PlayerSession::createViewports(std::vector<Viewport*>* viewports,
 
   return true;
 }
+
+}  // namespace mondradiko

@@ -30,22 +30,24 @@
 #include <stdexcept>
 #include <string>
 
-const char* Log::getLogPrefix(LogLevel level) {
+namespace mondradiko {
+
+const char* getLogPrefix(LogLevel level) {
   switch (level) {
-    case Log::LOG_LEVEL_INFO:
+    case LOG_LEVEL_INFO:
       return "\e[36m[INF ";
-    case Log::LOG_LEVEL_DEBUG:
+    case LOG_LEVEL_DEBUG:
       return "\e[32m[DBG ";
-    case Log::LOG_LEVEL_WARNING:
+    case LOG_LEVEL_WARNING:
       return "\e[33m[WRN ";
-    case Log::LOG_LEVEL_ERROR:
+    case LOG_LEVEL_ERROR:
       return "\e[33m[ERR ";
     default:
       return "\e[31m[FTL ";
   }
 }
 
-void Log::log(const char* filePath, int line, LogLevel level,
+void log(const char* filePath, int line, LogLevel level,
               const char* message) {
   const char* prefix = getLogPrefix(level);
   std::ostringstream header;
@@ -57,7 +59,9 @@ void Log::log(const char* filePath, int line, LogLevel level,
   std::cerr << std::left << std::setw(55) << header.str();
   std::cerr << message << "\e[0m" << std::endl;
 
-  if (level == Log::LOG_LEVEL_FATAL) {
+  if (level == LOG_LEVEL_FATAL) {
     throw std::runtime_error(message);
   }
 }
+
+}  // namespace mondradiko

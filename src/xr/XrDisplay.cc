@@ -38,6 +38,8 @@
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 #define XR_LOAD_FN_PTR(name, fnPtr) \
   xrGetInstanceProcAddr(instance, name,   \
                         reinterpret_cast<PFN_xrVoidFunction *>(&fnPtr))
@@ -47,22 +49,22 @@ debugCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity,
               XrDebugUtilsMessageTypeFlagsEXT messageType,
               const XrDebugUtilsMessengerCallbackDataEXT *pCallbackData,
               void *pUserData) {
-  Log::LogLevel severity;
+  LogLevel severity;
 
   switch (messageSeverity) {
     case XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-      severity = Log::LOG_LEVEL_INFO;
+      severity = LOG_LEVEL_INFO;
       break;
     case XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-      severity = Log::LOG_LEVEL_WARNING;
+      severity = LOG_LEVEL_WARNING;
       break;
     case XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
     default:
-      severity = Log::LOG_LEVEL_ERROR;
+      severity = LOG_LEVEL_ERROR;
       break;
   }
 
-  Log::log("OpenXRValidation", 0, severity, pCallbackData->message);
+  log("OpenXRValidation", 0, severity, pCallbackData->message);
   return VK_FALSE;
 }
 
@@ -245,3 +247,5 @@ void XrDisplay::findSystem() {
     log_ftl("Failed to find OpenXR HMD.");
   }
 }
+
+}  // namespace mondradiko

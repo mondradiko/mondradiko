@@ -26,6 +26,8 @@
 #ifndef SRC_ASSETS_ASSET_H_
 #define SRC_ASSETS_ASSET_H_
 
+namespace mondradiko {
+
 class Asset {
  public:
   virtual ~Asset() {}
@@ -35,5 +37,7 @@ class Asset {
 
   int refCount = 0;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_ASSETS_ASSET_H_

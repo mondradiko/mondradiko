@@ -36,6 +36,8 @@
 #include "src/api_headers.h"
 #include "xr/PlayerSession.h"
 
+namespace mondradiko {
+
 class Renderer {
  public:
   Renderer(VulkanInstance*, PlayerSession*);
@@ -61,5 +63,7 @@ class Renderer {
   void createRenderPasses();
   void createPipelines();
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_RENDERER_H_

@@ -28,6 +28,8 @@
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 ShaderModule::ShaderModule(VulkanInstance* _vki, std::string _shaderName,
                            shaderc_shader_kind _shaderKind) {
   vki = _vki;
@@ -127,3 +129,5 @@ VkPipelineShaderStageCreateInfo ShaderModule::getStageCreateInfo() {
     return {};
   }
 }
+
+}  // namespace mondradiko

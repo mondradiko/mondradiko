@@ -34,6 +34,8 @@
 #include "graphics/VulkanBuffer.h"
 #include "graphics/VulkanInstance.h"
 
+namespace mondradiko {
+
 using MeshVertexAttributeDescriptions =
     std::array<VkVertexInputAttributeDescription, 3>;
 
@@ -89,5 +91,7 @@ class MeshAsset : public Asset {
  private:
   VulkanInstance* vulkanInstance;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_ASSETS_MESHASSET_H_

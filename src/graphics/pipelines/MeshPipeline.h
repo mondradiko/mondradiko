@@ -40,6 +40,8 @@
 #include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class MeshPipeline {
  public:
   MeshPipeline(VulkanInstance*, VkDescriptorSetLayout, VkRenderPass, uint32_t);
@@ -70,5 +72,7 @@ class MeshPipeline {
   void createPipelineLayout(VkDescriptorSetLayout);
   void createPipeline(VkRenderPass, uint32_t);
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_PIPELINES_MESHPIPELINE_H_

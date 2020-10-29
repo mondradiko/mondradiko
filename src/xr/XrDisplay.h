@@ -32,6 +32,8 @@
 
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 // Forward declarations because of codependency
 class VulkanInstance;
 class Viewport;
@@ -79,5 +81,7 @@ class XrDisplay {
   PFN_xrGetVulkanDeviceExtensionsKHR ext_xrGetVulkanDeviceExtensionsKHR =
       nullptr;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_XR_XRDISPLAY_H_

@@ -28,6 +28,8 @@
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 VulkanImage::VulkanImage(VulkanInstance* vulkanInstance, VkFormat format,
                          uint32_t width, uint32_t height,
                          VkImageUsageFlags imageUsage,
@@ -59,3 +61,5 @@ VulkanImage::~VulkanImage() {
   if (allocation != nullptr)
     vmaDestroyImage(vulkanInstance->allocator, image, allocation);
 }
+
+}  // namespace mondradiko

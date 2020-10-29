@@ -28,6 +28,8 @@
 #include "assets/MaterialAsset.h"
 #include "graphics/pipelines/MeshPipeline.h"
 
+namespace mondradiko {
+
 MaterialAsset::MaterialAsset(MeshPipeline *meshPipeline,
                              std::string fileName,
                              const aiScene *modelScene,
@@ -40,3 +42,5 @@ MaterialAsset::MaterialAsset(MeshPipeline *meshPipeline,
 
 MaterialAsset::~MaterialAsset() {
 }
+
+}  // namespace mondradiko

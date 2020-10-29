@@ -26,6 +26,8 @@
 #ifndef SRC_ASSETS_ASSETHANDLE_H_
 #define SRC_ASSETS_ASSETHANDLE_H_
 
+namespace mondradiko {
+
 template<class T>
 class AssetHandle {
  public:
@@ -62,5 +64,7 @@ void AssetHandle<T>::operator=(const AssetHandle<T>& other) {
     ptr = other.ptr;
     ptr->refCount++;
 }
+
+}  // namespace mondradiko
 
 #endif  // SRC_ASSETS_ASSETHANDLE_H_

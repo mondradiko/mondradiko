@@ -33,6 +33,8 @@
 #include "assets/TextureAsset.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class MeshPipeline;
 
 class MaterialAsset : public Asset {
@@ -45,5 +47,7 @@ class MaterialAsset : public Asset {
  private:
   MeshPipeline* meshPipeline;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_ASSETS_MATERIALASSET_H_

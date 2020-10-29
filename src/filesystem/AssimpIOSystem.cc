@@ -29,6 +29,8 @@
 #include "filesystem/Filesystem.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 AssimpIOSystem::AssimpIOSystem(Filesystem* fs) : fs(fs) {}
 
 AssimpIOSystem::~AssimpIOSystem() {}
@@ -42,3 +44,5 @@ Assimp::IOStream* AssimpIOSystem::Open(const char* fileName, const char* mode) {
 }
 
 void AssimpIOSystem::Close(Assimp::IOStream* file) {}
+
+}  // namespace mondradiko

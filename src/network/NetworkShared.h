@@ -27,6 +27,8 @@
 #ifndef SRC_NETWORK_NETWORKSHARED_H_
 #define SRC_NETWORK_NETWORKSHARED_H_
 
+namespace mondradiko {
+
 class NetworkShared {
  public:
   ~NetworkShared();
@@ -37,5 +39,7 @@ class NetworkShared {
 
  private:
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_NETWORK_NETWORKSHARED_H_

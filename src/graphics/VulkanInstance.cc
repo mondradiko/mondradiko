@@ -33,28 +33,30 @@
 #include "log/log.h"
 #include "xr/XrDisplay.h"
 
+namespace mondradiko {
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL
 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
               VkDebugUtilsMessageTypeFlagsEXT messageType,
               const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
               void* pUserData) {
-  Log::LogLevel severity;
+  LogLevel severity;
 
   switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-      severity = Log::LOG_LEVEL_INFO;
+      severity = LOG_LEVEL_INFO;
       break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-      severity = Log::LOG_LEVEL_WARNING;
+      severity = LOG_LEVEL_WARNING;
       break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
     default:
-      severity = Log::LOG_LEVEL_ERROR;
+      severity = LOG_LEVEL_ERROR;
       break;
   }
 
   // Add "../src/" so that it's clipped off in logging
-  Log::log("../src/VulkanValidation", 0, severity, pCallbackData->pMessage);
+  log("../src/VulkanValidation", 0, severity, pCallbackData->pMessage);
   return VK_FALSE;
 }
 
@@ -332,3 +334,5 @@ void VulkanInstance::createDescriptorPool() {
     log_ftl("Failed to create Vulkan descriptor pool.");
   }
 }
+
+}  // namespace mondradiko

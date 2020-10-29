@@ -28,6 +28,8 @@
 #include "graphics/VulkanImage.h"
 #include "log/log.h"
 
+namespace mondradiko {
+
 TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture)
     : vulkanInstance(vulkanInstance) {
   image = new VulkanImage(
@@ -40,3 +42,5 @@ TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture)
 TextureAsset::~TextureAsset() {
   if (image) delete image;
 }
+
+}  // namespace mondradiko

@@ -32,6 +32,8 @@
 #include "src/api_headers.h"
 #include "xr/PlayerSession.h"
 
+namespace mondradiko {
+
 struct ViewportImage {
   VkImage image;
   VkImageView imageView;
@@ -61,5 +63,7 @@ class Viewport {
 
   uint32_t currentIndex;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_GRAPHICS_VIEWPORT_H_

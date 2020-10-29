@@ -31,6 +31,8 @@
 #include "filesystem/Filesystem.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class AssimpIOStream : public Assimp::IOStream {
  public:
   AssimpIOStream(Filesystem*, const char*, const char*);
@@ -49,5 +51,7 @@ class AssimpIOStream : public Assimp::IOStream {
   std::vector<char> contents;
   size_t position;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_FILESYSTEM_ASSIMPIOSTREAM_H_

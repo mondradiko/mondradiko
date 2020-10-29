@@ -48,13 +48,13 @@ void signalHandler(int signum) {
 }
 
 void client_session_run(const char *serverAddress, int port) {
-  Filesystem fs("../test-folder/");
-  XrDisplay xr;
-  VulkanInstance vulkanInstance(&xr);
-  PlayerSession session(&xr, &vulkanInstance);
-  Renderer renderer(&vulkanInstance, &session);
-  NetworkClient client(serverAddress, port);
-  Scene scene(&fs, &renderer);
+  mondradiko::Filesystem fs("../test-folder/");
+  mondradiko::XrDisplay xr;
+  mondradiko::VulkanInstance vulkanInstance(&xr);
+  mondradiko::PlayerSession session(&xr, &vulkanInstance);
+  mondradiko::Renderer renderer(&vulkanInstance, &session);
+  mondradiko::NetworkClient client(serverAddress, port);
+  mondradiko::Scene scene(&fs, &renderer);
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
@@ -79,7 +79,7 @@ void client_session_run(const char *serverAddress, int port) {
       client.update();
       scene.update(dt);
 
-      ClientEvent event;
+      mondradiko::ClientEvent event;
       while (client.readEvent(&event)) {
         log_dbg("Received client event.");
       }

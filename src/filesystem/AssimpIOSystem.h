@@ -29,6 +29,8 @@
 #include "filesystem/Filesystem.h"
 #include "src/api_headers.h"
 
+namespace mondradiko {
+
 class AssimpIOSystem : public Assimp::IOSystem {
  public:
   explicit AssimpIOSystem(Filesystem*);
@@ -42,5 +44,7 @@ class AssimpIOSystem : public Assimp::IOSystem {
  private:
   Filesystem* fs;
 };
+
+}  // namespace mondradiko
 
 #endif  // SRC_FILESYSTEM_ASSIMPIOSYSTEM_H_
