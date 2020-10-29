@@ -34,15 +34,15 @@ VulkanBuffer::VulkanBuffer(VulkanInstance* vulkanInstance, size_t bufferSize,
                            VkBufferUsageFlags bufferUsageFlags,
                            VmaMemoryUsage memoryUsage)
     : bufferSize(bufferSize), vulkanInstance(vulkanInstance) {
-  VkBufferCreateInfo vertexBufferInfo{
-      .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-      .size = bufferSize,
-      .usage = bufferUsageFlags,
-      .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
+  VkBufferCreateInfo bufferInfo{.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+                                .size = bufferSize,
+                                .usage = bufferUsageFlags,
+                                .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
 
-  VmaAllocationCreateInfo allocationCreateInfo{.usage = memoryUsage};
+  VmaAllocationCreateInfo allocationCreateInfo{
+      .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memoryUsage};
 
-  if (vmaCreateBuffer(vulkanInstance->allocator, &vertexBufferInfo,
+  if (vmaCreateBuffer(vulkanInstance->allocator, &bufferInfo,
                       &allocationCreateInfo, &buffer, &allocation,
                       &allocationInfo) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan buffer.");
@@ -55,11 +55,9 @@ VulkanBuffer::~VulkanBuffer() {
 }
 
 void VulkanBuffer::writeData(void* src) {
-  void* dst;
-  vkMapMemory(vulkanInstance->device, allocationInfo.deviceMemory,
-              allocationInfo.offset, bufferSize, 0, &dst);
-  memcpy(dst, src, bufferSize);
-  vkUnmapMemory(vulkanInstance->device, allocationInfo.deviceMemory);
+  // TODO(marceline-cramer) This function is bad, please replace
+  // Consider a streaming job system for all static GPU assets
+  memcpy(allocationInfo.pMappedData, src, allocationInfo.size);
 }
 
 }  // namespace mondradiko
