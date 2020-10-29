@@ -38,10 +38,11 @@ class VulkanInstance;
 
 class TextureAsset : public Asset {
  public:
-  TextureAsset(VulkanInstance*, aiTexture*);
+  TextureAsset(VulkanInstance*, aiTexture*, VkSampler);
   ~TextureAsset();
 
   VulkanImage* image = nullptr;
+  VkSampler sampler;
 
  private:
   VulkanInstance* vulkanInstance;

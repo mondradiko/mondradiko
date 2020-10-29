@@ -30,8 +30,9 @@
 
 namespace mondradiko {
 
-TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture)
-    : vulkanInstance(vulkanInstance) {
+TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture,
+                           VkSampler sampler)
+    : vulkanInstance(vulkanInstance), sampler(sampler) {
   // By default, load directly from the embedded texture
   void* texData = texture->pcData;
   VkFormat texFormat = VK_FORMAT_R8G8B8A8_SRGB;
@@ -67,6 +68,7 @@ TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture)
   image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
   image->writeData(texData);
   image->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  image->createView();
 
   // If we loaded from stbi, free the memory
   if (texture->mHeight == 0) {
