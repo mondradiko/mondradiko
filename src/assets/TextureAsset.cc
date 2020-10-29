@@ -34,14 +34,15 @@ TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture)
     : vulkanInstance(vulkanInstance) {
   // By default, load directly from the embedded texture
   void* texData = texture->pcData;
+  VkFormat texFormat = VK_FORMAT_R8G8B8A8_SRGB;
+  int texWidth = texture->mWidth;
+  int texHeight = texture->mHeight;
 
   // If the height of the texture is 0,
   // that means that it's stored in a compressed format
   // like PNG, JPG, etc., and mWidth is size in bytes
   if (texture->mHeight == 0) {
-    int texWidth, texHeight, texChannels;
-    VkDeviceSize imageSize;
-
+    int texChannels;
     const stbi_uc* embeddedData =
         reinterpret_cast<const stbi_uc*>(texture->pcData);
 
@@ -52,24 +53,16 @@ TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture)
       texData = stbi_load_from_memory(embeddedData, texture->mWidth, &texWidth,
                                       &texHeight, &texChannels, STBI_rgb_alpha);
 
-      imageSize = texWidth * texHeight * 4;
-
       if (!texData) {
         log_ftl("Failed to load texture image.");
       }
     }
-
-    image = new VulkanImage(
-        vulkanInstance, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight,
-        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-        VMA_MEMORY_USAGE_CPU_TO_GPU);
-  } else {
-    image = new VulkanImage(
-        vulkanInstance, VK_FORMAT_R8G8B8A8_UNORM, texture->mWidth,
-        texture->mHeight,
-        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-        VMA_MEMORY_USAGE_CPU_TO_GPU);
   }
+
+  image = new VulkanImage(
+      vulkanInstance, texFormat, texWidth, texHeight,
+      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+      VMA_MEMORY_USAGE_CPU_TO_GPU);
 
   image->writeData(texData);
 
