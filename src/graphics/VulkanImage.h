@@ -39,6 +39,7 @@ class VulkanImage {
 
   void writeData(void*);
   void transitionLayout(VkImageLayout);
+  void createView();
 
   VkFormat format;
   VkImageLayout layout;
@@ -47,6 +48,7 @@ class VulkanImage {
   VmaAllocation allocation = nullptr;
   VmaAllocationInfo allocationInfo;
   VkImage image = VK_NULL_HANDLE;
+  VkImageView view = VK_NULL_HANDLE;
 
  private:
   VulkanInstance* vulkanInstance;

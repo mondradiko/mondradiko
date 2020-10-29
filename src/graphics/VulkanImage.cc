@@ -63,6 +63,8 @@ VulkanImage::VulkanImage(VulkanInstance* vulkanInstance, VkFormat format,
 }
 
 VulkanImage::~VulkanImage() {
+  if (view != VK_NULL_HANDLE)
+    vkDestroyImageView(vulkanInstance->device, view, nullptr);
   if (allocation != nullptr)
     vmaDestroyImage(vulkanInstance->allocator, image, allocation);
 }
@@ -114,6 +116,24 @@ void VulkanImage::transitionLayout(VkImageLayout targetLayout) {
   vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0,
                        nullptr, 0, nullptr, 1, &barrier);
   vulkanInstance->endSingleTimeCommands(commandBuffer);
+}
+
+void VulkanImage::createView() {
+  VkImageViewCreateInfo viewInfo{
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .image = image,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format = format,
+      .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                           .baseMipLevel = 0,
+                           .levelCount = 1,
+                           .baseArrayLayer = 0,
+                           .layerCount = 1}};
+
+  if (vkCreateImageView(vulkanInstance->device, &viewInfo, nullptr, &view) !=
+      VK_SUCCESS) {
+    log_ftl("Failed to create VulkanImage view.");
+  }
 }
 
 }  // namespace mondradiko
