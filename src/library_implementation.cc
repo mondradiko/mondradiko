@@ -25,3 +25,6 @@
 
 #define VMA_IMPLEMENTATION
 #include "lib/vk_mem_alloc.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "lib/stb_image.h"

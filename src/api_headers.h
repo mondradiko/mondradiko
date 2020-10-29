@@ -35,6 +35,7 @@
 #include "shaderc/shaderc.hpp"
 
 #include "lib/vk_mem_alloc.h"
+#include "lib/stb_image.h"
 
 #include "assimp/DefaultLogger.hpp"
 #include "assimp/Importer.hpp"
