@@ -37,11 +37,13 @@ struct FrameInFlight {
   VkCommandBuffer commandBuffer;
   VkFence isInUse;
   bool submitted;
+
+  VkDescriptorSet descriptors;
 };
 
 class FrameData {
  public:
-  FrameData(VulkanInstance*, uint32_t);
+  FrameData(VulkanInstance*, uint32_t, VkDescriptorSetLayout);
   ~FrameData();
 
   VkCommandBuffer beginPrimaryCommand();

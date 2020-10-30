@@ -31,8 +31,9 @@
 namespace mondradiko {
 
 FrameData::FrameData(VulkanInstance* vulkanInstance,
-                     uint32_t framesInFlightCount)
-    : vulkanInstance(vulkanInstance), framesInFlight(framesInFlightCount) {
+                     uint32_t frame_count,
+                     VkDescriptorSetLayout descriptor_layout)
+    : vulkanInstance(vulkanInstance), framesInFlight(frame_count) {
   log_dbg("Creating frame data.");
 
   for (FrameInFlight& frame : framesInFlight) {
@@ -55,6 +56,17 @@ FrameData::FrameData(VulkanInstance* vulkanInstance,
     }
 
     frame.submitted = false;
+
+    VkDescriptorSetAllocateInfo descriptorInfo{
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+      .descriptorPool = vulkanInstance->descriptorPool,
+      .descriptorSetCount = 1,
+      .pSetLayouts = &descriptor_layout
+    };
+
+    if (vkAllocateDescriptorSets(vulkanInstance->device, &descriptorInfo, &frame.descriptors) != VK_SUCCESS) {
+      log_ftl("Failed to allocate frame descriptors.");
+    }
   }
 }
 
