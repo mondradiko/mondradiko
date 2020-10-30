@@ -42,9 +42,13 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, PlayerSession* _session) {
     log_ftl("Failed to create Renderer viewports.");
   }
 
+  createDescriptorSetLayout();
+
   cameraDescriptorSet =
       new CameraDescriptorSet(vulkanInstance, viewports.size());
-  frameData = new FrameData(vulkanInstance, 2);  // Pipeline two frames
+
+  // Pipeline two frames
+  frameData = new FrameData(vulkanInstance, 2, main_descriptor_layout);
 
   createPipelines();
 }
@@ -57,6 +61,9 @@ Renderer::~Renderer() {
   if (cameraDescriptorSet != nullptr) delete cameraDescriptorSet;
   if (frameData != nullptr) delete frameData;
   if (meshPipeline != nullptr) delete meshPipeline;
+  if (main_descriptor_layout != VK_NULL_HANDLE)
+    vkDestroyDescriptorSetLayout(vulkanInstance->device, main_descriptor_layout,
+                                 nullptr);
 
   for (Viewport* viewport : viewports) {
     delete viewport;
@@ -153,6 +160,27 @@ void Renderer::createRenderPasses() {
   if (vkCreateRenderPass(vulkanInstance->device, &compositePassCreateInfo,
                          nullptr, &compositePass) != VK_SUCCESS) {
     log_ftl("Failed to create Renderer composite render pass.");
+  }
+}
+
+void Renderer::createDescriptorSetLayout() {
+  std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+  bindings.push_back(VkDescriptorSetLayoutBinding{
+    .binding = 0,
+    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    .descriptorCount = 128,
+    .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+  });
+
+  VkDescriptorSetLayoutCreateInfo layoutInfo{
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+    .bindingCount = static_cast<uint32_t>(bindings.size()),
+    .pBindings = bindings.data()
+  };
+
+  if (vkCreateDescriptorSetLayout(vulkanInstance->device, &layoutInfo, nullptr, &main_descriptor_layout) != VK_SUCCESS) {
+    log_ftl("Failed to create Renderer main descriptor set layout.");
   }
 }
 

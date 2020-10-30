@@ -51,6 +51,7 @@ class Renderer {
   VkRenderPass compositePass = VK_NULL_HANDLE;
   std::vector<Viewport*> viewports;
 
+  VkDescriptorSetLayout main_descriptor_layout = VK_NULL_HANDLE;
   FrameData* frameData = nullptr;
   MeshPipeline* meshPipeline = nullptr;
   CameraDescriptorSet* cameraDescriptorSet = nullptr;
@@ -61,6 +62,7 @@ class Renderer {
 
   void findSwapchainFormat();
   void createRenderPasses();
+  void createDescriptorSetLayout();
   void createPipelines();
 };
 
