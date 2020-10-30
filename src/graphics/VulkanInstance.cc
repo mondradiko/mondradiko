@@ -355,6 +355,9 @@ void VulkanInstance::createDescriptorPool() {
   poolSizes.push_back(
       {.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 1000});
 
+  poolSizes.push_back(
+      {.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = 1000});
+
   VkDescriptorPoolCreateInfo createInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
       .maxSets = 1000,
