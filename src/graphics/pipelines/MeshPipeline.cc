@@ -137,7 +137,7 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName,
 
     if (!cachedTexture) {
       cachedTexture = textureAssets.load(
-          textureName, new TextureAsset(vulkanInstance, texture));
+          textureName, new TextureAsset(vulkanInstance, texture, textureSampler));
     }
 
     return cachedTexture;
