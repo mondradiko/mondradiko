@@ -33,6 +33,32 @@
 
 namespace mondradiko {
 
+static glm::mat4 createProjectionFromFOV(const XrFovf fov, const float near_z,
+                                         const float far_z) {
+  const float tan_left = tanf(fov.angleLeft);
+  const float tan_right = tanf(fov.angleRight);
+
+  const float tan_down = tanf(fov.angleDown);
+  const float tan_up = tanf(fov.angleUp);
+
+  const float tan_width = tan_right - tan_left;
+  const float tan_height = tan_up - tan_down;
+
+  const float a11 = 2 / tan_width;
+  const float a22 = 2 / tan_height;
+
+  const float a31 = (tan_right + tan_left) / tan_width;
+  const float a32 = (tan_up + tan_down) / tan_height;
+  const float a33 = -far_z / (far_z - near_z);
+
+  const float a43 = -(far_z * near_z) / (far_z - near_z);
+
+  const float mat[16] = {a11, 0,   0,   0,  0, -a22, 0,   0,
+                         a31, a32, a33, -1, 0, 0,    a43, 0};
+
+  return glm::make_mat4(mat);
+}
+
 Viewport::Viewport(VkFormat format, VkRenderPass renderPass,
                    XrViewConfigurationView* viewConfig, PlayerSession* _session,
                    VulkanInstance* _vulkanInstance) {
@@ -116,6 +142,27 @@ Viewport::~Viewport() {
   }
 
   if (swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
+}
+
+void Viewport::updateView(XrView view,
+                          XrCompositionLayerProjectionView* projection,
+                          ViewportUniform* uniform) {
+  *projection = {.type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW,
+                 .pose = view.pose,
+                 .fov = view.fov};
+  projection->subImage = {.swapchain = swapchain};
+  projection->subImage.imageRect = {
+      .offset = {0, 0}, .extent = {(int32_t)width, (int32_t)height}};
+
+  glm::quat viewOrientation =
+      glm::quat(view.pose.orientation.w, view.pose.orientation.x,
+                view.pose.orientation.y, view.pose.orientation.z);
+
+  glm::vec3 viewPosition = glm::vec3(view.pose.position.x, view.pose.position.y,
+                                     view.pose.position.z);
+
+  uniform->view = glm::translate(glm::mat4(viewOrientation), -viewPosition);
+  uniform->projection = createProjectionFromFOV(view.fov, 0.001, 1000.0);
 }
 
 void Viewport::acquireSwapchainImage() {

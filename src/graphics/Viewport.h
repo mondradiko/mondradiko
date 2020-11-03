@@ -34,6 +34,11 @@
 
 namespace mondradiko {
 
+struct ViewportUniform {
+  glm::mat4 view;
+  glm::mat4 projection;
+};
+
 struct ViewportImage {
   VkImage image;
   VkImageView imageView;
@@ -46,6 +51,7 @@ class Viewport {
            VulkanInstance*);
   ~Viewport();
 
+  void updateView(XrView, XrCompositionLayerProjectionView*, ViewportUniform*);
   void acquireSwapchainImage();
   void beginRenderPass(VkCommandBuffer, VkRenderPass);
   void setCommandViewport(VkCommandBuffer);
