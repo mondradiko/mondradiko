@@ -35,14 +35,13 @@
 namespace mondradiko {
 
 MeshPipeline::MeshPipeline(VulkanInstance* _vulkanInstance,
-                           VkDescriptorSetLayout cameraSetLayout,
+                           VkPipelineLayout pipeline_layout,
                            VkRenderPass renderPass, uint32_t subpassIndex) {
   log_dbg("Creating mesh pipeline.");
 
   vulkanInstance = _vulkanInstance;
 
-  createPipelineLayout(cameraSetLayout);
-  createPipeline(renderPass, subpassIndex);
+  createPipeline(pipeline_layout, renderPass, subpassIndex);
   createTextureSampler();
 }
 
@@ -53,8 +52,6 @@ MeshPipeline::~MeshPipeline() {
     vkDestroySampler(vulkanInstance->device, textureSampler, nullptr);
   if (pipeline != VK_NULL_HANDLE)
     vkDestroyPipeline(vulkanInstance->device, pipeline, nullptr);
-  if (pipelineLayout != VK_NULL_HANDLE)
-    vkDestroyPipelineLayout(vulkanInstance->device, pipelineLayout, nullptr);
 }
 
 void MeshPipeline::render(VkCommandBuffer commandBuffer) {
@@ -137,7 +134,8 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName,
 
     if (!cachedTexture) {
       cachedTexture = textureAssets.load(
-          textureName, new TextureAsset(vulkanInstance, texture, textureSampler));
+          textureName,
+          new TextureAsset(vulkanInstance, texture, textureSampler));
     }
 
     return cachedTexture;
@@ -147,20 +145,8 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName,
   }
 }
 
-void MeshPipeline::createPipelineLayout(VkDescriptorSetLayout cameraSetLayout) {
-  VkPipelineLayoutCreateInfo createInfo{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .setLayoutCount = 1,
-      .pSetLayouts = &cameraSetLayout,
-      .pushConstantRangeCount = 0};
-
-  if (vkCreatePipelineLayout(vulkanInstance->device, &createInfo, nullptr,
-                             &pipelineLayout) != VK_SUCCESS) {
-    log_ftl("Failed to create mesh pipeline layout.");
-  }
-}
-
-void MeshPipeline::createPipeline(VkRenderPass renderPass, uint32_t subpass) {
+void MeshPipeline::createPipeline(VkPipelineLayout pipeline_layout,
+                                  VkRenderPass renderPass, uint32_t subpass) {
   MeshShader shader(vulkanInstance);
   auto shaderStages = shader.getStages();
 
@@ -249,7 +235,7 @@ void MeshPipeline::createPipeline(VkRenderPass renderPass, uint32_t subpass) {
       .pDepthStencilState = nullptr,
       .pColorBlendState = &colorBlending,
       .pDynamicState = &dynamicState,
-      .layout = pipelineLayout,
+      .layout = pipeline_layout,
       .renderPass = renderPass,
       .subpass = subpass,
       .basePipelineHandle = VK_NULL_HANDLE,

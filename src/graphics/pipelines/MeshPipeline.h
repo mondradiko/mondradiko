@@ -44,7 +44,7 @@ namespace mondradiko {
 
 class MeshPipeline {
  public:
-  MeshPipeline(VulkanInstance*, VkDescriptorSetLayout, VkRenderPass, uint32_t);
+  MeshPipeline(VulkanInstance*, VkPipelineLayout, VkRenderPass, uint32_t);
   ~MeshPipeline();
 
   void render(VkCommandBuffer);
@@ -57,7 +57,6 @@ class MeshPipeline {
   AssetHandle<MeshAsset> loadMesh(std::string, const aiScene*, uint32_t);
   AssetHandle<TextureAsset> loadTexture(std::string, const aiScene*, aiString);
 
-  VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
   VkPipeline pipeline = VK_NULL_HANDLE;
 
   VkSampler textureSampler = VK_NULL_HANDLE;
@@ -71,8 +70,7 @@ class MeshPipeline {
   AssetPool<MeshAsset> meshAssets;
   AssetPool<TextureAsset> textureAssets;
 
-  void createPipelineLayout(VkDescriptorSetLayout);
-  void createPipeline(VkRenderPass, uint32_t);
+  void createPipeline(VkPipelineLayout, VkRenderPass, uint32_t);
   void createTextureSampler();
 };
 
