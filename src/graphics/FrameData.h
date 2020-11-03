@@ -28,6 +28,7 @@
 
 #include <vector>
 
+#include "graphics/VulkanBuffer.h"
 #include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
@@ -39,22 +40,26 @@ struct FrameInFlight {
   bool submitted;
 
   VkDescriptorSet descriptors;
+
+  VulkanBuffer* viewports;
 };
 
 class FrameData {
  public:
-  FrameData(VulkanInstance*, uint32_t, VkDescriptorSetLayout);
+  FrameData(VulkanInstance*, uint32_t, VkDescriptorSetLayout, uint32_t);
   ~FrameData();
 
-  VkCommandBuffer beginPrimaryCommand();
-  void endPrimaryCommand();
-  void submitPrimaryCommand();
+  FrameInFlight* beginFrame();
+  FrameInFlight* getCurrentFrame();
+  void endFrame();
 
  private:
   VulkanInstance* vulkanInstance;
 
   uint32_t currentFrame = 0;
   std::vector<FrameInFlight> framesInFlight;
+
+  VkDescriptorSetLayout descriptor_layout;
 };
 
 }  // namespace mondradiko

@@ -25,15 +25,18 @@
 
 #include "graphics/FrameData.h"
 
+#include "graphics/Viewport.h"
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-FrameData::FrameData(VulkanInstance* vulkanInstance,
-                     uint32_t frame_count,
-                     VkDescriptorSetLayout descriptor_layout)
-    : vulkanInstance(vulkanInstance), framesInFlight(frame_count) {
+FrameData::FrameData(VulkanInstance* vulkanInstance, uint32_t frame_count,
+                     VkDescriptorSetLayout descriptor_layout,
+                     uint32_t view_count)
+    : vulkanInstance(vulkanInstance),
+      framesInFlight(frame_count),
+      descriptor_layout(descriptor_layout) {
   log_dbg("Creating frame data.");
 
   for (FrameInFlight& frame : framesInFlight) {
@@ -58,15 +61,19 @@ FrameData::FrameData(VulkanInstance* vulkanInstance,
     frame.submitted = false;
 
     VkDescriptorSetAllocateInfo descriptorInfo{
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-      .descriptorPool = vulkanInstance->descriptorPool,
-      .descriptorSetCount = 1,
-      .pSetLayouts = &descriptor_layout
-    };
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .descriptorPool = vulkanInstance->descriptorPool,
+        .descriptorSetCount = 1,
+        .pSetLayouts = &descriptor_layout};
 
-    if (vkAllocateDescriptorSets(vulkanInstance->device, &descriptorInfo, &frame.descriptors) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(vulkanInstance->device, &descriptorInfo,
+                                 &frame.descriptors) != VK_SUCCESS) {
       log_ftl("Failed to allocate frame descriptors.");
     }
+
+    frame.viewports = new VulkanBuffer(
+        vulkanInstance, sizeof(ViewportUniform) * view_count,
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
   }
 }
 
@@ -74,13 +81,13 @@ FrameData::~FrameData() {
   log_dbg("Destroying frame data.");
 
   for (FrameInFlight& frame : framesInFlight) {
-    vkFreeCommandBuffers(vulkanInstance->device, vulkanInstance->commandPool, 1,
-                         &frame.commandBuffer);
-    vkDestroyFence(vulkanInstance->device, frame.isInUse, nullptr);
+    if (frame.viewports != nullptr) delete frame.viewports;
+    if (frame.isInUse != VK_NULL_HANDLE)
+      vkDestroyFence(vulkanInstance->device, frame.isInUse, nullptr);
   }
 }
 
-VkCommandBuffer FrameData::beginPrimaryCommand() {
+FrameInFlight* FrameData::beginFrame() {
   if (framesInFlight[currentFrame].submitted) {
     vkWaitForFences(vulkanInstance->device, 1,
                     &framesInFlight[currentFrame].isInUse, VK_TRUE, UINT64_MAX);
@@ -91,22 +98,24 @@ VkCommandBuffer FrameData::beginPrimaryCommand() {
     currentFrame = 0;
   }
 
-  VkCommandBuffer commandBuffer = framesInFlight[currentFrame].commandBuffer;
+  FrameInFlight* frame = &framesInFlight[currentFrame];
 
   VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT};
 
-  vkBeginCommandBuffer(commandBuffer, &beginInfo);
+  vkBeginCommandBuffer(frame->commandBuffer, &beginInfo);
 
-  return commandBuffer;
+  return frame;
 }
 
-void FrameData::endPrimaryCommand() {
+FrameInFlight* FrameData::getCurrentFrame() {
+  return &framesInFlight[currentFrame];
+}
+
+void FrameData::endFrame() {
   vkEndCommandBuffer(framesInFlight[currentFrame].commandBuffer);
-}
 
-void FrameData::submitPrimaryCommand() {
   VkSubmitInfo submitInfo{};
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
