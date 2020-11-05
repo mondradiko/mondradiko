@@ -28,7 +28,6 @@
 
 #include <vector>
 
-#include "graphics/CameraDescriptorSet.h"
 #include "graphics/FrameData.h"
 #include "graphics/Viewport.h"
 #include "graphics/VulkanInstance.h"
@@ -52,9 +51,9 @@ class Renderer {
   std::vector<Viewport*> viewports;
 
   VkDescriptorSetLayout main_descriptor_layout = VK_NULL_HANDLE;
+  VkPipelineLayout main_pipeline_layout = VK_NULL_HANDLE;
   FrameData* frameData = nullptr;
   MeshPipeline* meshPipeline = nullptr;
-  CameraDescriptorSet* cameraDescriptorSet = nullptr;
 
  private:
   VulkanInstance* vulkanInstance;
@@ -63,6 +62,7 @@ class Renderer {
   void findSwapchainFormat();
   void createRenderPasses();
   void createDescriptorSetLayout();
+  void createPipelineLayout();
   void createPipelines();
 };
 

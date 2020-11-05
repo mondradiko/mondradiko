@@ -43,12 +43,11 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, PlayerSession* _session) {
   }
 
   createDescriptorSetLayout();
+  createPipelineLayout();
 
-  cameraDescriptorSet =
-      new CameraDescriptorSet(vulkanInstance, viewports.size());
-
-  // Pipeline two frames
-  frameData = new FrameData(vulkanInstance, 2, main_descriptor_layout);
+  frameData = new FrameData(vulkanInstance,
+                            2,  // Pipeline two frames
+                            main_descriptor_layout, viewports.size());
 
   createPipelines();
 }
@@ -58,12 +57,14 @@ Renderer::~Renderer() {
 
   vkDeviceWaitIdle(vulkanInstance->device);
 
-  if (cameraDescriptorSet != nullptr) delete cameraDescriptorSet;
   if (frameData != nullptr) delete frameData;
   if (meshPipeline != nullptr) delete meshPipeline;
   if (main_descriptor_layout != VK_NULL_HANDLE)
     vkDestroyDescriptorSetLayout(vulkanInstance->device, main_descriptor_layout,
                                  nullptr);
+  if (main_pipeline_layout != VK_NULL_HANDLE)
+    vkDestroyPipelineLayout(vulkanInstance->device, main_pipeline_layout,
+                            nullptr);
 
   for (Viewport* viewport : viewports) {
     delete viewport;
@@ -79,41 +80,64 @@ void Renderer::renderFrame() {
     viewports[viewportIndex]->acquireSwapchainImage();
   }
 
-  VkCommandBuffer commandBuffer = frameData->beginPrimaryCommand();
+  FrameInFlight* frame = frameData->beginFrame();
+
+  std::vector<VkWriteDescriptorSet> descriptorWrites;
+  std::vector<VkDescriptorBufferInfo> bufferInfos;
+
+  bufferInfos.push_back(
+      VkDescriptorBufferInfo{.buffer = frame->viewports->buffer,
+                             .offset = 0,
+                             .range = sizeof(ViewportUniform)});
+
+  bufferInfos.push_back(
+      VkDescriptorBufferInfo{.buffer = frame->viewports->buffer,
+                             .offset = sizeof(ViewportUniform),
+                             .range = sizeof(ViewportUniform)});
+
+  descriptorWrites.push_back(
+      VkWriteDescriptorSet{.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                           .dstSet = frame->descriptors,
+                           .dstBinding = 0,
+                           .dstArrayElement = 0,
+                           .descriptorCount = bufferInfos.size(),
+                           .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                           .pBufferInfo = bufferInfos.data()});
+
+  vkUpdateDescriptorSets(vulkanInstance->device, descriptorWrites.size(),
+                         descriptorWrites.data(), 0, nullptr);
+
+  vkCmdBindDescriptorSets(frame->commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          main_pipeline_layout, 0, 1, &frame->descriptors, 0,
+                          nullptr);
 
   for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
        viewportIndex++) {
-    viewports[viewportIndex]->beginRenderPass(commandBuffer, compositePass);
-    viewports[viewportIndex]->setCommandViewport(commandBuffer);
-    cameraDescriptorSet->bind(commandBuffer, viewportIndex,
-                              meshPipeline->pipelineLayout);
-    meshPipeline->render(commandBuffer);
-    vkCmdEndRenderPass(commandBuffer);
-  }
-
-  frameData->endPrimaryCommand();
-
-  for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
-       viewportIndex++) {
-    viewports[viewportIndex]->releaseSwapchainImage();
+    viewports[viewportIndex]->beginRenderPass(frame->commandBuffer,
+                                              compositePass);
+    viewports[viewportIndex]->setCommandViewport(frame->commandBuffer);
+    meshPipeline->render(frame->commandBuffer);
+    vkCmdEndRenderPass(frame->commandBuffer);
   }
 }
 
 void Renderer::finishRender(
     std::vector<XrView>* views,
     std::vector<XrCompositionLayerProjectionView>* projectionViews) {
-  cameraDescriptorSet->update(views);
-  frameData->submitPrimaryCommand();
+  std::vector<ViewportUniform> view_uniforms(viewports.size());
 
-  for (uint32_t i = 0; i < views->size(); i++) {
-    (*projectionViews)[i] = {
-        .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW,
-        .pose = (*views)[i].pose,
-        .fov = (*views)[i].fov,
-        .subImage = {viewports[i]->swapchain,
-                     .imageRect = {.offset = {0, 0},
-                                   .extent = {(int32_t)viewports[i]->width,
-                                              (int32_t)viewports[i]->height}}}};
+  for (uint32_t i = 0; i < viewports.size(); i++) {
+    viewports[i]->updateView(views->at(i), &projectionViews->at(i),
+                             &view_uniforms.at(i));
+  }
+
+  frameData->getCurrentFrame()->viewports->writeData(view_uniforms.data());
+
+  frameData->endFrame();
+
+  for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
+       viewportIndex++) {
+    viewports[viewportIndex]->releaseSwapchainImage();
   }
 }
 
@@ -166,27 +190,44 @@ void Renderer::createRenderPasses() {
 void Renderer::createDescriptorSetLayout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-  bindings.push_back(VkDescriptorSetLayoutBinding{
-    .binding = 0,
-    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-    .descriptorCount = 128,
-    .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-  });
+  bindings.push_back(
+      {.binding = 0,
+       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+       .descriptorCount = static_cast<uint32_t>(viewports.size()),
+       .stageFlags = VK_SHADER_STAGE_VERTEX_BIT});
+
+  /*bindings.push_back(VkDescriptorSetLayoutBinding{
+      .binding = 0,
+      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .descriptorCount = 128,
+      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT});*/
 
   VkDescriptorSetLayoutCreateInfo layoutInfo{
-    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-    .bindingCount = static_cast<uint32_t>(bindings.size()),
-    .pBindings = bindings.data()
-  };
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .bindingCount = static_cast<uint32_t>(bindings.size()),
+      .pBindings = bindings.data()};
 
-  if (vkCreateDescriptorSetLayout(vulkanInstance->device, &layoutInfo, nullptr, &main_descriptor_layout) != VK_SUCCESS) {
+  if (vkCreateDescriptorSetLayout(vulkanInstance->device, &layoutInfo, nullptr,
+                                  &main_descriptor_layout) != VK_SUCCESS) {
     log_ftl("Failed to create Renderer main descriptor set layout.");
   }
 }
 
+void Renderer::createPipelineLayout() {
+  VkPipelineLayoutCreateInfo layoutInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = 1,
+      .pSetLayouts = &main_descriptor_layout};
+
+  if (vkCreatePipelineLayout(vulkanInstance->device, &layoutInfo, nullptr,
+                             &main_pipeline_layout) != VK_SUCCESS) {
+    log_ftl("Failed to create Renderer pipeline layout.");
+  }
+}
+
 void Renderer::createPipelines() {
-  meshPipeline = new MeshPipeline(
-      vulkanInstance, cameraDescriptorSet->setLayout, compositePass, 0);
+  meshPipeline =
+      new MeshPipeline(vulkanInstance, main_pipeline_layout, compositePass, 0);
 }
 
 }  // namespace mondradiko
