@@ -40,6 +40,12 @@ class TextureAsset : public Asset {
   TextureAsset(VulkanInstance*, aiTexture*, VkSampler);
   ~TextureAsset();
 
+  /**
+   * @brief Stores the index into the current frame's descriptor array.
+   *
+   */
+  uint32_t index = 0;
+
   VulkanImage* image = nullptr;
   VkSampler sampler;
 
