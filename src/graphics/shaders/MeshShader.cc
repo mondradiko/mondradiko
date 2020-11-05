@@ -36,7 +36,8 @@ MeshShader::MeshShader(VulkanInstance* vulkanInstance)
   log_dbg("Creating mesh shader.");
 
   vertShader.pushCustom(R"""(
-layout (constant_id = 0) const int CAMERA_NUM = 2;
+// TODO(marceline-cramer) Overwrite this with more viewports when they are added
+layout(constant_id = 0) const int CAMERA_NUM = 2;
 
 layout(push_constant) uniform push_constants_t {
   uint view_index;
@@ -52,21 +53,29 @@ layout(location = 1) in vec3 vertNormal;
 layout(location = 2) in vec2 vertTexCoord;
 
 layout(location = 0) out vec3 fragColor;
+layout(location = 1) out vec2 fragTexCoord;
 
 void main() {
   uint view_index = push_constants.view_index;
   gl_Position = cameras[view_index].projection * cameras[view_index].view * vec4(vertPosition + vec3(0.0, 2.0, -2.0), 1.0);
+
   fragColor = vec3(vertTexCoord, 0.0);
+  fragTexCoord = vertTexCoord;
 }
     )""");
 
   fragShader.pushCustom(R"""(
+layout(constant_id = 1) const int TEXTURE_NUM = 128;
+
+layout(set = 0, binding = 1) uniform sampler2D textures[TEXTURE_NUM];
+
 layout(location = 0) in vec3 fragColor;
+layout(location = 1) in vec2 fragTexCoord;
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = vec4(fragColor, 1.0);
+  outColor = texture(textures[0], fragTexCoord);  // * vec4(fragColor, 1.0);
 }
     )""");
 
