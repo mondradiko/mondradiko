@@ -35,12 +35,18 @@
 
 namespace mondradiko {
 
-class MeshPipeline;
+class MeshPipeline;  // Forward declaration because of codependence
+
+struct MaterialUniform {
+  uint32_t albedo_texture;
+};
 
 class MaterialAsset : public Asset {
  public:
   MaterialAsset(MeshPipeline*, std::string, const aiScene*, aiMaterial*);
   ~MaterialAsset();
+
+  void updateUniform(MaterialUniform*);
 
   AssetHandle<TextureAsset> textureBaseColor;
 

@@ -23,24 +23,26 @@
  *
  */
 
+#include "assets/MaterialAsset.h"
+
 #include <string>
 
-#include "assets/MaterialAsset.h"
 #include "graphics/pipelines/MeshPipeline.h"
 
 namespace mondradiko {
 
-MaterialAsset::MaterialAsset(MeshPipeline *meshPipeline,
-                             std::string fileName,
-                             const aiScene *modelScene,
-                             aiMaterial *material)
+MaterialAsset::MaterialAsset(MeshPipeline *meshPipeline, std::string fileName,
+                             const aiScene *modelScene, aiMaterial *material)
     : meshPipeline(meshPipeline) {
   aiString baseColor;
   material->GetTexture(aiTextureType_DIFFUSE, 0, &baseColor);
   textureBaseColor = meshPipeline->loadTexture(fileName, modelScene, baseColor);
 }
 
-MaterialAsset::~MaterialAsset() {
+MaterialAsset::~MaterialAsset() {}
+
+void MaterialAsset::updateUniform(MaterialUniform *uniform) {
+  uniform->albedo_texture = textureBaseColor->index;
 }
 
 }  // namespace mondradiko
