@@ -39,7 +39,7 @@ class AssetPool {
 
   AssetHandle<T> findCached(std::string);
   AssetHandle<T> load(std::string, T*);
- private:
+
   std::unordered_map<std::string, T*> pool;
 };
 
