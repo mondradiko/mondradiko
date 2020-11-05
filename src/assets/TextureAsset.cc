@@ -63,7 +63,7 @@ TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture,
   image = new VulkanImage(
       vulkanInstance, texFormat, texWidth, texHeight,
       VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-      VMA_MEMORY_USAGE_CPU_TO_GPU);
+      VMA_MEMORY_USAGE_GPU_ONLY);
 
   image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
   image->writeData(texData);
