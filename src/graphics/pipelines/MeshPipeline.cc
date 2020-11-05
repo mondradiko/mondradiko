@@ -57,24 +57,39 @@ MeshPipeline::~MeshPipeline() {
 void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
   std::vector<VkDescriptorImageInfo> texture_infos;
 
-  for (auto& texture : texture_pool) {
+  for (auto& iter : texture_pool.pool) {
+    auto& texture = iter.second;
+
+    texture->index = texture_infos.size();
     texture_infos.push_back(VkDescriptorImageInfo{
         .sampler = texture->sampler,
         .imageView = texture->image->view,
         .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
   }
 
-  VkWriteDescriptorSet descriptorWrites{
+  std::vector<VkWriteDescriptorSet> descriptorWrites;
+
+  descriptorWrites.push_back(VkWriteDescriptorSet{
       .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
       .dstSet = descriptors,
       .dstBinding = 1,
       .dstArrayElement = 0,
       .descriptorCount = static_cast<uint32_t>(texture_infos.size()),
       .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-      .pImageInfo = texture_infos.data()};
+      .pImageInfo = texture_infos.data()});
 
-  vkUpdateDescriptorSets(vulkanInstance->device, 1, &descriptorWrites, 0,
-                         nullptr);
+  std::vector<MaterialUniform> materials;
+
+  for (auto& iter : material_pool.pool) {
+    auto& material = iter.second;
+
+    MaterialUniform uniform;
+    material->updateUniform(&uniform);
+    materials.push_back(uniform);
+  }
+
+  vkUpdateDescriptorSets(vulkanInstance->device, descriptorWrites.size(),
+                         descriptorWrites.data(), 0, nullptr);
 }
 
 void MeshPipeline::render(VkCommandBuffer commandBuffer) {
@@ -108,10 +123,10 @@ AssetHandle<MaterialAsset> MeshPipeline::loadMaterial(std::string fileName,
   std::string materialName =
       fileName + '/' + std::string(material->GetName().C_Str());
 
-  auto cachedMaterial = materialAssets.findCached(materialName);
+  auto cachedMaterial = material_pool.findCached(materialName);
 
   if (!cachedMaterial) {
-    cachedMaterial = materialAssets.load(
+    cachedMaterial = material_pool.load(
         materialName, new MaterialAsset(this, fileName, modelScene, material));
   }
 
@@ -124,11 +139,11 @@ AssetHandle<MeshAsset> MeshPipeline::loadMesh(std::string fileName,
   aiMesh* mesh = modelScene->mMeshes[meshIndex];
   std::string meshName = fileName + '/' + std::string(mesh->mName.C_Str());
 
-  auto cachedMesh = meshAssets.findCached(meshName);
+  auto cachedMesh = mesh_pool.findCached(meshName);
 
   if (!cachedMesh) {
-    cachedMesh = meshAssets.load(meshName,
-                                 new MeshAsset(meshName, vulkanInstance, mesh));
+    cachedMesh =
+        mesh_pool.load(meshName, new MeshAsset(meshName, vulkanInstance, mesh));
   }
 
   return cachedMesh;
@@ -153,16 +168,13 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName,
     std::string textureName = textureFormat.str();
     log_err(textureName.c_str());
 
-    auto cachedTexture = textureAssets.findCached(textureName);
+    auto cachedTexture = texture_pool.findCached(textureName);
 
     if (!cachedTexture) {
-      cachedTexture = textureAssets.load(
+      cachedTexture = texture_pool.load(
           textureName,
           new TextureAsset(vulkanInstance, texture, textureSampler));
     }
-
-    // TODO(marceline-cramer) Allocate texture assets from vector pool
-    texture_pool.push_back(cachedTexture);
 
     return cachedTexture;
   } else {

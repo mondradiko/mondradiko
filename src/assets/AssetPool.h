@@ -27,12 +27,12 @@
 #ifndef SRC_ASSETS_ASSETPOOL_H_
 #define SRC_ASSETS_ASSETPOOL_H_
 
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 namespace mondradiko {
 
-template<class T>
+template <class T>
 class AssetPool {
  public:
   ~AssetPool();
@@ -43,29 +43,29 @@ class AssetPool {
   std::unordered_map<std::string, T*> pool;
 };
 
-template<class T>
+template <class T>
 AssetPool<T>::~AssetPool() {
-    for (const auto& asset : pool) {
-        delete asset.second;
-    }
+  for (const auto& asset : pool) {
+    delete asset.second;
+  }
 }
 
-template<class T>
+template <class T>
 AssetHandle<T> AssetPool<T>::findCached(std::string key) {
-    auto it = pool.find(key);
+  auto it = pool.find(key);
 
-    if (it == pool.end()) {
-        return AssetHandle<T>();
-    }
+  if (it == pool.end()) {
+    return AssetHandle<T>();
+  }
 
-    return AssetHandle<T>(it->second);
+  return AssetHandle<T>(it->second);
 }
 
 // TODO(marceline-cramer) Use argument templates to initialize in-function
-template<class T>
+template <class T>
 AssetHandle<T> AssetPool<T>::load(std::string key, T* newAsset) {
-    pool.emplace(key, newAsset);
-    return AssetHandle<T>(newAsset);
+  pool.emplace(key, newAsset);
+  return AssetHandle<T>(newAsset);
 }
 
 }  // namespace mondradiko

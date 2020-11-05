@@ -67,11 +67,9 @@ class MeshPipeline {
  private:
   VulkanInstance* vulkanInstance;
 
-  std::vector<AssetHandle<TextureAsset>> texture_pool;
-
-  AssetPool<MaterialAsset> materialAssets;
-  AssetPool<MeshAsset> meshAssets;
-  AssetPool<TextureAsset> textureAssets;
+  AssetPool<MaterialAsset> material_pool;
+  AssetPool<MeshAsset> mesh_pool;
+  AssetPool<TextureAsset> texture_pool;
 
   void createPipeline(VkPipelineLayout, VkRenderPass, uint32_t);
   void createTextureSampler();
