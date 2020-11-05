@@ -36,6 +36,8 @@ MeshShader::MeshShader(VulkanInstance* vulkanInstance)
   log_dbg("Creating mesh shader.");
 
   vertShader.pushCustom(R"""(
+layout (constant_id = 0) const int CAMERA_NUM = 2;
+
 layout(push_constant) uniform push_constants_t {
   uint view_index;
 } push_constants;
@@ -43,8 +45,7 @@ layout(push_constant) uniform push_constants_t {
 layout(set = 0, binding = 0) uniform CameraUniform {
     mat4 view;
     mat4 projection;
-// TODO(marceline-cramer) Dynamic descriptor array sizes
-} cameras[2];
+} cameras[CAMERA_NUM];
 
 layout(location = 0) in vec3 vertPosition;
 layout(location = 1) in vec3 vertNormal;
