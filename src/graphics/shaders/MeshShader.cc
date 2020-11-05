@@ -36,10 +36,15 @@ MeshShader::MeshShader(VulkanInstance* vulkanInstance)
   log_dbg("Creating mesh shader.");
 
   vertShader.pushCustom(R"""(
+layout(push_constant) uniform push_constants_t {
+  uint view_index;
+} push_constants;
+
 layout(set = 0, binding = 0) uniform CameraUniform {
     mat4 view;
     mat4 projection;
-} camera;
+// TODO(marceline-cramer) Dynamic descriptor array sizes
+} cameras[2];
 
 layout(location = 0) in vec3 vertPosition;
 layout(location = 1) in vec3 vertNormal;
@@ -48,8 +53,9 @@ layout(location = 2) in vec2 vertTexCoord;
 layout(location = 0) out vec3 fragColor;
 
 void main() {
-    gl_Position = camera.projection * camera.view * vec4(vertPosition + vec3(0.0, 2.0, -2.0), 1.0);
-    fragColor = vec3(vertTexCoord, 0.0);
+  uint view_index = push_constants.view_index;
+  gl_Position = cameras[view_index].projection * cameras[view_index].view * vec4(vertPosition + vec3(0.0, 2.0, -2.0), 1.0);
+  fragColor = vec3(vertTexCoord, 0.0);
 }
     )""");
 

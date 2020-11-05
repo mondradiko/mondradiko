@@ -95,14 +95,14 @@ void Renderer::renderFrame() {
                              .offset = sizeof(ViewportUniform),
                              .range = sizeof(ViewportUniform)});
 
-  descriptorWrites.push_back(
-      VkWriteDescriptorSet{.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                           .dstSet = frame->descriptors,
-                           .dstBinding = 0,
-                           .dstArrayElement = 0,
-                           .descriptorCount = bufferInfos.size(),
-                           .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                           .pBufferInfo = bufferInfos.data()});
+  descriptorWrites.push_back(VkWriteDescriptorSet{
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = frame->descriptors,
+      .dstBinding = 0,
+      .dstArrayElement = 0,
+      .descriptorCount = static_cast<uint32_t>(bufferInfos.size()),
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .pBufferInfo = bufferInfos.data()});
 
   vkUpdateDescriptorSets(vulkanInstance->device, descriptorWrites.size(),
                          descriptorWrites.data(), 0, nullptr);
@@ -113,6 +113,12 @@ void Renderer::renderFrame() {
 
   for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
        viewportIndex++) {
+    FramePushConstant push_constant{.viewIndex = viewportIndex};
+    vkCmdPushConstants(
+        frame->commandBuffer, main_pipeline_layout,
+        VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT, 0,
+        sizeof(FramePushConstant), &push_constant);
+
     viewports[viewportIndex]->beginRenderPass(frame->commandBuffer,
                                               compositePass);
     viewports[viewportIndex]->setCommandViewport(frame->commandBuffer);
@@ -214,10 +220,17 @@ void Renderer::createDescriptorSetLayout() {
 }
 
 void Renderer::createPipelineLayout() {
+  VkPushConstantRange constantRange{
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+      .offset = 0,
+      .size = sizeof(FramePushConstant)};
+
   VkPipelineLayoutCreateInfo layoutInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .setLayoutCount = 1,
-      .pSetLayouts = &main_descriptor_layout};
+      .pSetLayouts = &main_descriptor_layout,
+      .pushConstantRangeCount = 1,
+      .pPushConstantRanges = &constantRange};
 
   if (vkCreatePipelineLayout(vulkanInstance->device, &layoutInfo, nullptr,
                              &main_pipeline_layout) != VK_SUCCESS) {

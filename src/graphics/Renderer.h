@@ -37,6 +37,10 @@
 
 namespace mondradiko {
 
+struct FramePushConstant {
+  uint32_t viewIndex;
+};
+
 class Renderer {
  public:
   Renderer(VulkanInstance*, PlayerSession*);
