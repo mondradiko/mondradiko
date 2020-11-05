@@ -64,6 +64,8 @@ class MeshPipeline {
 
   std::set<MeshRendererComponent*> meshRenderers;
 
+  VulkanBuffer* material_buffer = nullptr;
+
  private:
   VulkanInstance* vulkanInstance;
 
@@ -73,6 +75,7 @@ class MeshPipeline {
 
   void createPipeline(VkPipelineLayout, VkRenderPass, uint32_t);
   void createTextureSampler();
+  void createMaterialBuffer();
 };
 
 }  // namespace mondradiko

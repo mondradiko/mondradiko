@@ -43,11 +43,13 @@ MeshPipeline::MeshPipeline(VulkanInstance* _vulkanInstance,
 
   createPipeline(pipeline_layout, renderPass, subpassIndex);
   createTextureSampler();
+  createMaterialBuffer();
 }
 
 MeshPipeline::~MeshPipeline() {
   log_dbg("Destroying mesh pipeline.");
 
+  if (material_buffer != nullptr) delete material_buffer;
   if (textureSampler != VK_NULL_HANDLE)
     vkDestroySampler(vulkanInstance->device, textureSampler, nullptr);
   if (pipeline != VK_NULL_HANDLE)
@@ -78,15 +80,30 @@ void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
       .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
       .pImageInfo = texture_infos.data()});
 
-  std::vector<MaterialUniform> materials;
+  std::vector<MaterialUniform> materials(64);
+  uint32_t material_index = 0;
 
   for (auto& iter : material_pool.pool) {
     auto& material = iter.second;
 
-    MaterialUniform uniform;
-    material->updateUniform(&uniform);
-    materials.push_back(uniform);
+    material->updateUniform(&materials[material_index]);
+    material_index++;
   }
+
+  material_buffer->writeData(materials.data());
+
+  VkDescriptorBufferInfo material_info{.buffer = material_buffer->buffer,
+                                       .offset = 0,
+                                       .range = material_buffer->bufferSize};
+
+  descriptorWrites.push_back(
+      VkWriteDescriptorSet{.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                           .dstSet = descriptors,
+                           .dstBinding = 2,
+                           .dstArrayElement = 0,
+                           .descriptorCount = 1,
+                           .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                           .pBufferInfo = &material_info});
 
   vkUpdateDescriptorSets(vulkanInstance->device, descriptorWrites.size(),
                          descriptorWrites.data(), 0, nullptr);
@@ -308,6 +325,12 @@ void MeshPipeline::createTextureSampler() {
                       &textureSampler) != VK_SUCCESS) {
     log_ftl("Failed to create texture sampler.");
   }
+}
+
+void MeshPipeline::createMaterialBuffer() {
+  material_buffer = new VulkanBuffer(
+      vulkanInstance, 128 * sizeof(MaterialUniform),
+      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 }
 
 }  // namespace mondradiko
