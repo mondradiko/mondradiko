@@ -197,16 +197,22 @@ void Renderer::createRenderPasses() {
 void Renderer::createDescriptorSetLayout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-  bindings.push_back(
-      {.binding = 0,
-       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-       .descriptorCount = static_cast<uint32_t>(viewports.size()),
-       .stageFlags = VK_SHADER_STAGE_VERTEX_BIT});
+  bindings.push_back(VkDescriptorSetLayoutBinding{
+      .binding = 0,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = static_cast<uint32_t>(viewports.size()),
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT});
 
   bindings.push_back(VkDescriptorSetLayoutBinding{
       .binding = 1,
       .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
       .descriptorCount = 128,
+      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT});
+
+  bindings.push_back(VkDescriptorSetLayoutBinding{
+      .binding = 2,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .descriptorCount = 1,
       .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT});
 
   VkDescriptorSetLayoutCreateInfo layoutInfo{
