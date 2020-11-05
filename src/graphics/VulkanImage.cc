@@ -72,7 +72,28 @@ VulkanImage::~VulkanImage() {
 void VulkanImage::writeData(void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
-  memcpy(allocationInfo.pMappedData, src, allocationInfo.size);
+  VulkanBuffer stage(vulkanInstance, allocationInfo.size,
+                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     VMA_MEMORY_USAGE_CPU_TO_GPU);
+  stage.writeData(src);
+
+  VkCommandBuffer commandBuffer = vulkanInstance->beginSingleTimeCommands();
+
+  VkBufferImageCopy region{
+      .bufferOffset = 0,
+      .bufferRowLength = 0,
+      .bufferImageHeight = 0,
+      .imageSubresource = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                           .mipLevel = 0,
+                           .baseArrayLayer = 0,
+                           .layerCount = 1},
+      .imageOffset = {0, 0, 0},
+      .imageExtent = {width, height, 1}};
+
+  vkCmdCopyBufferToImage(commandBuffer, stage.buffer, image, layout, 1,
+                         &region);
+
+  vulkanInstance->endSingleTimeCommands(commandBuffer);
 }
 
 void VulkanImage::transitionLayout(VkImageLayout targetLayout) {

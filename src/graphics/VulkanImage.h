@@ -26,6 +26,7 @@
 #ifndef SRC_GRAPHICS_VULKANIMAGE_H_
 #define SRC_GRAPHICS_VULKANIMAGE_H_
 
+#include "graphics/VulkanBuffer.h"
 #include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
