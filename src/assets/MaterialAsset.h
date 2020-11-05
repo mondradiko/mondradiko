@@ -50,6 +50,12 @@ class MaterialAsset : public Asset {
 
   AssetHandle<TextureAsset> textureBaseColor;
 
+  /**
+   * @brief Stores the index into the CURRENT FRAME's material array.
+   * 
+   */
+  uint32_t index = 0;
+
  private:
   MeshPipeline* meshPipeline;
 };

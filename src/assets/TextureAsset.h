@@ -41,7 +41,7 @@ class TextureAsset : public Asset {
   ~TextureAsset();
 
   /**
-   * @brief Stores the index into the current frame's descriptor array.
+   * @brief Stores the index into the CURRENT FRAME's descriptor array.
    *
    */
   uint32_t index = 0;
