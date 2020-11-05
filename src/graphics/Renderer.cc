@@ -114,7 +114,8 @@ void Renderer::renderFrame() {
 
   for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
        viewportIndex++) {
-    FramePushConstant push_constant{.viewIndex = viewportIndex};
+    FramePushConstant push_constant{.view_index = viewportIndex};
+
     vkCmdPushConstants(
         frame->commandBuffer, main_pipeline_layout,
         VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT, 0,

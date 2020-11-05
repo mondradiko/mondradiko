@@ -58,6 +58,7 @@ class MeshPipeline {
   AssetHandle<MeshAsset> loadMesh(std::string, const aiScene*, uint32_t);
   AssetHandle<TextureAsset> loadTexture(std::string, const aiScene*, aiString);
 
+  VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
   VkPipeline pipeline = VK_NULL_HANDLE;
 
   VkSampler textureSampler = VK_NULL_HANDLE;
@@ -73,7 +74,7 @@ class MeshPipeline {
   AssetPool<MeshAsset> mesh_pool;
   AssetPool<TextureAsset> texture_pool;
 
-  void createPipeline(VkPipelineLayout, VkRenderPass, uint32_t);
+  void createPipeline(VkRenderPass, uint32_t);
   void createTextureSampler();
   void createMaterialBuffer();
 };

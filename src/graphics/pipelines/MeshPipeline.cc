@@ -28,6 +28,7 @@
 
 #include <vector>
 
+#include "graphics/Renderer.h"
 #include "graphics/VulkanInstance.h"
 #include "graphics/shaders/MeshShader.h"
 #include "log/log.h"
@@ -36,12 +37,13 @@ namespace mondradiko {
 
 MeshPipeline::MeshPipeline(VulkanInstance* _vulkanInstance,
                            VkPipelineLayout pipeline_layout,
-                           VkRenderPass renderPass, uint32_t subpassIndex) {
+                           VkRenderPass renderPass, uint32_t subpassIndex)
+    : pipeline_layout(pipeline_layout) {
   log_dbg("Creating mesh pipeline.");
 
   vulkanInstance = _vulkanInstance;
 
-  createPipeline(pipeline_layout, renderPass, subpassIndex);
+  createPipeline(renderPass, subpassIndex);
   createTextureSampler();
   createMaterialBuffer();
 }
@@ -86,6 +88,7 @@ void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
   for (auto& iter : material_pool.pool) {
     auto& material = iter.second;
 
+    material->index = material_index;
     material->updateUniform(&materials[material_index]);
     material_index++;
   }
@@ -113,6 +116,11 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer) {
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   for (auto meshRenderer : meshRenderers) {
+    // TODO(marceline-cramer) Send material indices in some other way.
+    vkCmdPushConstants(commandBuffer, pipeline_layout,
+                       VK_SHADER_STAGE_FRAGMENT_BIT,
+                       offsetof(FramePushConstant, material_index),
+                       sizeof(uint32_t), &meshRenderer->materialAsset->index);
     VkBuffer vertexBuffers[] = {meshRenderer->meshAsset->vertexBuffer->buffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
@@ -200,8 +208,7 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName,
   }
 }
 
-void MeshPipeline::createPipeline(VkPipelineLayout pipeline_layout,
-                                  VkRenderPass renderPass, uint32_t subpass) {
+void MeshPipeline::createPipeline(VkRenderPass renderPass, uint32_t subpass) {
   MeshShader shader(vulkanInstance);
   auto shaderStages = shader.getStages();
 

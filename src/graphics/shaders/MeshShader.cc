@@ -41,6 +41,7 @@ layout(constant_id = 0) const int CAMERA_NUM = 2;
 
 layout(push_constant) uniform push_constants_t {
   uint view_index;
+  uint material_index;
 } push_constants;
 
 layout(set = 0, binding = 0) uniform CameraUniform {
@@ -67,6 +68,11 @@ void main() {
   fragShader.pushCustom(R"""(
 layout(constant_id = 1) const int TEXTURE_NUM = 128;
 
+layout(push_constant) uniform push_constants_t {
+  uint view_index;
+  uint material_index;
+} push_constants;
+
 layout(set = 0, binding = 1) uniform sampler2D textures[TEXTURE_NUM];
 
 struct MaterialUniform {
@@ -83,7 +89,7 @@ layout(location = 1) in vec2 fragTexCoord;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-  outColor = texture(textures[materials.materials[0].albedo_texture], fragTexCoord);  // * vec4(fragColor, 1.0);
+  outColor = texture(textures[materials.materials[push_constants.material_index].albedo_texture], fragTexCoord);  // * vec4(fragColor, 1.0);
 }
     )""");
 

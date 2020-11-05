@@ -38,7 +38,8 @@
 namespace mondradiko {
 
 struct FramePushConstant {
-  uint32_t viewIndex;
+  uint32_t view_index;
+  uint32_t material_index;
 };
 
 class Renderer {
