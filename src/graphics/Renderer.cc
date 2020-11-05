@@ -82,30 +82,31 @@ void Renderer::renderFrame() {
 
   FrameInFlight* frame = frameData->beginFrame();
 
-  std::vector<VkWriteDescriptorSet> descriptorWrites;
-  std::vector<VkDescriptorBufferInfo> bufferInfos;
+  std::vector<VkDescriptorBufferInfo> viewport_buffer_infos;
 
-  bufferInfos.push_back(
+  viewport_buffer_infos.push_back(
       VkDescriptorBufferInfo{.buffer = frame->viewports->buffer,
                              .offset = 0,
                              .range = sizeof(ViewportUniform)});
 
-  bufferInfos.push_back(
+  viewport_buffer_infos.push_back(
       VkDescriptorBufferInfo{.buffer = frame->viewports->buffer,
                              .offset = sizeof(ViewportUniform),
                              .range = sizeof(ViewportUniform)});
 
-  descriptorWrites.push_back(VkWriteDescriptorSet{
+  VkWriteDescriptorSet descriptor_writes{
       .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
       .dstSet = frame->descriptors,
       .dstBinding = 0,
       .dstArrayElement = 0,
-      .descriptorCount = static_cast<uint32_t>(bufferInfos.size()),
+      .descriptorCount = static_cast<uint32_t>(viewport_buffer_infos.size()),
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .pBufferInfo = bufferInfos.data()});
+      .pBufferInfo = viewport_buffer_infos.data()};
 
-  vkUpdateDescriptorSets(vulkanInstance->device, descriptorWrites.size(),
-                         descriptorWrites.data(), 0, nullptr);
+  vkUpdateDescriptorSets(vulkanInstance->device, 1, &descriptor_writes, 0,
+                         nullptr);
+
+  meshPipeline->updateDescriptors(frame->descriptors);
 
   vkCmdBindDescriptorSets(frame->commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                           main_pipeline_layout, 0, 1, &frame->descriptors, 0,
@@ -202,11 +203,11 @@ void Renderer::createDescriptorSetLayout() {
        .descriptorCount = static_cast<uint32_t>(viewports.size()),
        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT});
 
-  /*bindings.push_back(VkDescriptorSetLayoutBinding{
-      .binding = 0,
+  bindings.push_back(VkDescriptorSetLayoutBinding{
+      .binding = 1,
       .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
       .descriptorCount = 128,
-      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT});*/
+      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT});
 
   VkDescriptorSetLayoutCreateInfo layoutInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,

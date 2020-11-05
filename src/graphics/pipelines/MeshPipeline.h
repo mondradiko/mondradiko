@@ -47,6 +47,7 @@ class MeshPipeline {
   MeshPipeline(VulkanInstance*, VkPipelineLayout, VkRenderPass, uint32_t);
   ~MeshPipeline();
 
+  void updateDescriptors(VkDescriptorSet);
   void render(VkCommandBuffer);
 
   MeshRendererComponent* createMeshRenderer(std::string, const aiScene*,
@@ -65,6 +66,8 @@ class MeshPipeline {
 
  private:
   VulkanInstance* vulkanInstance;
+
+  std::vector<AssetHandle<TextureAsset>> texture_pool;
 
   AssetPool<MaterialAsset> materialAssets;
   AssetPool<MeshAsset> meshAssets;

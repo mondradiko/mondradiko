@@ -54,6 +54,29 @@ MeshPipeline::~MeshPipeline() {
     vkDestroyPipeline(vulkanInstance->device, pipeline, nullptr);
 }
 
+void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
+  std::vector<VkDescriptorImageInfo> texture_infos;
+
+  for (auto& texture : texture_pool) {
+    texture_infos.push_back(VkDescriptorImageInfo{
+        .sampler = texture->sampler,
+        .imageView = texture->image->view,
+        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
+  }
+
+  VkWriteDescriptorSet descriptorWrites{
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = descriptors,
+      .dstBinding = 1,
+      .dstArrayElement = 0,
+      .descriptorCount = static_cast<uint32_t>(texture_infos.size()),
+      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .pImageInfo = texture_infos.data()};
+
+  vkUpdateDescriptorSets(vulkanInstance->device, 1, &descriptorWrites, 0,
+                         nullptr);
+}
+
 void MeshPipeline::render(VkCommandBuffer commandBuffer) {
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
@@ -137,6 +160,9 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string fileName,
           textureName,
           new TextureAsset(vulkanInstance, texture, textureSampler));
     }
+
+    // TODO(marceline-cramer) Allocate texture assets from vector pool
+    texture_pool.push_back(cachedTexture);
 
     return cachedTexture;
   } else {
