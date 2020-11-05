@@ -32,7 +32,7 @@ namespace mondradiko {
 
 TextureAsset::TextureAsset(VulkanInstance* vulkanInstance, aiTexture* texture,
                            VkSampler sampler)
-    : vulkanInstance(vulkanInstance), sampler(sampler) {
+    : sampler(sampler), vulkanInstance(vulkanInstance) {
   // By default, load directly from the embedded texture
   void* texData = texture->pcData;
   VkFormat texFormat = VK_FORMAT_R8G8B8A8_SRGB;

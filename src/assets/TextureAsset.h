@@ -29,12 +29,11 @@
 #include <string>
 
 #include "assets/Asset.h"
+#include "graphics/VulkanImage.h"
+#include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
-
-class VulkanImage;
-class VulkanInstance;
 
 class TextureAsset : public Asset {
  public:
