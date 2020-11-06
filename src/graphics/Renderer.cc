@@ -44,11 +44,7 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, PlayerSession* _session) {
 
   createDescriptorSetLayout();
   createPipelineLayout();
-
-  frameData = new FrameData(vulkanInstance,
-                            2,  // Pipeline two frames
-                            main_descriptor_layout, viewports.size());
-
+  createFrameData();
   createPipelines();
 }
 
@@ -57,7 +53,12 @@ Renderer::~Renderer() {
 
   vkDeviceWaitIdle(vulkanInstance->device);
 
-  if (frameData != nullptr) delete frameData;
+  for (auto& frame : framesInFlight) {
+    if (frame.viewports != nullptr) delete frame.viewports;
+    if (frame.isInUse != VK_NULL_HANDLE)
+      vkDestroyFence(vulkanInstance->device, frame.isInUse, nullptr);
+  }
+
   if (meshPipeline != nullptr) delete meshPipeline;
   if (main_descriptor_layout != VK_NULL_HANDLE)
     vkDestroyDescriptorSetLayout(vulkanInstance->device, main_descriptor_layout,
@@ -80,7 +81,23 @@ void Renderer::renderFrame() {
     viewports[viewportIndex]->acquireSwapchainImage();
   }
 
-  FrameInFlight* frame = frameData->beginFrame();
+  if (framesInFlight[currentFrame].submitted) {
+    vkWaitForFences(vulkanInstance->device, 1,
+                    &framesInFlight[currentFrame].isInUse, VK_TRUE, UINT64_MAX);
+    framesInFlight[currentFrame].submitted = false;
+  }
+
+  if (++currentFrame >= framesInFlight.size()) {
+    currentFrame = 0;
+  }
+
+  PipelinedFrameData* frame = &framesInFlight[currentFrame];
+
+  VkCommandBufferBeginInfo beginInfo{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT};
+
+  vkBeginCommandBuffer(frame->commandBuffer, &beginInfo);
 
   std::vector<VkDescriptorBufferInfo> viewport_buffer_infos;
 
@@ -139,9 +156,34 @@ void Renderer::finishRender(
                              &view_uniforms.at(i));
   }
 
-  frameData->getCurrentFrame()->viewports->writeData(view_uniforms.data());
+  PipelinedFrameData* frame = &framesInFlight[currentFrame];
+  frame->viewports->writeData(view_uniforms.data());
 
-  frameData->endFrame();
+  vkEndCommandBuffer(frame->commandBuffer);
+
+  VkSubmitInfo submitInfo{};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+  VkPipelineStageFlags waitStages[] = {
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+  submitInfo.waitSemaphoreCount = 0;
+  submitInfo.pWaitSemaphores = nullptr;
+  submitInfo.pWaitDstStageMask = waitStages;
+
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &frame->commandBuffer;
+
+  submitInfo.signalSemaphoreCount = 0;
+  submitInfo.pSignalSemaphores = nullptr;
+
+  vkResetFences(vulkanInstance->device, 1, &frame->isInUse);
+
+  if (vkQueueSubmit(vulkanInstance->graphicsQueue, 1, &submitInfo,
+                    frame->isInUse) != VK_SUCCESS) {
+    log_ftl("Failed to submit primary frame command buffer.");
+  }
+
+  frame->submitted = true;
 
   for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
        viewportIndex++) {
@@ -243,6 +285,48 @@ void Renderer::createPipelineLayout() {
   if (vkCreatePipelineLayout(vulkanInstance->device, &layoutInfo, nullptr,
                              &main_pipeline_layout) != VK_SUCCESS) {
     log_ftl("Failed to create Renderer pipeline layout.");
+  }
+}
+
+void Renderer::createFrameData() {
+  // Pipeline two frames
+  framesInFlight.resize(2);
+
+  for (auto& frame : framesInFlight) {
+    VkCommandBufferAllocateInfo allocInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = vulkanInstance->commandPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1};
+
+    if (vkAllocateCommandBuffers(vulkanInstance->device, &allocInfo,
+                                 &frame.commandBuffer) != VK_SUCCESS) {
+      log_ftl("Failed to allocate frame command buffers.");
+    }
+
+    VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+
+    if (vkCreateFence(vulkanInstance->device, &fenceInfo, nullptr,
+                      &frame.isInUse) != VK_SUCCESS) {
+      log_ftl("Failed to create frame fence.");
+    }
+
+    frame.submitted = false;
+
+    VkDescriptorSetAllocateInfo descriptorInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .descriptorPool = vulkanInstance->descriptorPool,
+        .descriptorSetCount = 1,
+        .pSetLayouts = &main_descriptor_layout};
+
+    if (vkAllocateDescriptorSets(vulkanInstance->device, &descriptorInfo,
+                                 &frame.descriptors) != VK_SUCCESS) {
+      log_ftl("Failed to allocate frame descriptors.");
+    }
+
+    frame.viewports = new VulkanBuffer(
+        vulkanInstance, sizeof(ViewportUniform) * viewports.size(),
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
   }
 }
 

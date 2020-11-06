@@ -28,7 +28,6 @@
 
 #include <vector>
 
-#include "graphics/FrameData.h"
 #include "graphics/Viewport.h"
 #include "graphics/VulkanInstance.h"
 #include "graphics/pipelines/MeshPipeline.h"
@@ -36,6 +35,18 @@
 #include "xr/PlayerSession.h"
 
 namespace mondradiko {
+
+struct PipelinedFrameData {
+  // TODO(marceline-cramer) Use command pool per frame, per thread
+  VkCommandBuffer commandBuffer;
+  VkFence isInUse;
+  bool submitted;
+
+  // TODO(marceline-cramer) Allocate all frame descriptors from pool
+  VkDescriptorSet descriptors;
+
+  VulkanBuffer* viewports;
+};
 
 struct FramePushConstant {
   uint32_t view_index;
@@ -57,17 +68,20 @@ class Renderer {
 
   VkDescriptorSetLayout main_descriptor_layout = VK_NULL_HANDLE;
   VkPipelineLayout main_pipeline_layout = VK_NULL_HANDLE;
-  FrameData* frameData = nullptr;
   MeshPipeline* meshPipeline = nullptr;
 
  private:
   VulkanInstance* vulkanInstance;
   PlayerSession* session;
 
+  uint32_t currentFrame = 0;
+  std::vector<PipelinedFrameData> framesInFlight;
+
   void findSwapchainFormat();
   void createRenderPasses();
   void createDescriptorSetLayout();
   void createPipelineLayout();
+  void createFrameData();
   void createPipelines();
 };
 
