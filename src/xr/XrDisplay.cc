@@ -40,8 +40,8 @@
 
 namespace mondradiko {
 
-#define XR_LOAD_FN_PTR(name, fnPtr) \
-  xrGetInstanceProcAddr(instance, name,   \
+#define XR_LOAD_FN_PTR(name, fnPtr)     \
+  xrGetInstanceProcAddr(instance, name, \
                         reinterpret_cast<PFN_xrVoidFunction *>(&fnPtr))
 
 static XRAPI_ATTR XrBool32 XRAPI_CALL
@@ -114,7 +114,7 @@ bool XrDisplay::getRequirements(VulkanRequirements *requirements) {
   log_inf("Vulkan instance extensions required by OpenXR:");
   requirements->instanceExtensions.clear();
   uint32_t startIndex = 0;
-  for (uint32_t endIndex = 0; endIndex <= instanceExtensionNames.size();
+  for (uint32_t endIndex = 0; endIndex < instanceExtensionNames.size();
        endIndex++) {
     if (instanceExtensionNames[endIndex] == ' ' ||
         instanceExtensionNames[endIndex] == '\0') {
@@ -126,6 +126,8 @@ bool XrDisplay::getRequirements(VulkanRequirements *requirements) {
     }
   }
 
+  // TODO(marceline-cramer) Device/instance extension parsing could be moved
+  // into a function
   uint32_t deviceExtensionsLength;
   ext_xrGetVulkanDeviceExtensionsKHR(instance, systemId, 0,
                                      &deviceExtensionsLength, nullptr);
@@ -140,7 +142,7 @@ bool XrDisplay::getRequirements(VulkanRequirements *requirements) {
   log_inf("Vulkan device extensions required by OpenXR:");
   requirements->deviceExtensions.clear();
   startIndex = 0;
-  for (uint32_t endIndex = 0; endIndex <= deviceExtensionNames.size();
+  for (uint32_t endIndex = 0; endIndex < deviceExtensionNames.size();
        endIndex++) {
     if (deviceExtensionNames[endIndex] == ' ' ||
         deviceExtensionNames[endIndex] == '\0') {
