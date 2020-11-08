@@ -31,7 +31,6 @@
 
 #include "./build_config.h"
 #include "log/log.h"
-#include "xr/XrDisplay.h"
 
 namespace mondradiko {
 
@@ -60,11 +59,10 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
   return VK_FALSE;
 }
 
-VulkanInstance::VulkanInstance(XrDisplay* display) {
+VulkanInstance::VulkanInstance(DisplayInterface* display) : display(display) {
   log_dbg("Initializing Vulkan.");
 
   VulkanRequirements requirements;
-
   display->getRequirements(&requirements);
 
   if (enableValidationLayers) {
@@ -252,7 +250,7 @@ void VulkanInstance::setupDebugMessenger() {
   }
 }
 
-void VulkanInstance::findPhysicalDevice(XrDisplay* display) {
+void VulkanInstance::findPhysicalDevice(DisplayInterface* display) {
   log_dbg("Finding Vulkan physical device.");
 
   display->getVulkanDevice(instance, &physicalDevice);
@@ -355,8 +353,8 @@ void VulkanInstance::createDescriptorPool() {
   poolSizes.push_back(
       {.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 1000});
 
-  poolSizes.push_back(
-      {.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = 1000});
+  poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                       .descriptorCount = 1000});
 
   VkDescriptorPoolCreateInfo createInfo{
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,

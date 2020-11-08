@@ -29,16 +29,14 @@
 
 #include <vector>
 
+#include "displays/DisplayInterface.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
 
-class XrDisplay;
-struct VulkanRequirements;
-
 class VulkanInstance {
  public:
-  explicit VulkanInstance(XrDisplay*);
+  explicit VulkanInstance(DisplayInterface*);
   ~VulkanInstance();
 
   bool findFormatFromOptions(const std::vector<VkFormat>*,
@@ -47,6 +45,8 @@ class VulkanInstance {
   void endSingleTimeCommands(VkCommandBuffer);
 
   bool enableValidationLayers = true;
+
+  DisplayInterface* display;
 
   VkInstance instance = VK_NULL_HANDLE;
   VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
@@ -70,7 +70,7 @@ class VulkanInstance {
   void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT*);
   void createInstance(VulkanRequirements*);
   void setupDebugMessenger();
-  void findPhysicalDevice(XrDisplay*);
+  void findPhysicalDevice(DisplayInterface*);
   void findQueueFamilies();
   void createLogicalDevice(VulkanRequirements*);
   void createCommandPool();
