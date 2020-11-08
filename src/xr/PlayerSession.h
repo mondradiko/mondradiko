@@ -52,16 +52,16 @@ class PlayerSession {
   bool createViewports(std::vector<Viewport*>*, VkFormat, VkRenderPass);
 
   XrSession session = XR_NULL_HANDLE;
-  XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
-  XrFrameState currentFrameState;
+  XrSessionState session_state = XR_SESSION_STATE_UNKNOWN;
+  XrFrameState current_frame_state;
 
-  XrSpace stageSpace = XR_NULL_HANDLE;
+  XrSpace stage_space = XR_NULL_HANDLE;
 
   std::vector<XrView> views;
 
  private:
   XrDisplay* display;
-  VulkanInstance* vulkanInstance;
+  VulkanInstance* vulkan_instance;
 };
 
 }  // namespace mondradiko

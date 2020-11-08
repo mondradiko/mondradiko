@@ -41,7 +41,7 @@ struct ViewportUniform {
 
 struct ViewportImage {
   VkImage image;
-  VkImageView imageView;
+  VkImageView image_view;
   VkFramebuffer framebuffer;
 };
 
@@ -65,9 +65,9 @@ class Viewport {
 
  private:
   PlayerSession* session;
-  VulkanInstance* vulkanInstance;
+  VulkanInstance* vulkan_instance;
 
-  uint32_t currentIndex;
+  uint32_t current_index;
 };
 
 }  // namespace mondradiko

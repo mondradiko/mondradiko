@@ -42,7 +42,7 @@ using MeshVertexAttributeDescriptions =
 struct MeshVertex {
   glm::vec3 position;
   glm::vec3 normal;
-  glm::vec2 texCoord;
+  glm::vec2 tex_coord;
 
   static VkVertexInputBindingDescription getBindingDescription() {
     VkVertexInputBindingDescription description{
@@ -69,7 +69,7 @@ struct MeshVertex {
     descriptions[2] = {.location = 2,
                        .binding = 0,
                        .format = VK_FORMAT_R32G32_SFLOAT,
-                       .offset = offsetof(MeshVertex, texCoord)};
+                       .offset = offsetof(MeshVertex, tex_coord)};
 
     return descriptions;
   }
@@ -82,14 +82,14 @@ class MeshAsset : public Asset {
   MeshAsset(std::string, VulkanInstance*, aiMesh*);
   ~MeshAsset();
 
-  VulkanBuffer* vertexBuffer = nullptr;
-  VulkanBuffer* indexBuffer = nullptr;
-  size_t indexCount = 0;
+  VulkanBuffer* vertex_buffer = nullptr;
+  VulkanBuffer* index_buffer = nullptr;
+  size_t index_count = 0;
 
-  std::string meshName = nullptr;
+  std::string mesh_name = nullptr;
 
  private:
-  VulkanInstance* vulkanInstance;
+  VulkanInstance* vulkan_instance;
 };
 
 }  // namespace mondradiko

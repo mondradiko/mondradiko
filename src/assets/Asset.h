@@ -35,7 +35,7 @@ class Asset {
   template<class T>
   friend class AssetHandle;
 
-  int refCount = 0;
+  int ref_count = 0;
 };
 
 }  // namespace mondradiko

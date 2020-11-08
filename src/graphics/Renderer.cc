@@ -29,16 +29,14 @@
 
 namespace mondradiko {
 
-Renderer::Renderer(VulkanInstance* _vulkanInstance, PlayerSession* _session) {
+Renderer::Renderer(VulkanInstance* vulkan_instance, PlayerSession* session)
+    : vulkan_instance(vulkan_instance), session(session) {
   log_dbg("Creating renderer.");
-
-  vulkanInstance = _vulkanInstance;
-  session = _session;
 
   findSwapchainFormat();
   createRenderPasses();
 
-  if (!session->createViewports(&viewports, swapchainFormat, compositePass)) {
+  if (!session->createViewports(&viewports, swapchain_format, composite_pass)) {
     log_ftl("Failed to create Renderer viewports.");
   }
 
@@ -51,53 +49,54 @@ Renderer::Renderer(VulkanInstance* _vulkanInstance, PlayerSession* _session) {
 Renderer::~Renderer() {
   log_dbg("Destroying renderer.");
 
-  vkDeviceWaitIdle(vulkanInstance->device);
+  vkDeviceWaitIdle(vulkan_instance->device);
 
-  for (auto& frame : framesInFlight) {
+  for (auto& frame : frames_in_flight) {
     if (frame.viewports != nullptr) delete frame.viewports;
-    if (frame.isInUse != VK_NULL_HANDLE)
-      vkDestroyFence(vulkanInstance->device, frame.isInUse, nullptr);
+    if (frame.is_in_use != VK_NULL_HANDLE)
+      vkDestroyFence(vulkan_instance->device, frame.is_in_use, nullptr);
   }
 
-  if (meshPipeline != nullptr) delete meshPipeline;
+  if (mesh_pipeline != nullptr) delete mesh_pipeline;
   if (main_descriptor_layout != VK_NULL_HANDLE)
-    vkDestroyDescriptorSetLayout(vulkanInstance->device, main_descriptor_layout,
-                                 nullptr);
+    vkDestroyDescriptorSetLayout(vulkan_instance->device,
+                                 main_descriptor_layout, nullptr);
   if (main_pipeline_layout != VK_NULL_HANDLE)
-    vkDestroyPipelineLayout(vulkanInstance->device, main_pipeline_layout,
+    vkDestroyPipelineLayout(vulkan_instance->device, main_pipeline_layout,
                             nullptr);
 
   for (Viewport* viewport : viewports) {
     delete viewport;
   }
 
-  if (compositePass != VK_NULL_HANDLE)
-    vkDestroyRenderPass(vulkanInstance->device, compositePass, nullptr);
+  if (composite_pass != VK_NULL_HANDLE)
+    vkDestroyRenderPass(vulkan_instance->device, composite_pass, nullptr);
 }
 
 void Renderer::renderFrame() {
-  for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
-       viewportIndex++) {
-    viewports[viewportIndex]->acquireSwapchainImage();
+  for (uint32_t viewport_index = 0; viewport_index < viewports.size();
+       viewport_index++) {
+    viewports[viewport_index]->acquireSwapchainImage();
   }
 
-  if (framesInFlight[currentFrame].submitted) {
-    vkWaitForFences(vulkanInstance->device, 1,
-                    &framesInFlight[currentFrame].isInUse, VK_TRUE, UINT64_MAX);
-    framesInFlight[currentFrame].submitted = false;
+  if (frames_in_flight[current_frame].submitted) {
+    vkWaitForFences(vulkan_instance->device, 1,
+                    &frames_in_flight[current_frame].is_in_use, VK_TRUE,
+                    UINT64_MAX);
+    frames_in_flight[current_frame].submitted = false;
   }
 
-  if (++currentFrame >= framesInFlight.size()) {
-    currentFrame = 0;
+  if (++current_frame >= frames_in_flight.size()) {
+    current_frame = 0;
   }
 
-  PipelinedFrameData* frame = &framesInFlight[currentFrame];
+  PipelinedFrameData* frame = &frames_in_flight[current_frame];
 
   VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT};
 
-  vkBeginCommandBuffer(frame->commandBuffer, &beginInfo);
+  vkBeginCommandBuffer(frame->command_buffer, &beginInfo);
 
   std::vector<VkDescriptorBufferInfo> viewport_buffer_infos;
 
@@ -120,29 +119,29 @@ void Renderer::renderFrame() {
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       .pBufferInfo = viewport_buffer_infos.data()};
 
-  vkUpdateDescriptorSets(vulkanInstance->device, 1, &descriptor_writes, 0,
+  vkUpdateDescriptorSets(vulkan_instance->device, 1, &descriptor_writes, 0,
                          nullptr);
 
-  meshPipeline->updateDescriptors(frame->descriptors);
+  mesh_pipeline->updateDescriptors(frame->descriptors);
 
-  vkCmdBindDescriptorSets(frame->commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          main_pipeline_layout, 0, 1, &frame->descriptors, 0,
-                          nullptr);
+  vkCmdBindDescriptorSets(frame->command_buffer,
+                          VK_PIPELINE_BIND_POINT_GRAPHICS, main_pipeline_layout,
+                          0, 1, &frame->descriptors, 0, nullptr);
 
-  for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
-       viewportIndex++) {
-    FramePushConstant push_constant{.view_index = viewportIndex};
+  for (uint32_t viewport_index = 0; viewport_index < viewports.size();
+       viewport_index++) {
+    FramePushConstant push_constant{.view_index = viewport_index};
 
     vkCmdPushConstants(
-        frame->commandBuffer, main_pipeline_layout,
+        frame->command_buffer, main_pipeline_layout,
         VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT, 0,
         sizeof(FramePushConstant), &push_constant);
 
-    viewports[viewportIndex]->beginRenderPass(frame->commandBuffer,
-                                              compositePass);
-    viewports[viewportIndex]->setCommandViewport(frame->commandBuffer);
-    meshPipeline->render(frame->commandBuffer);
-    vkCmdEndRenderPass(frame->commandBuffer);
+    viewports[viewport_index]->beginRenderPass(frame->command_buffer,
+                                               composite_pass);
+    viewports[viewport_index]->setCommandViewport(frame->command_buffer);
+    mesh_pipeline->render(frame->command_buffer);
+    vkCmdEndRenderPass(frame->command_buffer);
   }
 }
 
@@ -156,10 +155,10 @@ void Renderer::finishRender(
                              &view_uniforms.at(i));
   }
 
-  PipelinedFrameData* frame = &framesInFlight[currentFrame];
+  PipelinedFrameData* frame = &frames_in_flight[current_frame];
   frame->viewports->writeData(view_uniforms.data());
 
-  vkEndCommandBuffer(frame->commandBuffer);
+  vkEndCommandBuffer(frame->command_buffer);
 
   VkSubmitInfo submitInfo{};
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -171,15 +170,15 @@ void Renderer::finishRender(
   submitInfo.pWaitDstStageMask = waitStages;
 
   submitInfo.commandBufferCount = 1;
-  submitInfo.pCommandBuffers = &frame->commandBuffer;
+  submitInfo.pCommandBuffers = &frame->command_buffer;
 
   submitInfo.signalSemaphoreCount = 0;
   submitInfo.pSignalSemaphores = nullptr;
 
-  vkResetFences(vulkanInstance->device, 1, &frame->isInUse);
+  vkResetFences(vulkan_instance->device, 1, &frame->is_in_use);
 
-  if (vkQueueSubmit(vulkanInstance->graphicsQueue, 1, &submitInfo,
-                    frame->isInUse) != VK_SUCCESS) {
+  if (vkQueueSubmit(vulkan_instance->graphics_queue, 1, &submitInfo,
+                    frame->is_in_use) != VK_SUCCESS) {
     log_ftl("Failed to submit primary frame command buffer.");
   }
 
@@ -198,15 +197,15 @@ void Renderer::findSwapchainFormat() {
   std::vector<VkFormat> formatCandidates = {VK_FORMAT_R8G8B8A8_SRGB,
                                             VK_FORMAT_R8G8B8A8_UNORM};
 
-  if (!vulkanInstance->findFormatFromOptions(&formatOptions, &formatCandidates,
-                                             &swapchainFormat)) {
+  if (!vulkan_instance->findFormatFromOptions(&formatOptions, &formatCandidates,
+                                              &swapchain_format)) {
     log_ftl("Failed to find suitable swapchain format.");
   }
 }
 
 void Renderer::createRenderPasses() {
   VkAttachmentDescription swapchainAttachmentDescription{
-      .format = swapchainFormat,
+      .format = swapchain_format,
       .samples = VK_SAMPLE_COUNT_1_BIT,
       .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -231,8 +230,8 @@ void Renderer::createRenderPasses() {
       .subpassCount = 1,
       .pSubpasses = &compositeSubpassDescription};
 
-  if (vkCreateRenderPass(vulkanInstance->device, &compositePassCreateInfo,
-                         nullptr, &compositePass) != VK_SUCCESS) {
+  if (vkCreateRenderPass(vulkan_instance->device, &compositePassCreateInfo,
+                         nullptr, &composite_pass) != VK_SUCCESS) {
     log_ftl("Failed to create Renderer composite render pass.");
   }
 }
@@ -263,7 +262,7 @@ void Renderer::createDescriptorSetLayout() {
       .bindingCount = static_cast<uint32_t>(bindings.size()),
       .pBindings = bindings.data()};
 
-  if (vkCreateDescriptorSetLayout(vulkanInstance->device, &layoutInfo, nullptr,
+  if (vkCreateDescriptorSetLayout(vulkan_instance->device, &layoutInfo, nullptr,
                                   &main_descriptor_layout) != VK_SUCCESS) {
     log_ftl("Failed to create Renderer main descriptor set layout.");
   }
@@ -282,7 +281,7 @@ void Renderer::createPipelineLayout() {
       .pushConstantRangeCount = 1,
       .pPushConstantRanges = &constantRange};
 
-  if (vkCreatePipelineLayout(vulkanInstance->device, &layoutInfo, nullptr,
+  if (vkCreatePipelineLayout(vulkan_instance->device, &layoutInfo, nullptr,
                              &main_pipeline_layout) != VK_SUCCESS) {
     log_ftl("Failed to create Renderer pipeline layout.");
   }
@@ -290,49 +289,49 @@ void Renderer::createPipelineLayout() {
 
 void Renderer::createFrameData() {
   // Pipeline two frames
-  framesInFlight.resize(2);
+  frames_in_flight.resize(2);
 
-  for (auto& frame : framesInFlight) {
-    VkCommandBufferAllocateInfo allocInfo{
+  for (auto& frame : frames_in_flight) {
+    VkCommandBufferAllocateInfo alloc_info{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = vulkanInstance->commandPool,
+        .commandPool = vulkan_instance->command_pool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1};
 
-    if (vkAllocateCommandBuffers(vulkanInstance->device, &allocInfo,
-                                 &frame.commandBuffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(vulkan_instance->device, &alloc_info,
+                                 &frame.command_buffer) != VK_SUCCESS) {
       log_ftl("Failed to allocate frame command buffers.");
     }
 
     VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
 
-    if (vkCreateFence(vulkanInstance->device, &fenceInfo, nullptr,
-                      &frame.isInUse) != VK_SUCCESS) {
+    if (vkCreateFence(vulkan_instance->device, &fenceInfo, nullptr,
+                      &frame.is_in_use) != VK_SUCCESS) {
       log_ftl("Failed to create frame fence.");
     }
 
     frame.submitted = false;
 
-    VkDescriptorSetAllocateInfo descriptorInfo{
+    VkDescriptorSetAllocateInfo set_info{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .descriptorPool = vulkanInstance->descriptorPool,
+        .descriptorPool = vulkan_instance->descriptor_pool,
         .descriptorSetCount = 1,
         .pSetLayouts = &main_descriptor_layout};
 
-    if (vkAllocateDescriptorSets(vulkanInstance->device, &descriptorInfo,
+    if (vkAllocateDescriptorSets(vulkan_instance->device, &set_info,
                                  &frame.descriptors) != VK_SUCCESS) {
       log_ftl("Failed to allocate frame descriptors.");
     }
 
     frame.viewports = new VulkanBuffer(
-        vulkanInstance, sizeof(ViewportUniform) * viewports.size(),
+        vulkan_instance, sizeof(ViewportUniform) * viewports.size(),
         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
   }
 }
 
 void Renderer::createPipelines() {
-  meshPipeline =
-      new MeshPipeline(vulkanInstance, main_pipeline_layout, compositePass, 0);
+  mesh_pipeline = new MeshPipeline(vulkan_instance, main_pipeline_layout,
+                                   composite_pass, 0);
 }
 
 }  // namespace mondradiko

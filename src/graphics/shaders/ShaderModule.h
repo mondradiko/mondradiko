@@ -49,11 +49,11 @@ class ShaderModule {
   VkPipelineShaderStageCreateInfo getStageCreateInfo();
 
  private:
-  VulkanInstance* vki;
-  std::ostringstream glslSource;
-  std::string shaderName;
-  shaderc_shader_kind shaderKind;
-  VkShaderModule shaderModule;
+  VulkanInstance* vulkan_instance;
+  std::ostringstream glsl_source;
+  std::string shader_name;
+  shaderc_shader_kind shader_kind;
+  VkShaderModule shader_module;
   bool compiled;
 };
 

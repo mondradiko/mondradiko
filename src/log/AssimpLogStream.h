@@ -39,12 +39,12 @@ namespace mondradiko {
 
 class AssimpLogStream : public Assimp::LogStream {
  public:
-  explicit AssimpLogStream(LogLevel logLevel) : logLevel(logLevel) {}
+  explicit AssimpLogStream(LogLevel log_level) : log_level(log_level) {}
 
-  void write(const char* message) { log_at(logLevel, message); }
+  void write(const char* message) { log_at(log_level, message); }
 
  private:
-  LogLevel logLevel;
+  LogLevel log_level;
 };
 
 }  // namespace mondradiko

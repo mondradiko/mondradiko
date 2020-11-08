@@ -38,13 +38,13 @@ class VulkanBuffer {
 
   void writeData(void*);
 
-  size_t bufferSize = 0;
+  size_t buffer_size = 0;
   VmaAllocation allocation = nullptr;
-  VmaAllocationInfo allocationInfo;
+  VmaAllocationInfo allocation_info;
   VkBuffer buffer = VK_NULL_HANDLE;
 
  private:
-  VulkanInstance* vulkanInstance;
+  VulkanInstance* vulkan_instance;
 };
 
 }  // namespace mondradiko

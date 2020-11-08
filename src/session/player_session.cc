@@ -47,14 +47,16 @@ void signalHandler(int signum) {
   return;
 }
 
-void player_session_run(const char *serverAddress, int port) {
+void player_session_run(const char *server_address, int port) {
   mondradiko::Filesystem fs("../test-folder/");
   mondradiko::XrDisplay xr;
-  mondradiko::VulkanInstance vulkanInstance(&xr);
-  mondradiko::PlayerSession session(&xr, &vulkanInstance);
-  mondradiko::Renderer renderer(&vulkanInstance, &session);
-  mondradiko::NetworkClient client(serverAddress, port);
+  mondradiko::VulkanInstance vulkan_instance(&xr);
+  mondradiko::PlayerSession session(&xr, &vulkan_instance);
+  mondradiko::Renderer renderer(&vulkan_instance, &session);
+  mondradiko::NetworkClient client(server_address, port);
   mondradiko::Scene scene(&fs, &renderer);
+
+  scene.loadModel("DamagedHelmet.gltf");
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");

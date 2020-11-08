@@ -30,34 +30,34 @@
 
 namespace mondradiko {
 
-VulkanBuffer::VulkanBuffer(VulkanInstance* vulkanInstance, size_t bufferSize,
-                           VkBufferUsageFlags bufferUsageFlags,
-                           VmaMemoryUsage memoryUsage)
-    : bufferSize(bufferSize), vulkanInstance(vulkanInstance) {
+VulkanBuffer::VulkanBuffer(VulkanInstance* vulkan_instance, size_t buffer_size,
+                           VkBufferUsageFlags buffer_usage_flags,
+                           VmaMemoryUsage memory_usage)
+    : buffer_size(buffer_size), vulkan_instance(vulkan_instance) {
   VkBufferCreateInfo bufferInfo{.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-                                .size = bufferSize,
-                                .usage = bufferUsageFlags,
+                                .size = buffer_size,
+                                .usage = buffer_usage_flags,
                                 .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
 
   VmaAllocationCreateInfo allocationCreateInfo{
-      .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memoryUsage};
+      .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memory_usage};
 
-  if (vmaCreateBuffer(vulkanInstance->allocator, &bufferInfo,
+  if (vmaCreateBuffer(vulkan_instance->allocator, &bufferInfo,
                       &allocationCreateInfo, &buffer, &allocation,
-                      &allocationInfo) != VK_SUCCESS) {
+                      &allocation_info) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan buffer.");
   }
 }
 
 VulkanBuffer::~VulkanBuffer() {
   if (allocation != nullptr)
-    vmaDestroyBuffer(vulkanInstance->allocator, buffer, allocation);
+    vmaDestroyBuffer(vulkan_instance->allocator, buffer, allocation);
 }
 
 void VulkanBuffer::writeData(void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
-  memcpy(allocationInfo.pMappedData, src, allocationInfo.size);
+  memcpy(allocation_info.pMappedData, src, allocation_info.size);
 }
 
 }  // namespace mondradiko

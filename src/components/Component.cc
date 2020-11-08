@@ -30,7 +30,7 @@
 namespace mondradiko {
 
 Component::~Component() {
-  parent->firstComponent = next;
+  parent->first_component = next;
   if (prev) prev->next = next;
   if (next) next->prev = prev;
 }

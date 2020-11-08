@@ -30,31 +30,30 @@
 
 namespace mondradiko {
 
-ShaderModule::ShaderModule(VulkanInstance* _vki, std::string _shaderName,
-                           shaderc_shader_kind _shaderKind) {
-  vki = _vki;
-  shaderName = _shaderName;
-  shaderKind = _shaderKind;
-
-  compiled = false;
-
-  glslSource << "#version 450" << std::endl;
-  glslSource << "#extension GL_ARB_separate_shader_objects : enable"
-             << std::endl;
+ShaderModule::ShaderModule(VulkanInstance* vulkan_instance,
+                           std::string shader_name,
+                           shaderc_shader_kind shader_kind)
+    : vulkan_instance(vulkan_instance),
+      shader_name(shader_name),
+      shader_kind(shader_kind),
+      compiled(false) {
+  glsl_source << "#version 450" << std::endl;
+  glsl_source << "#extension GL_ARB_separate_shader_objects : enable"
+              << std::endl;
 }
 
 ShaderModule::~ShaderModule() {
   if (compiled) {
-    vkDestroyShaderModule(vki->device, shaderModule, nullptr);
+    vkDestroyShaderModule(vulkan_instance->device, shader_module, nullptr);
   }
 }
 
 void ShaderModule::pushCustom(std::string code) {
-  glslSource << code << std::endl;
+  glsl_source << code << std::endl;
 }
 
 void ShaderModule::pushFullscreenQuad() {
-  glslSource << R"""(
+  glsl_source << R"""(
 layout(location = 0) out vec2 fragTexCoord;
 
 vec2 positions[4] = vec2[](
@@ -79,50 +78,50 @@ void main() {
 }
 
 VkShaderModule ShaderModule::compile() {
-  if (compiled) return shaderModule;
+  if (compiled) return shader_module;
 
   shaderc::Compiler compiler;
   shaderc::CompileOptions options;
 
-  std::string completeSource = glslSource.str();
-  auto spirvModule = compiler.CompileGlslToSpv(completeSource, shaderKind,
-                                               shaderName.data(), options);
+  std::string complete_source = glsl_source.str();
+  auto spirv_module = compiler.CompileGlslToSpv(complete_source, shader_kind,
+                                                shader_name.data(), options);
 
-  if (spirvModule.GetCompilationStatus() !=
+  if (spirv_module.GetCompilationStatus() !=
       shaderc_compilation_status_success) {
     std::ostringstream errorMessage;
-    errorMessage << "Shader " << shaderName;
+    errorMessage << "Shader " << shader_name;
     errorMessage << " compilation failed with ";
-    errorMessage << spirvModule.GetErrorMessage();
+    errorMessage << spirv_module.GetErrorMessage();
     log_ftl(errorMessage.str().c_str());
   }
 
-  std::vector<uint32_t> spirv = {spirvModule.cbegin(), spirvModule.cend()};
+  std::vector<uint32_t> spirv = {spirv_module.cbegin(), spirv_module.cend()};
 
-  VkShaderModuleCreateInfo createInfo{
+  VkShaderModuleCreateInfo module_info{
       .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
       .codeSize = spirv.size() * sizeof(uint32_t),
       .pCode = spirv.data()};
 
-  if (vkCreateShaderModule(vki->device, &createInfo, nullptr, &shaderModule) !=
-      VK_SUCCESS) {
+  if (vkCreateShaderModule(vulkan_instance->device, &module_info, nullptr,
+                           &shader_module) != VK_SUCCESS) {
     log_ftl("Failed to create shader module");
   }
 
   compiled = true;
-  return shaderModule;
+  return shader_module;
 }
 
 VkPipelineShaderStageCreateInfo ShaderModule::getStageCreateInfo() {
-  if (shaderKind == shaderc_vertex_shader) {
+  if (shader_kind == shaderc_vertex_shader) {
     return {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .stage = VK_SHADER_STAGE_VERTEX_BIT,
-            .module = shaderModule,
+            .module = shader_module,
             .pName = "main"};
-  } else if (shaderKind == shaderc_fragment_shader) {
+  } else if (shader_kind == shaderc_fragment_shader) {
     return {.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-            .module = shaderModule,
+            .module = shader_module,
             .pName = "main"};
   } else {
     log_ftl("Unrecognized shader type");

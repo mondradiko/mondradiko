@@ -48,10 +48,10 @@ class Entity {
   std::string name;
   Entity* parent = nullptr;
   Entity* child = nullptr;
-  Entity* prevSibling = nullptr;
-  Entity* nextSibling = nullptr;
+  Entity* prev_sibling = nullptr;
+  Entity* next_sibling = nullptr;
 
-  Component* firstComponent = nullptr;
+  Component* first_component = nullptr;
 
  private:
   Scene* scene;

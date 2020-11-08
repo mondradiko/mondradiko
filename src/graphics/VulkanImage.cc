@@ -30,15 +30,15 @@
 
 namespace mondradiko {
 
-VulkanImage::VulkanImage(VulkanInstance* vulkanInstance, VkFormat format,
+VulkanImage::VulkanImage(VulkanInstance* vulkan_instance, VkFormat format,
                          uint32_t width, uint32_t height,
-                         VkImageUsageFlags imageUsage,
-                         VmaMemoryUsage memoryUsage)
+                         VkImageUsageFlags image_usage_flags,
+                         VmaMemoryUsage memory_usage)
     : format(format),
       layout(VK_IMAGE_LAYOUT_UNDEFINED),
       width(height),
       height(height),
-      vulkanInstance(vulkanInstance) {
+      vulkan_instance(vulkan_instance) {
   VkImageCreateInfo imageCreateInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .imageType = VK_IMAGE_TYPE_2D,
@@ -48,36 +48,36 @@ VulkanImage::VulkanImage(VulkanInstance* vulkanInstance, VkFormat format,
       .arrayLayers = 1,
       .samples = VK_SAMPLE_COUNT_1_BIT,
       .tiling = VK_IMAGE_TILING_OPTIMAL,
-      .usage = imageUsage,
+      .usage = image_usage_flags,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
       .initialLayout = layout};
 
   VmaAllocationCreateInfo allocationCreateInfo{
-      .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memoryUsage};
+      .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memory_usage};
 
-  if (vmaCreateImage(vulkanInstance->allocator, &imageCreateInfo,
+  if (vmaCreateImage(vulkan_instance->allocator, &imageCreateInfo,
                      &allocationCreateInfo, &image, &allocation,
-                     &allocationInfo) != VK_SUCCESS) {
+                     &allocation_info) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan image.");
   }
 }
 
 VulkanImage::~VulkanImage() {
   if (view != VK_NULL_HANDLE)
-    vkDestroyImageView(vulkanInstance->device, view, nullptr);
+    vkDestroyImageView(vulkan_instance->device, view, nullptr);
   if (allocation != nullptr)
-    vmaDestroyImage(vulkanInstance->allocator, image, allocation);
+    vmaDestroyImage(vulkan_instance->allocator, image, allocation);
 }
 
 void VulkanImage::writeData(void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
-  VulkanBuffer stage(vulkanInstance, allocationInfo.size,
+  VulkanBuffer stage(vulkan_instance, allocation_info.size,
                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                      VMA_MEMORY_USAGE_CPU_TO_GPU);
   stage.writeData(src);
 
-  VkCommandBuffer commandBuffer = vulkanInstance->beginSingleTimeCommands();
+  VkCommandBuffer commandBuffer = vulkan_instance->beginSingleTimeCommands();
 
   VkBufferImageCopy region{
       .bufferOffset = 0,
@@ -93,7 +93,7 @@ void VulkanImage::writeData(void* src) {
   vkCmdCopyBufferToImage(commandBuffer, stage.buffer, image, layout, 1,
                          &region);
 
-  vulkanInstance->endSingleTimeCommands(commandBuffer);
+  vulkan_instance->endSingleTimeCommands(commandBuffer);
 }
 
 void VulkanImage::transitionLayout(VkImageLayout targetLayout) {
@@ -132,11 +132,11 @@ void VulkanImage::transitionLayout(VkImageLayout targetLayout) {
     return;
   }
 
-  VkCommandBuffer commandBuffer = vulkanInstance->beginSingleTimeCommands();
+  VkCommandBuffer commandBuffer = vulkan_instance->beginSingleTimeCommands();
   layout = targetLayout;
   vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0,
                        nullptr, 0, nullptr, 1, &barrier);
-  vulkanInstance->endSingleTimeCommands(commandBuffer);
+  vulkan_instance->endSingleTimeCommands(commandBuffer);
 }
 
 void VulkanImage::createView() {
@@ -151,7 +151,7 @@ void VulkanImage::createView() {
                            .baseArrayLayer = 0,
                            .layerCount = 1}};
 
-  if (vkCreateImageView(vulkanInstance->device, &viewInfo, nullptr, &view) !=
+  if (vkCreateImageView(vulkan_instance->device, &viewInfo, nullptr, &view) !=
       VK_SUCCESS) {
     log_ftl("Failed to create VulkanImage view.");
   }

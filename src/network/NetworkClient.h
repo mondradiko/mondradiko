@@ -53,7 +53,7 @@ class NetworkClient : public NetworkShared {
   ClientState state = ClientState::Disconnected;
 
  private:
-  std::queue<ClientEvent> eventQueue;
+  std::queue<ClientEvent> event_queue;
 };
 
 }  // namespace mondradiko

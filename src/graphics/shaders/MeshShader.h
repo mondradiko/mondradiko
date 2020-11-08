@@ -38,10 +38,10 @@ class MeshShader {
   ShaderStages getStages();
 
  private:
-  VulkanInstance* vulkanInstance;
+  VulkanInstance* vulkan_instance;
 
-  ShaderModule vertShader;
-  ShaderModule fragShader;
+  ShaderModule vert_shader;
+  ShaderModule frag_shader;
 };
 
 }  // namespace mondradiko

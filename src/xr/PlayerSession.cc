@@ -31,23 +31,21 @@
 
 namespace mondradiko {
 
-PlayerSession::PlayerSession(XrDisplay* _display,
-                             VulkanInstance* _vulkanInstance) {
+PlayerSession::PlayerSession(XrDisplay* display,
+                             VulkanInstance* vulkan_instance)
+    : display(display), vulkan_instance(vulkan_instance) {
   log_dbg("Creating OpenXR session.");
-
-  display = _display;
-  vulkanInstance = _vulkanInstance;
 
   XrGraphicsBindingVulkanKHR vulkanBindings{
       .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
-      .instance = vulkanInstance->instance,
-      .physicalDevice = vulkanInstance->physicalDevice,
-      .device = vulkanInstance->device,
-      .queueFamilyIndex = vulkanInstance->graphicsQueueFamily};
+      .instance = vulkan_instance->instance,
+      .physicalDevice = vulkan_instance->physicalDevice,
+      .device = vulkan_instance->device,
+      .queueFamilyIndex = vulkan_instance->graphics_queue_family};
 
   XrSessionCreateInfo createInfo{.type = XR_TYPE_SESSION_CREATE_INFO,
                                  .next = &vulkanBindings,
-                                 .systemId = display->systemId};
+                                 .systemId = display->system_id};
 
   if (xrCreateSession(display->instance, &createInfo, &session) != XR_SUCCESS) {
     log_ftl("Failed to create OpenXR session.");
@@ -59,7 +57,7 @@ PlayerSession::PlayerSession(XrDisplay* _display,
       .poseInReferenceSpace = {.orientation = {0.0, 0.0, 0.0, 1.0},
                                .position = {0.0, 0.0, 0.0}}};
 
-  if (xrCreateReferenceSpace(session, &stageSpaceCreateInfo, &stageSpace) !=
+  if (xrCreateReferenceSpace(session, &stageSpaceCreateInfo, &stage_space) !=
       XR_SUCCESS) {
     log_ftl("Failed to create OpenXR stage reference space.");
   }
@@ -68,11 +66,11 @@ PlayerSession::PlayerSession(XrDisplay* _display,
 PlayerSession::~PlayerSession() {
   log_dbg("Destroying OpenXR session.");
 
-  if (stageSpace != XR_NULL_HANDLE) xrDestroySpace(stageSpace);
+  if (stage_space != XR_NULL_HANDLE) xrDestroySpace(stage_space);
   if (session != XR_NULL_HANDLE) xrDestroySession(session);
 }
 
-void PlayerSession::pollEvents(bool* shouldRun, bool* shouldQuit) {
+void PlayerSession::pollEvents(bool* should_run, bool* should_quit) {
   XrEventDataBuffer event{.type = XR_TYPE_EVENT_DATA_BUFFER};
 
   while (xrPollEvent(display->instance, &event) == XR_SUCCESS) {
@@ -82,9 +80,9 @@ void PlayerSession::pollEvents(bool* shouldRun, bool* shouldQuit) {
       case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
         XrEventDataSessionStateChanged* changed =
             reinterpret_cast<XrEventDataSessionStateChanged*>(&event);
-        sessionState = changed->state;
+        session_state = changed->state;
 
-        switch (sessionState) {
+        switch (session_state) {
           case XR_SESSION_STATE_READY: {
             log_dbg("OpenXR session ready; beginning session.");
 
@@ -94,7 +92,7 @@ void PlayerSession::pollEvents(bool* shouldRun, bool* shouldQuit) {
                     XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO};
 
             xrBeginSession(session, &beginInfo);
-            *shouldRun = true;
+            *should_run = true;
 
             break;
           }
@@ -118,45 +116,45 @@ void PlayerSession::pollEvents(bool* shouldRun, bool* shouldQuit) {
           case XR_SESSION_STATE_EXITING:
           case XR_SESSION_STATE_LOSS_PENDING: {
             log_dbg("Ending OpenXR session.");
-            *shouldQuit = true;
-            *shouldRun = false;
+            *should_quit = true;
+            *should_run = false;
             xrEndSession(session);
             break;
           }
 
           default:
             break;
-        }
+        }  // switch (session_state)
 
         break;
       }
       // If the instance is about to be lost,
       // just exit.
       case XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
-        *shouldQuit = true;
+        *should_quit = true;
         break;
       }
 
       default:
         break;
-    }
+    }  // switch (event.type)
 
     event = {.type = XR_TYPE_EVENT_DATA_BUFFER};
   }
 }
 
-void PlayerSession::beginFrame(double* dt, bool* shouldRender) {
-  currentFrameState = {.type = XR_TYPE_FRAME_STATE};
+void PlayerSession::beginFrame(double* dt, bool* should_render) {
+  current_frame_state = {.type = XR_TYPE_FRAME_STATE};
 
-  xrWaitFrame(session, nullptr, &currentFrameState);
+  xrWaitFrame(session, nullptr, &current_frame_state);
 
   // Convert nanoseconds to seconds
-  *dt = currentFrameState.predictedDisplayPeriod / 1000000000.0;
+  *dt = current_frame_state.predictedDisplayPeriod / 1000000000.0;
 
-  if (currentFrameState.shouldRender == XR_TRUE) {
-    *shouldRender = true;
+  if (current_frame_state.shouldRender == XR_TRUE) {
+    *should_render = true;
   } else {
-    *shouldRender = false;
+    *should_render = false;
   }
 
   xrBeginFrame(session, nullptr);
@@ -176,8 +174,8 @@ void PlayerSession::endFrame(Renderer* renderer, bool didRender) {
     XrViewLocateInfo locateInfo{
         .type = XR_TYPE_VIEW_LOCATE_INFO,
         .viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
-        .displayTime = currentFrameState.predictedDisplayTime,
-        .space = stageSpace};
+        .displayTime = current_frame_state.predictedDisplayTime,
+        .space = stage_space};
 
     uint32_t viewCount = views.size();
     xrLocateViews(session, &locateInfo, &viewState, viewCount, &viewCount,
@@ -186,14 +184,14 @@ void PlayerSession::endFrame(Renderer* renderer, bool didRender) {
 
     renderer->finishRender(&views, &projectionViews);
 
-    projectionLayer.space = stageSpace;
+    projectionLayer.space = stage_space;
     projectionLayer.viewCount = projectionViews.size();
     projectionLayer.views = projectionViews.data();
   }
 
   XrFrameEndInfo endInfo{
       .type = XR_TYPE_FRAME_END_INFO,
-      .displayTime = currentFrameState.predictedDisplayTime,
+      .displayTime = current_frame_state.predictedDisplayTime,
       .environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
       .layerCount = static_cast<uint32_t>((layer == nullptr) ? 0 : 1),
       .layers = &layer};
@@ -219,11 +217,11 @@ bool PlayerSession::createViewports(std::vector<Viewport*>* viewports,
                                     VkFormat format, VkRenderPass renderPass) {
   // TODO(marceline-cramer) findViewConfiguration()
   uint32_t viewportCount;
-  xrEnumerateViewConfigurationViews(display->instance, display->systemId,
+  xrEnumerateViewConfigurationViews(display->instance, display->system_id,
                                     XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
                                     0, &viewportCount, nullptr);
   std::vector<XrViewConfigurationView> viewConfigs(viewportCount);
-  xrEnumerateViewConfigurationViews(display->instance, display->systemId,
+  xrEnumerateViewConfigurationViews(display->instance, display->system_id,
                                     XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
                                     viewportCount, &viewportCount,
                                     viewConfigs.data());
@@ -233,7 +231,7 @@ bool PlayerSession::createViewports(std::vector<Viewport*>* viewports,
 
   for (uint32_t i = 0; i < viewportCount; i++) {
     Viewport* viewport =
-        new Viewport(format, renderPass, &viewConfigs[i], this, vulkanInstance);
+        new Viewport(format, renderPass, &viewConfigs[i], this, vulkan_instance);
     viewports->push_back(viewport);
   }
 

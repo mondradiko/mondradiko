@@ -35,11 +35,11 @@ namespace mondradiko {
 
 Entity::Entity(Scene* scene) : name("root"), scene(scene) {}
 
-Entity::Entity(Scene* scene, std::string parentName, const aiScene* modelScene,
+Entity::Entity(Scene* scene, std::string parent_name, const aiScene* model_scene,
                aiNode* node)
     : name(node->mName.C_Str()), scene(scene) {
   std::ostringstream nodePathFormat;
-  nodePathFormat << parentName << "/" << node->mName.C_Str();
+  nodePathFormat << parent_name << "/" << node->mName.C_Str();
   std::string nodePath = nodePathFormat.str();
 
   log_inf("Loading entity:");
@@ -47,13 +47,13 @@ Entity::Entity(Scene* scene, std::string parentName, const aiScene* modelScene,
 
   for (uint32_t i = 0; i < node->mNumMeshes; i++) {
     uint32_t meshIndex = node->mMeshes[i];
-    addComponent(scene->renderer->meshPipeline->createMeshRenderer(
-        parentName, modelScene, meshIndex));
+    addComponent(scene->renderer->mesh_pipeline->createMeshRenderer(
+        parent_name, model_scene, meshIndex));
   }
 
   // Recursively add subnodes
   for (uint32_t i = 0; i < node->mNumChildren; i++) {
-    addChild(new Entity(scene, nodePath, modelScene, node));
+    addChild(new Entity(scene, nodePath, model_scene, node));
   }
 }
 
@@ -63,24 +63,24 @@ Entity::~Entity() {
 
   while (child) delete child;
 
-  if (parent) parent->child = nextSibling;
-  if (prevSibling) prevSibling->nextSibling = nextSibling;
-  if (nextSibling) nextSibling->prevSibling = prevSibling;
+  if (parent) parent->child = next_sibling;
+  if (prev_sibling) prev_sibling->next_sibling = next_sibling;
+  if (next_sibling) next_sibling->prev_sibling = prev_sibling;
 
-  while (firstComponent) delete firstComponent;
+  while (first_component) delete first_component;
 }
 
-void Entity::addChild(Entity* newChild) {
-  newChild->parent = this;
-  newChild->nextSibling = child;
-  if (child) child->prevSibling = newChild;
-  child = newChild;
+void Entity::addChild(Entity* new_child) {
+  new_child->parent = this;
+  new_child->next_sibling = child;
+  if (child) child->prev_sibling = new_child;
+  child = new_child;
 }
 
-void Entity::addComponent(Component* component) {
-  component->parent = this;
-  component->next = firstComponent;
-  firstComponent = component;
+void Entity::addComponent(Component* new_component) {
+  new_component->parent = this;
+  new_component->next = first_component;
+  first_component = new_component;
 }
 
 }  // namespace mondradiko

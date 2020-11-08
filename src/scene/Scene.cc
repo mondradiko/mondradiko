@@ -37,7 +37,7 @@
 namespace mondradiko {
 
 Scene::Scene(Filesystem* fs, Renderer* renderer)
-    : fs(fs), renderer(renderer), rootEntity(this) {
+    : fs(fs), renderer(renderer), root_entity(this) {
   log_dbg("Creating scene.");
 
   // Abandon all hope, ye who enter here.
@@ -72,7 +72,7 @@ bool Scene::loadModel(const char* fileName) {
     return false;
   }
 
-  rootEntity.addChild(
+  root_entity.addChild(
       new Entity(this, fileName, modelScene, modelScene->mRootNode));
 
   // aiScene is freed automatically

@@ -48,7 +48,7 @@ class MaterialAsset : public Asset {
 
   void updateUniform(MaterialUniform*);
 
-  AssetHandle<TextureAsset> textureBaseColor;
+  AssetHandle<TextureAsset> albedo_texture;
 
   /**
    * @brief Stores the index into the CURRENT FRAME's material array.
@@ -57,7 +57,7 @@ class MaterialAsset : public Asset {
   uint32_t index = 0;
 
  private:
-  MeshPipeline* meshPipeline;
+  MeshPipeline* mesh_pipeline;
 };
 
 }  // namespace mondradiko

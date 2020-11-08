@@ -29,13 +29,13 @@
 
 namespace mondradiko {
 
-MeshShader::MeshShader(VulkanInstance* vulkanInstance)
-    : vulkanInstance(vulkanInstance),
-      vertShader(vulkanInstance, "MeshShader.vert", shaderc_vertex_shader),
-      fragShader(vulkanInstance, "MeshShader.frag", shaderc_fragment_shader) {
+MeshShader::MeshShader(VulkanInstance* vulkan_instance)
+    : vulkan_instance(vulkan_instance),
+      vert_shader(vulkan_instance, "MeshShader.vert", shaderc_vertex_shader),
+      frag_shader(vulkan_instance, "MeshShader.frag", shaderc_fragment_shader) {
   log_dbg("Creating mesh shader.");
 
-  vertShader.pushCustom(R"""(
+  vert_shader.pushCustom(R"""(
 // TODO(marceline-cramer) Overwrite this with more viewports when they are added
 layout(constant_id = 0) const int CAMERA_NUM = 2;
 
@@ -65,7 +65,7 @@ void main() {
 }
     )""");
 
-  fragShader.pushCustom(R"""(
+  frag_shader.pushCustom(R"""(
 layout(constant_id = 1) const int TEXTURE_NUM = 128;
 
 layout(push_constant) uniform push_constants_t {
@@ -93,14 +93,14 @@ void main() {
 }
     )""");
 
-  vertShader.compile();
-  fragShader.compile();
+  vert_shader.compile();
+  frag_shader.compile();
 }
 
 MeshShader::~MeshShader() { log_dbg("Destroying mesh shader."); }
 
 ShaderStages MeshShader::getStages() {
-  return {vertShader.getStageCreateInfo(), fragShader.getStageCreateInfo()};
+  return {vert_shader.getStageCreateInfo(), frag_shader.getStageCreateInfo()};
 }
 
 }  // namespace mondradiko

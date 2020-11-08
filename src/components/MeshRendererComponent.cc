@@ -32,16 +32,16 @@
 namespace mondradiko {
 
 MeshRendererComponent::MeshRendererComponent(
-    MeshPipeline* meshPipeline, AssetHandle<MeshAsset>& meshAsset,
-    AssetHandle<MaterialAsset>& materialAsset)
-    : meshAsset(meshAsset),
-      materialAsset(materialAsset),
-      meshPipeline(meshPipeline) {
-  meshPipeline->meshRenderers.insert(this);
+    MeshPipeline* mesh_pipeline, AssetHandle<MeshAsset>& mesh_asset,
+    AssetHandle<MaterialAsset>& material_asset)
+    : mesh_asset(mesh_asset),
+      material_asset(material_asset),
+      mesh_pipeline(mesh_pipeline) {
+  mesh_pipeline->mesh_renderers.insert(this);
 }
 
 MeshRendererComponent::~MeshRendererComponent() {
-  meshPipeline->meshRenderers.erase(this);
+  mesh_pipeline->mesh_renderers.erase(this);
 }
 
 }  // namespace mondradiko

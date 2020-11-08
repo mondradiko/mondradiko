@@ -31,18 +31,18 @@
 
 namespace mondradiko {
 
-MaterialAsset::MaterialAsset(MeshPipeline *meshPipeline, std::string fileName,
-                             const aiScene *modelScene, aiMaterial *material)
-    : meshPipeline(meshPipeline) {
+MaterialAsset::MaterialAsset(MeshPipeline *mesh_pipeline, std::string filename,
+                             const aiScene *model_scene, aiMaterial *material)
+    : mesh_pipeline(mesh_pipeline) {
   aiString baseColor;
   material->GetTexture(aiTextureType_DIFFUSE, 0, &baseColor);
-  textureBaseColor = meshPipeline->loadTexture(fileName, modelScene, baseColor);
+  albedo_texture = mesh_pipeline->loadTexture(filename, model_scene, baseColor);
 }
 
 MaterialAsset::~MaterialAsset() {}
 
 void MaterialAsset::updateUniform(MaterialUniform *uniform) {
-  uniform->albedo_texture = textureBaseColor->index;
+  uniform->albedo_texture = albedo_texture->index;
 }
 
 }  // namespace mondradiko

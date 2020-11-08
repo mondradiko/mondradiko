@@ -49,7 +49,7 @@ class Scene {
   Renderer* renderer;
 
  private:
-  Entity rootEntity;
+  Entity root_entity;
 
   Assimp::Importer importer;
 };

@@ -39,14 +39,14 @@ class VulkanInstance;
 class Viewport;
 
 struct VulkanRequirements {
-  uint32_t minApiVersion;
-  uint32_t maxApiVersion;
+  uint32_t min_api_version;
+  uint32_t max_api_version;
 
-  std::vector<std::string> instanceExtensions;
+  std::vector<std::string> instance_extensions;
 
-  VkPhysicalDevice physicalDevice;
+  VkPhysicalDevice physical_device;
 
-  std::vector<std::string> deviceExtensions;
+  std::vector<std::string> device_extensions;
 };
 
 class XrDisplay {
@@ -57,11 +57,11 @@ class XrDisplay {
   bool getRequirements(VulkanRequirements*);
   bool getVulkanDevice(VkInstance, VkPhysicalDevice*);
 
-  bool enableValidationLayers = true;
+  bool enable_validation_layers = true;
 
   XrInstance instance = XR_NULL_HANDLE;
-  XrDebugUtilsMessengerEXT debugMessenger = XR_NULL_HANDLE;
-  XrSystemId systemId = XR_NULL_SYSTEM_ID;
+  XrDebugUtilsMessengerEXT debug_messenger = XR_NULL_HANDLE;
+  XrSystemId system_id = XR_NULL_SYSTEM_ID;
 
  private:
   void populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT*);

@@ -59,16 +59,14 @@ static glm::mat4 createProjectionFromFOV(const XrFovf fov, const float near_z,
   return glm::make_mat4(mat);
 }
 
-Viewport::Viewport(VkFormat format, VkRenderPass renderPass,
-                   XrViewConfigurationView* viewConfig, PlayerSession* _session,
-                   VulkanInstance* _vulkanInstance) {
+Viewport::Viewport(VkFormat format, VkRenderPass render_pass,
+                   XrViewConfigurationView* view_config, PlayerSession* session,
+                   VulkanInstance* vulkan_instance)
+    : session(session), vulkan_instance(vulkan_instance) {
   log_dbg("Creating viewport.");
 
-  session = _session;
-  vulkanInstance = _vulkanInstance;
-
-  width = viewConfig->recommendedImageRectWidth;
-  height = viewConfig->recommendedImageRectHeight;
+  width = view_config->recommendedImageRectWidth;
+  height = view_config->recommendedImageRectHeight;
 
   XrSwapchainCreateInfo swapchainCreateInfo{
       .type = XR_TYPE_SWAPCHAIN_CREATE_INFO,
@@ -112,21 +110,21 @@ Viewport::Viewport(VkFormat format, VkRenderPass renderPass,
                              .baseArrayLayer = 0,
                              .layerCount = 1}};
 
-    if (vkCreateImageView(vulkanInstance->device, &viewCreateInfo, nullptr,
-                          &images[i].imageView) != VK_SUCCESS) {
+    if (vkCreateImageView(vulkan_instance->device, &viewCreateInfo, nullptr,
+                          &images[i].image_view) != VK_SUCCESS) {
       log_ftl("Failed to create viewport image view.");
     }
 
     VkFramebufferCreateInfo framebufferCreateInfo{
         .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-        .renderPass = renderPass,
+        .renderPass = render_pass,
         .attachmentCount = 1,
-        .pAttachments = &images[i].imageView,
+        .pAttachments = &images[i].image_view,
         .width = width,
         .height = height,
         .layers = 1};
 
-    if (vkCreateFramebuffer(vulkanInstance->device, &framebufferCreateInfo,
+    if (vkCreateFramebuffer(vulkan_instance->device, &framebufferCreateInfo,
                             nullptr, &images[i].framebuffer) != VK_SUCCESS) {
       log_ftl("Failed to create viewport framebuffer.");
     }
@@ -137,8 +135,8 @@ Viewport::~Viewport() {
   log_dbg("Destroying viewport.");
 
   for (ViewportImage& image : images) {
-    vkDestroyImageView(vulkanInstance->device, image.imageView, nullptr);
-    vkDestroyFramebuffer(vulkanInstance->device, image.framebuffer, nullptr);
+    vkDestroyImageView(vulkan_instance->device, image.image_view, nullptr);
+    vkDestroyFramebuffer(vulkan_instance->device, image.framebuffer, nullptr);
   }
 
   if (swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
@@ -169,7 +167,7 @@ void Viewport::acquireSwapchainImage() {
   XrSwapchainImageAcquireInfo acquireInfo{
       .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, .next = nullptr};
 
-  xrAcquireSwapchainImage(swapchain, &acquireInfo, &currentIndex);
+  xrAcquireSwapchainImage(swapchain, &acquireInfo, &current_index);
 
   XrSwapchainImageWaitInfo waitInfo{.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
                                     .timeout = XR_INFINITE_DURATION};
@@ -177,25 +175,25 @@ void Viewport::acquireSwapchainImage() {
   xrWaitSwapchainImage(swapchain, &waitInfo);
 }
 
-void Viewport::beginRenderPass(VkCommandBuffer commandBuffer,
-                               VkRenderPass renderPass) {
-  std::array<VkClearValue, 1> clearValues;
+void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
+                               VkRenderPass render_pass) {
+  std::array<VkClearValue, 1> clear_values;
 
-  clearValues[0].color = {0.2, 0.0, 0.0, 1.0};
+  clear_values[0].color = {0.2, 0.0, 0.0, 1.0};
 
   VkRenderPassBeginInfo renderPassInfo{
       .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-      .renderPass = renderPass,
-      .framebuffer = images[currentIndex].framebuffer,
+      .renderPass = render_pass,
+      .framebuffer = images[current_index].framebuffer,
       .renderArea = {.offset = {0, 0}, .extent = {width, height}},
-      .clearValueCount = static_cast<uint32_t>(clearValues.size()),
-      .pClearValues = clearValues.data()};
+      .clearValueCount = static_cast<uint32_t>(clear_values.size()),
+      .pClearValues = clear_values.data()};
 
-  vkCmdBeginRenderPass(commandBuffer, &renderPassInfo,
+  vkCmdBeginRenderPass(command_buffer, &renderPassInfo,
                        VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void Viewport::setCommandViewport(VkCommandBuffer commandBuffer) {
+void Viewport::setCommandViewport(VkCommandBuffer command_buffer) {
   VkViewport viewport{.x = 0,
                       .y = 0,
                       .width = static_cast<float>(width),
@@ -205,15 +203,15 @@ void Viewport::setCommandViewport(VkCommandBuffer commandBuffer) {
 
   VkRect2D scissor{.offset = {0, 0}, .extent = {width, height}};
 
-  vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-  vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 }
 
 void Viewport::releaseSwapchainImage() {
-  XrSwapchainImageReleaseInfo releaseInfo{
-      .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO, .next = nullptr};
+  XrSwapchainImageReleaseInfo release_info{
+      .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
 
-  xrReleaseSwapchainImage(swapchain, &releaseInfo);
+  xrReleaseSwapchainImage(swapchain, &release_info);
 }
 
 }  // namespace mondradiko

@@ -61,14 +61,14 @@ class MeshPipeline {
   VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
   VkPipeline pipeline = VK_NULL_HANDLE;
 
-  VkSampler textureSampler = VK_NULL_HANDLE;
+  VkSampler texture_sampler = VK_NULL_HANDLE;
 
-  std::set<MeshRendererComponent*> meshRenderers;
+  std::set<MeshRendererComponent*> mesh_renderers;
 
   VulkanBuffer* material_buffer = nullptr;
 
  private:
-  VulkanInstance* vulkanInstance;
+  VulkanInstance* vulkan_instance;
 
   AssetPool<MaterialAsset> material_pool;
   AssetPool<MeshAsset> mesh_pool;

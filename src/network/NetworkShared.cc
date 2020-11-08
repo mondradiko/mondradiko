@@ -32,7 +32,7 @@ namespace mondradiko {
 
 NetworkShared::~NetworkShared() { log_dbg("Disconnecting from server."); }
 
-bool NetworkShared::connect(const char* serverAddress, int port) {
+bool NetworkShared::connect(const char* server_address, int port) {
   log_dbg("Connecting to server.");
 
   return true;

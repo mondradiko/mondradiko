@@ -47,12 +47,12 @@ class VulkanImage {
   uint32_t width;
   uint32_t height;
   VmaAllocation allocation = nullptr;
-  VmaAllocationInfo allocationInfo;
+  VmaAllocationInfo allocation_info;
   VkImage image = VK_NULL_HANDLE;
   VkImageView view = VK_NULL_HANDLE;
 
  private:
-  VulkanInstance* vulkanInstance;
+  VulkanInstance* vulkan_instance;
 };
 
 }  // namespace mondradiko

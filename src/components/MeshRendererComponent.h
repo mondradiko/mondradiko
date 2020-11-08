@@ -42,11 +42,11 @@ class MeshRendererComponent : public Component {
                         AssetHandle<MaterialAsset>&);
   ~MeshRendererComponent();
 
-  AssetHandle<MeshAsset> meshAsset;
-  AssetHandle<MaterialAsset> materialAsset;
+  AssetHandle<MeshAsset> mesh_asset;
+  AssetHandle<MaterialAsset> material_asset;
 
  private:
-  MeshPipeline* meshPipeline;
+  MeshPipeline* mesh_pipeline;
 };
 
 }  // namespace mondradiko

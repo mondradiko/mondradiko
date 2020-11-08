@@ -38,8 +38,8 @@ namespace mondradiko {
 
 struct PipelinedFrameData {
   // TODO(marceline-cramer) Use command pool per frame, per thread
-  VkCommandBuffer commandBuffer;
-  VkFence isInUse;
+  VkCommandBuffer command_buffer;
+  VkFence is_in_use;
   bool submitted;
 
   // TODO(marceline-cramer) Allocate all frame descriptors from pool
@@ -62,20 +62,20 @@ class Renderer {
   void finishRender(std::vector<XrView>*,
                     std::vector<XrCompositionLayerProjectionView>*);
 
-  VkFormat swapchainFormat;
-  VkRenderPass compositePass = VK_NULL_HANDLE;
+  VkFormat swapchain_format;
+  VkRenderPass composite_pass = VK_NULL_HANDLE;
   std::vector<Viewport*> viewports;
 
   VkDescriptorSetLayout main_descriptor_layout = VK_NULL_HANDLE;
   VkPipelineLayout main_pipeline_layout = VK_NULL_HANDLE;
-  MeshPipeline* meshPipeline = nullptr;
+  MeshPipeline* mesh_pipeline = nullptr;
 
  private:
-  VulkanInstance* vulkanInstance;
+  VulkanInstance* vulkan_instance;
   PlayerSession* session;
 
-  uint32_t currentFrame = 0;
-  std::vector<PipelinedFrameData> framesInFlight;
+  uint32_t current_frame = 0;
+  std::vector<PipelinedFrameData> frames_in_flight;
 
   void findSwapchainFormat();
   void createRenderPasses();

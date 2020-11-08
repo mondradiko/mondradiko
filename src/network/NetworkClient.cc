@@ -32,14 +32,14 @@
 
 namespace mondradiko {
 
-NetworkClient::NetworkClient(const char* serverAddress, int port) {
+NetworkClient::NetworkClient(const char* server_address, int port) {
   state = ClientState::Connecting;
 
-  if (!connect(serverAddress, port)) {
+  if (!connect(server_address, port)) {
     disconnect();
     std::ostringstream err;
     err << "Failed to connect to server ";
-    err << serverAddress << ":" << port << ".";
+    err << server_address << ":" << port << ".";
     log_ftl(err.str().c_str());
   }
 
@@ -49,7 +49,7 @@ NetworkClient::NetworkClient(const char* serverAddress, int port) {
     disconnect();
     std::ostringstream err;
     err << "Failed to authenticate to server ";
-    err << serverAddress << ":" << port << ".";
+    err << server_address << ":" << port << ".";
     log_ftl(err.str().c_str());
   }
 
@@ -61,9 +61,9 @@ NetworkClient::~NetworkClient() { disconnect(); }
 void NetworkClient::update() {}
 
 bool NetworkClient::readEvent(ClientEvent* event) {
-  if (!eventQueue.empty()) {
-    *event = eventQueue.front();
-    eventQueue.pop();
+  if (!event_queue.empty()) {
+    *event = event_queue.front();
+    event_queue.pop();
     return true;
   }
 

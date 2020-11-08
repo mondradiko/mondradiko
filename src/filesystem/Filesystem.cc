@@ -48,24 +48,24 @@ bool Filesystem::exists(const char* fileName) {
   return PHYSFS_exists(fileName);
 }
 
-bool Filesystem::loadBinaryFile(const char* fileName,
+bool Filesystem::loadBinaryFile(const char* filename,
                                 std::vector<char>* buffer) {
   std::ostringstream infoMessage;
-  infoMessage << "Loading file '" << fileName << "'.";
+  infoMessage << "Loading file '" << filename << "'.";
   log_inf(infoMessage.str().c_str());
 
-  if (!PHYSFS_exists(fileName)) {
+  if (!PHYSFS_exists(filename)) {
     std::ostringstream errorMessage;
-    errorMessage << "File '" << fileName << "' does not exist.";
+    errorMessage << "File '" << filename << "' does not exist.";
     log_err(errorMessage.str().c_str());
     return false;
   }
 
-  PHYSFS_file* f = PHYSFS_openRead(fileName);
+  PHYSFS_file* f = PHYSFS_openRead(filename);
 
   if (!f) {
     std::ostringstream errorMessage;
-    errorMessage << "Failed to open file '" << fileName << "'.";
+    errorMessage << "Failed to open file '" << filename << "'.";
     log_err(errorMessage.str().c_str());
     return false;
   }

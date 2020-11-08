@@ -91,13 +91,13 @@ VulkanInstance::VulkanInstance(XrDisplay* display) {
 VulkanInstance::~VulkanInstance() {
   log_dbg("Cleaning up Vulkan.");
 
-  if (descriptorPool != VK_NULL_HANDLE)
-    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+  if (descriptor_pool != VK_NULL_HANDLE)
+    vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
 
   if (allocator != nullptr) vmaDestroyAllocator(allocator);
 
-  if (commandPool != VK_NULL_HANDLE)
-    vkDestroyCommandPool(device, commandPool, nullptr);
+  if (command_pool != VK_NULL_HANDLE)
+    vkDestroyCommandPool(device, command_pool, nullptr);
 
   if (device != VK_NULL_HANDLE) vkDestroyDevice(device, nullptr);
 
@@ -125,7 +125,7 @@ bool VulkanInstance::findFormatFromOptions(
 VkCommandBuffer VulkanInstance::beginSingleTimeCommands() {
   VkCommandBufferAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-      .commandPool = commandPool,
+      .commandPool = command_pool,
       .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
       .commandBufferCount = 1};
 
@@ -141,39 +141,39 @@ VkCommandBuffer VulkanInstance::beginSingleTimeCommands() {
   return commandBuffer;
 }
 
-void VulkanInstance::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
-  vkEndCommandBuffer(commandBuffer);
+void VulkanInstance::endSingleTimeCommands(VkCommandBuffer command_buffer) {
+  vkEndCommandBuffer(command_buffer);
 
   VkSubmitInfo submitInfo{.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                           .commandBufferCount = 1,
-                          .pCommandBuffers = &commandBuffer};
+                          .pCommandBuffers = &command_buffer};
 
-  vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-  vkQueueWaitIdle(graphicsQueue);
+  vkQueueSubmit(graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
+  vkQueueWaitIdle(graphics_queue);
 
-  vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+  vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
 }
 
 bool VulkanInstance::checkValidationLayerSupport() {
   log_dbg("Checking for Vulkan validation layer support.");
 
-  uint32_t layerCount;
-  vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+  uint32_t layer_count;
+  vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
 
-  std::vector<VkLayerProperties> availableLayers(layerCount);
-  vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+  std::vector<VkLayerProperties> available_layers(layer_count);
+  vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
 
-  for (const char* layerName : validationLayers) {
-    bool layerFound = false;
+  for (const char* layer_name : validationLayers) {
+    bool layer_found = false;
 
-    for (const auto& layerProperties : availableLayers) {
-      if (strcmp(layerName, layerProperties.layerName) == 0) {
-        layerFound = true;
+    for (const auto& layer_properties : available_layers) {
+      if (strcmp(layer_name, layer_properties.layerName) == 0) {
+        layer_found = true;
         break;
       }
     }
 
-    if (!layerFound) {
+    if (!layer_found) {
       return false;
     }
   }
@@ -198,8 +198,8 @@ void VulkanInstance::createInstance(VulkanRequirements* requirements) {
   log_dbg("Creating Vulkan instance.");
 
   std::vector<const char*> extensionNames;
-  for (uint32_t i = 0; i < requirements->instanceExtensions.size(); i++) {
-    extensionNames.push_back(requirements->instanceExtensions[i].c_str());
+  for (uint32_t i = 0; i < requirements->instance_extensions.size(); i++) {
+    extensionNames.push_back(requirements->instance_extensions[i].c_str());
   }
 
   extensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -209,7 +209,7 @@ void VulkanInstance::createInstance(VulkanRequirements* requirements) {
                             .applicationVersion = VK_MAKE_VERSION(0, 0, 0),
                             .pEngineName = MONDRADIKO_NAME,
                             .engineVersion = MONDRADIKO_VULKAN_VERSION,
-                            .apiVersion = requirements->minApiVersion};
+                            .apiVersion = requirements->min_api_version};
 
   VkInstanceCreateInfo createInfo{
       .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -270,7 +270,7 @@ void VulkanInstance::findQueueFamilies() {
 
   for (uint32_t i = 0; i < queueFamilyCount; i++) {
     if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-      graphicsQueueFamily = i;
+      graphics_queue_family = i;
       break;
     }
   }
@@ -280,12 +280,12 @@ void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements) {
   log_dbg("Creating Vulkan logical device.");
 
   std::vector<const char*> extensionNames;
-  for (uint32_t i = 0; i < requirements->deviceExtensions.size(); i++) {
-    extensionNames.push_back(requirements->deviceExtensions[i].c_str());
+  for (uint32_t i = 0; i < requirements->device_extensions.size(); i++) {
+    extensionNames.push_back(requirements->device_extensions[i].c_str());
   }
 
   std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-  std::set<uint32_t> uniqueQueueFamilies = {graphicsQueueFamily};
+  std::set<uint32_t> uniqueQueueFamilies = {graphics_queue_family};
 
   float queuePriority = 1.0f;
   for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -323,7 +323,7 @@ void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements) {
     log_ftl("Failed to create Vulkan logical device.");
   }
 
-  vkGetDeviceQueue(device, graphicsQueueFamily, 0, &graphicsQueue);
+  vkGetDeviceQueue(device, graphics_queue_family, 0, &graphics_queue);
 }
 
 void VulkanInstance::createCommandPool() {
@@ -331,9 +331,9 @@ void VulkanInstance::createCommandPool() {
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
       .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
                VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-      .queueFamilyIndex = graphicsQueueFamily};
+      .queueFamilyIndex = graphics_queue_family};
 
-  if (vkCreateCommandPool(device, &createInfo, nullptr, &commandPool) !=
+  if (vkCreateCommandPool(device, &createInfo, nullptr, &command_pool) !=
       VK_SUCCESS) {
     log_ftl("Failed to create Vulkan command pool.");
   }
@@ -364,7 +364,7 @@ void VulkanInstance::createDescriptorPool() {
       .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
       .pPoolSizes = poolSizes.data()};
 
-  if (vkCreateDescriptorPool(device, &createInfo, nullptr, &descriptorPool) !=
+  if (vkCreateDescriptorPool(device, &createInfo, nullptr, &descriptor_pool) !=
       VK_SUCCESS) {
     log_ftl("Failed to create Vulkan descriptor pool.");
   }

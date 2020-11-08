@@ -50,7 +50,7 @@ class TextureAsset : public Asset {
   VkSampler sampler;
 
  private:
-  VulkanInstance* vulkanInstance;
+  VulkanInstance* vulkan_instance;
 };
 
 }  // namespace mondradiko

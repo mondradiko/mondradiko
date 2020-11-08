@@ -53,14 +53,14 @@ class VulkanInstance {
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
   VkDevice device = VK_NULL_HANDLE;
 
-  uint32_t graphicsQueueFamily;
-  VkQueue graphicsQueue;
+  uint32_t graphics_queue_family;
+  VkQueue graphics_queue;
 
-  VkCommandPool commandPool = VK_NULL_HANDLE;
+  VkCommandPool command_pool = VK_NULL_HANDLE;
 
   VmaAllocator allocator = nullptr;
 
-  VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+  VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
 
  private:
   const std::vector<const char*> validationLayers = {

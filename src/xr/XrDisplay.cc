@@ -45,13 +45,13 @@ namespace mondradiko {
                         reinterpret_cast<PFN_xrVoidFunction *>(&fnPtr))
 
 static XRAPI_ATTR XrBool32 XRAPI_CALL
-debugCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity,
-              XrDebugUtilsMessageTypeFlagsEXT messageType,
+debugCallback(XrDebugUtilsMessageSeverityFlagsEXT message_severity,
+              XrDebugUtilsMessageTypeFlagsEXT message_type,
               const XrDebugUtilsMessengerCallbackDataEXT *pCallbackData,
               void *pUserData) {
   LogLevel severity;
 
-  switch (messageSeverity) {
+  switch (message_severity) {
     case XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
       severity = LOG_LEVEL_INFO;
       break;
@@ -71,7 +71,7 @@ debugCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity,
 XrDisplay::XrDisplay() {
   createInstance();
 
-  if (enableValidationLayers) {
+  if (enable_validation_layers) {
     setupDebugMessenger();
   }
 
@@ -81,8 +81,8 @@ XrDisplay::XrDisplay() {
 XrDisplay::~XrDisplay() {
   log_dbg("Cleaning up XrDisplay.");
 
-  if (enableValidationLayers && debugMessenger != VK_NULL_HANDLE)
-    ext_xrDestroyDebugUtilsMessengerEXT(debugMessenger);
+  if (enable_validation_layers && debug_messenger != VK_NULL_HANDLE)
+    ext_xrDestroyDebugUtilsMessengerEXT(debug_messenger);
 
   if (instance != XR_NULL_HANDLE) xrDestroyInstance(instance);
 }
@@ -92,75 +92,75 @@ bool XrDisplay::getRequirements(VulkanRequirements *requirements) {
       .type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR};
 
   if (ext_xrGetVulkanGraphicsRequirementsKHR(
-          instance, systemId, &vulkanRequirements) != XR_SUCCESS) {
+          instance, system_id, &vulkanRequirements) != XR_SUCCESS) {
     log_err("Failed to get OpenXR Vulkan requirements.");
     return false;
   }
 
-  requirements->minApiVersion = vulkanRequirements.minApiVersionSupported;
-  requirements->maxApiVersion = vulkanRequirements.maxApiVersionSupported;
+  requirements->min_api_version = vulkanRequirements.minApiVersionSupported;
+  requirements->max_api_version = vulkanRequirements.maxApiVersionSupported;
 
-  uint32_t instanceExtensionsLength;
-  ext_xrGetVulkanInstanceExtensionsKHR(instance, systemId, 0,
-                                       &instanceExtensionsLength, nullptr);
-  std::vector<char> instanceExtensionsList(instanceExtensionsLength);
+  uint32_t instance_extensions_length;
+  ext_xrGetVulkanInstanceExtensionsKHR(instance, system_id, 0,
+                                       &instance_extensions_length, nullptr);
+  std::vector<char> instance_extensions_list(instance_extensions_length);
   ext_xrGetVulkanInstanceExtensionsKHR(
-      instance, systemId, instanceExtensionsLength, &instanceExtensionsLength,
-      instanceExtensionsList.data());
-  std::string instanceExtensionNames = instanceExtensionsList.data();
+      instance, system_id, instance_extensions_length,
+      &instance_extensions_length, instance_extensions_list.data());
+  std::string instance_extensions_names = instance_extensions_list.data();
 
   // The list of required instance extensions is separated by spaces, so parse
   // it out
   log_inf("Vulkan instance extensions required by OpenXR:");
-  requirements->instanceExtensions.clear();
-  uint32_t startIndex = 0;
-  for (uint32_t endIndex = 0; endIndex < instanceExtensionNames.size();
-       endIndex++) {
-    if (instanceExtensionNames[endIndex] == ' ' ||
-        instanceExtensionNames[endIndex] == '\0') {
-      std::string extension =
-          instanceExtensionNames.substr(startIndex, endIndex - startIndex);
+  requirements->instance_extensions.clear();
+  uint32_t start_index = 0;
+  for (uint32_t end_index = 0; end_index < instance_extensions_names.size();
+       end_index++) {
+    if (instance_extensions_names[end_index] == ' ' ||
+        instance_extensions_names[end_index] == '\0') {
+      std::string extension = instance_extensions_names.substr(
+          start_index, end_index - start_index);
       log_inf(extension.c_str());
-      requirements->instanceExtensions.push_back(extension);
-      startIndex = endIndex + 1;
+      requirements->instance_extensions.push_back(extension);
+      start_index = end_index + 1;
     }
   }
 
   // TODO(marceline-cramer) Device/instance extension parsing could be moved
   // into a function
-  uint32_t deviceExtensionsLength;
-  ext_xrGetVulkanDeviceExtensionsKHR(instance, systemId, 0,
-                                     &deviceExtensionsLength, nullptr);
-  std::vector<char> deviceExtensionsList(deviceExtensionsLength);
-  ext_xrGetVulkanDeviceExtensionsKHR(instance, systemId, deviceExtensionsLength,
-                                     &deviceExtensionsLength,
-                                     deviceExtensionsList.data());
-  std::string deviceExtensionNames = deviceExtensionsList.data();
+  uint32_t device_extensions_length;
+  ext_xrGetVulkanDeviceExtensionsKHR(instance, system_id, 0,
+                                     &device_extensions_length, nullptr);
+  std::vector<char> device_extensions_list(device_extensions_length);
+  ext_xrGetVulkanDeviceExtensionsKHR(
+      instance, system_id, device_extensions_length, &device_extensions_length,
+      device_extensions_list.data());
+  std::string device_extensions_names = device_extensions_list.data();
 
   // The list of required device extensions is separated by spaces, so parse it
   // out
   log_inf("Vulkan device extensions required by OpenXR:");
-  requirements->deviceExtensions.clear();
-  startIndex = 0;
-  for (uint32_t endIndex = 0; endIndex < deviceExtensionNames.size();
-       endIndex++) {
-    if (deviceExtensionNames[endIndex] == ' ' ||
-        deviceExtensionNames[endIndex] == '\0') {
+  requirements->device_extensions.clear();
+  start_index = 0;
+  for (uint32_t end_index = 0; end_index < device_extensions_names.size();
+       end_index++) {
+    if (device_extensions_names[end_index] == ' ' ||
+        device_extensions_names[end_index] == '\0') {
       std::string extension =
-          deviceExtensionNames.substr(startIndex, endIndex - startIndex);
+          device_extensions_names.substr(start_index, end_index - start_index);
       log_inf(extension.c_str());
-      requirements->deviceExtensions.push_back(extension);
-      startIndex = endIndex + 1;
+      requirements->device_extensions.push_back(extension);
+      start_index = end_index + 1;
     }
   }
 
   return true;
 }
 
-bool XrDisplay::getVulkanDevice(VkInstance vkInstance,
-                                VkPhysicalDevice *vkPhysicalDevice) {
-  if (ext_xrGetVulkanGraphicsDeviceKHR(instance, systemId, vkInstance,
-                                       vkPhysicalDevice) != XR_SUCCESS) {
+bool XrDisplay::getVulkanDevice(VkInstance vk_instance,
+                                VkPhysicalDevice *vk_physical_device) {
+  if (ext_xrGetVulkanGraphicsDeviceKHR(instance, system_id, vk_instance,
+                                       vk_physical_device) != XR_SUCCESS) {
     log_err("Failed to get Vulkan physical device.");
     return false;
   }
@@ -197,14 +197,14 @@ void XrDisplay::createInstance() {
                                        XR_EXT_DEBUG_UTILS_EXTENSION_NAME};
 
   // TODO(marceline-cramer) Validation layers
-  XrInstanceCreateInfo createInfo{
+  XrInstanceCreateInfo instance_info{
       .type = XR_TYPE_INSTANCE_CREATE_INFO,
       .applicationInfo = appInfo,
       .enabledApiLayerCount = 0,
       .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
       .enabledExtensionNames = extensions.data()};
 
-  XrResult result = xrCreateInstance(&createInfo, &instance);
+  XrResult result = xrCreateInstance(&instance_info, &instance);
 
   if (result != XR_SUCCESS || instance == nullptr) {
     log_ftl("Failed to create OpenXR instance. Is an OpenXR runtime running?");
@@ -234,7 +234,7 @@ void XrDisplay::setupDebugMessenger() {
   populateDebugMessengerCreateInfo(&createInfo);
 
   if (ext_xrCreateDebugUtilsMessengerEXT(instance, &createInfo,
-                                         &debugMessenger) != XR_SUCCESS) {
+                                         &debug_messenger) != XR_SUCCESS) {
     log_ftl("Failed to create OpenXR debug messenger.");
   }
 }
@@ -245,7 +245,7 @@ void XrDisplay::findSystem() {
   XrSystemGetInfo systemInfo{.type = XR_TYPE_SYSTEM_GET_INFO,
                              .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY};
 
-  if (xrGetSystem(instance, &systemInfo, &systemId) != XR_SUCCESS) {
+  if (xrGetSystem(instance, &systemInfo, &system_id) != XR_SUCCESS) {
     log_ftl("Failed to find OpenXR HMD.");
   }
 }

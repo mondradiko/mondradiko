@@ -48,19 +48,19 @@ AssetHandle<T>::AssetHandle() : ptr(nullptr) {}
 
 template <class T>
 AssetHandle<T>::AssetHandle(T* ptr) : ptr(ptr) {
-  ptr->refCount++;
+  ptr->ref_count++;
 }
 
 template <class T>
 AssetHandle<T>::~AssetHandle() {
-  if (ptr) ptr->refCount--;
+  if (ptr) ptr->ref_count--;
 }
 
 template <class T>
 void AssetHandle<T>::operator=(const AssetHandle<T>& other) {
-  if (ptr) ptr->refCount--;
+  if (ptr) ptr->ref_count--;
   ptr = other.ptr;
-  ptr->refCount++;
+  ptr->ref_count++;
 }
 
 }  // namespace mondradiko
