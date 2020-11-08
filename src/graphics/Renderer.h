@@ -28,11 +28,9 @@
 
 #include <vector>
 
-#include "graphics/Viewport.h"
 #include "graphics/VulkanInstance.h"
 #include "graphics/pipelines/MeshPipeline.h"
 #include "src/api_headers.h"
-#include "xr/PlayerSession.h"
 
 namespace mondradiko {
 
@@ -55,16 +53,12 @@ struct FramePushConstant {
 
 class Renderer {
  public:
-  Renderer(VulkanInstance*, PlayerSession*);
+  Renderer(VulkanInstance*);
   ~Renderer();
 
   void renderFrame();
-  void finishRender(std::vector<XrView>*,
-                    std::vector<XrCompositionLayerProjectionView>*);
 
-  VkFormat swapchain_format;
   VkRenderPass composite_pass = VK_NULL_HANDLE;
-  std::vector<Viewport*> viewports;
 
   VkDescriptorSetLayout main_descriptor_layout = VK_NULL_HANDLE;
   VkPipelineLayout main_pipeline_layout = VK_NULL_HANDLE;
@@ -72,12 +66,11 @@ class Renderer {
 
  private:
   VulkanInstance* vulkan_instance;
-  PlayerSession* session;
+  DisplayInterface* display;
 
   uint32_t current_frame = 0;
   std::vector<PipelinedFrameData> frames_in_flight;
 
-  void findSwapchainFormat();
   void createRenderPasses();
   void createDescriptorSetLayout();
   void createPipelineLayout();

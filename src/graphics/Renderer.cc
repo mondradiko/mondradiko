@@ -29,17 +29,11 @@
 
 namespace mondradiko {
 
-Renderer::Renderer(VulkanInstance* vulkan_instance, PlayerSession* session)
-    : vulkan_instance(vulkan_instance), session(session) {
+Renderer::Renderer(VulkanInstance* vulkan_instance)
+    : vulkan_instance(vulkan_instance), display(vulkan_instance->display) {
   log_dbg("Creating renderer.");
 
-  findSwapchainFormat();
   createRenderPasses();
-
-  if (!session->createViewports(&viewports, swapchain_format, composite_pass)) {
-    log_ftl("Failed to create Renderer viewports.");
-  }
-
   createDescriptorSetLayout();
   createPipelineLayout();
   createFrameData();
@@ -65,20 +59,11 @@ Renderer::~Renderer() {
     vkDestroyPipelineLayout(vulkan_instance->device, main_pipeline_layout,
                             nullptr);
 
-  for (Viewport* viewport : viewports) {
-    delete viewport;
-  }
-
   if (composite_pass != VK_NULL_HANDLE)
     vkDestroyRenderPass(vulkan_instance->device, composite_pass, nullptr);
 }
 
 void Renderer::renderFrame() {
-  for (uint32_t viewport_index = 0; viewport_index < viewports.size();
-       viewport_index++) {
-    viewports[viewport_index]->acquireSwapchainImage();
-  }
-
   if (frames_in_flight[current_frame].submitted) {
     vkWaitForFences(vulkan_instance->device, 1,
                     &frames_in_flight[current_frame].is_in_use, VK_TRUE,
@@ -128,6 +113,9 @@ void Renderer::renderFrame() {
                           VK_PIPELINE_BIND_POINT_GRAPHICS, main_pipeline_layout,
                           0, 1, &frame->descriptors, 0, nullptr);
 
+  std::vector<ViewportInterface*> viewports;
+  display->acquireViewports(&viewports);
+
   for (uint32_t viewport_index = 0; viewport_index < viewports.size();
        viewport_index++) {
     FramePushConstant push_constant{.view_index = viewport_index};
@@ -139,23 +127,16 @@ void Renderer::renderFrame() {
 
     viewports[viewport_index]->beginRenderPass(frame->command_buffer,
                                                composite_pass);
-    viewports[viewport_index]->setCommandViewport(frame->command_buffer);
     mesh_pipeline->render(frame->command_buffer);
     vkCmdEndRenderPass(frame->command_buffer);
   }
-}
 
-void Renderer::finishRender(
-    std::vector<XrView>* views,
-    std::vector<XrCompositionLayerProjectionView>* projectionViews) {
   std::vector<ViewportUniform> view_uniforms(viewports.size());
 
   for (uint32_t i = 0; i < viewports.size(); i++) {
-    viewports[i]->updateView(views->at(i), &projectionViews->at(i),
-                             &view_uniforms.at(i));
+    viewports[i]->writeUniform(&view_uniforms.at(i));
   }
 
-  PipelinedFrameData* frame = &frames_in_flight[current_frame];
   frame->viewports->writeData(view_uniforms.data());
 
   vkEndCommandBuffer(frame->command_buffer);
@@ -186,26 +167,13 @@ void Renderer::finishRender(
 
   for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
        viewportIndex++) {
-    viewports[viewportIndex]->releaseSwapchainImage();
-  }
-}
-
-void Renderer::findSwapchainFormat() {
-  std::vector<VkFormat> formatOptions;
-  session->enumerateSwapchainFormats(&formatOptions);
-
-  std::vector<VkFormat> formatCandidates = {VK_FORMAT_R8G8B8A8_SRGB,
-                                            VK_FORMAT_R8G8B8A8_UNORM};
-
-  if (!vulkan_instance->findFormatFromOptions(&formatOptions, &formatCandidates,
-                                              &swapchain_format)) {
-    log_ftl("Failed to find suitable swapchain format.");
+    viewports[viewportIndex]->release();
   }
 }
 
 void Renderer::createRenderPasses() {
   VkAttachmentDescription swapchainAttachmentDescription{
-      .format = swapchain_format,
+      .format = display->getSwapchainFormat(),
       .samples = VK_SAMPLE_COUNT_1_BIT,
       .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -242,7 +210,8 @@ void Renderer::createDescriptorSetLayout() {
   bindings.push_back(VkDescriptorSetLayoutBinding{
       .binding = 0,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-      .descriptorCount = static_cast<uint32_t>(viewports.size()),
+      // TODO(marceline-cramer) Better descriptor management
+      .descriptorCount = 2,
       .stageFlags = VK_SHADER_STAGE_VERTEX_BIT});
 
   bindings.push_back(VkDescriptorSetLayoutBinding{
@@ -324,7 +293,8 @@ void Renderer::createFrameData() {
     }
 
     frame.viewports = new VulkanBuffer(
-        vulkan_instance, sizeof(ViewportUniform) * viewports.size(),
+        // TODO(marceline-cramer) Better descriptor management
+        vulkan_instance, sizeof(ViewportUniform) * 2,
         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
   }
 }
