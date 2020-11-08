@@ -1,2 +1,4 @@
 builddir/
 test-folder/
+shaders/compiled/
+shaders/headers/
