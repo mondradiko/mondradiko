@@ -1,7 +1,7 @@
 /**
- * @file client_session.cc
+ * @file player_session.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Runs the lifetime of a single Mondradiko client session.
+ * @brief Runs the lifetime of a single Mondradiko player session.
  * @date 2020-10-24
  *
  * @copyright Copyright (c) 2020 Marceline Cramer
@@ -23,7 +23,7 @@
  *
  */
 
-#include "session/client_session.h"
+#include "session/player_session.h"
 
 #include <csignal>
 #include <iostream>
@@ -47,7 +47,7 @@ void signalHandler(int signum) {
   return;
 }
 
-void client_session_run(const char *serverAddress, int port) {
+void player_session_run(const char *serverAddress, int port) {
   mondradiko::Filesystem fs("../test-folder/");
   mondradiko::XrDisplay xr;
   mondradiko::VulkanInstance vulkanInstance(&xr);

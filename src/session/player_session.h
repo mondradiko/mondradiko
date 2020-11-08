@@ -1,7 +1,7 @@
 /**
- * @file client_session.h
+ * @file player_session.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Runs the lifetime of a Mondradiko client session.
+ * @brief Runs the lifetime of a Mondradiko player session.
  * @date 2020-10-24
  * 
  * @copyright Copyright (c) 2020 Marceline Cramer
@@ -23,9 +23,9 @@
  * 
  */
 
-#ifndef SRC_SESSION_CLIENT_SESSION_H_
-#define SRC_SESSION_CLIENT_SESSION_H_
+#ifndef SRC_SESSION_PLAYER_SESSION_H_
+#define SRC_SESSION_PLAYER_SESSION_H_
 
-void client_session_run(const char* serverAddress, int serverPort);
+void player_session_run(const char* serverAddress, int serverPort);
 
-#endif  // SRC_SESSION_CLIENT_SESSION_H_
+#endif  // SRC_SESSION_PLAYER_SESSION_H_
