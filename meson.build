@@ -31,7 +31,6 @@ src = [
     'src/filesystem/AssimpIOSystem.cc',
     'src/filesystem/Filesystem.cc',
     'src/graphics/Renderer.cc',
-    'src/graphics/Viewport.cc',
     'src/graphics/VulkanBuffer.cc',
     'src/graphics/VulkanImage.cc',
     'src/graphics/VulkanInstance.cc',
@@ -44,8 +43,6 @@ src = [
     'src/network/NetworkShared.cc',
     'src/scene/Entity.cc',
     'src/scene/Scene.cc',
-    'src/xr/PlayerSession.cc',
-    'src/xr/XrDisplay.cc'
 ]
 
 inc = include_directories(
