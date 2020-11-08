@@ -44,7 +44,6 @@ src = [
     'src/network/NetworkShared.cc',
     'src/scene/Entity.cc',
     'src/scene/Scene.cc',
-    'src/session/player_session.cc',
     'src/xr/PlayerSession.cc',
     'src/xr/XrDisplay.cc'
 ]
