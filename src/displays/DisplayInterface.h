@@ -71,7 +71,7 @@ class DisplayInterface {
   virtual void pollEvents(DisplayPollEventsInfo*) = 0;
   virtual void beginFrame(DisplayBeginFrameInfo*) = 0;
   virtual void acquireViewports(std::vector<ViewportInterface*>*) = 0;
-  virtual void endFrame() = 0;
+  virtual void endFrame(DisplayBeginFrameInfo*) = 0;
 
  private:
 };
