@@ -89,6 +89,8 @@ VulkanInstance::VulkanInstance(DisplayInterface* display) : display(display) {
 VulkanInstance::~VulkanInstance() {
   log_dbg("Cleaning up Vulkan.");
 
+  vkDeviceWaitIdle(device);
+
   if (descriptor_pool != VK_NULL_HANDLE)
     vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
 

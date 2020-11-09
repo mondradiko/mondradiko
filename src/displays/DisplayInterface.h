@@ -33,6 +33,9 @@
 
 namespace mondradiko {
 
+// Forward declaration because of codependence
+class VulkanInstance;
+
 struct VulkanRequirements {
   uint32_t min_api_version;
   uint32_t max_api_version;
@@ -58,9 +61,10 @@ class DisplayInterface {
  public:
   virtual ~DisplayInterface() {}
 
-  virtual bool beginSession() = 0;
   virtual bool getRequirements(VulkanRequirements*) = 0;
   virtual bool getVulkanDevice(VkInstance, VkPhysicalDevice*) = 0;
+  virtual bool createSession(VulkanInstance*) = 0;
+  virtual void destroySession() = 0;
 
   virtual VkFormat getSwapchainFormat() = 0;
 
