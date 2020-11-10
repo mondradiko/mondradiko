@@ -27,6 +27,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "displays/OpenXrDisplay.h"
 #include "filesystem/Filesystem.h"
 #include "graphics/Renderer.h"
 #include "graphics/VulkanInstance.h"
@@ -34,28 +35,22 @@
 #include "network/NetworkClient.h"
 #include "scene/Scene.h"
 #include "src/api_headers.h"
-#include "xr/PlayerSession.h"
-#include "xr/XrDisplay.h"
 
-bool shouldQuit = false;
+using namespace mondradiko;
+
+bool g_interrupted = false;
 
 void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
-  shouldQuit = true;
+  g_interrupted = true;
 
   return;
 }
 
 void player_session_run(const char* server_address, int port) {
-  mondradiko::Filesystem fs("../test-folder/");
-  mondradiko::XrDisplay xr;
-  mondradiko::VulkanInstance vulkan_instance(&xr);
-  mondradiko::PlayerSession session(&xr, &vulkan_instance);
-  mondradiko::Renderer renderer(&vulkan_instance, &session);
-  mondradiko::NetworkClient client(server_address, port);
-  mondradiko::Scene scene(&fs, &renderer);
-
-  scene.loadModel("DamagedHelmet.gltf");
+  Filesystem fs("../test-folder/");
+  OpenXrDisplay display;
+  VulkanInstance vulkan_instance(&display);
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
@@ -65,48 +60,59 @@ void player_session_run(const char* server_address, int port) {
     log_wrn("Can't catch SIGINT");
   }
 
-  bool shouldRun = false;
+  if (!display.createSession(&vulkan_instance)) {
+    log_ftl("Failed to create display session!");
+  }
 
-  while (true) {
-    session.pollEvents(&shouldRun, &shouldQuit);
-    if (shouldQuit) break;
+  Renderer renderer(&display, &vulkan_instance);
+  NetworkClient client(server_address, port);
+  Scene scene(&fs, &renderer);
 
-    if (shouldRun) {
-      double dt;
-      bool shouldRender;
-      session.beginFrame(&dt, &shouldRender);
+  // Break is triggered on Ctrl+C or SIGTERM
+  while (!g_interrupted) {
+    DisplayPollEventsInfo poll_info;
+    poll_info.renderer = &renderer;
+
+    display.pollEvents(&poll_info);
+    if (poll_info.should_quit) break;
+
+    if (poll_info.should_run) {
+      DisplayBeginFrameInfo frame_info;
+      display.beginFrame(&frame_info);
 
       client.update();
-      scene.update(dt);
+      scene.update(frame_info.dt);
 
-      mondradiko::ClientEvent event;
+      ClientEvent event;
       while (client.readEvent(&event)) {
         log_dbg("Received client event.");
       }
 
-      if (shouldRender) {
+      if (frame_info.should_render) {
         renderer.renderFrame();
       }
 
-      session.endFrame(&renderer, shouldRender);
+      display.endFrame(&frame_info);
     }
   }
+
+  display.destroySession();
 }
 
 int main(int argc, const char* argv[]) {
-    log_inf("Hello VR!");
+  log_inf("Hello VR!");
 
-    PHYSFS_init(argv[0]);
+  PHYSFS_init(argv[0]);
 
-    try {
-        player_session_run("127.0.0.1", 10555);
-    } catch(const std::exception& e) {
-        log_err("Mondradiko player session failed with message:");
-        log_err(e.what());
-        PHYSFS_deinit();
-        return 1;
-    }
-
+  try {
+    player_session_run("127.0.0.1", 10555);
+  } catch (const std::exception& e) {
+    log_err("Mondradiko player session failed with message:");
+    log_err(e.what());
     PHYSFS_deinit();
-    return 0;
+    return 1;
+  }
+
+  PHYSFS_deinit();
+  return 0;
 }
