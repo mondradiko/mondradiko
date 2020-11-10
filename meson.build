@@ -27,6 +27,8 @@ src = [
     'src/assets/TextureAsset.cc',
     'src/components/Component.cc',
     'src/components/MeshRendererComponent.cc',
+    'src/displays/OpenXrDisplay.cc',
+    'src/displays/OpenXrViewport.cc',
     'src/filesystem/AssimpIOStream.cc',
     'src/filesystem/AssimpIOSystem.cc',
     'src/filesystem/Filesystem.cc',
