@@ -102,7 +102,7 @@ bool OpenXrDisplay::createSession(VulkanInstance* _vulkan_instance) {
   XrGraphicsBindingVulkanKHR vulkanBindings{
       .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
       .instance = vulkan_instance->instance,
-      .physicalDevice = vulkan_instance->physicalDevice,
+      .physicalDevice = vulkan_instance->physical_device,
       .device = vulkan_instance->device,
       .queueFamilyIndex = vulkan_instance->graphics_queue_family};
 
