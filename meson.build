@@ -59,7 +59,8 @@ dependencies = [
     dependency('shaderc'),
     dependency('assimp'),
     dependency('glm'),
-    dependency('physfs')
+    dependency('physfs'),
+    dependency('sdl2')
 ]
 
 executable(
