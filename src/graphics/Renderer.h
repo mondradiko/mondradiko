@@ -29,8 +29,8 @@
 #include <vector>
 
 #include "displays/DisplayInterface.h"
+#include "graphics/MeshPipeline.h"
 #include "graphics/VulkanInstance.h"
-#include "graphics/pipelines/MeshPipeline.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {

@@ -24,13 +24,13 @@
  *
  */
 
-#include "graphics/pipelines/MeshPipeline.h"
+#include "graphics/MeshPipeline.h"
 
 #include <vector>
 
+#include "graphics/MeshShader.h"
 #include "graphics/Renderer.h"
 #include "graphics/VulkanInstance.h"
-#include "graphics/shaders/MeshShader.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -278,7 +278,7 @@ void MeshPipeline::createPipeline(VkRenderPass render_pass, uint32_t subpass) {
       .pAttachments = &color_blend_attachment};
 
   std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
-                                               VK_DYNAMIC_STATE_SCISSOR};
+                                                VK_DYNAMIC_STATE_SCISSOR};
 
   VkPipelineDynamicStateCreateInfo dynamic_state_info{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,

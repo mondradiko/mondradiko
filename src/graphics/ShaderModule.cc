@@ -23,7 +23,7 @@
  *
  */
 
-#include "graphics/shaders/ShaderModule.h"
+#include "graphics/ShaderModule.h"
 
 #include "graphics/VulkanInstance.h"
 #include "log/log.h"

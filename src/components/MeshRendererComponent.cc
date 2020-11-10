@@ -27,7 +27,7 @@
 
 #include "assets/MaterialAsset.h"
 #include "assets/MeshAsset.h"
-#include "graphics/pipelines/MeshPipeline.h"
+#include "graphics/MeshPipeline.h"
 
 namespace mondradiko {
 

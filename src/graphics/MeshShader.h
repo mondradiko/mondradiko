@@ -26,7 +26,7 @@
 #ifndef SRC_GRAPHICS_SHADERS_MESHSHADER_H_
 #define SRC_GRAPHICS_SHADERS_MESHSHADER_H_
 
-#include "graphics/shaders/ShaderModule.h"
+#include "graphics/ShaderModule.h"
 
 namespace mondradiko {
 

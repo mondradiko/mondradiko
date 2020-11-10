@@ -23,7 +23,7 @@
  *
  */
 
-#include "graphics/shaders/MeshShader.h"
+#include "graphics/MeshShader.h"
 
 #include "log/log.h"
 
