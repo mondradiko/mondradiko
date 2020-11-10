@@ -28,6 +28,7 @@
 
 #include <vector>
 
+#include "displays/DisplayInterface.h"
 #include "graphics/VulkanInstance.h"
 #include "graphics/pipelines/MeshPipeline.h"
 #include "src/api_headers.h"
@@ -53,7 +54,7 @@ struct FramePushConstant {
 
 class Renderer {
  public:
-  Renderer(VulkanInstance*);
+  Renderer(DisplayInterface*, VulkanInstance*);
   ~Renderer();
 
   void renderFrame();
@@ -65,12 +66,13 @@ class Renderer {
   MeshPipeline* mesh_pipeline = nullptr;
 
  private:
-  VulkanInstance* vulkan_instance;
   DisplayInterface* display;
+  VulkanInstance* vulkan_instance;
 
   uint32_t current_frame = 0;
   std::vector<PipelinedFrameData> frames_in_flight;
 
+  void findSwapchainFormat();
   void createRenderPasses();
   void createDescriptorSetLayout();
   void createPipelineLayout();

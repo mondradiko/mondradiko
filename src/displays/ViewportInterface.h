@@ -35,15 +35,19 @@ struct ViewportUniform {
   glm::mat4 projection;
 };
 
+struct ViewportImage {
+  VkImage image;
+  VkImageView image_view;
+  VkFramebuffer framebuffer;
+};
+
 class ViewportInterface {
  public:
   virtual ~ViewportInterface() {}
 
-  virtual void beginRenderPass(VkCommandBuffer, VkRenderPass);
-  virtual void writeUniform(ViewportUniform*);
+  virtual void beginRenderPass(VkCommandBuffer, VkRenderPass) = 0;
+  virtual void writeUniform(ViewportUniform*) = 0;
   virtual void release() = 0;
-
- private:
 };
 
 }  // namespace mondradiko

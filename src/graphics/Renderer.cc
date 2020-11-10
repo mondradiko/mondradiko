@@ -29,8 +29,8 @@
 
 namespace mondradiko {
 
-Renderer::Renderer(VulkanInstance* vulkan_instance)
-    : vulkan_instance(vulkan_instance), display(vulkan_instance->display) {
+Renderer::Renderer(DisplayInterface* display, VulkanInstance* vulkan_instance)
+    : display(display), vulkan_instance(vulkan_instance) {
   log_dbg("Creating renderer.");
 
   createRenderPasses();
