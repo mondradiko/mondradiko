@@ -42,10 +42,7 @@ struct VulkanRequirements {
   uint32_t max_api_version;
 
   std::vector<std::string> instance_extensions;
-  VkPhysicalDevice physical_device;
   std::vector<std::string> device_extensions;
-
-  std::vector<VkFormat> swapchain_formats;
 };
 
 struct DisplayPollEventsInfo {
