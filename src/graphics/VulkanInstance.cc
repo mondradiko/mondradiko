@@ -255,17 +255,19 @@ void VulkanInstance::setupDebugMessenger() {
 void VulkanInstance::findPhysicalDevice(DisplayInterface* display) {
   log_dbg("Finding Vulkan physical device.");
 
-  display->getVulkanDevice(instance, &physicalDevice);
+  if (!display->getVulkanDevice(instance, &physical_device)) {
+    log_ftl("Failed to find Vulkan physical device.");
+  }
 }
 
 void VulkanInstance::findQueueFamilies() {
   log_dbg("Finding Vulkan queue families.");
 
   uint32_t queueFamilyCount;
-  vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount,
+  vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyCount,
                                            nullptr);
   std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount,
+  vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyCount,
                                            queueFamilies.data());
 
   for (uint32_t i = 0; i < queueFamilyCount; i++) {
@@ -296,16 +298,11 @@ void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements) {
          .pQueuePriorities = &queuePriority});
   }
 
-  VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures{
-      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
-      .runtimeDescriptorArray = VK_TRUE};
-
   VkPhysicalDeviceFeatures deviceFeatures{.multiViewport = VK_TRUE,
                                           .samplerAnisotropy = VK_TRUE};
 
   VkDeviceCreateInfo createInfo{
       .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-      .pNext = &indexingFeatures,
       .queueCreateInfoCount = (uint32_t)queueCreateInfos.size(),
       .pQueueCreateInfos = queueCreateInfos.data(),
       .enabledExtensionCount = static_cast<uint32_t>(extensionNames.size()),
@@ -318,7 +315,7 @@ void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements) {
     createInfo.ppEnabledLayerNames = validationLayers.data();
   }
 
-  if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) !=
+  if (vkCreateDevice(physical_device, &createInfo, nullptr, &device) !=
       VK_SUCCESS) {
     log_ftl("Failed to create Vulkan logical device.");
   }
@@ -340,8 +337,9 @@ void VulkanInstance::createCommandPool() {
 }
 
 void VulkanInstance::createAllocator() {
-  VmaAllocatorCreateInfo createInfo{
-      .physicalDevice = physicalDevice, .device = device, .instance = instance};
+  VmaAllocatorCreateInfo createInfo{.physicalDevice = physical_device,
+                                    .device = device,
+                                    .instance = instance};
 
   if (vmaCreateAllocator(&createInfo, &allocator) != VK_SUCCESS) {
     log_ftl("Failed to create Vulkan memory allocator.");
