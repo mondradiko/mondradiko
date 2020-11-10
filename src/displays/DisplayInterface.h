@@ -47,6 +47,12 @@ struct VulkanRequirements {
   std::vector<VkFormat> swapchain_formats;
 };
 
+struct DisplaySessionCreateInfo {
+  VulkanInstance* vulkan_instance;
+  VkFormat swapchain_format;
+  VkRenderPass render_pass;
+};
+
 struct DisplayPollEventsInfo {
   bool should_run;
   bool should_quit;
@@ -63,7 +69,7 @@ class DisplayInterface {
 
   virtual bool getRequirements(VulkanRequirements*) = 0;
   virtual bool getVulkanDevice(VkInstance, VkPhysicalDevice*) = 0;
-  virtual bool createSession(VulkanInstance*) = 0;
+  virtual bool createSession(DisplaySessionCreateInfo*) = 0;
   virtual void destroySession() = 0;
 
   virtual VkFormat getSwapchainFormat() = 0;
