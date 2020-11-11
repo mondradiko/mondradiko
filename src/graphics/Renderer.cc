@@ -125,6 +125,7 @@ void Renderer::renderFrame() {
         VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_VERTEX_BIT, 0,
         sizeof(FramePushConstant), &push_constant);
 
+    viewports[viewport_index]->acquire();
     viewports[viewport_index]->beginRenderPass(frame->command_buffer,
                                                composite_pass);
     mesh_pipeline->render(frame->command_buffer);

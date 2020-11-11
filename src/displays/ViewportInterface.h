@@ -45,6 +45,7 @@ class ViewportInterface {
  public:
   virtual ~ViewportInterface() {}
 
+  virtual void acquire() = 0;
   virtual void beginRenderPass(VkCommandBuffer, VkRenderPass) = 0;
   virtual void writeUniform(ViewportUniform*) = 0;
   virtual void release() = 0;
