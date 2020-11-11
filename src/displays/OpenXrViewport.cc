@@ -139,6 +139,18 @@ OpenXrViewport::~OpenXrViewport() {
   if (swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
 }
 
+void OpenXrViewport::acquire() {
+  XrSwapchainImageAcquireInfo acquireInfo{
+      .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, .next = nullptr};
+
+  xrAcquireSwapchainImage(swapchain, &acquireInfo, &current_image_index);
+
+  XrSwapchainImageWaitInfo waitInfo{.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
+                                    .timeout = XR_INFINITE_DURATION};
+
+  xrWaitSwapchainImage(swapchain, &waitInfo);
+}
+
 void OpenXrViewport::beginRenderPass(VkCommandBuffer command_buffer,
                                      VkRenderPass render_pass) {
   std::array<VkClearValue, 1> clear_values;
@@ -186,18 +198,6 @@ void OpenXrViewport::release() {
       .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
 
   xrReleaseSwapchainImage(swapchain, &release_info);
-}
-
-void OpenXrViewport::acquireSwapchainImage() {
-  XrSwapchainImageAcquireInfo acquireInfo{
-      .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, .next = nullptr};
-
-  xrAcquireSwapchainImage(swapchain, &acquireInfo, &current_image_index);
-
-  XrSwapchainImageWaitInfo waitInfo{.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
-                                    .timeout = XR_INFINITE_DURATION};
-
-  xrWaitSwapchainImage(swapchain, &waitInfo);
 }
 
 void OpenXrViewport::updateView(const XrView& new_view) { view = new_view; }

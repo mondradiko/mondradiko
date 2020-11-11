@@ -39,11 +39,11 @@ class OpenXrViewport : public ViewportInterface {
   OpenXrViewport(OpenXrDisplay*, Renderer*, VulkanInstance*, XrViewConfigurationView*);
   ~OpenXrViewport();
 
+  void acquire();
   void beginRenderPass(VkCommandBuffer, VkRenderPass) override;
   void writeUniform(ViewportUniform*) override;
   void release() override;
 
-  void acquireSwapchainImage();
   void updateView(const XrView&);
   void writeCompositionLayers(XrCompositionLayerProjectionView*);
 

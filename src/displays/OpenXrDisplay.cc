@@ -336,7 +336,6 @@ void OpenXrDisplay::acquireViewports(
                 views.data());
 
   for (uint32_t i = 0; i < acquired->size(); i++) {
-    viewports[i]->acquireSwapchainImage();
     acquired->at(i) = viewports.at(i);
     viewports[i]->updateView(views[i]);
   }
