@@ -26,6 +26,9 @@
 #ifndef SRC_DISPLAYS_OPENXRDISPLAY_H_
 #define SRC_DISPLAYS_OPENXRDISPLAY_H_
 
+#include <string>
+#include <vector>
+
 #include "displays/DisplayInterface.h"
 #include "displays/OpenXrViewport.h"
 #include "graphics/Renderer.h"

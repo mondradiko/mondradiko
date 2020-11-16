@@ -26,6 +26,7 @@
 #ifndef SRC_DISPLAYS_DISPLAYINTERFACE_H_
 #define SRC_DISPLAYS_DISPLAYINTERFACE_H_
 
+#include <string>
 #include <vector>
 
 #include "displays/ViewportInterface.h"

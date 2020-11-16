@@ -26,6 +26,8 @@
 #ifndef SRC_DISPLAYS_SDLDISPLAY_H_
 #define SRC_DISPLAYS_SDLDISPLAY_H_
 
+#include <vector>
+
 #include "displays/DisplayInterface.h"
 #include "displays/SdlViewport.h"
 #include "gpu/GpuInstance.h"
