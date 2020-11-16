@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef SRC_GRAPHICS_SHADERS_SHADERMODULE_H_
-#define SRC_GRAPHICS_SHADERS_SHADERMODULE_H_
+#ifndef SRC_GRAPHICS_SHADERMODULE_H_
+#define SRC_GRAPHICS_SHADERMODULE_H_
 
 #include <sstream>
 #include <string>
@@ -59,4 +59,4 @@ class ShaderModule {
 
 }  // namespace mondradiko
 
-#endif  // SRC_GRAPHICS_SHADERS_SHADERMODULE_H_
+#endif  // SRC_GRAPHICS_SHADERMODULE_H_

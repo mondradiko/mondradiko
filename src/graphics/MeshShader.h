@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef SRC_GRAPHICS_SHADERS_MESHSHADER_H_
-#define SRC_GRAPHICS_SHADERS_MESHSHADER_H_
+#ifndef SRC_GRAPHICS_MESHSHADER_H_
+#define SRC_GRAPHICS_MESHSHADER_H_
 
 #include "graphics/ShaderModule.h"
 
@@ -46,4 +46,4 @@ class MeshShader {
 
 }  // namespace mondradiko
 
-#endif  // SRC_GRAPHICS_SHADERS_MESHSHADER_H_
+#endif  // SRC_GRAPHICS_MESHSHADER_H_

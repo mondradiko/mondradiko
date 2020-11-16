@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef SRC_GRAPHICS_GPUINSTANCE_H_
-#define SRC_GRAPHICS_GPUINSTANCE_H_
+#ifndef SRC_GPU_GPUINSTANCE_H_
+#define SRC_GPU_GPUINSTANCE_H_
 
 #include <vector>
 
@@ -85,4 +85,4 @@ class GpuInstance {
 
 }  // namespace mondradiko
 
-#endif  // SRC_GRAPHICS_GPUINSTANCE_H_
+#endif  // SRC_GPU_GPUINSTANCE_H_
