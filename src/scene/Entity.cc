@@ -35,8 +35,8 @@ namespace mondradiko {
 
 Entity::Entity(Scene* scene) : name("root"), scene(scene) {}
 
-Entity::Entity(Scene* scene, std::string parent_name, const aiScene* model_scene,
-               aiNode* node)
+Entity::Entity(Scene* scene, std::string parent_name,
+               const aiScene* model_scene, aiNode* node)
     : name(node->mName.C_Str()), scene(scene) {
   std::ostringstream nodePathFormat;
   nodePathFormat << parent_name << "/" << node->mName.C_Str();
