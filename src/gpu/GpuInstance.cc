@@ -1,5 +1,5 @@
 /**
- * @file VulkanInstance.cc
+ * @file GpuInstance.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Manages all low-level Vulkan objects such as device, debug messenger,
  * VMA allocator, etc.
@@ -24,7 +24,7 @@
  *
  */
 
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuInstance.h"
 
 #include <cstring>
 #include <set>
@@ -59,11 +59,11 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
   return VK_FALSE;
 }
 
-VulkanInstance::VulkanInstance(DisplayInterface* display) : display(display) {
+GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
   log_dbg("Initializing Vulkan.");
 
   VulkanRequirements requirements;
-  display->getRequirements(&requirements);
+  display->getVulkanRequirements(&requirements);
 
   if (enableValidationLayers) {
     if (!checkValidationLayerSupport()) {
@@ -86,7 +86,7 @@ VulkanInstance::VulkanInstance(DisplayInterface* display) : display(display) {
   createDescriptorPool();
 }
 
-VulkanInstance::~VulkanInstance() {
+GpuInstance::~GpuInstance() {
   log_dbg("Cleaning up Vulkan.");
 
   vkDeviceWaitIdle(device);
@@ -107,9 +107,9 @@ VulkanInstance::~VulkanInstance() {
   if (instance != VK_NULL_HANDLE) vkDestroyInstance(instance, nullptr);
 }
 
-bool VulkanInstance::findFormatFromOptions(
-    const std::vector<VkFormat>* options,
-    const std::vector<VkFormat>* candidates, VkFormat* selected) {
+bool GpuInstance::findFormatFromOptions(const std::vector<VkFormat>* options,
+                                        const std::vector<VkFormat>* candidates,
+                                        VkFormat* selected) {
   for (auto candidate : *candidates) {
     for (auto option : *options) {
       if (candidate == option) {
@@ -122,7 +122,7 @@ bool VulkanInstance::findFormatFromOptions(
   return false;
 }
 
-VkCommandBuffer VulkanInstance::beginSingleTimeCommands() {
+VkCommandBuffer GpuInstance::beginSingleTimeCommands() {
   VkCommandBufferAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
       .commandPool = command_pool,
@@ -141,7 +141,7 @@ VkCommandBuffer VulkanInstance::beginSingleTimeCommands() {
   return commandBuffer;
 }
 
-void VulkanInstance::endSingleTimeCommands(VkCommandBuffer command_buffer) {
+void GpuInstance::endSingleTimeCommands(VkCommandBuffer command_buffer) {
   vkEndCommandBuffer(command_buffer);
 
   VkSubmitInfo submitInfo{.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -154,7 +154,7 @@ void VulkanInstance::endSingleTimeCommands(VkCommandBuffer command_buffer) {
   vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
 }
 
-bool VulkanInstance::checkValidationLayerSupport() {
+bool GpuInstance::checkValidationLayerSupport() {
   log_dbg("Checking for Vulkan validation layer support.");
 
   uint32_t layer_count;
@@ -181,7 +181,7 @@ bool VulkanInstance::checkValidationLayerSupport() {
   return true;
 }
 
-void VulkanInstance::populateDebugMessengerCreateInfo(
+void GpuInstance::populateDebugMessengerCreateInfo(
     VkDebugUtilsMessengerCreateInfoEXT* createInfo) {
   *createInfo = {
       .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
@@ -194,7 +194,7 @@ void VulkanInstance::populateDebugMessengerCreateInfo(
       .pfnUserCallback = debugCallback};
 }
 
-void VulkanInstance::createInstance(VulkanRequirements* requirements) {
+void GpuInstance::createInstance(VulkanRequirements* requirements) {
   log_dbg("Creating Vulkan instance.");
 
   std::vector<const char*> extensionNames;
@@ -240,7 +240,7 @@ void VulkanInstance::createInstance(VulkanRequirements* requirements) {
           instance, "vkDestroyDebugUtilsMessengerEXT");
 }
 
-void VulkanInstance::setupDebugMessenger() {
+void GpuInstance::setupDebugMessenger() {
   log_dbg("Setting up Vulkan debug messenger.");
 
   VkDebugUtilsMessengerCreateInfoEXT createInfo;
@@ -252,7 +252,7 @@ void VulkanInstance::setupDebugMessenger() {
   }
 }
 
-void VulkanInstance::findPhysicalDevice(DisplayInterface* display) {
+void GpuInstance::findPhysicalDevice(DisplayInterface* display) {
   log_dbg("Finding Vulkan physical device.");
 
   if (!display->getVulkanDevice(instance, &physical_device)) {
@@ -260,7 +260,7 @@ void VulkanInstance::findPhysicalDevice(DisplayInterface* display) {
   }
 }
 
-void VulkanInstance::findQueueFamilies() {
+void GpuInstance::findQueueFamilies() {
   log_dbg("Finding Vulkan queue families.");
 
   uint32_t queueFamilyCount;
@@ -278,7 +278,7 @@ void VulkanInstance::findQueueFamilies() {
   }
 }
 
-void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements) {
+void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
   log_dbg("Creating Vulkan logical device.");
 
   std::vector<const char*> extensionNames;
@@ -323,7 +323,7 @@ void VulkanInstance::createLogicalDevice(VulkanRequirements* requirements) {
   vkGetDeviceQueue(device, graphics_queue_family, 0, &graphics_queue);
 }
 
-void VulkanInstance::createCommandPool() {
+void GpuInstance::createCommandPool() {
   VkCommandPoolCreateInfo createInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
       .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
@@ -336,7 +336,7 @@ void VulkanInstance::createCommandPool() {
   }
 }
 
-void VulkanInstance::createAllocator() {
+void GpuInstance::createAllocator() {
   VmaAllocatorCreateInfo createInfo{.physicalDevice = physical_device,
                                     .device = device,
                                     .instance = instance};
@@ -346,7 +346,7 @@ void VulkanInstance::createAllocator() {
   }
 }
 
-void VulkanInstance::createDescriptorPool() {
+void GpuInstance::createDescriptorPool() {
   // TODO(marceline-cramer) Make wrapper class for descriptor management
   std::vector<VkDescriptorPoolSize> poolSizes;
 

@@ -1,5 +1,5 @@
 /**
- * @file VulkanImage.cc
+ * @file GpuImage.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Creates and manages a Vulkan image and its allocation.
  * @date 2020-10-24
@@ -23,22 +23,21 @@
  *
  */
 
-#include "graphics/VulkanImage.h"
+#include "gpu/GpuImage.h"
 
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-VulkanImage::VulkanImage(VulkanInstance* vulkan_instance, VkFormat format,
-                         uint32_t width, uint32_t height,
-                         VkImageUsageFlags image_usage_flags,
-                         VmaMemoryUsage memory_usage)
+GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
+                   uint32_t height, VkImageUsageFlags image_usage_flags,
+                   VmaMemoryUsage memory_usage)
     : format(format),
       layout(VK_IMAGE_LAYOUT_UNDEFINED),
       width(height),
       height(height),
-      vulkan_instance(vulkan_instance) {
+      gpu(gpu) {
   VkImageCreateInfo imageCreateInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .imageType = VK_IMAGE_TYPE_2D,
@@ -55,29 +54,25 @@ VulkanImage::VulkanImage(VulkanInstance* vulkan_instance, VkFormat format,
   VmaAllocationCreateInfo allocationCreateInfo{
       .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memory_usage};
 
-  if (vmaCreateImage(vulkan_instance->allocator, &imageCreateInfo,
-                     &allocationCreateInfo, &image, &allocation,
-                     &allocation_info) != VK_SUCCESS) {
+  if (vmaCreateImage(gpu->allocator, &imageCreateInfo, &allocationCreateInfo,
+                     &image, &allocation, &allocation_info) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan image.");
   }
 }
 
-VulkanImage::~VulkanImage() {
-  if (view != VK_NULL_HANDLE)
-    vkDestroyImageView(vulkan_instance->device, view, nullptr);
-  if (allocation != nullptr)
-    vmaDestroyImage(vulkan_instance->allocator, image, allocation);
+GpuImage::~GpuImage() {
+  if (view != VK_NULL_HANDLE) vkDestroyImageView(gpu->device, view, nullptr);
+  if (allocation != nullptr) vmaDestroyImage(gpu->allocator, image, allocation);
 }
 
-void VulkanImage::writeData(void* src) {
+void GpuImage::writeData(void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
-  VulkanBuffer stage(vulkan_instance, allocation_info.size,
-                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                     VMA_MEMORY_USAGE_CPU_TO_GPU);
+  GpuBuffer stage(gpu, allocation_info.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                  VMA_MEMORY_USAGE_CPU_TO_GPU);
   stage.writeData(src);
 
-  VkCommandBuffer commandBuffer = vulkan_instance->beginSingleTimeCommands();
+  VkCommandBuffer commandBuffer = gpu->beginSingleTimeCommands();
 
   VkBufferImageCopy region{
       .bufferOffset = 0,
@@ -93,10 +88,10 @@ void VulkanImage::writeData(void* src) {
   vkCmdCopyBufferToImage(commandBuffer, stage.buffer, image, layout, 1,
                          &region);
 
-  vulkan_instance->endSingleTimeCommands(commandBuffer);
+  gpu->endSingleTimeCommands(commandBuffer);
 }
 
-void VulkanImage::transitionLayout(VkImageLayout targetLayout) {
+void GpuImage::transitionLayout(VkImageLayout targetLayout) {
   VkImageMemoryBarrier barrier{
       .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
       .oldLayout = layout,
@@ -132,14 +127,14 @@ void VulkanImage::transitionLayout(VkImageLayout targetLayout) {
     return;
   }
 
-  VkCommandBuffer commandBuffer = vulkan_instance->beginSingleTimeCommands();
+  VkCommandBuffer commandBuffer = gpu->beginSingleTimeCommands();
   layout = targetLayout;
   vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0,
                        nullptr, 0, nullptr, 1, &barrier);
-  vulkan_instance->endSingleTimeCommands(commandBuffer);
+  gpu->endSingleTimeCommands(commandBuffer);
 }
 
-void VulkanImage::createView() {
+void GpuImage::createView() {
   VkImageViewCreateInfo viewInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
       .image = image,
@@ -151,8 +146,7 @@ void VulkanImage::createView() {
                            .baseArrayLayer = 0,
                            .layerCount = 1}};
 
-  if (vkCreateImageView(vulkan_instance->device, &viewInfo, nullptr, &view) !=
-      VK_SUCCESS) {
+  if (vkCreateImageView(gpu->device, &viewInfo, nullptr, &view) != VK_SUCCESS) {
     log_ftl("Failed to create VulkanImage view.");
   }
 }

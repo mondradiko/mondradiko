@@ -1,5 +1,5 @@
 /**
- * @file VulkanBuffer.h
+ * @file GpuBuffer.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Creates and manages a Vulkan buffer and its allocation.
  * @date 2020-10-24
@@ -23,18 +23,18 @@
  *
  */
 
-#ifndef SRC_GRAPHICS_VULKANBUFFER_H_
-#define SRC_GRAPHICS_VULKANBUFFER_H_
+#ifndef SRC_GRAPHICS_GPUBUFFER_H_
+#define SRC_GRAPHICS_GPUBUFFER_H_
 
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
 
-class VulkanBuffer {
+class GpuBuffer {
  public:
-  VulkanBuffer(VulkanInstance*, size_t, VkBufferUsageFlags, VmaMemoryUsage);
-  ~VulkanBuffer();
+  GpuBuffer(GpuInstance*, size_t, VkBufferUsageFlags, VmaMemoryUsage);
+  ~GpuBuffer();
 
   void writeData(void*);
 
@@ -44,9 +44,9 @@ class VulkanBuffer {
   VkBuffer buffer = VK_NULL_HANDLE;
 
  private:
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
 };
 
 }  // namespace mondradiko
 
-#endif  // SRC_GRAPHICS_VULKANBUFFER_H_
+#endif  // SRC_GRAPHICS_GPUBUFFER_H_

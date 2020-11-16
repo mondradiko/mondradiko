@@ -1,5 +1,5 @@
 /**
- * @file VulkanImage.h
+ * @file GpuImage.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Creates and manages a Vulkan image and its allocation.
  * @date 2020-10-24
@@ -23,20 +23,20 @@
  *
  */
 
-#ifndef SRC_GRAPHICS_VULKANIMAGE_H_
-#define SRC_GRAPHICS_VULKANIMAGE_H_
+#ifndef SRC_GRAPHICS_GPUIMAGE_H_
+#define SRC_GRAPHICS_GPUIMAGE_H_
 
-#include "graphics/VulkanBuffer.h"
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuBuffer.h"
+#include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
 
-class VulkanImage {
+class GpuImage {
  public:
-  VulkanImage(VulkanInstance*, VkFormat, uint32_t, uint32_t, VkImageUsageFlags,
-              VmaMemoryUsage);
-  ~VulkanImage();
+  GpuImage(GpuInstance*, VkFormat, uint32_t, uint32_t, VkImageUsageFlags,
+           VmaMemoryUsage);
+  ~GpuImage();
 
   void writeData(void*);
   void transitionLayout(VkImageLayout);
@@ -52,9 +52,9 @@ class VulkanImage {
   VkImageView view = VK_NULL_HANDLE;
 
  private:
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
 };
 
 }  // namespace mondradiko
 
-#endif  // SRC_GRAPHICS_VULKANIMAGE_H_
+#endif  // SRC_GRAPHICS_GPUIMAGE_H_

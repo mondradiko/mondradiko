@@ -1,5 +1,5 @@
 /**
- * @file VulkanInstance.h
+ * @file GpuInstance.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Manages all low-level Vulkan objects such as device, debug messenger,
  * VMA allocator, etc.
@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef SRC_GRAPHICS_VULKANINSTANCE_H_
-#define SRC_GRAPHICS_VULKANINSTANCE_H_
+#ifndef SRC_GRAPHICS_GPUINSTANCE_H_
+#define SRC_GRAPHICS_GPUINSTANCE_H_
 
 #include <vector>
 
@@ -34,10 +34,10 @@
 
 namespace mondradiko {
 
-class VulkanInstance {
+class GpuInstance {
  public:
-  explicit VulkanInstance(DisplayInterface*);
-  ~VulkanInstance();
+  explicit GpuInstance(DisplayInterface*);
+  ~GpuInstance();
 
   bool findFormatFromOptions(const std::vector<VkFormat>*,
                              const std::vector<VkFormat>*, VkFormat*);
@@ -85,4 +85,4 @@ class VulkanInstance {
 
 }  // namespace mondradiko
 
-#endif  // SRC_GRAPHICS_VULKANINSTANCE_H_
+#endif  // SRC_GRAPHICS_GPUINSTANCE_H_

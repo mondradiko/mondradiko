@@ -1,5 +1,5 @@
 /**
- * @file VulkanBuffer.cc
+ * @file GpuBuffer.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Creates and manages a Vulkan buffer and its allocation.
  * @date 2020-10-24
@@ -23,17 +23,17 @@
  *
  */
 
-#include "graphics/VulkanBuffer.h"
+#include "gpu/GpuBuffer.h"
 
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-VulkanBuffer::VulkanBuffer(VulkanInstance* vulkan_instance, size_t buffer_size,
-                           VkBufferUsageFlags buffer_usage_flags,
-                           VmaMemoryUsage memory_usage)
-    : buffer_size(buffer_size), vulkan_instance(vulkan_instance) {
+GpuBuffer::GpuBuffer(GpuInstance* gpu, size_t buffer_size,
+                     VkBufferUsageFlags buffer_usage_flags,
+                     VmaMemoryUsage memory_usage)
+    : buffer_size(buffer_size), gpu(gpu) {
   VkBufferCreateInfo bufferInfo{.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
                                 .size = buffer_size,
                                 .usage = buffer_usage_flags,
@@ -42,19 +42,18 @@ VulkanBuffer::VulkanBuffer(VulkanInstance* vulkan_instance, size_t buffer_size,
   VmaAllocationCreateInfo allocationCreateInfo{
       .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memory_usage};
 
-  if (vmaCreateBuffer(vulkan_instance->allocator, &bufferInfo,
-                      &allocationCreateInfo, &buffer, &allocation,
-                      &allocation_info) != VK_SUCCESS) {
+  if (vmaCreateBuffer(gpu->allocator, &bufferInfo, &allocationCreateInfo,
+                      &buffer, &allocation, &allocation_info) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan buffer.");
   }
 }
 
-VulkanBuffer::~VulkanBuffer() {
+GpuBuffer::~GpuBuffer() {
   if (allocation != nullptr)
-    vmaDestroyBuffer(vulkan_instance->allocator, buffer, allocation);
+    vmaDestroyBuffer(gpu->allocator, buffer, allocation);
 }
 
-void VulkanBuffer::writeData(void* src) {
+void GpuBuffer::writeData(void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
   memcpy(allocation_info.pMappedData, src, allocation_info.size);
