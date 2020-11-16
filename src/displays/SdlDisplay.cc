@@ -51,7 +51,7 @@ SdlDisplay::~SdlDisplay() {
   SDL_Quit();
 }
 
-bool SdlDisplay::getRequirements(VulkanRequirements* requirements) {
+bool SdlDisplay::getVulkanRequirements(VulkanRequirements* requirements) {
   requirements->min_api_version = VK_MAKE_VERSION(1, 0, 0);
   requirements->max_api_version = VK_MAKE_VERSION(1, 2, 0);
   requirements->instance_extensions.resize(0);
@@ -167,8 +167,8 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
   return true;
 }
 
-bool SdlDisplay::createSession(VulkanInstance* _vulkan_instance) {
-  vulkan_instance = _vulkan_instance;
+bool SdlDisplay::createSession(GpuInstance* _gpu) {
+  gpu = _gpu;
 
   // TODO(marceline-cramer) Better queue sharing
   VkSwapchainCreateInfoKHR swapchain_info{
@@ -187,8 +187,8 @@ bool SdlDisplay::createSession(VulkanInstance* _vulkan_instance) {
       .clipped = VK_TRUE,
       .oldSwapchain = VK_NULL_HANDLE};
 
-  if (vkCreateSwapchainKHR(vulkan_instance->device, &swapchain_info, nullptr,
-                           &swapchain) != VK_SUCCESS) {
+  if (vkCreateSwapchainKHR(gpu->device, &swapchain_info, nullptr, &swapchain) !=
+      VK_SUCCESS) {
     log_err("Failed to create swapchain.");
     return false;
   }
@@ -199,9 +199,9 @@ bool SdlDisplay::createSession(VulkanInstance* _vulkan_instance) {
 void SdlDisplay::destroySession() {
   if (main_viewport != nullptr) delete main_viewport;
   if (swapchain != VK_NULL_HANDLE)
-    vkDestroySwapchainKHR(vulkan_instance->device, swapchain, nullptr);
+    vkDestroySwapchainKHR(gpu->device, swapchain, nullptr);
   if (surface != VK_NULL_HANDLE)
-    vkDestroySurfaceKHR(vulkan_instance->instance, surface, nullptr);
+    vkDestroySurfaceKHR(gpu->instance, surface, nullptr);
 
   main_viewport = nullptr;
   swapchain = VK_NULL_HANDLE;
@@ -210,7 +210,7 @@ void SdlDisplay::destroySession() {
 
 void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
   if (main_viewport == nullptr) {
-    main_viewport = new SdlViewport(this, poll_info->renderer, vulkan_instance);
+    main_viewport = new SdlViewport(gpu, this, poll_info->renderer);
   }
 
   poll_info->should_quit = false;

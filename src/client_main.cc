@@ -30,8 +30,8 @@
 #include "displays/OpenXrDisplay.h"
 #include "displays/SdlDisplay.h"
 #include "filesystem/Filesystem.h"
+#include "gpu/GpuInstance.h"
 #include "graphics/Renderer.h"
-#include "graphics/VulkanInstance.h"
 #include "log/log.h"
 #include "network/NetworkClient.h"
 #include "scene/Scene.h"
@@ -51,7 +51,7 @@ void signalHandler(int signum) {
 void player_session_run(const char* server_address, int port) {
   Filesystem fs("../test-folder/");
   OpenXrDisplay display;
-  VulkanInstance vulkan_instance(&display);
+  GpuInstance gpu(&display);
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
@@ -61,11 +61,11 @@ void player_session_run(const char* server_address, int port) {
     log_wrn("Can't catch SIGINT");
   }
 
-  if (!display.createSession(&vulkan_instance)) {
+  if (!display.createSession(&gpu)) {
     log_ftl("Failed to create display session!");
   }
 
-  Renderer renderer(&display, &vulkan_instance);
+  Renderer renderer(&display, &gpu);
   NetworkClient client(server_address, port);
   Scene scene(&fs, &renderer);
 
@@ -103,7 +103,7 @@ void player_session_run(const char* server_address, int port) {
 void spectator_session_run(const char* server_address, int port) {
   Filesystem fs("../test-folder/");
   SdlDisplay display;
-  VulkanInstance vulkan_instance(&display);
+  GpuInstance gpu(&display);
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
@@ -113,11 +113,11 @@ void spectator_session_run(const char* server_address, int port) {
     log_wrn("Can't catch SIGINT");
   }
 
-  if (!display.createSession(&vulkan_instance)) {
+  if (!display.createSession(&gpu)) {
     log_ftl("Failed to create display session!");
   }
 
-  Renderer renderer(&display, &vulkan_instance);
+  Renderer renderer(&display, &gpu);
   NetworkClient client(server_address, port);
   Scene scene(&fs, &renderer);
 

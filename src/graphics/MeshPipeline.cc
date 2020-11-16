@@ -28,17 +28,16 @@
 
 #include <vector>
 
+#include "gpu/GpuInstance.h"
 #include "graphics/MeshShader.h"
 #include "graphics/Renderer.h"
-#include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-MeshPipeline::MeshPipeline(VulkanInstance* vulkan_instance,
-                           VkPipelineLayout pipeline_layout,
+MeshPipeline::MeshPipeline(GpuInstance* gpu, VkPipelineLayout pipeline_layout,
                            VkRenderPass render_pass, uint32_t subpass_index)
-    : pipeline_layout(pipeline_layout), vulkan_instance(vulkan_instance) {
+    : pipeline_layout(pipeline_layout), gpu(gpu) {
   log_dbg("Creating mesh pipeline.");
 
   createPipeline(render_pass, subpass_index);
@@ -51,9 +50,9 @@ MeshPipeline::~MeshPipeline() {
 
   if (material_buffer != nullptr) delete material_buffer;
   if (texture_sampler != VK_NULL_HANDLE)
-    vkDestroySampler(vulkan_instance->device, texture_sampler, nullptr);
+    vkDestroySampler(gpu->device, texture_sampler, nullptr);
   if (pipeline != VK_NULL_HANDLE)
-    vkDestroyPipeline(vulkan_instance->device, pipeline, nullptr);
+    vkDestroyPipeline(gpu->device, pipeline, nullptr);
 }
 
 void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
@@ -106,7 +105,7 @@ void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
                            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                            .pBufferInfo = &material_info});
 
-  vkUpdateDescriptorSets(vulkan_instance->device, descriptor_writes.size(),
+  vkUpdateDescriptorSets(gpu->device, descriptor_writes.size(),
                          descriptor_writes.data(), 0, nullptr);
 }
 
@@ -169,7 +168,7 @@ AssetHandle<MeshAsset> MeshPipeline::loadMesh(std::string filename,
 
   if (!cached_mesh) {
     cached_mesh = mesh_pool.load(
-        mesh_name, new MeshAsset(mesh_name, vulkan_instance, mesh));
+        mesh_name, new MeshAsset(mesh_name, gpu, mesh));
   }
 
   return cached_mesh;
@@ -199,7 +198,7 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string filename,
     if (!cached_texture) {
       cached_texture = texture_pool.load(
           textureName,
-          new TextureAsset(vulkan_instance, texture, texture_sampler));
+          new TextureAsset(gpu, texture, texture_sampler));
     }
 
     return cached_texture;
@@ -210,7 +209,7 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string filename,
 }
 
 void MeshPipeline::createPipeline(VkRenderPass render_pass, uint32_t subpass) {
-  MeshShader shader(vulkan_instance);
+  MeshShader shader(gpu);
   auto shader_stages = shader.getStages();
 
   auto binding_description = MeshVertex::getBindingDescription();
@@ -304,7 +303,7 @@ void MeshPipeline::createPipeline(VkRenderPass render_pass, uint32_t subpass) {
       .basePipelineHandle = VK_NULL_HANDLE,
       .basePipelineIndex = -1};
 
-  if (vkCreateGraphicsPipelines(vulkan_instance->device, VK_NULL_HANDLE, 1,
+  if (vkCreateGraphicsPipelines(gpu->device, VK_NULL_HANDLE, 1,
                                 &pipeline_info, nullptr,
                                 &pipeline) != VK_SUCCESS) {
     log_ftl("Failed to create mesh pipeline.");
@@ -329,15 +328,15 @@ void MeshPipeline::createTextureSampler() {
       .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
       .unnormalizedCoordinates = VK_FALSE};
 
-  if (vkCreateSampler(vulkan_instance->device, &sampler_info, nullptr,
+  if (vkCreateSampler(gpu->device, &sampler_info, nullptr,
                       &texture_sampler) != VK_SUCCESS) {
     log_ftl("Failed to create texture sampler.");
   }
 }
 
 void MeshPipeline::createMaterialBuffer() {
-  material_buffer = new VulkanBuffer(
-      vulkan_instance, 128 * sizeof(MaterialUniform),
+  material_buffer = new GpuBuffer(
+      gpu, 128 * sizeof(MaterialUniform),
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 }
 

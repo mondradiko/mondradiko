@@ -37,14 +37,14 @@
 #include "assets/MeshAsset.h"
 #include "assets/TextureAsset.h"
 #include "components/MeshRendererComponent.h"
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
 
 class MeshPipeline {
  public:
-  MeshPipeline(VulkanInstance*, VkPipelineLayout, VkRenderPass, uint32_t);
+  MeshPipeline(GpuInstance*, VkPipelineLayout, VkRenderPass, uint32_t);
   ~MeshPipeline();
 
   void updateDescriptors(VkDescriptorSet);
@@ -65,10 +65,10 @@ class MeshPipeline {
 
   std::set<MeshRendererComponent*> mesh_renderers;
 
-  VulkanBuffer* material_buffer = nullptr;
+  GpuBuffer* material_buffer = nullptr;
 
  private:
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
 
   AssetPool<MaterialAsset> material_pool;
   AssetPool<MeshAsset> mesh_pool;

@@ -29,8 +29,8 @@
 
 namespace mondradiko {
 
-Renderer::Renderer(DisplayInterface* display, VulkanInstance* vulkan_instance)
-    : display(display), vulkan_instance(vulkan_instance) {
+Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
+    : display(display), gpu(gpu) {
   log_dbg("Creating renderer.");
 
   createRenderPasses();
@@ -43,31 +43,28 @@ Renderer::Renderer(DisplayInterface* display, VulkanInstance* vulkan_instance)
 Renderer::~Renderer() {
   log_dbg("Destroying renderer.");
 
-  vkDeviceWaitIdle(vulkan_instance->device);
+  vkDeviceWaitIdle(gpu->device);
 
   for (auto& frame : frames_in_flight) {
     if (frame.viewports != nullptr) delete frame.viewports;
     if (frame.is_in_use != VK_NULL_HANDLE)
-      vkDestroyFence(vulkan_instance->device, frame.is_in_use, nullptr);
+      vkDestroyFence(gpu->device, frame.is_in_use, nullptr);
   }
 
   if (mesh_pipeline != nullptr) delete mesh_pipeline;
   if (main_descriptor_layout != VK_NULL_HANDLE)
-    vkDestroyDescriptorSetLayout(vulkan_instance->device,
-                                 main_descriptor_layout, nullptr);
+    vkDestroyDescriptorSetLayout(gpu->device, main_descriptor_layout, nullptr);
   if (main_pipeline_layout != VK_NULL_HANDLE)
-    vkDestroyPipelineLayout(vulkan_instance->device, main_pipeline_layout,
-                            nullptr);
+    vkDestroyPipelineLayout(gpu->device, main_pipeline_layout, nullptr);
 
   if (composite_pass != VK_NULL_HANDLE)
-    vkDestroyRenderPass(vulkan_instance->device, composite_pass, nullptr);
+    vkDestroyRenderPass(gpu->device, composite_pass, nullptr);
 }
 
 void Renderer::renderFrame() {
   if (frames_in_flight[current_frame].submitted) {
-    vkWaitForFences(vulkan_instance->device, 1,
-                    &frames_in_flight[current_frame].is_in_use, VK_TRUE,
-                    UINT64_MAX);
+    vkWaitForFences(gpu->device, 1, &frames_in_flight[current_frame].is_in_use,
+                    VK_TRUE, UINT64_MAX);
     frames_in_flight[current_frame].submitted = false;
   }
 
@@ -104,8 +101,7 @@ void Renderer::renderFrame() {
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       .pBufferInfo = viewport_buffer_infos.data()};
 
-  vkUpdateDescriptorSets(vulkan_instance->device, 1, &descriptor_writes, 0,
-                         nullptr);
+  vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
 
   mesh_pipeline->updateDescriptors(frame->descriptors);
 
@@ -157,10 +153,10 @@ void Renderer::renderFrame() {
   submitInfo.signalSemaphoreCount = 0;
   submitInfo.pSignalSemaphores = nullptr;
 
-  vkResetFences(vulkan_instance->device, 1, &frame->is_in_use);
+  vkResetFences(gpu->device, 1, &frame->is_in_use);
 
-  if (vkQueueSubmit(vulkan_instance->graphics_queue, 1, &submitInfo,
-                    frame->is_in_use) != VK_SUCCESS) {
+  if (vkQueueSubmit(gpu->graphics_queue, 1, &submitInfo, frame->is_in_use) !=
+      VK_SUCCESS) {
     log_ftl("Failed to submit primary frame command buffer.");
   }
 
@@ -199,8 +195,8 @@ void Renderer::createRenderPasses() {
       .subpassCount = 1,
       .pSubpasses = &compositeSubpassDescription};
 
-  if (vkCreateRenderPass(vulkan_instance->device, &compositePassCreateInfo,
-                         nullptr, &composite_pass) != VK_SUCCESS) {
+  if (vkCreateRenderPass(gpu->device, &compositePassCreateInfo, nullptr,
+                         &composite_pass) != VK_SUCCESS) {
     log_ftl("Failed to create Renderer composite render pass.");
   }
 }
@@ -232,7 +228,7 @@ void Renderer::createDescriptorSetLayout() {
       .bindingCount = static_cast<uint32_t>(bindings.size()),
       .pBindings = bindings.data()};
 
-  if (vkCreateDescriptorSetLayout(vulkan_instance->device, &layoutInfo, nullptr,
+  if (vkCreateDescriptorSetLayout(gpu->device, &layoutInfo, nullptr,
                                   &main_descriptor_layout) != VK_SUCCESS) {
     log_ftl("Failed to create Renderer main descriptor set layout.");
   }
@@ -251,7 +247,7 @@ void Renderer::createPipelineLayout() {
       .pushConstantRangeCount = 1,
       .pPushConstantRanges = &constantRange};
 
-  if (vkCreatePipelineLayout(vulkan_instance->device, &layoutInfo, nullptr,
+  if (vkCreatePipelineLayout(gpu->device, &layoutInfo, nullptr,
                              &main_pipeline_layout) != VK_SUCCESS) {
     log_ftl("Failed to create Renderer pipeline layout.");
   }
@@ -264,19 +260,19 @@ void Renderer::createFrameData() {
   for (auto& frame : frames_in_flight) {
     VkCommandBufferAllocateInfo alloc_info{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = vulkan_instance->command_pool,
+        .commandPool = gpu->command_pool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1};
 
-    if (vkAllocateCommandBuffers(vulkan_instance->device, &alloc_info,
+    if (vkAllocateCommandBuffers(gpu->device, &alloc_info,
                                  &frame.command_buffer) != VK_SUCCESS) {
       log_ftl("Failed to allocate frame command buffers.");
     }
 
     VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
 
-    if (vkCreateFence(vulkan_instance->device, &fenceInfo, nullptr,
-                      &frame.is_in_use) != VK_SUCCESS) {
+    if (vkCreateFence(gpu->device, &fenceInfo, nullptr, &frame.is_in_use) !=
+        VK_SUCCESS) {
       log_ftl("Failed to create frame fence.");
     }
 
@@ -284,25 +280,25 @@ void Renderer::createFrameData() {
 
     VkDescriptorSetAllocateInfo set_info{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .descriptorPool = vulkan_instance->descriptor_pool,
+        .descriptorPool = gpu->descriptor_pool,
         .descriptorSetCount = 1,
         .pSetLayouts = &main_descriptor_layout};
 
-    if (vkAllocateDescriptorSets(vulkan_instance->device, &set_info,
-                                 &frame.descriptors) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(gpu->device, &set_info, &frame.descriptors) !=
+        VK_SUCCESS) {
       log_ftl("Failed to allocate frame descriptors.");
     }
 
-    frame.viewports = new VulkanBuffer(
+    frame.viewports = new GpuBuffer(
         // TODO(marceline-cramer) Better descriptor management
-        vulkan_instance, sizeof(ViewportUniform) * 2,
-        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+        gpu, sizeof(ViewportUniform) * 2, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VMA_MEMORY_USAGE_CPU_TO_GPU);
   }
 }
 
 void Renderer::createPipelines() {
-  mesh_pipeline = new MeshPipeline(vulkan_instance, main_pipeline_layout,
-                                   composite_pass, 0);
+  mesh_pipeline =
+      new MeshPipeline(gpu, main_pipeline_layout, composite_pass, 0);
 }
 
 }  // namespace mondradiko

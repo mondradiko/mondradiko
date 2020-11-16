@@ -29,10 +29,10 @@
 
 namespace mondradiko {
 
-MeshShader::MeshShader(VulkanInstance* vulkan_instance)
-    : vulkan_instance(vulkan_instance),
-      vert_shader(vulkan_instance, "MeshShader.vert", shaderc_vertex_shader),
-      frag_shader(vulkan_instance, "MeshShader.frag", shaderc_fragment_shader) {
+MeshShader::MeshShader(GpuInstance* gpu)
+    : gpu(gpu),
+      vert_shader(gpu, "MeshShader.vert", shaderc_vertex_shader),
+      frag_shader(gpu, "MeshShader.frag", shaderc_fragment_shader) {
   log_dbg("Creating mesh shader.");
 
   vert_shader.pushCustom(R"""(

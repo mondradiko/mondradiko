@@ -27,7 +27,7 @@
 #define SRC_DISPLAYS_OPENXRVIEWPORT_H_
 
 #include "displays/ViewportInterface.h"
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuInstance.h"
 
 namespace mondradiko {
 
@@ -36,7 +36,8 @@ class OpenXrDisplay;
 
 class OpenXrViewport : public ViewportInterface {
  public:
-  OpenXrViewport(OpenXrDisplay*, Renderer*, VulkanInstance*, XrViewConfigurationView*);
+  OpenXrViewport(GpuInstance*, OpenXrDisplay*, Renderer*,
+                 XrViewConfigurationView*);
   ~OpenXrViewport();
 
   void acquire();
@@ -48,9 +49,9 @@ class OpenXrViewport : public ViewportInterface {
   void writeCompositionLayers(XrCompositionLayerProjectionView*);
 
  private:
+  GpuInstance* gpu;
   OpenXrDisplay* display;
   Renderer* renderer;
-  VulkanInstance* vulkan_instance;
 
   XrSwapchain swapchain = XR_NULL_HANDLE;
 

@@ -27,8 +27,8 @@
 #define SRC_DISPLAYS_SDLVIEWPORT_H_
 
 #include "displays/ViewportInterface.h"
+#include "gpu/GpuInstance.h"
 #include "graphics/Renderer.h"
-#include "graphics/VulkanInstance.h"
 
 namespace mondradiko {
 
@@ -37,7 +37,7 @@ class SdlDisplay;
 
 class SdlViewport : public ViewportInterface {
  public:
-  SdlViewport(SdlDisplay*, Renderer*, VulkanInstance*);
+  SdlViewport(GpuInstance*, SdlDisplay*, Renderer*);
   ~SdlViewport();
 
   void acquire() override;
@@ -46,9 +46,9 @@ class SdlViewport : public ViewportInterface {
   void release() override;
 
  private:
+  GpuInstance* gpu;
   SdlDisplay* display;
   Renderer* renderer;
-  VulkanInstance* vulkan_instance;
 
   std::vector<ViewportImage> images;
   uint32_t current_image_index;

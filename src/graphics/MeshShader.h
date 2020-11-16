@@ -32,13 +32,13 @@ namespace mondradiko {
 
 class MeshShader {
  public:
-  explicit MeshShader(VulkanInstance*);
+  explicit MeshShader(GpuInstance*);
   ~MeshShader();
 
   ShaderStages getStages();
 
  private:
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
 
   ShaderModule vert_shader;
   ShaderModule frag_shader;

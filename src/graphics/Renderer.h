@@ -29,8 +29,8 @@
 #include <vector>
 
 #include "displays/DisplayInterface.h"
+#include "gpu/GpuInstance.h"
 #include "graphics/MeshPipeline.h"
-#include "graphics/VulkanInstance.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
@@ -44,7 +44,7 @@ struct PipelinedFrameData {
   // TODO(marceline-cramer) Allocate all frame descriptors from pool
   VkDescriptorSet descriptors;
 
-  VulkanBuffer* viewports;
+  GpuBuffer* viewports;
 };
 
 struct FramePushConstant {
@@ -54,7 +54,7 @@ struct FramePushConstant {
 
 class Renderer {
  public:
-  Renderer(DisplayInterface*, VulkanInstance*);
+  Renderer(DisplayInterface*, GpuInstance*);
   ~Renderer();
 
   void renderFrame();
@@ -67,7 +67,7 @@ class Renderer {
 
  private:
   DisplayInterface* display;
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
 
   uint32_t current_frame = 0;
   std::vector<PipelinedFrameData> frames_in_flight;

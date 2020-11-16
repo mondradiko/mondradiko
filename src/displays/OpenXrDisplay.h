@@ -37,9 +37,9 @@ class OpenXrDisplay : public DisplayInterface {
   OpenXrDisplay();
   ~OpenXrDisplay();
 
-  bool getRequirements(VulkanRequirements*) override;
+  bool getVulkanRequirements(VulkanRequirements*) override;
   bool getVulkanDevice(VkInstance, VkPhysicalDevice*) override;
-  bool createSession(VulkanInstance*) override;
+  bool createSession(GpuInstance*) override;
   void destroySession() override;
 
   VkFormat getSwapchainFormat() override { return swapchain_format; };
@@ -62,7 +62,7 @@ class OpenXrDisplay : public DisplayInterface {
   XrSpace stage_space = XR_NULL_HANDLE;
 
  private:
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
 
   void populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT*);
   void createInstance();

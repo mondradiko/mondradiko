@@ -56,10 +56,10 @@ static glm::mat4 createProjectionFromFOV(const XrFovf fov, const float near_z,
   return glm::make_mat4(mat);
 }
 
-OpenXrViewport::OpenXrViewport(OpenXrDisplay* display, Renderer* renderer,
-                               VulkanInstance* vulkan_instance,
+OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
+                               Renderer* renderer,
                                XrViewConfigurationView* view_config)
-    : display(display), renderer(renderer), vulkan_instance(vulkan_instance) {
+    : gpu(gpu), display(display), renderer(renderer) {
   log_dbg("Creating OpenXR viewport.");
 
   image_width = view_config->recommendedImageRectWidth;
@@ -107,7 +107,7 @@ OpenXrViewport::OpenXrViewport(OpenXrDisplay* display, Renderer* renderer,
                              .baseArrayLayer = 0,
                              .layerCount = 1}};
 
-    if (vkCreateImageView(vulkan_instance->device, &viewCreateInfo, nullptr,
+    if (vkCreateImageView(gpu->device, &viewCreateInfo, nullptr,
                           &images[i].image_view) != VK_SUCCESS) {
       log_ftl("Failed to create OpenXR viewport image view.");
     }
@@ -121,8 +121,8 @@ OpenXrViewport::OpenXrViewport(OpenXrDisplay* display, Renderer* renderer,
         .height = image_height,
         .layers = 1};
 
-    if (vkCreateFramebuffer(vulkan_instance->device, &framebufferCreateInfo,
-                            nullptr, &images[i].framebuffer) != VK_SUCCESS) {
+    if (vkCreateFramebuffer(gpu->device, &framebufferCreateInfo, nullptr,
+                            &images[i].framebuffer) != VK_SUCCESS) {
       log_ftl("Failed to create OpenXR viewport framebuffer.");
     }
   }
@@ -132,8 +132,8 @@ OpenXrViewport::~OpenXrViewport() {
   log_dbg("Destroying OpenXR viewport.");
 
   for (ViewportImage& image : images) {
-    vkDestroyImageView(vulkan_instance->device, image.image_view, nullptr);
-    vkDestroyFramebuffer(vulkan_instance->device, image.framebuffer, nullptr);
+    vkDestroyImageView(gpu->device, image.image_view, nullptr);
+    vkDestroyFramebuffer(gpu->device, image.framebuffer, nullptr);
   }
 
   if (swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);

@@ -27,15 +27,12 @@
 
 #include <vector>
 
-#include "graphics/VulkanBuffer.h"
-#include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-MeshAsset::MeshAsset(std::string mesh_name, VulkanInstance* vulkan_instance,
-                     aiMesh* mesh)
-    : mesh_name(mesh_name), vulkan_instance(vulkan_instance) {
+MeshAsset::MeshAsset(std::string mesh_name, GpuInstance* gpu, aiMesh* mesh)
+    : mesh_name(mesh_name), gpu(gpu) {
   log_dbg("Loading mesh asset with name:");
   log_dbg(mesh_name.c_str());
 
@@ -89,15 +86,15 @@ MeshAsset::MeshAsset(std::string mesh_name, VulkanInstance* vulkan_instance,
   }
 
   size_t vertex_size = sizeof(MeshVertex) * vertices.size();
-  vertex_buffer = new VulkanBuffer(vulkan_instance, vertex_size,
-                                   VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                                   VMA_MEMORY_USAGE_CPU_TO_GPU);
+  vertex_buffer =
+      new GpuBuffer(gpu, vertex_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                       VMA_MEMORY_USAGE_CPU_TO_GPU);
   vertex_buffer->writeData(vertices.data());
 
   size_t index_size = sizeof(indices[0]) * indices.size();
-  index_buffer = new VulkanBuffer(vulkan_instance, index_size,
-                                  VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                                  VMA_MEMORY_USAGE_CPU_TO_GPU);
+  index_buffer =
+      new GpuBuffer(gpu, index_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                    VMA_MEMORY_USAGE_CPU_TO_GPU);
   index_buffer->writeData(indices.data());
 }
 

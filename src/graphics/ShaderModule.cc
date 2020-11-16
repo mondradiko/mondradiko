@@ -25,15 +25,13 @@
 
 #include "graphics/ShaderModule.h"
 
-#include "graphics/VulkanInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-ShaderModule::ShaderModule(VulkanInstance* vulkan_instance,
-                           std::string shader_name,
+ShaderModule::ShaderModule(GpuInstance* gpu, std::string shader_name,
                            shaderc_shader_kind shader_kind)
-    : vulkan_instance(vulkan_instance),
+    : gpu(gpu),
       shader_name(shader_name),
       shader_kind(shader_kind),
       compiled(false) {
@@ -44,7 +42,7 @@ ShaderModule::ShaderModule(VulkanInstance* vulkan_instance,
 
 ShaderModule::~ShaderModule() {
   if (compiled) {
-    vkDestroyShaderModule(vulkan_instance->device, shader_module, nullptr);
+    vkDestroyShaderModule(gpu->device, shader_module, nullptr);
   }
 }
 
@@ -103,7 +101,7 @@ VkShaderModule ShaderModule::compile() {
       .codeSize = spirv.size() * sizeof(uint32_t),
       .pCode = spirv.data()};
 
-  if (vkCreateShaderModule(vulkan_instance->device, &module_info, nullptr,
+  if (vkCreateShaderModule(gpu->device, &module_info, nullptr,
                            &shader_module) != VK_SUCCESS) {
     log_ftl("Failed to create shader module");
   }

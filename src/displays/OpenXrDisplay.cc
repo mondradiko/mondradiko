@@ -26,7 +26,7 @@
 #include "displays/OpenXrDisplay.h"
 
 #include "./build_config.h"
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuInstance.h"
 #include "log/log.h"
 
 #define XR_LOAD_FN_PTR(name, fnPtr)     \
@@ -94,17 +94,17 @@ OpenXrDisplay::~OpenXrDisplay() {
   if (instance != XR_NULL_HANDLE) xrDestroyInstance(instance);
 }
 
-bool OpenXrDisplay::createSession(VulkanInstance* _vulkan_instance) {
+bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
   log_dbg("Creating OpenXR session.");
 
-  vulkan_instance = _vulkan_instance;
+  gpu = _gpu;
 
   XrGraphicsBindingVulkanKHR vulkanBindings{
       .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
-      .instance = vulkan_instance->instance,
-      .physicalDevice = vulkan_instance->physical_device,
-      .device = vulkan_instance->device,
-      .queueFamilyIndex = vulkan_instance->graphics_queue_family};
+      .instance = gpu->instance,
+      .physicalDevice = gpu->physical_device,
+      .device = gpu->device,
+      .queueFamilyIndex = gpu->graphics_queue_family};
 
   XrSessionCreateInfo createInfo{.type = XR_TYPE_SESSION_CREATE_INFO,
                                  .next = &vulkanBindings,
@@ -141,8 +141,8 @@ bool OpenXrDisplay::createSession(VulkanInstance* _vulkan_instance) {
   std::vector<VkFormat> format_candidates = {VK_FORMAT_R8G8B8A8_SRGB,
                                              VK_FORMAT_R8G8B8A8_UNORM};
 
-  if (!vulkan_instance->findFormatFromOptions(
-          &format_options, &format_candidates, &swapchain_format)) {
+  if (!gpu->findFormatFromOptions(&format_options, &format_candidates,
+                                  &swapchain_format)) {
     log_ftl("Failed to find suitable swapchain format.");
   }
 
@@ -159,7 +159,7 @@ void OpenXrDisplay::destroySession() {
   session = XR_NULL_HANDLE;
 }
 
-bool OpenXrDisplay::getRequirements(VulkanRequirements* requirements) {
+bool OpenXrDisplay::getVulkanRequirements(VulkanRequirements* requirements) {
   XrGraphicsRequirementsVulkanKHR vulkanRequirements{
       .type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR};
 
@@ -463,8 +463,8 @@ void OpenXrDisplay::createViewports(Renderer* renderer) {
       viewport_count, &viewport_count, view_configurations.data());
 
   for (uint32_t i = 0; i < viewport_count; i++) {
-    OpenXrViewport* viewport = new OpenXrViewport(
-        this, renderer, vulkan_instance, &view_configurations[i]);
+    OpenXrViewport* viewport =
+        new OpenXrViewport(gpu, this, renderer, &view_configurations[i]);
     viewports.push_back(viewport);
   }
 }

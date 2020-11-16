@@ -30,20 +30,20 @@
 
 namespace mondradiko {
 
-SdlViewport::SdlViewport(SdlDisplay* display, Renderer* renderer,
-                         VulkanInstance* vulkan_instance)
-    : display(display), renderer(renderer), vulkan_instance(vulkan_instance) {
+SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
+                         Renderer* renderer)
+    : gpu(gpu), display(display), renderer(renderer) {
   log_dbg("Creating SDL viewport.");
 
   image_width = display->surface_capabilities.currentExtent.width;
   image_height = display->surface_capabilities.currentExtent.height;
 
   uint32_t image_count;
-  vkGetSwapchainImagesKHR(vulkan_instance->device, display->swapchain,
-                          &image_count, nullptr);
+  vkGetSwapchainImagesKHR(gpu->device, display->swapchain, &image_count,
+                          nullptr);
   std::vector<VkImage> swapchain_images(image_count);
-  vkGetSwapchainImagesKHR(vulkan_instance->device, display->swapchain,
-                          &image_count, swapchain_images.data());
+  vkGetSwapchainImagesKHR(gpu->device, display->swapchain, &image_count,
+                          swapchain_images.data());
 
   images.resize(image_count);
 
@@ -65,7 +65,7 @@ SdlViewport::SdlViewport(SdlDisplay* display, Renderer* renderer,
                              .baseArrayLayer = 0,
                              .layerCount = 1}};
 
-    if (vkCreateImageView(vulkan_instance->device, &view_info, nullptr,
+    if (vkCreateImageView(gpu->device, &view_info, nullptr,
                           &images[i].image_view) != VK_SUCCESS) {
       log_ftl("Failed to create swapchain image view.");
     }
@@ -79,7 +79,7 @@ SdlViewport::SdlViewport(SdlDisplay* display, Renderer* renderer,
         .height = image_height,
         .layers = 1};
 
-    if (vkCreateFramebuffer(vulkan_instance->device, &framebufferCreateInfo,
+    if (vkCreateFramebuffer(gpu->device, &framebufferCreateInfo,
                             nullptr, &images[i].framebuffer) != VK_SUCCESS) {
       log_ftl("Failed to create OpenXR viewport framebuffer.");
     }
@@ -90,14 +90,14 @@ SdlViewport::~SdlViewport() {
   log_dbg("Destroying SDL viewport.");
 
   for (ViewportImage& image : images) {
-    vkDestroyImageView(vulkan_instance->device, image.image_view, nullptr);
-    vkDestroyFramebuffer(vulkan_instance->device, image.framebuffer, nullptr);
+    vkDestroyImageView(gpu->device, image.image_view, nullptr);
+    vkDestroyFramebuffer(gpu->device, image.framebuffer, nullptr);
   }
 }
 
 void SdlViewport::acquire() {
   // TODO(marceline-cramer) Viewport swapchain image acquisition semaphores
-  vkAcquireNextImageKHR(vulkan_instance->device, display->swapchain, UINT64_MAX,
+  vkAcquireNextImageKHR(gpu->device, display->swapchain, UINT64_MAX,
                         VK_NULL_HANDLE, VK_NULL_HANDLE, &current_image_index);
 }
 
@@ -149,7 +149,7 @@ void SdlViewport::release() {
                                 .pImageIndices = &current_image_index};
 
   // TODO(marceline-cramer) Better queue management
-  vkQueuePresentKHR(vulkan_instance->graphics_queue, &present_info);
+  vkQueuePresentKHR(gpu->graphics_queue, &present_info);
 }
 
 }  // namespace mondradiko

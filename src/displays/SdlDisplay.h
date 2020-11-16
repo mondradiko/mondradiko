@@ -28,7 +28,7 @@
 
 #include "displays/DisplayInterface.h"
 #include "displays/SdlViewport.h"
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
@@ -38,9 +38,9 @@ class SdlDisplay : public DisplayInterface {
   SdlDisplay();
   ~SdlDisplay();
 
-  bool getRequirements(VulkanRequirements*) override;
+  bool getVulkanRequirements(VulkanRequirements*) override;
   bool getVulkanDevice(VkInstance, VkPhysicalDevice*) override;
-  bool createSession(VulkanInstance*) override;
+  bool createSession(GpuInstance*) override;
   void destroySession() override;
 
   VkFormat getSwapchainFormat() override { return swapchain_format; }
@@ -64,9 +64,9 @@ class SdlDisplay : public DisplayInterface {
   SdlViewport* main_viewport = nullptr;
 
  private:
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
 
-  // TODO(marceline-cramer) Move this into VulkanInstance
+  // TODO(marceline-cramer) Move this into GpuInstance
   uint32_t present_queue_family;
   VkQueue present_queue = VK_NULL_HANDLE;
 };

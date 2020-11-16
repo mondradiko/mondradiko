@@ -30,7 +30,7 @@
 #include <string>
 #include <vector>
 
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
@@ -39,7 +39,7 @@ using ShaderStages = std::vector<VkPipelineShaderStageCreateInfo>;
 
 class ShaderModule {
  public:
-  ShaderModule(VulkanInstance*, std::string, shaderc_shader_kind);
+  ShaderModule(GpuInstance*, std::string, shaderc_shader_kind);
   ~ShaderModule();
 
   void pushCustom(std::string);
@@ -49,7 +49,7 @@ class ShaderModule {
   VkPipelineShaderStageCreateInfo getStageCreateInfo();
 
  private:
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
   std::ostringstream glsl_source;
   std::string shader_name;
   shaderc_shader_kind shader_kind;

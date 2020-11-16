@@ -29,15 +29,15 @@
 #include <string>
 
 #include "assets/Asset.h"
-#include "graphics/VulkanImage.h"
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuImage.h"
+#include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
 
 class TextureAsset : public Asset {
  public:
-  TextureAsset(VulkanInstance*, aiTexture*, VkSampler);
+  TextureAsset(GpuInstance*, aiTexture*, VkSampler);
   ~TextureAsset();
 
   /**
@@ -46,11 +46,11 @@ class TextureAsset : public Asset {
    */
   uint32_t index = 0;
 
-  VulkanImage* image = nullptr;
+  GpuImage* image = nullptr;
   VkSampler sampler;
 
  private:
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
 };
 
 }  // namespace mondradiko

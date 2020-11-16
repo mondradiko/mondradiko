@@ -29,10 +29,10 @@
 #include <array>
 #include <string>
 
-#include "src/api_headers.h"
 #include "assets/Asset.h"
-#include "graphics/VulkanBuffer.h"
-#include "graphics/VulkanInstance.h"
+#include "gpu/GpuBuffer.h"
+#include "gpu/GpuInstance.h"
+#include "src/api_headers.h"
 
 namespace mondradiko {
 
@@ -79,17 +79,17 @@ using MeshIndex = uint32_t;
 
 class MeshAsset : public Asset {
  public:
-  MeshAsset(std::string, VulkanInstance*, aiMesh*);
+  MeshAsset(std::string, GpuInstance*, aiMesh*);
   ~MeshAsset();
 
-  VulkanBuffer* vertex_buffer = nullptr;
-  VulkanBuffer* index_buffer = nullptr;
+  GpuBuffer* vertex_buffer = nullptr;
+  GpuBuffer* index_buffer = nullptr;
   size_t index_count = 0;
 
   std::string mesh_name = nullptr;
 
  private:
-  VulkanInstance* vulkan_instance;
+  GpuInstance* gpu;
 };
 
 }  // namespace mondradiko

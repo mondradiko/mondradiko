@@ -25,14 +25,13 @@
 
 #include "assets/TextureAsset.h"
 
-#include "graphics/VulkanImage.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-TextureAsset::TextureAsset(VulkanInstance* vulkan_instance, aiTexture* texture,
+TextureAsset::TextureAsset(GpuInstance* gpu, aiTexture* texture,
                            VkSampler sampler)
-    : sampler(sampler), vulkan_instance(vulkan_instance) {
+    : sampler(sampler), gpu(gpu) {
   // By default, load directly from the embedded texture
   void* texData = texture->pcData;
   VkFormat texFormat = VK_FORMAT_R8G8B8A8_SRGB;
@@ -60,8 +59,8 @@ TextureAsset::TextureAsset(VulkanInstance* vulkan_instance, aiTexture* texture,
     }
   }
 
-  image = new VulkanImage(
-      vulkan_instance, texFormat, texWidth, texHeight,
+  image = new GpuImage(
+      gpu, texFormat, texWidth, texHeight,
       VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
       VMA_MEMORY_USAGE_GPU_ONLY);
 
