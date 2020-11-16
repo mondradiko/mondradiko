@@ -115,10 +115,11 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer) {
 
   for (auto mesh_renderer : mesh_renderers) {
     // TODO(marceline-cramer) Send material indices in some other way.
-    vkCmdPushConstants(commandBuffer, pipeline_layout,
-                       VK_SHADER_STAGE_FRAGMENT_BIT,
-                       offsetof(FramePushConstant, material_index),
-                       sizeof(uint32_t), &mesh_renderer->material_asset->index);
+    vkCmdPushConstants(
+        commandBuffer, pipeline_layout,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        offsetof(FramePushConstant, material_index), sizeof(uint32_t),
+        &mesh_renderer->material_asset->index);
     VkBuffer vertex_buffers[] = {
         mesh_renderer->mesh_asset->vertex_buffer->buffer};
     VkDeviceSize offsets[] = {0};
