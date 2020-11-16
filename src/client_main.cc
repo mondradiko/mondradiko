@@ -48,44 +48,35 @@ void signalHandler(int signum) {
   return;
 }
 
-void player_session_run(const char* server_address, int port) {
-  Filesystem fs("../test-folder/");
-  OpenXrDisplay display;
-  GpuInstance gpu(&display);
-
-  if (signal(SIGTERM, signalHandler) == SIG_ERR) {
-    log_wrn("Can't catch SIGTERM");
-  }
-
-  if (signal(SIGINT, signalHandler) == SIG_ERR) {
-    log_wrn("Can't catch SIGINT");
-  }
-
-  if (!display.createSession(&gpu)) {
+void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu,
+                  NetworkClient* client) {
+  if (!display->createSession(gpu)) {
     log_ftl("Failed to create display session!");
   }
 
-  Renderer renderer(&display, &gpu);
-  NetworkClient client(server_address, port);
-  Scene scene(&fs, &renderer);
+  Renderer renderer(display, gpu);
+  Scene scene(fs, &renderer);
+
+  scene.loadModel("DamagedHelmet.gltf");
 
   // Break is triggered on Ctrl+C or SIGTERM
+  g_interrupted = false;
   while (!g_interrupted) {
     DisplayPollEventsInfo poll_info;
     poll_info.renderer = &renderer;
 
-    display.pollEvents(&poll_info);
+    display->pollEvents(&poll_info);
     if (poll_info.should_quit) break;
 
     if (poll_info.should_run) {
       DisplayBeginFrameInfo frame_info;
-      display.beginFrame(&frame_info);
+      display->beginFrame(&frame_info);
 
-      client.update();
+      client->update();
       scene.update(frame_info.dt);
 
       ClientEvent event;
-      while (client.readEvent(&event)) {
+      while (client->readEvent(&event)) {
         log_dbg("Received client event.");
       }
 
@@ -93,17 +84,35 @@ void player_session_run(const char* server_address, int port) {
         renderer.renderFrame();
       }
 
-      display.endFrame(&frame_info);
+      display->endFrame(&frame_info);
     }
   }
 
-  display.destroySession();
+  display->destroySession();
+}
+
+void player_session_run(const char* server_address, int port) {
+  Filesystem fs("../test-folder/");
+  OpenXrDisplay display;
+  GpuInstance gpu(&display);
+  NetworkClient client(server_address, port);
+
+  session_loop(&fs, &display, &gpu, &client);
 }
 
 void spectator_session_run(const char* server_address, int port) {
   Filesystem fs("../test-folder/");
   SdlDisplay display;
   GpuInstance gpu(&display);
+  NetworkClient client(server_address, port);
+
+  session_loop(&fs, &display, &gpu, &client);
+}
+
+int main(int argc, const char* argv[]) {
+  log_inf("Hello VR!");
+
+  PHYSFS_init(argv[0]);
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
@@ -112,52 +121,6 @@ void spectator_session_run(const char* server_address, int port) {
   if (signal(SIGINT, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGINT");
   }
-
-  if (!display.createSession(&gpu)) {
-    log_ftl("Failed to create display session!");
-  }
-
-  Renderer renderer(&display, &gpu);
-  NetworkClient client(server_address, port);
-  Scene scene(&fs, &renderer);
-
-  scene.loadModel("DamagedHelmet.gltf");
-
-  // Break is triggered on Ctrl+C or SIGTERM
-  while (!g_interrupted) {
-    DisplayPollEventsInfo poll_info;
-    poll_info.renderer = &renderer;
-
-    display.pollEvents(&poll_info);
-    if (poll_info.should_quit) break;
-
-    if (poll_info.should_run) {
-      DisplayBeginFrameInfo frame_info;
-      display.beginFrame(&frame_info);
-
-      client.update();
-      scene.update(frame_info.dt);
-
-      ClientEvent event;
-      while (client.readEvent(&event)) {
-        log_dbg("Received client event.");
-      }
-
-      if (frame_info.should_render) {
-        renderer.renderFrame();
-      }
-
-      display.endFrame(&frame_info);
-    }
-  }
-
-  display.destroySession();
-}
-
-int main(int argc, const char* argv[]) {
-  log_inf("Hello VR!");
-
-  PHYSFS_init(argv[0]);
 
   try {
     // player_session_run("127.0.0.1", 10555);
