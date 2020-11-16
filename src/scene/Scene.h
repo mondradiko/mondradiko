@@ -30,7 +30,7 @@
 #include <map>
 
 #include "filesystem/Filesystem.h"
-#include "graphics/Renderer.h"
+#include "renderer/Renderer.h"
 #include "scene/Entity.h"
 #include "src/api_headers.h"
 

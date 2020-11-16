@@ -27,7 +27,7 @@
 
 #include <string>
 
-#include "graphics/MeshPipeline.h"
+#include "renderer/MeshPipeline.h"
 
 namespace mondradiko {
 

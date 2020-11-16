@@ -30,7 +30,6 @@
 
 #include "filesystem/AssimpIOSystem.h"
 #include "filesystem/Filesystem.h"
-#include "graphics/Renderer.h"
 #include "log/AssimpLogStream.h"
 #include "log/log.h"
 

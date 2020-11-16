@@ -31,9 +31,9 @@
 #include "displays/SdlDisplay.h"
 #include "filesystem/Filesystem.h"
 #include "gpu/GpuInstance.h"
-#include "graphics/Renderer.h"
 #include "log/log.h"
 #include "network/NetworkClient.h"
+#include "renderer/Renderer.h"
 #include "scene/Scene.h"
 #include "src/api_headers.h"
 

@@ -27,8 +27,8 @@
 
 #include "components/Component.h"
 #include "components/MeshRendererComponent.h"
-#include "graphics/Renderer.h"
 #include "log/log.h"
+#include "renderer/Renderer.h"
 #include "scene/Scene.h"
 
 namespace mondradiko {

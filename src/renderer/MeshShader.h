@@ -1,7 +1,7 @@
 /**
- * @file ShaderModule.h
+ * @file MeshShader.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Base class to compile shader code and provide creation info.
+ * @brief Contains pipeline state for the MeshPipeline.
  * @date 2020-10-24
  *
  * @copyright Copyright (c) 2020 Marceline Cramer
@@ -23,40 +23,27 @@
  *
  */
 
-#ifndef SRC_GRAPHICS_SHADERMODULE_H_
-#define SRC_GRAPHICS_SHADERMODULE_H_
+#ifndef SRC_RENDERER_MESHSHADER_H_
+#define SRC_RENDERER_MESHSHADER_H_
 
-#include <sstream>
-#include <string>
-#include <vector>
-
-#include "gpu/GpuInstance.h"
-#include "src/api_headers.h"
+#include "renderer/ShaderModule.h"
 
 namespace mondradiko {
 
-using ShaderStages = std::vector<VkPipelineShaderStageCreateInfo>;
-
-class ShaderModule {
+class MeshShader {
  public:
-  ShaderModule(GpuInstance*, std::string, shaderc_shader_kind);
-  ~ShaderModule();
+  explicit MeshShader(GpuInstance*);
+  ~MeshShader();
 
-  void pushCustom(std::string);
-  void pushFullscreenQuad();
-
-  VkShaderModule compile();
-  VkPipelineShaderStageCreateInfo getStageCreateInfo();
+  ShaderStages getStages();
 
  private:
   GpuInstance* gpu;
-  std::ostringstream glsl_source;
-  std::string shader_name;
-  shaderc_shader_kind shader_kind;
-  VkShaderModule shader_module;
-  bool compiled;
+
+  ShaderModule vert_shader;
+  ShaderModule frag_shader;
 };
 
 }  // namespace mondradiko
 
-#endif  // SRC_GRAPHICS_SHADERMODULE_H_
+#endif  // SRC_RENDERER_MESHSHADER_H_

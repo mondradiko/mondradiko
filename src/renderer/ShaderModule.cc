@@ -23,7 +23,7 @@
  *
  */
 
-#include "graphics/ShaderModule.h"
+#include "renderer/ShaderModule.h"
 
 #include "log/log.h"
 

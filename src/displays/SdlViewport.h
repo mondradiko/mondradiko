@@ -30,7 +30,7 @@
 
 #include "displays/ViewportInterface.h"
 #include "gpu/GpuInstance.h"
-#include "graphics/Renderer.h"
+#include "renderer/Renderer.h"
 
 namespace mondradiko {
 

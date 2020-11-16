@@ -24,14 +24,14 @@
  *
  */
 
-#include "graphics/MeshPipeline.h"
+#include "renderer/MeshPipeline.h"
 
 #include <vector>
 
 #include "gpu/GpuInstance.h"
-#include "graphics/MeshShader.h"
-#include "graphics/Renderer.h"
 #include "log/log.h"
+#include "renderer/MeshShader.h"
+#include "renderer/Renderer.h"
 
 namespace mondradiko {
 
@@ -167,8 +167,8 @@ AssetHandle<MeshAsset> MeshPipeline::loadMesh(std::string filename,
   auto cached_mesh = mesh_pool.findCached(mesh_name);
 
   if (!cached_mesh) {
-    cached_mesh = mesh_pool.load(
-        mesh_name, new MeshAsset(mesh_name, gpu, mesh));
+    cached_mesh =
+        mesh_pool.load(mesh_name, new MeshAsset(mesh_name, gpu, mesh));
   }
 
   return cached_mesh;
@@ -197,8 +197,7 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string filename,
 
     if (!cached_texture) {
       cached_texture = texture_pool.load(
-          textureName,
-          new TextureAsset(gpu, texture, texture_sampler));
+          textureName, new TextureAsset(gpu, texture, texture_sampler));
     }
 
     return cached_texture;
@@ -303,9 +302,8 @@ void MeshPipeline::createPipeline(VkRenderPass render_pass, uint32_t subpass) {
       .basePipelineHandle = VK_NULL_HANDLE,
       .basePipelineIndex = -1};
 
-  if (vkCreateGraphicsPipelines(gpu->device, VK_NULL_HANDLE, 1,
-                                &pipeline_info, nullptr,
-                                &pipeline) != VK_SUCCESS) {
+  if (vkCreateGraphicsPipelines(gpu->device, VK_NULL_HANDLE, 1, &pipeline_info,
+                                nullptr, &pipeline) != VK_SUCCESS) {
     log_ftl("Failed to create mesh pipeline.");
   }
 }
@@ -328,16 +326,16 @@ void MeshPipeline::createTextureSampler() {
       .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
       .unnormalizedCoordinates = VK_FALSE};
 
-  if (vkCreateSampler(gpu->device, &sampler_info, nullptr,
-                      &texture_sampler) != VK_SUCCESS) {
+  if (vkCreateSampler(gpu->device, &sampler_info, nullptr, &texture_sampler) !=
+      VK_SUCCESS) {
     log_ftl("Failed to create texture sampler.");
   }
 }
 
 void MeshPipeline::createMaterialBuffer() {
-  material_buffer = new GpuBuffer(
-      gpu, 128 * sizeof(MaterialUniform),
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+  material_buffer = new GpuBuffer(gpu, 128 * sizeof(MaterialUniform),
+                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                  VMA_MEMORY_USAGE_CPU_TO_GPU);
 }
 
 }  // namespace mondradiko

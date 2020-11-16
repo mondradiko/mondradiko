@@ -31,7 +31,7 @@
 
 #include "displays/DisplayInterface.h"
 #include "displays/OpenXrViewport.h"
-#include "graphics/Renderer.h"
+#include "renderer/Renderer.h"
 
 namespace mondradiko {
 

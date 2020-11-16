@@ -23,14 +23,14 @@
  *
  */
 
-#ifndef SRC_GRAPHICS_RENDERER_H_
-#define SRC_GRAPHICS_RENDERER_H_
+#ifndef SRC_RENDERER_RENDERER_H_
+#define SRC_RENDERER_RENDERER_H_
 
 #include <vector>
 
 #include "displays/DisplayInterface.h"
 #include "gpu/GpuInstance.h"
-#include "graphics/MeshPipeline.h"
+#include "renderer/MeshPipeline.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
@@ -82,4 +82,4 @@ class Renderer {
 
 }  // namespace mondradiko
 
-#endif  // SRC_GRAPHICS_RENDERER_H_
+#endif  // SRC_RENDERER_RENDERER_H_

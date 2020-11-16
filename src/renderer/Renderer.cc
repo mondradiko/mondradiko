@@ -23,7 +23,7 @@
  *
  */
 
-#include "graphics/Renderer.h"
+#include "renderer/Renderer.h"
 
 #include "log/log.h"
 

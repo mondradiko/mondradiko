@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef SRC_GRAPHICS_MESHPIPELINE_H_
-#define SRC_GRAPHICS_MESHPIPELINE_H_
+#ifndef SRC_RENDERER_MESHPIPELINE_H_
+#define SRC_RENDERER_MESHPIPELINE_H_
 
 #include <map>
 #include <set>
@@ -81,4 +81,4 @@ class MeshPipeline {
 
 }  // namespace mondradiko
 
-#endif  // SRC_GRAPHICS_MESHPIPELINE_H_
+#endif  // SRC_RENDERER_MESHPIPELINE_H_
