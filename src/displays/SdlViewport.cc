@@ -79,15 +79,26 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
         .height = image_height,
         .layers = 1};
 
-    if (vkCreateFramebuffer(gpu->device, &framebufferCreateInfo,
-                            nullptr, &images[i].framebuffer) != VK_SUCCESS) {
-      log_ftl("Failed to create OpenXR viewport framebuffer.");
+    if (vkCreateFramebuffer(gpu->device, &framebufferCreateInfo, nullptr,
+                            &images[i].framebuffer) != VK_SUCCESS) {
+      log_ftl("Failed to create framebuffer.");
     }
+  }
+
+  VkFenceCreateInfo fence_info{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+
+  if (vkCreateFence(gpu->device, &fence_info, nullptr, &on_image_available) !=
+      VK_SUCCESS) {
+    log_ftl("Failed to create image availability fence.");
   }
 }
 
 SdlViewport::~SdlViewport() {
   log_dbg("Destroying SDL viewport.");
+
+  if (on_image_available != VK_NULL_HANDLE) {
+    vkDestroyFence(gpu->device, on_image_available, nullptr);
+  }
 
   for (ViewportImage& image : images) {
     vkDestroyImageView(gpu->device, image.image_view, nullptr);
@@ -96,9 +107,14 @@ SdlViewport::~SdlViewport() {
 }
 
 void SdlViewport::acquire() {
-  // TODO(marceline-cramer) Viewport swapchain image acquisition semaphores
   vkAcquireNextImageKHR(gpu->device, display->swapchain, UINT64_MAX,
-                        VK_NULL_HANDLE, VK_NULL_HANDLE, &current_image_index);
+                        VK_NULL_HANDLE, on_image_available,
+                        &current_image_index);
+
+  // Block CPU until SDL swapchain image is available
+  // This is suboptimal, but OpenXR blocks CPU too, so...
+  vkWaitForFences(gpu->device, 1, &on_image_available, VK_TRUE, UINT64_MAX);
+  vkResetFences(gpu->device, 1, &on_image_available);
 }
 
 void SdlViewport::beginRenderPass(VkCommandBuffer command_buffer,
