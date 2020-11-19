@@ -153,8 +153,12 @@ void SdlViewport::writeUniform(ViewportUniform* uniform) {
       glm::lookAt(glm::vec3(2.0, 2.0, 2.0), glm::vec3(0.0, 0.0, 0.0),
                   glm::vec3(0.0, 1.0, 0.0));
   uniform->projection = glm::perspective(
-      glm::radians(90.0f), static_cast<float>(image_width) / image_height,
-      0.01f, 1000.0f);
+      glm::radians(90.0f),
+      static_cast<float>(image_width) / static_cast<float>(image_height), 0.01f,
+      1000.0f);
+
+  // Fix GLM matrix to work with Vulkan
+  uniform->projection[1][1] *= -1.0;
 }
 
 void SdlViewport::release() {
