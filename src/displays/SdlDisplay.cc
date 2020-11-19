@@ -197,6 +197,8 @@ bool SdlDisplay::createSession(GpuInstance* _gpu) {
 }
 
 void SdlDisplay::destroySession() {
+  vkDeviceWaitIdle(gpu->device);
+
   if (main_viewport != nullptr) delete main_viewport;
   if (swapchain != VK_NULL_HANDLE)
     vkDestroySwapchainKHR(gpu->device, swapchain, nullptr);

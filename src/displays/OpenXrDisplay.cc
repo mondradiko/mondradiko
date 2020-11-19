@@ -150,6 +150,8 @@ bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
 }
 
 void OpenXrDisplay::destroySession() {
+  vkDeviceWaitIdle(gpu->device);
+
   for (auto& viewport : viewports) delete viewport;
   if (stage_space != XR_NULL_HANDLE) xrDestroySpace(stage_space);
   if (session != XR_NULL_HANDLE) xrDestroySession(session);
