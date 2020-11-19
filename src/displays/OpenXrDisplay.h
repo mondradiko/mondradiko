@@ -46,6 +46,11 @@ class OpenXrDisplay : public DisplayInterface {
   void destroySession() override;
 
   VkFormat getSwapchainFormat() override { return swapchain_format; };
+  VkImageLayout getFinalLayout() override {
+    // OpenXR expects the final swapchain image layout to be
+    // _COLOR_ATTACHMENT_OPTIMAL
+    return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  }
 
   void pollEvents(DisplayPollEventsInfo*) override;
   void beginFrame(DisplayBeginFrameInfo*) override;

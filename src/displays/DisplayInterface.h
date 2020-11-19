@@ -67,6 +67,7 @@ class DisplayInterface {
   virtual void destroySession() = 0;
 
   virtual VkFormat getSwapchainFormat() = 0;
+  virtual VkImageLayout getFinalLayout() = 0;
 
   virtual void pollEvents(DisplayPollEventsInfo*) = 0;
   virtual void beginFrame(DisplayBeginFrameInfo*) = 0;

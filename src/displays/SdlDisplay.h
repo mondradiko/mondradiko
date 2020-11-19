@@ -46,6 +46,11 @@ class SdlDisplay : public DisplayInterface {
   void destroySession() override;
 
   VkFormat getSwapchainFormat() override { return swapchain_format; }
+  VkImageLayout getFinalLayout() override {
+    // SDL expects the final swapchain image layout to be
+    // _PRESENT_SRC_KHR
+    return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  }
 
   void pollEvents(DisplayPollEventsInfo*) override;
   void beginFrame(DisplayBeginFrameInfo*) override;
