@@ -2,3 +2,8 @@ builddir/
 test-folder/
 shaders/compiled/
 shaders/headers/
+
+# Local Jekyll builds
+docs/Gemfile.lock
+docs/_site/
+
