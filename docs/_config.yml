@@ -1,3 +1,9 @@
 title: Mondradiko
 description: Mondradiko is a future-proof VR engine for creating multiplayer virtual reality experiences.
 theme: jekyll-theme-midnight
+
+readme_index:
+  enabled: true
+  remove_originals: false
+  with_frontmatter: false
+
