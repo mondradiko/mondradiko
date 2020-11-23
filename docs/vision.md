@@ -13,4 +13,4 @@ Mondradiko is structured very similarly to a traditional game engine, but VR can
 ## Multiplayer?
 Mondradiko is strictly designed around a client-server architecture, allowing multiple users to exist in the same virtual environment. Servers can be built to host virtual classrooms, professional meeting spaces, casual hangout areas, and of course, games. Your imagination is the only limit
 
-For more information on how these goals will be achieved, please see [Design](/design).
+For more information on how these goals will be achieved, please see [Design](/mondradiko/design).

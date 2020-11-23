@@ -6,7 +6,7 @@ permalink: /
 
 # Welcome to the Mondradriko Home Page
 
-# [Building](/building)
-# [Design](/design)
-# [Vision](/vision)
-# [Contributing](/contributing)
+# [Building](/mondradiko/building)
+# [Design](/mondradiko/design)
+# [Vision](/mondradiko/vision)
+# [Contributing](/mondradiko/contributing)
