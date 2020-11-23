@@ -7,6 +7,7 @@ title: Building
 
 ## Dependencies
 
+- [Meson](https://mesonbuild.com)
 - [OpenXR SDK](https://github.com/KhronosGroup/OpenXR-SDK)
 - [Vulkan](https://www.lunarg.com/vulkan-sdk/)
 - [shaderc](https://github.com/google/shaderc)
@@ -14,7 +15,37 @@ title: Building
 - [GLM](https://github.com/g-truc/glm)
 - [PhysFS](https://www.icculus.org/physfs/)
 
-All of these packages should be available through your package manager, but if not, links are provided for convenience.
+Most of these packages should be available through your package manager, but if not, links are provided for convenience.
+
+## Installing the OpenXR SDK
+
+If your OS does not package the OpenXR SDK, you can install it manually (More info at https://github.com/KhronosGroup/OpenXR-SDK):
+
+```bash
+# Clone somewhere useful
+git clone https://github.com/KhronosGroup/OpenXR-SDK.git
+cd OpenXR-SDK
+mkdir -p build/linux_release
+cd build/linux_release
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../..
+ninja
+sudo ninja install
+```
+
+## Debian/Ubuntu
+
+```bash
+# Mondradiko dependencies
+sudo apt-get install meson pkg-config libvulkan-dev libglm-dev libphysfs-dev \
+                     libassimp-dev
+# OpenXR SDK dependencies
+sudo apt-get install cmake libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
+                     libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
+                     libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
+                     mesa-common-dev
+```
+
+Also see [Installing the OpenXR SDK](#installing-the-openxr-sdk).
 
 ## Compiling
 
