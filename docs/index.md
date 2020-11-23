@@ -6,4 +6,4 @@ permalink: /
 
 # Welcome to the Mondradriko Home Page
 
-# [Building](/building)
+# [Building]({{ '/building' | relative_url }})
