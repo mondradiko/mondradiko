@@ -8,3 +8,4 @@ permalink: /
 
 # [Building](/mondradiko/building)
 # [Design](/mondradiko/design)
+# [Vision](/mondradiko/vision)
