@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Building
+permalink: /building
 ---
 
 # Building
