@@ -1,5 +1,5 @@
 <div>
-<img src="./docs/assets/emblem.svg" width="300">
+<img src="./docs/assets/images/emblem.svg" width="300">
 </div>
 <br>
 
