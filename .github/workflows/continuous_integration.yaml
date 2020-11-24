@@ -10,3 +10,12 @@ jobs:
       - uses: actions/setup-python@v1
       - run: pip install cpplint
       - run: cpplint --recursive ./src/
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+      - run: pip install meson ninja
+      - run: apt install pkg-config libvulkan-dev libglm-dev libphysfs-dev libassimp-dev libopenxr-dev
+      - run: meson setup builddir/
+      - run: meson test -C builddir/ -v
