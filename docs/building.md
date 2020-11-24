@@ -20,7 +20,18 @@ Most of these packages should be available through your package manager, but if 
 
 ## Installing the OpenXR SDK
 
-If your OS does not package the OpenXR SDK, you can install it manually (More info at https://github.com/KhronosGroup/OpenXR-SDK):
+If your OS does not package the OpenXR SDK, you can install it manually (More info at https://github.com/KhronosGroup/OpenXR-SDK).
+
+### Debian/Ubuntu OpenXR Dependencies
+
+```bash
+sudo apt install cmake libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
+                     libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
+                     libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
+                     mesa-common-dev
+```
+
+### OpenXR SDK Building
 
 ```bash
 # Clone somewhere useful
@@ -36,14 +47,8 @@ sudo ninja install
 ## Debian/Ubuntu
 
 ```bash
-# Mondradiko dependencies
-sudo apt-get install meson pkg-config libvulkan-dev libglm-dev libphysfs-dev \
+sudo apt install meson pkg-config libvulkan-dev libglm-dev libphysfs-dev \
                      libassimp-dev
-# OpenXR SDK dependencies
-sudo apt-get install cmake libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
-                     libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
-                     libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
-                     mesa-common-dev
 ```
 
 Also see [Installing the OpenXR SDK](#installing-the-openxr-sdk).
