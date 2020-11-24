@@ -41,6 +41,12 @@ connected, etc.
 
 # Optimizing for VR
 
+## Rendering
+
+## Interaction
+
+## Mobile (Oculus Quest)
+
 # Networking
 
 # Core Engine Components
