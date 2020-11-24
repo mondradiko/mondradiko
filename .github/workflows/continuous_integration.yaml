@@ -16,6 +16,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
       - run: pip install meson ninja
-      - run: apt install pkg-config libvulkan-dev libglm-dev libphysfs-dev libassimp-dev libopenxr-dev
+      - run: sudo apt update
+      - run: sudo apt install pkg-config libvulkan-dev libglm-dev libphysfs-dev libassimp-dev libopenxr-dev
       - run: meson setup builddir/
       - run: meson test -C builddir/ -v
