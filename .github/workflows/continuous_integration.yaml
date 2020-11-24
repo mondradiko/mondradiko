@@ -35,7 +35,7 @@ jobs:
           pushd OpenXR-SDK
           mkdir build
           pushd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=Off -GNinja ..
+          cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=Off -DPRESENTATION_BACKEND=xlib -DDYNAMIC_LOADER=ON -DOpenGL_GL_PREFERENCE=GLVND -GNinja ..
           sudo ninja install
           popd
           popd
