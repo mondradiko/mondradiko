@@ -1,4 +1,4 @@
-name: continuous-integration
+name: Continuous Integration
 
 on: [push, pull_request]
 
@@ -25,7 +25,6 @@ jobs:
                            libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
                            libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
                            mesa-common-dev \
-
                            pkg-config libvulkan-dev libglm-dev libphysfs-dev \
                            libassimp-dev
 
