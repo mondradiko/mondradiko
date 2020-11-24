@@ -37,7 +37,9 @@
 #include "scene/Scene.h"
 #include "src/api_headers.h"
 
-using namespace mondradiko;
+// The using statement is fine because
+// this is the main entrypoint
+using namespace mondradiko;  // NOLINT
 
 bool g_interrupted = false;
 
