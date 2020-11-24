@@ -1,0 +1,12 @@
+name: continuous-integration
+
+on: [push, pull_request]
+
+jobs:
+  check-google-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+      - run: pip install cpplint
+      - run: cpplint --recursive ./src/
