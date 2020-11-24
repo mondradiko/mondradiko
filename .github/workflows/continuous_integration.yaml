@@ -15,11 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+
+      - run: pip install meson ninja
 
       - name: Install Dependencies
         shell: bash
         run: |
-          pip install meson ninja
           sudo apt update
           sudo apt install cmake libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
                            libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
