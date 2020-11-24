@@ -3,7 +3,7 @@ name: continuous-integration
 on: [push, pull_request]
 
 jobs:
-  check-google-style:
+  src-style-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
