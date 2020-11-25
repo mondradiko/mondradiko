@@ -22,7 +22,7 @@ jobs:
                            libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
                            mesa-common-dev \
                            pkg-config libvulkan-dev libglm-dev libphysfs-dev \
-                           libassimp-dev ninja-build
+                           libassimp-dev ninja-build libsdl2-dev
 
       - name: Install OpenXR SDK
         shell: bash
