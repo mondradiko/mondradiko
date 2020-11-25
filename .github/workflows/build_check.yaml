@@ -35,6 +35,18 @@ jobs:
           sudo ninja install
           popd
           popd
+      
+      - name: Install PhysicsFS
+        shell: bash
+        run: |
+          hg clone https://hg.icculus.org/icculus/physfs
+          pushd physfs
+          mkdir build
+          pushd build
+          cmake -GNinja ..
+          sudo ninja install
+          popd
+          popd
 
       - name: Compile
         shell: bash
