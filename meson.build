@@ -37,6 +37,7 @@ src = [
     'src/gpu/GpuBuffer.cc',
     'src/gpu/GpuImage.cc',
     'src/gpu/GpuInstance.cc',
+    'src/gpu/GpuShader.cc',
     'src/renderer/MeshPipeline.cc',
     'src/renderer/MeshShader.cc',
     'src/renderer/ShaderModule.cc',
