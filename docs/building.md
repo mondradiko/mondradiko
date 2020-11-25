@@ -11,7 +11,6 @@ permalink: /building
 - [Meson](https://mesonbuild.com)
 - [OpenXR SDK](https://github.com/KhronosGroup/OpenXR-SDK)
 - [Vulkan](https://www.lunarg.com/vulkan-sdk/)
-- [shaderc](https://github.com/google/shaderc)
 - [Assimp](http://assimp.org/)
 - [GLM](https://github.com/g-truc/glm)
 - [PhysFS](https://www.icculus.org/physfs/)

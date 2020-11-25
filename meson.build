@@ -59,7 +59,6 @@ subdir('shaders')
 dependencies = [
     dependency('openxr', version: '>=1.0'),
     dependency('vulkan'),
-    dependency('shaderc'),
     dependency('assimp'),
     dependency('glm'),
     dependency('physfs'),
