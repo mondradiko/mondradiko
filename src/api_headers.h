@@ -32,8 +32,6 @@
 #include "openxr/openxr.h"
 #include "openxr/openxr_platform.h"
 
-#include "shaderc/shaderc.hpp"
-
 #include "lib/vk_mem_alloc.h"
 #include "lib/stb_image.h"
 
