@@ -25,7 +25,7 @@
 
 #include "displays/SdlDisplay.h"
 
-#include "./config.h"
+#include "./build_config.h"
 #include "log/log.h"
 
 namespace mondradiko {
