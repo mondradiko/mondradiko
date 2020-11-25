@@ -29,9 +29,11 @@
 #include <vector>
 
 #include "gpu/GpuInstance.h"
+#include "gpu/GpuShader.h"
 #include "log/log.h"
-#include "renderer/MeshShader.h"
 #include "renderer/Renderer.h"
+#include "shaders/mesh.frag.h"
+#include "shaders/mesh.vert.h"
 
 namespace mondradiko {
 
@@ -208,8 +210,13 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string filename,
 }
 
 void MeshPipeline::createPipeline(VkRenderPass render_pass, uint32_t subpass) {
-  MeshShader shader(gpu);
-  auto shader_stages = shader.getStages();
+  GpuShader vert_shader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_mesh_vert,
+                        sizeof(shaders_mesh_vert));
+  GpuShader frag_shader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_mesh_frag,
+                        sizeof(shaders_mesh_frag));
+
+  std::vector<VkPipelineShaderStageCreateInfo> shader_stages = {
+      vert_shader.getStageCreateInfo(), frag_shader.getStageCreateInfo()};
 
   auto binding_description = MeshVertex::getBindingDescription();
   auto attribute_descriptions = MeshVertex::getAttributeDescriptions();
