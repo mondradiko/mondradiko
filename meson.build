@@ -55,6 +55,8 @@ inc = include_directories(
      '.']
 )
 
+subdir('shaders')
+
 dependencies = [
     dependency('openxr', version: '>=1.0'),
     dependency('vulkan'),
@@ -62,7 +64,9 @@ dependencies = [
     dependency('assimp'),
     dependency('glm'),
     dependency('physfs'),
-    dependency('sdl2')
+    dependency('sdl2'),
+
+    shaders
 ]
 
 executable(
