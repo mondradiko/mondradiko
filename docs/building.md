@@ -13,6 +13,7 @@ permalink: /building
 - [Vulkan](https://www.lunarg.com/vulkan-sdk/)
 - [Assimp](http://assimp.org/)
 - [GLM](https://github.com/g-truc/glm)
+- [glslang](https://github.com/KhronosGroup/glslang)
 - [PhysFS](https://www.icculus.org/physfs/)
 
 Most of these packages should be available through your package manager, but if not, links are provided for convenience.
@@ -47,7 +48,7 @@ sudo ninja install
 
 ```bash
 sudo apt install meson pkg-config libvulkan-dev libglm-dev libphysfs-dev \
-                     libassimp-dev
+                     libassimp-dev libsdl2-dev glslang-tools
 ```
 
 Also see [Installing the OpenXR SDK](#installing-the-openxr-sdk).
