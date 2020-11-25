@@ -61,7 +61,7 @@ dependencies = [
     dependency('vulkan'),
     dependency('assimp'),
     dependency('glm'),
-    dependency('physfs'),
+    # TODO(marceline-cramer) Check PhysFS installed w/o pkg-config?
     dependency('sdl2'),
 
     shaders
