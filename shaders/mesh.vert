@@ -23,7 +23,7 @@ layout(location = 1) out vec2 fragTexCoord;
 
 void main() {
   uint view_index = push_constants.view_index;
-  gl_Position = cameras[view_index].projection * cameras[view_index].view * vec4(vertPosition + vec3(0.0, 2.0, -2.0), 1.0);
+  gl_Position = cameras[view_index].projection * cameras[view_index].view * vec4(vertPosition, 1.0);
 
   fragColor = vec3(vertTexCoord, 0.0);
   fragTexCoord = vertTexCoord;
