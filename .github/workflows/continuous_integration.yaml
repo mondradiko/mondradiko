@@ -1,0 +1,50 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+  src-style-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+      - run: pip install cpplint
+      - run: cpplint --recursive ./src/
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+
+      - run: pip install meson
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          sudo apt update
+          sudo apt install cmake libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
+                           libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
+                           libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
+                           mesa-common-dev \
+                           pkg-config libvulkan-dev libglm-dev libphysfs-dev \
+                           libassimp-dev ninja-build
+
+      - name: Install OpenXR SDK
+        shell: bash
+        run: |
+          git clone https://github.com/KhronosGroup/OpenXR-SDK
+          pushd OpenXR-SDK
+          mkdir build
+          pushd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=Off -DPRESENTATION_BACKEND=xlib -DDYNAMIC_LOADER=ON -DOpenGL_GL_PREFERENCE=GLVND -GNinja ..
+          sudo ninja install
+          popd
+          popd
+
+      - name: Compile
+        shell: bash
+        run: |
+          meson setup builddir/
+          meson test -C builddir/ -v

@@ -1,5 +1,5 @@
 <div>
-<img src="./docs/assets/emblem.svg" width="300">
+<img src="./docs/assets/images/emblem.svg" width="300">
 </div>
 <br>
 
@@ -18,35 +18,12 @@ Mondradiko is structured very similarly to a traditional game engine, but VR can
 Mondradiko is strictly designed around a client-server architecture, allowing multiple users to exist in the same virtual environment. Servers can be built to host virtual classrooms, professional meeting spaces, casual hangout areas, and of course, games. Your imagination is the only limit.
 
 # Contributing
-When writing source code for Mondradiko, please follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html), and run `cpplint` on all modified files to ensure conformance.
 
-Before making any major changes, please raise an issue to discuss the planned changes with the maintainers. When making a pull request, we may ask that you make some changes to integrate better with the source, or to fix formatting/style choices.
-
-The best way to keep in touch with Mondradiko's development is to join [our Discord server](https://discord.gg/NENngxc).
+Please see the [GitHub Pages](https://marceline-cramer.github.io/mondradiko/contributing) for information on how to contribute.
 
 # Building
 
-## Dependencies
-
-- [OpenXR SDK](https://github.com/KhronosGroup/OpenXR-SDK)
-- [Vulkan](https://www.lunarg.com/vulkan-sdk/)
-- [shaderc](https://github.com/google/shaderc)
-- [Assimp](http://assimp.org/)
-- [GLM](https://github.com/g-truc/glm)
-- [PhysFS](https://www.icculus.org/physfs/)
-
-All of these packages should be available through your package manager, but if not, links are provided for convenience.
-
-## Compiling
-
-Built with [meson](https://mesonbuild.com/):
-
-```
-mkdir builddir
-cd builddir
-meson ..
-ninja
-```
+Please see the [GitHub Pages](https://marceline-cramer.github.io/mondradiko/building) for information on how to build.
 
 # License
 Mondradiko's source code is licensed under [LGPL-v3](https://www.gnu.org/licenses/).
