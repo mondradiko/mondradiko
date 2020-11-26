@@ -1,0 +1,10 @@
+main:
+  - title: "Building"
+    url: /building
+  - title: "Vision"
+    url: /vision
+  - title: "Design"
+    url: /design
+  - title: "Contributing"
+    url: /contributing
+
