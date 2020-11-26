@@ -3,9 +3,7 @@ title: Building
 permalink: /building
 ---
 
-# Building
-
-## Dependencies
+# Dependencies
 
 - [Meson](https://mesonbuild.com)
 - [OpenXR SDK](https://github.com/KhronosGroup/OpenXR-SDK)
@@ -17,11 +15,11 @@ permalink: /building
 
 Most of these packages should be available through your package manager, but if not, links are provided for convenience.
 
-## Installing the OpenXR SDK
+# Installing the OpenXR SDK
 
 If your OS does not package the OpenXR SDK, you can install it manually (More info at https://github.com/KhronosGroup/OpenXR-SDK).
 
-### Debian/Ubuntu OpenXR Dependencies
+## Debian/Ubuntu OpenXR Dependencies
 
 ```bash
 sudo apt install cmake libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
@@ -30,7 +28,7 @@ sudo apt install cmake libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
                      mesa-common-dev
 ```
 
-### OpenXR SDK Building
+## OpenXR SDK Building
 
 ```bash
 # Clone somewhere useful
@@ -43,7 +41,7 @@ ninja
 sudo ninja install
 ```
 
-## Debian/Ubuntu
+# Debian/Ubuntu
 
 ```bash
 sudo apt install meson pkg-config libvulkan-dev libglm-dev libphysfs-dev \
@@ -52,7 +50,7 @@ sudo apt install meson pkg-config libvulkan-dev libglm-dev libphysfs-dev \
 
 Also see [Installing the OpenXR SDK](#installing-the-openxr-sdk).
 
-## Compiling
+# Compiling
 
 Built with [meson](https://mesonbuild.com/):
 

@@ -1,6 +1,7 @@
 ---
 title: Contributing
 permalink: /contributing
+toc: false
 ---
 
 When writing source code for Mondradiko, please follow the
