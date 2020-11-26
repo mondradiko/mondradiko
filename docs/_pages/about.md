@@ -1,7 +1,11 @@
 ---
-title: Vision
-permalink: /vision
+title: About
+permalink: /about
 ---
+
+# What is Mondradiko?
+
+Mondradiko is a future-proof VR engine for creating multiplayer virtual reality experiences.
 
 # Future-proof?
 Virtual reality is a rapidly expanding field of research, encompassing many topics, including optics, computer vision, machine learning, and embedded programming. As such, any development platform targeting VR needs to be ready to adapt to advances in VR technology, to provide a reliable and cross-platform user experience. Mondradiko will natively support new VR features such as full-body tracking, haptic feedback, eye tracking, and omnidirectional treadmills, as long as new VR tech is being created.
