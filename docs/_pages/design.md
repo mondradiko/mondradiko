@@ -36,18 +36,6 @@ Queries are single-time command-line clients that connect to a server, and fetch
 its metadata, such as its name, description, website, how many players are
 connected, etc.
 
-# Future-proofing
-
-# Optimizing for VR
-
-## Rendering
-
-## Interaction
-
-## Mobile (Oculus Quest)
-
-# Networking
-
 # Core Engine Components
 
 ## Entrypoint
