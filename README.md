@@ -3,7 +3,7 @@
 </div>
 <br>
 
-![Discord](https://img.shields.io/discord/750058861578289347?label=Discord) ![GitHub](https://img.shields.io/github/license/marceline-cramer/mondradiko)
+![Discord](https://img.shields.io/discord/750058861578289347?label=Discord) ![GitHub](https://img.shields.io/github/license/marceline-cramer/mondradiko) [![CodeFactor](https://www.codefactor.io/repository/github/marceline-cramer/mondradiko/badge)](https://www.codefactor.io/repository/github/marceline-cramer/mondradiko)
 
 # Mondradiko
 Mondradiko is a future-proof VR engine for creating multiplayer virtual reality experiences.
