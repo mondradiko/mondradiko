@@ -183,7 +183,7 @@ bool GpuInstance::checkValidationLayerSupport() {
 
 void GpuInstance::populateDebugMessengerCreateInfo(
     VkDebugUtilsMessengerCreateInfoEXT* createInfo) {
-  *createInfo = {
+  *createInfo = VkDebugUtilsMessengerCreateInfoEXT{
       .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
       .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
                          VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
@@ -291,7 +291,7 @@ void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
 
   float queuePriority = 1.0f;
   for (uint32_t queueFamily : uniqueQueueFamilies) {
-    queueCreateInfos.push_back(
+    queueCreateInfos.push_back(VkDeviceQueueCreateInfo
         {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
          .queueFamilyIndex = queueFamily,
          .queueCount = 1,

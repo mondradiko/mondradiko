@@ -374,7 +374,7 @@ void OpenXrDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
 
 void OpenXrDisplay::populateDebugMessengerCreateInfo(
     XrDebugUtilsMessengerCreateInfoEXT* messenger_info) {
-  *messenger_info = {
+  *messenger_info = XrDebugUtilsMessengerCreateInfoEXT{
       .type = XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
       .messageSeverities = XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
                            XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |

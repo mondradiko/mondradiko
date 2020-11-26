@@ -25,6 +25,8 @@
 
 #include "scene/Entity.h"
 
+#include <sstream>
+
 #include "components/Component.h"
 #include "components/MeshRendererComponent.h"
 #include "log/log.h"
