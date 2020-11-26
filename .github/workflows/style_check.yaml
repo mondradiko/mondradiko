@@ -1,6 +1,14 @@
 name: Code Style Check
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "src/**.cc"
+      - "src/**.h"
+  pull_request:
+    paths:
+      - "src/**.cc"
+      - "src/**.h"
 
 jobs:
   cpplint-check:

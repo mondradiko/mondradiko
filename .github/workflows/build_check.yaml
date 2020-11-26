@@ -1,6 +1,12 @@
 name: Continuous Integration
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "src/"
+  pull_request:
+    paths:
+      - "src/"
 
 jobs:
   build:
