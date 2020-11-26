@@ -35,7 +35,7 @@ jobs:
           sudo ninja install
           popd
           popd
-      
+
       - name: Install PhysicsFS
         shell: bash
         run: |
