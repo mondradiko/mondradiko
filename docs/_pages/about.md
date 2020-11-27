@@ -65,5 +65,37 @@ multiple users to exist in the same virtual environment. Servers can be built
 to host virtual classrooms, professional meeting spaces, casual hangout areas,
 and of course, games. Your imagination is the only limit.
 
+### Content model
+Mondradiko is meant to be used as a single executable, that will connect to a
+server and automatically download the content required (models, textures,
+sounds, scripts, etc), without recompiling the binary. This means that one
+universal client app can be used to participate in any online server.
+All engine content is decentralized, and loaded at runtime.
+
+### Updates
+As the engine gets updated, the network protocol will change, and engine logic
+will as well, breaking compatibility for any binaries running an older version.
+Because of this, a strong versioning system is necessary, to keep track of which
+clients are compatible with which servers.
+
+### Launcher
+If a user wants to connect to a server that is running a different version
+than the client binary that they have, they will have to download the
+appropriate binary, and potentially reconfigure it to match their old graphical
+settings, comfort settings, custom input configuration, for example. To make this easier,
+an external launcher app can be used (depending on the host operating system),
+that shows which servers are using which versions, automatically downloads
+client binaries, and shares configuration data between version instances so that
+the user doesn't have to worry about manually setting that up for every server
+that they want to connect to.
+
+### Modification
+At some point, a server maintainer may want to fork Mondradiko to add their own
+features to the engine, which for whatever reason may not be feasible to merge back into
+the upstream repository. In this case, that maintainer would have to add their fork's
+name to the versioning system, and potentially also distribute a custom binary
+if the network protocol changes. A launcher would make this much more
+user-friendly.
+
 For more information on how these features are implemented, please see
 [Design](/mondradiko/design).
