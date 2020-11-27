@@ -25,8 +25,30 @@ and performers to engage with their peers over the internet in a far more
 natural way than with what is currently possible.
 
 ### Rendering
+Virtual reality headsets run at very high refresh rates compared to most computer
+monitors and TVs (the Oculus Quest runs at 72Hz, and the Valve Index can go up
+to 144Hz). To provide a comfortable and smooth experience for the user, it is
+essential that a rendering engine designed for VR can
+maintain a very steady frame rate, and that it drops as few frames as possible.
+Some things that a VR rendering engine can do to increase comfort and
+performance are:
 
-### Interaction
+- Multiview rendering
+- Fixed foveated rendering (and dynamic foveated rendering, when available)
+- Clustered forward+ shading, with clusters shared between views
+- Light bloom, flare, and halo effects modeled around the human eye
+
+Luckily, some post-processing effects that you may find in other rendering
+engines, like motion blur or depth-of-field, are VR-unfriendly, and can
+be omitted as render passes, increasing the frame budget.
+
+Mondradiko uses Vulkan exclusively as its rendering API. The assumption is being
+made that anything that doesn't support Vulkan (old/underperformant hardware)
+wouldn't be worth using VR on. Additionally, Vulkan gives many more
+opportunities to optimize and parallelize the rendering engine in comparison
+to a more dated API like OpenGL, while maintaining cross-platform support.
+
+### Interaction and Input
 
 ### Mobile (Oculus Quest)
 
