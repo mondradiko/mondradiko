@@ -65,12 +65,17 @@ multiple users to exist in the same virtual environment. Servers can be built
 to host virtual classrooms, professional meeting spaces, casual hangout areas,
 and of course, games. Your imagination is the only limit.
 
-### Content model
+### Content Model
 Mondradiko is meant to be used as a single executable, that will connect to a
 server and automatically download the content required (models, textures,
 sounds, scripts, etc), without recompiling the binary. This means that one
 universal client app can be used to participate in any online server.
 All engine content is decentralized, and loaded at runtime.
+
+The server's role is to run server-side scripts for running core world logic,
+manage databases for the users and their persistent data, and verify clients
+attempting to connect through a third-party, server-supplied authentication
+service.
 
 ### Updates
 As the engine gets updated, the network protocol will change, and engine logic
