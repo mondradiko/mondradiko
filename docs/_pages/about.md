@@ -51,6 +51,13 @@ to a more dated API like OpenGL, while maintaining cross-platform support.
 ### Interaction and Input
 
 ### Mobile (Oculus Quest)
+As mentioned above, Vulkan is being used as the rendering API, which is
+compatible with the Oculus Quest. Because the Oculus Quest is such a popular
+platform for VR, it will be one of the major targets for optimization in
+Mondradiko.
+
+I also must mention that my Quest is the only decent piece of VR hardware
+that I own at the moment. :)
 
 ## Multiplayer?
 Mondradiko is strictly designed around a client-server architecture, allowing
