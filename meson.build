@@ -49,15 +49,11 @@ src = [
     'src/gpu/GpuShader.cc',
     'src/renderer/MeshPipeline.cc',
     'src/renderer/Renderer.cc',
-    'src/library_implementation.cc',
     'src/log/log.cc',
     'src/network/NetworkClient.cc',
     'src/network/NetworkShared.cc',
     'src/scene/Entity.cc',
     'src/scene/Scene.cc',
-
-    # TODO(marceline-cramer) Move to separate optional library()
-    'tracy/TracyClient.cpp'
 ]
 
 inc = include_directories(
@@ -66,11 +62,14 @@ inc = include_directories(
      '.']
 )
 
+vulkan = dependency('vulkan')
+
+subdir('lib')
 subdir('shaders')
 
 dependencies = [
     dependency('openxr', version: '>=1.0'),
-    dependency('vulkan'),
+    vulkan,
     dependency('assimp'),
     dependency('glm'),
     # TODO(marceline-cramer) Check PhysFS installed w/o pkg-config?
@@ -80,12 +79,10 @@ dependencies = [
     shaders
 ]
 
-dependencies += cpp.find_library('pthread', required: true)
-dependencies += cpp.find_library('dl', required: true)
-
 executable(
     'mondradiko-client',
     ['src/client_main.cc'] + src,
     include_directories: inc,
-    dependencies: dependencies
+    dependencies: dependencies,
+    link_with: third_party_lib
 )
