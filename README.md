@@ -25,7 +25,17 @@ Please see the [GitHub Pages](https://marceline-cramer.github.io/mondradiko/cont
 
 Please see the [GitHub Pages](https://marceline-cramer.github.io/mondradiko/building) for information on how to build.
 
-# License
+# Licenses
 Mondradiko's source code is licensed under [LGPL-v3](https://www.gnu.org/licenses/).
 
 Mondradiko's emblem is licensed under [CCBY-4.0](https://creativecommons.org/licenses/by/4.0/).
+
+
+Mondradiko includes the following third-party libraries (lib/ directory):
+
+- json.hpp : Copyright (c) 2013-2017 Niels Lohmann. MIT license.
+- base64 : Copyright (C) 2004-2008 René Nyffenegger
+- stb_image.h : v2.08 - public domain image loader - [GitHub link](https://github.com/nothings/stb/blob/master/stb_image.h)
+- stb_image_write.h : v1.09 - public domain image writer - [GitHub link](https://github.com/nothings/stb/blob/master/stb_image_write.h)
+- tinygltf : Copyright (c) 2015 - 2020 Syoyo Fujita, Aurélien Chatelain and many contributors. MIT license. - [GitHub link](https://github.com/syoyo/tinygltf)
+- VulkanMemoryAllocator : Copyright (c) 2017-2020 Advanced Micro Devices, Inc. All rights reserved. MIT license. - [GitHub link](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
