@@ -42,4 +42,6 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_vulkan.h"
 
+#include "tracy/Tracy.hpp"
+
 #endif  // SRC_API_HEADERS_H_

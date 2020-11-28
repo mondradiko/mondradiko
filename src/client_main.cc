@@ -98,6 +98,7 @@ void spectator_session_run(const char* server_address, int port) {
 }
 
 int main(int argc, const char* argv[]) {
+  TracyMessageL("Hello Tracy!");
   log_inf("Hello VR!");
 
   PHYSFS_init(argv[0]);

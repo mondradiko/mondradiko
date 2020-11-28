@@ -3,6 +3,12 @@
 
 project('mondradiko', 'cpp')
 
+cpp = meson.get_compiler('cpp')
+
+add_project_arguments(cpp.get_supported_arguments([
+    '-DTRACY_ENABLE'
+]), language: 'cpp')
+
 majorVersion = 0
 minorVersion = 0
 patchVersion = 1
@@ -49,6 +55,9 @@ src = [
     'src/network/NetworkShared.cc',
     'src/scene/Entity.cc',
     'src/scene/Scene.cc',
+
+    # TODO(marceline-cramer) Move to separate optional library()
+    'tracy/TracyClient.cpp'
 ]
 
 inc = include_directories(
@@ -70,6 +79,9 @@ dependencies = [
 
     shaders
 ]
+
+dependencies += cpp.find_library('pthread', required: true)
+dependencies += cpp.find_library('dl', required: true)
 
 executable(
     'mondradiko-client',
