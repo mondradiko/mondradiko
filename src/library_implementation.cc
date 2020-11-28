@@ -26,5 +26,7 @@
 #define VMA_IMPLEMENTATION
 #include "lib/vk_mem_alloc.h"
 
+#define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#include "lib/stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "lib/tiny_gltf.h"
