@@ -12,7 +12,7 @@ third_party_deps = [
     cpp.find_library('dl', required: true)
 ]
 
-third_party_lib = library(
+third_party_lib = static_library(
     'third-party-deps',
     third_party_src,
     dependencies: third_party_deps
