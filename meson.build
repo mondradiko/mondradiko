@@ -62,19 +62,24 @@ inc = include_directories(
      '.']
 )
 
+openxr = dependency('openxr', version: '>=1.0')
 vulkan = dependency('vulkan')
+assimp = dependency('assimp', version: '>=5.0.0')
+glm = dependency('glm')
+# TODO(marceline-cramer) Check PhysFS installed w/o pkg-config?
+physfs = dependency('physfs')
+sdl2 = dependency('sdl2')
 
 subdir('lib')
 subdir('shaders')
 
 dependencies = [
-    dependency('openxr', version: '>=1.0'),
+    openxr,
     vulkan,
-    dependency('assimp'),
-    dependency('glm'),
-    # TODO(marceline-cramer) Check PhysFS installed w/o pkg-config?
-    dependency('physfs'),
-    dependency('sdl2'),
+    assimp,
+    glm,
+    physfs,
+    sdl2,
 
     shaders
 ]
