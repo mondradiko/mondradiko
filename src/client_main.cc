@@ -73,6 +73,7 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu,
       }
 
       display->endFrame(&frame_info);
+      FrameMark;
     }
   }
 
