@@ -23,7 +23,7 @@ namespace mondradiko {
 
 Scene::Scene(Filesystem* fs, Renderer* renderer)
     : fs(fs), renderer(renderer), root_entity(this) {
-  log_dbg("Creating scene.");
+  log_zone;
 
   // Abandon all hope, ye who enter here.
   Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
@@ -40,7 +40,7 @@ Scene::Scene(Filesystem* fs, Renderer* renderer)
 }
 
 Scene::~Scene() {
-  log_dbg("Destroying scene.");
+  log_zone;
 
   Assimp::DefaultLogger::kill();
 }
@@ -48,6 +48,8 @@ Scene::~Scene() {
 void Scene::update(double dt) {}
 
 bool Scene::loadModel(const char* fileName) {
+  log_zone;
+
   // TODO(marceline-cramer) Go into more detail on flags
   const aiScene* modelScene =
       importer.ReadFile(fileName, aiProcessPreset_TargetRealtime_Fast);

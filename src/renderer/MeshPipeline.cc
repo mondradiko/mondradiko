@@ -26,7 +26,7 @@ namespace mondradiko {
 MeshPipeline::MeshPipeline(GpuInstance* gpu, VkPipelineLayout pipeline_layout,
                            VkRenderPass render_pass, uint32_t subpass_index)
     : pipeline_layout(pipeline_layout), gpu(gpu) {
-  log_dbg("Creating mesh pipeline.");
+  log_zone;
 
   createPipeline(render_pass, subpass_index);
   createTextureSampler();
@@ -34,7 +34,7 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu, VkPipelineLayout pipeline_layout,
 }
 
 MeshPipeline::~MeshPipeline() {
-  log_dbg("Destroying mesh pipeline.");
+  log_zone;
 
   if (material_buffer != nullptr) delete material_buffer;
   if (texture_sampler != VK_NULL_HANDLE)
@@ -44,6 +44,8 @@ MeshPipeline::~MeshPipeline() {
 }
 
 void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
+  log_zone;
+
   std::vector<VkDescriptorImageInfo> texture_infos;
 
   for (auto& iter : texture_pool.pool) {
@@ -98,6 +100,8 @@ void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
 }
 
 void MeshPipeline::render(VkCommandBuffer commandBuffer) {
+  log_zone;
+
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   for (auto mesh_renderer : mesh_renderers) {
@@ -121,6 +125,8 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer) {
 
 MeshRendererComponent* MeshPipeline::createMeshRenderer(
     std::string filename, const aiScene* model_scene, uint32_t mesh_index) {
+  log_zone;
+
   aiMesh* mesh = model_scene->mMeshes[mesh_index];
   auto mesh_asset = loadMesh(filename, model_scene, mesh_index);
   auto material_asset =
@@ -131,6 +137,8 @@ MeshRendererComponent* MeshPipeline::createMeshRenderer(
 
 AssetHandle<MaterialAsset> MeshPipeline::loadMaterial(
     std::string filename, const aiScene* model_scene, uint32_t material_index) {
+  log_zone;
+
   aiMaterial* material = model_scene->mMaterials[material_index];
   std::string material_name =
       filename + '/' + std::string(material->GetName().C_Str());
@@ -149,6 +157,8 @@ AssetHandle<MaterialAsset> MeshPipeline::loadMaterial(
 AssetHandle<MeshAsset> MeshPipeline::loadMesh(std::string filename,
                                               const aiScene* model_scene,
                                               uint32_t mesh_index) {
+  log_zone;
+
   aiMesh* mesh = model_scene->mMeshes[mesh_index];
   std::string mesh_name = filename + '/' + std::string(mesh->mName.C_Str());
 
@@ -165,6 +175,7 @@ AssetHandle<MeshAsset> MeshPipeline::loadMesh(std::string filename,
 AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string filename,
                                                     const aiScene* model_scene,
                                                     aiString texture_string) {
+  log_zone;
   log_dbg(texture_string.C_Str());
 
   // If the texture is embedded, it'll begin with a '*'
@@ -196,6 +207,8 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string filename,
 }
 
 void MeshPipeline::createPipeline(VkRenderPass render_pass, uint32_t subpass) {
+  log_zone;
+
   GpuShader vert_shader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_mesh_vert,
                         sizeof(shaders_mesh_vert));
   GpuShader frag_shader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_mesh_frag,
@@ -302,6 +315,8 @@ void MeshPipeline::createPipeline(VkRenderPass render_pass, uint32_t subpass) {
 }
 
 void MeshPipeline::createTextureSampler() {
+  log_zone;
+
   VkSamplerCreateInfo sampler_info{
       .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
       .magFilter = VK_FILTER_LINEAR,
@@ -326,6 +341,8 @@ void MeshPipeline::createTextureSampler() {
 }
 
 void MeshPipeline::createMaterialBuffer() {
+  log_zone;
+
   material_buffer = new GpuBuffer(gpu, 128 * sizeof(MaterialUniform),
                                   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                   VMA_MEMORY_USAGE_CPU_TO_GPU);

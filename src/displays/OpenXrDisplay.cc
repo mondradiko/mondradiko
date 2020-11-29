@@ -60,6 +60,8 @@ void splitString(std::vector<std::string>* split, const std::string& source) {
 }
 
 OpenXrDisplay::OpenXrDisplay() {
+  log_zone;
+
   createInstance();
 
   if (enable_validation_layers) {
@@ -70,7 +72,7 @@ OpenXrDisplay::OpenXrDisplay() {
 }
 
 OpenXrDisplay::~OpenXrDisplay() {
-  log_dbg("Destroying OpenXR display.");
+  log_zone;
 
   destroySession();
 
@@ -81,7 +83,7 @@ OpenXrDisplay::~OpenXrDisplay() {
 }
 
 bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
-  log_dbg("Creating OpenXR session.");
+  log_zone;
 
   gpu = _gpu;
 
@@ -136,6 +138,8 @@ bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
 }
 
 void OpenXrDisplay::destroySession() {
+  log_zone;
+
   vkDeviceWaitIdle(gpu->device);
 
   for (auto& viewport : viewports) delete viewport;
@@ -185,6 +189,8 @@ bool OpenXrDisplay::getVulkanRequirements(VulkanRequirements* requirements) {
 
 bool OpenXrDisplay::getVulkanDevice(VkInstance vk_instance,
                                     VkPhysicalDevice* vk_physical_device) {
+  log_zone;
+
   if (ext_xrGetVulkanGraphicsDeviceKHR(instance, system_id, vk_instance,
                                        vk_physical_device) != XR_SUCCESS) {
     log_err("Failed to get Vulkan physical device.");
@@ -195,6 +201,8 @@ bool OpenXrDisplay::getVulkanDevice(VkInstance vk_instance,
 }
 
 void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
+  log_zone;
+
   XrEventDataBuffer event{.type = XR_TYPE_EVENT_DATA_BUFFER};
 
   while (xrPollEvent(instance, &event) == XR_SUCCESS) {
@@ -290,6 +298,8 @@ void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
 }
 
 void OpenXrDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
+  log_zone;
+
   current_frame_state = {.type = XR_TYPE_FRAME_STATE};
 
   xrWaitFrame(session, nullptr, &current_frame_state);
@@ -308,6 +318,8 @@ void OpenXrDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 
 void OpenXrDisplay::acquireViewports(
     std::vector<ViewportInterface*>* acquired) {
+  log_zone;
+
   acquired->resize(viewports.size());
 
   XrViewState view_state{.type = XR_TYPE_VIEW_STATE};

@@ -17,7 +17,7 @@
 namespace mondradiko {
 
 SdlDisplay::SdlDisplay() {
-  log_dbg("Creating SDL display.");
+  log_zone;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     log_ftl("Failed to initialize SDL.");
@@ -33,11 +33,15 @@ SdlDisplay::SdlDisplay() {
 }
 
 SdlDisplay::~SdlDisplay() {
+  log_zone;
+
   if (window != nullptr) SDL_DestroyWindow(window);
   SDL_Quit();
 }
 
 bool SdlDisplay::getVulkanRequirements(VulkanRequirements* requirements) {
+  log_zone;
+
   requirements->min_api_version = VK_MAKE_VERSION(1, 0, 0);
   requirements->max_api_version = VK_MAKE_VERSION(1, 2, 0);
   requirements->instance_extensions.resize(0);
@@ -60,6 +64,8 @@ bool SdlDisplay::getVulkanRequirements(VulkanRequirements* requirements) {
 
 bool SdlDisplay::getVulkanDevice(VkInstance instance,
                                  VkPhysicalDevice* physical_device) {
+  log_zone;
+
   window_surface = SDL_GetWindowSurface(window);
 
   // Clear window
@@ -154,6 +160,8 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
 }
 
 bool SdlDisplay::createSession(GpuInstance* _gpu) {
+  log_zone;
+
   gpu = _gpu;
 
   // TODO(marceline-cramer) Better queue sharing
@@ -183,6 +191,8 @@ bool SdlDisplay::createSession(GpuInstance* _gpu) {
 }
 
 void SdlDisplay::destroySession() {
+  log_zone;
+
   vkDeviceWaitIdle(gpu->device);
 
   if (main_viewport != nullptr) delete main_viewport;
@@ -197,6 +207,8 @@ void SdlDisplay::destroySession() {
 }
 
 void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
+  log_zone;
+
   if (main_viewport == nullptr) {
     main_viewport = new SdlViewport(gpu, this, poll_info->renderer);
   }
@@ -206,6 +218,8 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
 }
 
 void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
+  log_zone;
+
   // TODO(marceline-cramer) SDL delta time
   if (main_viewport != nullptr) {
     frame_info->should_render = true;
@@ -215,10 +229,14 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 }
 
 void SdlDisplay::acquireViewports(std::vector<ViewportInterface*>* viewports) {
+  log_zone;
+
   viewports->resize(1);
   viewports->at(0) = main_viewport;
 }
 
-void SdlDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {}
+void SdlDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
+  log_zone;
+}
 
 }  // namespace mondradiko

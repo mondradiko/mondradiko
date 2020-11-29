@@ -17,7 +17,7 @@ namespace mondradiko {
 
 Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
     : display(display), gpu(gpu) {
-  log_dbg("Creating renderer.");
+  log_zone;
 
   createRenderPasses();
   createDescriptorSetLayout();
@@ -27,7 +27,7 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
 }
 
 Renderer::~Renderer() {
-  log_dbg("Destroying renderer.");
+  log_zone;
 
   vkDeviceWaitIdle(gpu->device);
 
@@ -48,6 +48,8 @@ Renderer::~Renderer() {
 }
 
 void Renderer::renderFrame() {
+  log_zone;
+
   if (frames_in_flight[current_frame].submitted) {
     vkWaitForFences(gpu->device, 1, &frames_in_flight[current_frame].is_in_use,
                     VK_TRUE, UINT64_MAX);
@@ -155,6 +157,8 @@ void Renderer::renderFrame() {
 }
 
 void Renderer::createRenderPasses() {
+  log_zone;
+
   VkAttachmentDescription swapchainAttachmentDescription{
       .format = display->getSwapchainFormat(),
       .samples = VK_SAMPLE_COUNT_1_BIT,
@@ -188,6 +192,8 @@ void Renderer::createRenderPasses() {
 }
 
 void Renderer::createDescriptorSetLayout() {
+  log_zone;
+
   std::vector<VkDescriptorSetLayoutBinding> bindings;
 
   bindings.push_back(VkDescriptorSetLayoutBinding{
@@ -221,6 +227,8 @@ void Renderer::createDescriptorSetLayout() {
 }
 
 void Renderer::createPipelineLayout() {
+  log_zone;
+
   VkPushConstantRange constantRange{
       .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
       .offset = 0,
@@ -240,6 +248,8 @@ void Renderer::createPipelineLayout() {
 }
 
 void Renderer::createFrameData() {
+  log_zone;
+
   // Pipeline two frames
   frames_in_flight.resize(2);
 
@@ -283,6 +293,8 @@ void Renderer::createFrameData() {
 }
 
 void Renderer::createPipelines() {
+  log_zone;
+
   mesh_pipeline =
       new MeshPipeline(gpu, main_pipeline_layout, composite_pass, 0);
 }

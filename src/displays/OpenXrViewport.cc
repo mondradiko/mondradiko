@@ -46,7 +46,7 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
                                Renderer* renderer,
                                XrViewConfigurationView* view_config)
     : gpu(gpu), display(display), renderer(renderer) {
-  log_dbg("Creating OpenXR viewport.");
+  log_zone;
 
   image_width = view_config->recommendedImageRectWidth;
   image_height = view_config->recommendedImageRectHeight;
@@ -115,7 +115,7 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
 }
 
 OpenXrViewport::~OpenXrViewport() {
-  log_dbg("Destroying OpenXR viewport.");
+  log_zone;
 
   for (ViewportImage& image : images) {
     vkDestroyImageView(gpu->device, image.image_view, nullptr);
@@ -126,6 +126,8 @@ OpenXrViewport::~OpenXrViewport() {
 }
 
 void OpenXrViewport::acquire() {
+  log_zone;
+
   XrSwapchainImageAcquireInfo acquireInfo{
       .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, .next = nullptr};
 
@@ -139,6 +141,8 @@ void OpenXrViewport::acquire() {
 
 void OpenXrViewport::beginRenderPass(VkCommandBuffer command_buffer,
                                      VkRenderPass render_pass) {
+  log_zone;
+
   std::array<VkClearValue, 1> clear_values;
 
   clear_values[0].color = {0.2, 0.0, 0.0, 1.0};
@@ -168,6 +172,8 @@ void OpenXrViewport::beginRenderPass(VkCommandBuffer command_buffer,
 }
 
 void OpenXrViewport::writeUniform(ViewportUniform* uniform) {
+  log_zone;
+  
   glm::quat viewOrientation =
       glm::quat(view.pose.orientation.x, view.pose.orientation.y,
                 view.pose.orientation.z, view.pose.orientation.w);
@@ -184,6 +190,8 @@ void OpenXrViewport::writeUniform(ViewportUniform* uniform) {
 }
 
 void OpenXrViewport::release() {
+  log_zone;
+
   XrSwapchainImageReleaseInfo release_info{
       .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
 

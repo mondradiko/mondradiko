@@ -46,7 +46,7 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 }
 
 GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
-  log_dbg("Initializing Vulkan.");
+  log_zone;
 
   VulkanRequirements requirements;
   display->getVulkanRequirements(&requirements);
@@ -73,7 +73,7 @@ GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
 }
 
 GpuInstance::~GpuInstance() {
-  log_dbg("Cleaning up Vulkan.");
+  log_zone;
 
   vkDeviceWaitIdle(device);
 
@@ -141,7 +141,7 @@ void GpuInstance::endSingleTimeCommands(VkCommandBuffer command_buffer) {
 }
 
 bool GpuInstance::checkValidationLayerSupport() {
-  log_dbg("Checking for Vulkan validation layer support.");
+  log_zone;
 
   uint32_t layer_count;
   vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
@@ -181,7 +181,7 @@ void GpuInstance::populateDebugMessengerCreateInfo(
 }
 
 void GpuInstance::createInstance(VulkanRequirements* requirements) {
-  log_dbg("Creating Vulkan instance.");
+  log_zone;
 
   std::vector<const char*> extensionNames;
   for (uint32_t i = 0; i < requirements->instance_extensions.size(); i++) {
@@ -227,7 +227,7 @@ void GpuInstance::createInstance(VulkanRequirements* requirements) {
 }
 
 void GpuInstance::setupDebugMessenger() {
-  log_dbg("Setting up Vulkan debug messenger.");
+  log_zone;
 
   VkDebugUtilsMessengerCreateInfoEXT createInfo;
   populateDebugMessengerCreateInfo(&createInfo);
@@ -239,7 +239,7 @@ void GpuInstance::setupDebugMessenger() {
 }
 
 void GpuInstance::findPhysicalDevice(DisplayInterface* display) {
-  log_dbg("Finding Vulkan physical device.");
+  log_zone;
 
   if (!display->getVulkanDevice(instance, &physical_device)) {
     log_ftl("Failed to find Vulkan physical device.");
@@ -247,7 +247,7 @@ void GpuInstance::findPhysicalDevice(DisplayInterface* display) {
 }
 
 void GpuInstance::findQueueFamilies() {
-  log_dbg("Finding Vulkan queue families.");
+  log_zone;
 
   uint32_t queueFamilyCount;
   vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyCount,
@@ -265,7 +265,7 @@ void GpuInstance::findQueueFamilies() {
 }
 
 void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
-  log_dbg("Creating Vulkan logical device.");
+  log_zone;
 
   std::vector<const char*> extensionNames;
   for (uint32_t i = 0; i < requirements->device_extensions.size(); i++) {
@@ -277,11 +277,11 @@ void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
 
   float queuePriority = 1.0f;
   for (uint32_t queueFamily : uniqueQueueFamilies) {
-    queueCreateInfos.push_back(VkDeviceQueueCreateInfo
-        {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-         .queueFamilyIndex = queueFamily,
-         .queueCount = 1,
-         .pQueuePriorities = &queuePriority});
+    queueCreateInfos.push_back(VkDeviceQueueCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .queueFamilyIndex = queueFamily,
+        .queueCount = 1,
+        .pQueuePriorities = &queuePriority});
   }
 
   VkPhysicalDeviceFeatures deviceFeatures{.multiViewport = VK_TRUE,
@@ -310,6 +310,8 @@ void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
 }
 
 void GpuInstance::createCommandPool() {
+  log_zone;
+
   VkCommandPoolCreateInfo createInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
       .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
@@ -323,6 +325,8 @@ void GpuInstance::createCommandPool() {
 }
 
 void GpuInstance::createAllocator() {
+  log_zone;
+
   VmaAllocatorCreateInfo createInfo{.physicalDevice = physical_device,
                                     .device = device,
                                     .instance = instance};

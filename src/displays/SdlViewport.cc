@@ -19,7 +19,7 @@ namespace mondradiko {
 SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
                          Renderer* renderer)
     : gpu(gpu), display(display), renderer(renderer) {
-  log_dbg("Creating SDL viewport.");
+  log_zone;
 
   image_width = display->surface_capabilities.currentExtent.width;
   image_height = display->surface_capabilities.currentExtent.height;
@@ -80,7 +80,7 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
 }
 
 SdlViewport::~SdlViewport() {
-  log_dbg("Destroying SDL viewport.");
+  log_zone;
 
   if (on_image_available != VK_NULL_HANDLE) {
     vkDestroyFence(gpu->device, on_image_available, nullptr);
@@ -93,6 +93,8 @@ SdlViewport::~SdlViewport() {
 }
 
 void SdlViewport::acquire() {
+  log_zone;
+
   vkAcquireNextImageKHR(gpu->device, display->swapchain, UINT64_MAX,
                         VK_NULL_HANDLE, on_image_available,
                         &current_image_index);
@@ -105,6 +107,8 @@ void SdlViewport::acquire() {
 
 void SdlViewport::beginRenderPass(VkCommandBuffer command_buffer,
                                   VkRenderPass render_pass) {
+  log_zone;
+
   std::array<VkClearValue, 1> clear_values;
 
   clear_values[0].color = {0.2, 0.0, 0.0, 1.0};
@@ -134,6 +138,8 @@ void SdlViewport::beginRenderPass(VkCommandBuffer command_buffer,
 }
 
 void SdlViewport::writeUniform(ViewportUniform* uniform) {
+  log_zone;
+
   // TODO(marceline-cramer) Add WASD+Mouse control
   uniform->view =
       glm::lookAt(glm::vec3(2.0, 2.0, 2.0), glm::vec3(0.0, 0.0, 0.0),
@@ -148,6 +154,8 @@ void SdlViewport::writeUniform(ViewportUniform* uniform) {
 }
 
 void SdlViewport::release() {
+  log_zone;
+
   // TODO(marceline-cramer) Add render finished semaphores
   VkPresentInfoKHR present_info{.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
                                 .swapchainCount = 1,
