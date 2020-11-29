@@ -42,6 +42,11 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_vulkan.h"
 
+// Enable Tracy for Intellisense
+#if defined(__INTELLISENSE__) && !defined(TRACY_ENABLE)
+#define TRACY_ENABLE
+#endif
+
 #include "tracy/Tracy.hpp"
 
 #endif  // SRC_API_HEADERS_H_
