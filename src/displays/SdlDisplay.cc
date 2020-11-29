@@ -213,8 +213,22 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
     main_viewport = new SdlViewport(gpu, this, poll_info->renderer);
   }
 
-  poll_info->should_quit = false;
-  poll_info->should_run = true;
+  SDL_Event e;
+  while (SDL_PollEvent(&e) != 0) {
+    switch (e.type) {
+      case SDL_QUIT: {
+        poll_info->should_quit = true;
+        poll_info->should_run = false;
+        break;
+      }
+
+      default: {
+        poll_info->should_quit = false;
+        poll_info->should_run = true;
+        break;
+      }
+    }  // switch (e.type)
+  }
 }
 
 void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
@@ -235,8 +249,6 @@ void SdlDisplay::acquireViewports(std::vector<ViewportInterface*>* viewports) {
   viewports->at(0) = main_viewport;
 }
 
-void SdlDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
-  log_zone;
-}
+void SdlDisplay::endFrame(DisplayBeginFrameInfo* frame_info) { log_zone; }
 
 }  // namespace mondradiko
