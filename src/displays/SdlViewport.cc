@@ -21,14 +21,36 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
     : gpu(gpu), display(display), renderer(renderer) {
   log_zone;
 
+  // TODO(marceline-cramer) Better queue sharing
+  VkSwapchainCreateInfoKHR swapchain_info{
+      .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+      .surface = display->surface,
+      .minImageCount = display->surface_capabilities.minImageCount,
+      .imageFormat = display->swapchain_format,
+      .imageColorSpace = display->swapchain_color_space,
+      .imageExtent = display->surface_capabilities.currentExtent,
+      .imageArrayLayers = 1,
+      .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+      .preTransform = display->surface_capabilities.currentTransform,
+      .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+      .presentMode = display->swapchain_present_mode,
+      .clipped = VK_TRUE,
+      .oldSwapchain = VK_NULL_HANDLE};
+
+  if (vkCreateSwapchainKHR(gpu->device, &swapchain_info, nullptr, &swapchain) !=
+      VK_SUCCESS) {
+    log_ftl("Failed to create swapchain.");
+  }
+
   image_width = display->surface_capabilities.currentExtent.width;
   image_height = display->surface_capabilities.currentExtent.height;
 
   uint32_t image_count;
-  vkGetSwapchainImagesKHR(gpu->device, display->swapchain, &image_count,
+  vkGetSwapchainImagesKHR(gpu->device, swapchain, &image_count,
                           nullptr);
   std::vector<VkImage> swapchain_images(image_count);
-  vkGetSwapchainImagesKHR(gpu->device, display->swapchain, &image_count,
+  vkGetSwapchainImagesKHR(gpu->device, swapchain, &image_count,
                           swapchain_images.data());
 
   images.resize(image_count);
@@ -90,12 +112,16 @@ SdlViewport::~SdlViewport() {
     vkDestroyImageView(gpu->device, image.image_view, nullptr);
     vkDestroyFramebuffer(gpu->device, image.framebuffer, nullptr);
   }
+
+  if (swapchain != VK_NULL_HANDLE) {
+    vkDestroySwapchainKHR(gpu->device, swapchain, nullptr);
+  }
 }
 
 void SdlViewport::acquire() {
   log_zone;
 
-  vkAcquireNextImageKHR(gpu->device, display->swapchain, UINT64_MAX,
+  vkAcquireNextImageKHR(gpu->device, swapchain, UINT64_MAX,
                         VK_NULL_HANDLE, on_image_available,
                         &current_image_index);
 
@@ -159,7 +185,7 @@ void SdlViewport::release() {
   // TODO(marceline-cramer) Add render finished semaphores
   VkPresentInfoKHR present_info{.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
                                 .swapchainCount = 1,
-                                .pSwapchains = &display->swapchain,
+                                .pSwapchains = &swapchain,
                                 .pImageIndices = &current_image_index};
 
   // TODO(marceline-cramer) Better queue management

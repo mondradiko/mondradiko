@@ -164,29 +164,6 @@ bool SdlDisplay::createSession(GpuInstance* _gpu) {
 
   gpu = _gpu;
 
-  // TODO(marceline-cramer) Better queue sharing
-  VkSwapchainCreateInfoKHR swapchain_info{
-      .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-      .surface = surface,
-      .minImageCount = surface_capabilities.minImageCount,
-      .imageFormat = swapchain_format,
-      .imageColorSpace = swapchain_color_space,
-      .imageExtent = surface_capabilities.currentExtent,
-      .imageArrayLayers = 1,
-      .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .preTransform = surface_capabilities.currentTransform,
-      .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-      .presentMode = swapchain_present_mode,
-      .clipped = VK_TRUE,
-      .oldSwapchain = VK_NULL_HANDLE};
-
-  if (vkCreateSwapchainKHR(gpu->device, &swapchain_info, nullptr, &swapchain) !=
-      VK_SUCCESS) {
-    log_err("Failed to create swapchain.");
-    return false;
-  }
-
   return true;
 }
 
@@ -196,13 +173,10 @@ void SdlDisplay::destroySession() {
   vkDeviceWaitIdle(gpu->device);
 
   if (main_viewport != nullptr) delete main_viewport;
-  if (swapchain != VK_NULL_HANDLE)
-    vkDestroySwapchainKHR(gpu->device, swapchain, nullptr);
   if (surface != VK_NULL_HANDLE)
     vkDestroySurfaceKHR(gpu->instance, surface, nullptr);
 
   main_viewport = nullptr;
-  swapchain = VK_NULL_HANDLE;
   surface = VK_NULL_HANDLE;
 }
 

@@ -49,7 +49,6 @@ class SdlDisplay : public DisplayInterface {
   VkSurfaceKHR surface = VK_NULL_HANDLE;
   VkSurfaceCapabilitiesKHR surface_capabilities;
 
-  VkSwapchainKHR swapchain = VK_NULL_HANDLE;
   VkFormat swapchain_format;
   VkColorSpaceKHR swapchain_color_space;
   VkPresentModeKHR swapchain_present_mode;

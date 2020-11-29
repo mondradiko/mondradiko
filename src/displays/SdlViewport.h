@@ -40,6 +40,7 @@ class SdlViewport : public ViewportInterface {
 
   VkFence on_image_available = VK_NULL_HANDLE;
 
+  VkSwapchainKHR swapchain = VK_NULL_HANDLE;
   std::vector<ViewportImage> images;
   uint32_t current_image_index;
   uint32_t image_width;
