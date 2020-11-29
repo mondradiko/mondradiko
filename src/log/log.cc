@@ -20,6 +20,8 @@ namespace mondradiko {
 
 const char* getLogPrefix(LogLevel level) {
   switch (level) {
+    case LOG_LEVEL_ZONE:
+      return "\e[33m[ZNE ";
     case LOG_LEVEL_INFO:
       return "\e[36m[INF ";
     case LOG_LEVEL_DEBUG:

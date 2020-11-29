@@ -9,6 +9,8 @@
  *
  */
 
+#include "api_headers.h"
+
 #ifndef SRC_LOG_LOG_H_
 #define SRC_LOG_LOG_H_
 
@@ -19,10 +21,14 @@
 #define log_wrn(...) log_at(mondradiko::LOG_LEVEL_WARNING, __VA_ARGS__)
 #define log_err(...) log_at(mondradiko::LOG_LEVEL_ERROR, __VA_ARGS__)
 #define log_ftl(...) log_at(mondradiko::LOG_LEVEL_FATAL, __VA_ARGS__)
+#define log_zone \
+  ZoneScoped;    \
+  mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
 
 namespace mondradiko {
 
 enum LogLevel {
+  LOG_LEVEL_ZONE,
   LOG_LEVEL_INFO,
   LOG_LEVEL_DEBUG,
   LOG_LEVEL_WARNING,
