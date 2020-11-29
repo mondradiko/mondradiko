@@ -196,6 +196,18 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
         break;
       }
 
+      case SDL_WINDOWEVENT: {
+        switch (e.window.event) {
+          case SDL_WINDOWEVENT_SIZE_CHANGED: {
+            delete main_viewport;
+            main_viewport = nullptr;
+            break;
+          }
+
+          default: break;
+        }  // switch (e.window.event)
+      }
+
       default: {
         poll_info->should_quit = false;
         poll_info->should_run = true;
