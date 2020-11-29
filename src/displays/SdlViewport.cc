@@ -21,6 +21,10 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
     : gpu(gpu), display(display), renderer(renderer) {
   log_zone;
 
+  int window_width;
+  int window_height;
+  SDL_Vulkan_GetDrawableSize(display->window, &window_width, &window_height);
+
   // TODO(marceline-cramer) Better queue sharing
   VkSwapchainCreateInfoKHR swapchain_info{
       .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
@@ -28,7 +32,8 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
       .minImageCount = display->surface_capabilities.minImageCount,
       .imageFormat = display->swapchain_format,
       .imageColorSpace = display->swapchain_color_space,
-      .imageExtent = display->surface_capabilities.currentExtent,
+      .imageExtent = {.width = static_cast<uint32_t>(window_width),
+                      .height = static_cast<uint32_t>(window_height)},
       .imageArrayLayers = 1,
       .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
       .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
@@ -43,12 +48,11 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
     log_ftl("Failed to create swapchain.");
   }
 
-  image_width = display->surface_capabilities.currentExtent.width;
-  image_height = display->surface_capabilities.currentExtent.height;
+  image_width = window_width;
+  image_height = window_height;
 
   uint32_t image_count;
-  vkGetSwapchainImagesKHR(gpu->device, swapchain, &image_count,
-                          nullptr);
+  vkGetSwapchainImagesKHR(gpu->device, swapchain, &image_count, nullptr);
   std::vector<VkImage> swapchain_images(image_count);
   vkGetSwapchainImagesKHR(gpu->device, swapchain, &image_count,
                           swapchain_images.data());
@@ -121,9 +125,13 @@ SdlViewport::~SdlViewport() {
 void SdlViewport::acquire() {
   log_zone;
 
-  vkAcquireNextImageKHR(gpu->device, swapchain, UINT64_MAX,
-                        VK_NULL_HANDLE, on_image_available,
-                        &current_image_index);
+  if (vkAcquireNextImageKHR(gpu->device, swapchain, UINT64_MAX, VK_NULL_HANDLE,
+                            on_image_available,
+                            &current_image_index) != VK_SUCCESS) {
+    // TODO(marceline-cramer) acquire() returns true on success, otherwise
+    // Renderer skips
+    return;
+  }
 
   // Block CPU until SDL swapchain image is available
   // This is suboptimal, but OpenXR blocks CPU too, so...
