@@ -34,13 +34,12 @@ Renderer::~Renderer() {
     if (frame.viewports != nullptr) delete frame.viewports;
     if (frame.is_in_use != VK_NULL_HANDLE)
       vkDestroyFence(gpu->device, frame.is_in_use, nullptr);
-    if (frame.descriptor_pool != VK_NULL_HANDLE)
-      vkDestroyDescriptorPool(gpu->device, frame.descriptor_pool, nullptr);
+    if (frame.descriptor_pool != nullptr) delete frame.descriptor_pool;
   }
 
   if (mesh_pipeline != nullptr) delete mesh_pipeline;
-  if (viewport_layout != VK_NULL_HANDLE)
-    vkDestroyDescriptorSetLayout(gpu->device, viewport_layout, nullptr);
+
+  if (viewport_layout != nullptr) delete viewport_layout;
 
   if (composite_pass != VK_NULL_HANDLE)
     vkDestroyRenderPass(gpu->device, composite_pass, nullptr);
@@ -60,34 +59,12 @@ void Renderer::renderFrame() {
   }
 
   PipelinedFrameData* frame = &frames_in_flight[current_frame];
-  vkResetDescriptorPool(gpu->device, frame->descriptor_pool, 0);
+  frame->descriptor_pool->reset();
 
-  VkDescriptorSetAllocateInfo alloc_info{
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-      .descriptorPool = frame->descriptor_pool,
-      .descriptorSetCount = 1,
-      .pSetLayouts = &viewport_layout};
-
-  vkAllocateDescriptorSets(gpu->device, &alloc_info,
-                           &frame->viewport_descriptor);
-
-  std::vector<VkDescriptorBufferInfo> viewport_buffer_infos;
-
-  viewport_buffer_infos.push_back(
-      VkDescriptorBufferInfo{.buffer = frame->viewports->buffer,
-                             .offset = 0,
-                             .range = sizeof(ViewportUniform)});
-
-  VkWriteDescriptorSet descriptor_writes{
-      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-      .dstSet = frame->viewport_descriptor,
-      .dstBinding = 0,
-      .dstArrayElement = 0,
-      .descriptorCount = static_cast<uint32_t>(viewport_buffer_infos.size()),
-      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-      .pBufferInfo = viewport_buffer_infos.data()};
-
-  vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
+  GpuDescriptorSet* viewport_descriptor =
+      frame->descriptor_pool->allocate(viewport_layout);
+  
+  viewport_descriptor->updateBuffer(0, frame->viewports);
 
   // mesh_pipeline->updateDescriptors(frame->viewport_descriptor);
 
@@ -105,7 +82,7 @@ void Renderer::renderFrame() {
     viewports[viewport_index]->acquire();
     viewports[viewport_index]->beginRenderPass(frame->command_buffer,
                                                composite_pass);
-    mesh_pipeline->render(frame->command_buffer, frame->viewport_descriptor,
+    mesh_pipeline->render(frame->command_buffer, viewport_descriptor,
                           viewport_index);
     vkCmdEndRenderPass(frame->command_buffer);
   }
@@ -188,24 +165,8 @@ void Renderer::createRenderPasses() {
 void Renderer::createDescriptorSetLayout() {
   log_zone;
 
-  std::vector<VkDescriptorSetLayoutBinding> bindings;
-
-  bindings.push_back(VkDescriptorSetLayoutBinding{
-      .binding = 0,
-      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-      // TODO(marceline-cramer) Better descriptor management
-      .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT});
-
-  VkDescriptorSetLayoutCreateInfo layoutInfo{
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-      .bindingCount = static_cast<uint32_t>(bindings.size()),
-      .pBindings = bindings.data()};
-
-  if (vkCreateDescriptorSetLayout(gpu->device, &layoutInfo, nullptr,
-                                  &viewport_layout) != VK_SUCCESS) {
-    log_ftl("Failed to create Renderer viewport descriptor set layout.");
-  }
+  viewport_layout = new GpuDescriptorSetLayout(gpu);
+  viewport_layout->addDynamicUniformBuffer();
 }
 
 void Renderer::createFrameData() {
@@ -235,28 +196,7 @@ void Renderer::createFrameData() {
 
     frame.submitted = false;
 
-    // TODO(marceline-cramer) Make wrapper class for descriptor management
-    std::vector<VkDescriptorPoolSize> poolSizes;
-
-    poolSizes.push_back(
-        {.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 1000});
-
-    poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                         .descriptorCount = 1000});
-
-    poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-                         .descriptorCount = 1000});
-
-    VkDescriptorPoolCreateInfo createInfo{
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .maxSets = 1000,
-        .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
-        .pPoolSizes = poolSizes.data()};
-
-    if (vkCreateDescriptorPool(gpu->device, &createInfo, nullptr,
-                               &frame.descriptor_pool) != VK_SUCCESS) {
-      log_ftl("Failed to create Vulkan descriptor pool.");
-    }
+    frame.descriptor_pool = new GpuDescriptorPool(gpu);
 
     frame.viewports = new GpuBuffer(
         // TODO(marceline-cramer) Better descriptor management

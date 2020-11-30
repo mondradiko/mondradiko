@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "displays/DisplayInterface.h"
+#include "gpu/GpuDescriptorPool.h"
 #include "gpu/GpuInstance.h"
 #include "renderer/MeshPipeline.h"
 #include "src/api_headers.h"
@@ -27,12 +28,8 @@ struct PipelinedFrameData {
   VkFence is_in_use;
   bool submitted;
 
-  VkDescriptorPool descriptor_pool;
-
+  GpuDescriptorPool* descriptor_pool;
   GpuBuffer* viewports;
-
-  // Non-persistent frame data
-  VkDescriptorSet viewport_descriptor;
 };
 
 struct FramePushConstant {
@@ -49,7 +46,7 @@ class Renderer {
 
   VkRenderPass composite_pass = VK_NULL_HANDLE;
 
-  VkDescriptorSetLayout viewport_layout = VK_NULL_HANDLE;
+  GpuDescriptorSetLayout* viewport_layout = nullptr;
 
   MeshPipeline* mesh_pipeline = nullptr;
 
