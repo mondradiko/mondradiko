@@ -27,10 +27,12 @@ struct PipelinedFrameData {
   VkFence is_in_use;
   bool submitted;
 
-  // TODO(marceline-cramer) Allocate all frame descriptors from pool
-  VkDescriptorSet descriptors;
+  VkDescriptorPool descriptor_pool;
 
   GpuBuffer* viewports;
+
+  // Non-persistent frame data
+  VkDescriptorSet viewport_descriptor;
 };
 
 struct FramePushConstant {
@@ -47,8 +49,8 @@ class Renderer {
 
   VkRenderPass composite_pass = VK_NULL_HANDLE;
 
-  VkDescriptorSetLayout main_descriptor_layout = VK_NULL_HANDLE;
-  VkPipelineLayout main_pipeline_layout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout viewport_layout = VK_NULL_HANDLE;
+
   MeshPipeline* mesh_pipeline = nullptr;
 
  private:
@@ -61,7 +63,6 @@ class Renderer {
   void findSwapchainFormat();
   void createRenderPasses();
   void createDescriptorSetLayout();
-  void createPipelineLayout();
   void createFrameData();
   void createPipelines();
 };
