@@ -23,6 +23,8 @@
 #include "assets/MeshAsset.h"
 #include "assets/TextureAsset.h"
 #include "components/MeshRendererComponent.h"
+#include "gpu/GpuDescriptorSet.h"
+#include "gpu/GpuDescriptorSetLayout.h"
 #include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
@@ -30,11 +32,11 @@ namespace mondradiko {
 
 class MeshPipeline {
  public:
-  MeshPipeline(GpuInstance*, VkDescriptorSetLayout, VkRenderPass, uint32_t);
+  MeshPipeline(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
   ~MeshPipeline();
 
-  void updateDescriptors(VkDescriptorSet);
-  void render(VkCommandBuffer, VkDescriptorSet, uint32_t);
+  void updateDescriptors(VkDescriptorSet);  // unused for now
+  void render(VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 
   MeshRendererComponent* createMeshRenderer(std::string, const aiScene*,
                                             uint32_t);
@@ -44,7 +46,7 @@ class MeshPipeline {
   AssetHandle<MeshAsset> loadMesh(std::string, const aiScene*, uint32_t);
   AssetHandle<TextureAsset> loadTexture(std::string, const aiScene*, aiString);
 
-  VkDescriptorSetLayout material_layout = VK_NULL_HANDLE;
+  GpuDescriptorSetLayout* material_layout;
 
   VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
   VkPipeline pipeline = VK_NULL_HANDLE;
@@ -63,7 +65,7 @@ class MeshPipeline {
   AssetPool<TextureAsset> texture_pool;
 
   void createSetLayouts();
-  void createPipelineLayout(VkDescriptorSetLayout);
+  void createPipelineLayout(GpuDescriptorSetLayout*);
   void createPipeline(VkRenderPass, uint32_t);
   void createTextureSampler();
   void createMaterialBuffer();
