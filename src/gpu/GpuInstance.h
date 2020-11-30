@@ -46,8 +46,6 @@ class GpuInstance {
 
   VmaAllocator allocator = nullptr;
 
-  VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
-
  private:
   const std::vector<const char*> validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
@@ -61,7 +59,6 @@ class GpuInstance {
   void createLogicalDevice(VulkanRequirements*);
   void createCommandPool();
   void createAllocator();
-  void createDescriptorPool();
 
   PFN_vkCreateDebugUtilsMessengerEXT ext_vkCreateDebugUtilsMessengerEXT =
       nullptr;

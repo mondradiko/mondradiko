@@ -69,16 +69,12 @@ GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
   createLogicalDevice(&requirements);
   createCommandPool();
   createAllocator();
-  createDescriptorPool();
 }
 
 GpuInstance::~GpuInstance() {
   log_zone;
 
   vkDeviceWaitIdle(device);
-
-  if (descriptor_pool != VK_NULL_HANDLE)
-    vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
 
   if (allocator != nullptr) vmaDestroyAllocator(allocator);
 
@@ -333,28 +329,6 @@ void GpuInstance::createAllocator() {
 
   if (vmaCreateAllocator(&createInfo, &allocator) != VK_SUCCESS) {
     log_ftl("Failed to create Vulkan memory allocator.");
-  }
-}
-
-void GpuInstance::createDescriptorPool() {
-  // TODO(marceline-cramer) Make wrapper class for descriptor management
-  std::vector<VkDescriptorPoolSize> poolSizes;
-
-  poolSizes.push_back(
-      {.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 1000});
-
-  poolSizes.push_back({.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                       .descriptorCount = 1000});
-
-  VkDescriptorPoolCreateInfo createInfo{
-      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-      .maxSets = 1000,
-      .poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
-      .pPoolSizes = poolSizes.data()};
-
-  if (vkCreateDescriptorPool(device, &createInfo, nullptr, &descriptor_pool) !=
-      VK_SUCCESS) {
-    log_ftl("Failed to create Vulkan descriptor pool.");
   }
 }
 
