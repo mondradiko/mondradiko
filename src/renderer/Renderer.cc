@@ -89,7 +89,7 @@ void Renderer::renderFrame() {
 
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
 
-  //mesh_pipeline->updateDescriptors(frame->viewport_descriptor);
+  // mesh_pipeline->updateDescriptors(frame->viewport_descriptor);
 
   std::vector<ViewportInterface*> viewports;
   display->acquireViewports(&viewports);

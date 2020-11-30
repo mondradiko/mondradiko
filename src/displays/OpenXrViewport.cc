@@ -173,7 +173,7 @@ void OpenXrViewport::beginRenderPass(VkCommandBuffer command_buffer,
 
 void OpenXrViewport::writeUniform(ViewportUniform* uniform) {
   log_zone;
-  
+
   glm::quat viewOrientation =
       glm::quat(view.pose.orientation.x, view.pose.orientation.y,
                 view.pose.orientation.z, view.pose.orientation.w);
