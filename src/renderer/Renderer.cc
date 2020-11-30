@@ -63,7 +63,7 @@ void Renderer::renderFrame() {
 
   GpuDescriptorSet* viewport_descriptor =
       frame->descriptor_pool->allocate(viewport_layout);
-  
+
   viewport_descriptor->updateBuffer(0, frame->viewports);
 
   // mesh_pipeline->updateDescriptors(frame->viewport_descriptor);
@@ -83,7 +83,7 @@ void Renderer::renderFrame() {
     viewports[viewport_index]->beginRenderPass(frame->command_buffer,
                                                composite_pass);
     mesh_pipeline->render(frame->command_buffer, viewport_descriptor,
-                          viewport_index);
+                          viewport_index * sizeof(ViewportUniform));
     vkCmdEndRenderPass(frame->command_buffer);
   }
 
@@ -166,7 +166,7 @@ void Renderer::createDescriptorSetLayout() {
   log_zone;
 
   viewport_layout = new GpuDescriptorSetLayout(gpu);
-  viewport_layout->addDynamicUniformBuffer();
+  viewport_layout->addDynamicUniformBuffer(sizeof(ViewportUniform));
 }
 
 void Renderer::createFrameData() {
