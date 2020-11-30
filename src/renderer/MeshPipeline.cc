@@ -23,11 +23,14 @@
 
 namespace mondradiko {
 
-MeshPipeline::MeshPipeline(GpuInstance* gpu, VkPipelineLayout pipeline_layout,
+MeshPipeline::MeshPipeline(GpuInstance* gpu,
+                           VkDescriptorSetLayout viewport_layout,
                            VkRenderPass render_pass, uint32_t subpass_index)
-    : pipeline_layout(pipeline_layout), gpu(gpu) {
+    : gpu(gpu) {
   log_zone;
 
+  createSetLayouts();
+  createPipelineLayout(viewport_layout);
   createPipeline(render_pass, subpass_index);
   createTextureSampler();
   createMaterialBuffer();
@@ -41,6 +44,10 @@ MeshPipeline::~MeshPipeline() {
     vkDestroySampler(gpu->device, texture_sampler, nullptr);
   if (pipeline != VK_NULL_HANDLE)
     vkDestroyPipeline(gpu->device, pipeline, nullptr);
+  if (pipeline_layout != VK_NULL_HANDLE)
+    vkDestroyPipelineLayout(gpu->device, pipeline_layout, nullptr);
+  if (material_layout != VK_NULL_HANDLE)
+    vkDestroyDescriptorSetLayout(gpu->device, material_layout, nullptr);
 }
 
 void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
@@ -99,18 +106,19 @@ void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
                          descriptor_writes.data(), 0, nullptr);
 }
 
-void MeshPipeline::render(VkCommandBuffer commandBuffer) {
+void MeshPipeline::render(VkCommandBuffer commandBuffer,
+                          VkDescriptorSet viewport_descriptor,
+                          uint32_t viewport_offset) {
   log_zone;
 
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          pipeline_layout, 0, 1, &viewport_descriptor, 1,
+                          &viewport_offset);
+
+  // TODO(marceline-cramer) Actually update and use materials
 
   for (auto mesh_renderer : mesh_renderers) {
-    // TODO(marceline-cramer) Send material indices in some other way.
-    vkCmdPushConstants(
-        commandBuffer, pipeline_layout,
-        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        offsetof(FramePushConstant, material_index), sizeof(uint32_t),
-        &mesh_renderer->material_asset->index);
     VkBuffer vertex_buffers[] = {
         mesh_renderer->mesh_asset->vertex_buffer->buffer};
     VkDeviceSize offsets[] = {0};
@@ -203,6 +211,44 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string filename,
   } else {
     log_ftl("Unable to load non-embedded textures.");
     return AssetHandle<TextureAsset>(nullptr);
+  }
+}
+
+void MeshPipeline::createSetLayouts() {
+  std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+  bindings.push_back(VkDescriptorSetLayoutBinding{
+      .binding = 0,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+      // TODO(marceline-cramer) Better descriptor management
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT});
+
+  VkDescriptorSetLayoutCreateInfo layoutInfo{
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .bindingCount = static_cast<uint32_t>(bindings.size()),
+      .pBindings = bindings.data()};
+
+  if (vkCreateDescriptorSetLayout(gpu->device, &layoutInfo, nullptr,
+                                  &material_layout) != VK_SUCCESS) {
+    log_ftl("Failed to create MeshPipeline material descriptor set layout.");
+  }
+}
+
+void MeshPipeline::createPipelineLayout(VkDescriptorSetLayout viewport_layout) {
+  log_zone;
+
+  std::vector<VkDescriptorSetLayout> set_layouts{viewport_layout,
+                                                 material_layout};
+
+  VkPipelineLayoutCreateInfo layoutInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = static_cast<uint32_t>(set_layouts.size()),
+      .pSetLayouts = set_layouts.data()};
+
+  if (vkCreatePipelineLayout(gpu->device, &layoutInfo, nullptr,
+                             &pipeline_layout) != VK_SUCCESS) {
+    log_ftl("Failed to create Renderer pipeline layout.");
   }
 }
 
