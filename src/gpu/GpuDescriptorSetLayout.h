@@ -20,7 +20,7 @@ namespace mondradiko {
 
 class GpuDescriptorSetLayout {
  public:
-  GpuDescriptorSetLayout(GpuInstance*);
+  explicit GpuDescriptorSetLayout(GpuInstance*);
   ~GpuDescriptorSetLayout();
 
   // TODO(marceline-cramer) SPIR-V reflection w/ stage flags

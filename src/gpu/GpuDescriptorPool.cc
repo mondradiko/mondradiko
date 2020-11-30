@@ -11,6 +11,8 @@
 
 #include "gpu/GpuDescriptorPool.h"
 
+#include <vector>
+
 #include "log/log.h"
 
 namespace mondradiko {

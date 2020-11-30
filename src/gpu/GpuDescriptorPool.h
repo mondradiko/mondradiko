@@ -22,7 +22,7 @@ namespace mondradiko {
 
 class GpuDescriptorPool {
  public:
-  GpuDescriptorPool(GpuInstance*);
+  explicit GpuDescriptorPool(GpuInstance*);
   ~GpuDescriptorPool();
 
   GpuDescriptorSet* allocate(GpuDescriptorSetLayout*);
