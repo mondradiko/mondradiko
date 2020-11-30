@@ -11,20 +11,25 @@
 
 #include "gpu/GpuDescriptorSet.h"
 
+#include "gpu/GpuDescriptorSetLayout.h"
+
 namespace mondradiko {
 
 GpuDescriptorSet::GpuDescriptorSet(GpuInstance* gpu,
-                                   VkDescriptorSet descriptor_set,
-                                   uint32_t dynamic_offset_count)
+                                   GpuDescriptorSetLayout* set_layout,
+                                   VkDescriptorSet descriptor_set)
     : gpu(gpu),
+      set_layout(set_layout),
       descriptor_set(descriptor_set),
-      dynamic_offsets(dynamic_offset_count) {}
+      dynamic_offsets(set_layout->getDynamicOffsetCount()) {}
 
 GpuDescriptorSet::~GpuDescriptorSet() {}
 
 void GpuDescriptorSet::updateBuffer(uint32_t binding, GpuBuffer* buffer) {
   VkDescriptorBufferInfo buffer_info{
-      .buffer = buffer->buffer, .offset = 0, .range = buffer->buffer_size};
+      .buffer = buffer->buffer,
+      .offset = 0,
+      .range = set_layout->getBufferSize(binding)};
 
   VkWriteDescriptorSet descriptor_writes{
       .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,

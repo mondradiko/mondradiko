@@ -62,7 +62,7 @@ GpuDescriptorSet* GpuDescriptorPool::allocate(GpuDescriptorSetLayout* layout) {
 
   // TODO(marceline-cramer) Dynamic pool resizing
 
-  GpuDescriptorSet* new_set = new GpuDescriptorSet(gpu, vk_set, layout->getDynamicOffsetCount());
+  GpuDescriptorSet* new_set = new GpuDescriptorSet(gpu, layout, vk_set);
   descriptor_sets.emplace(new_set);
   return new_set;
 }

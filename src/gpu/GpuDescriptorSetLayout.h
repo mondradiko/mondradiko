@@ -31,17 +31,19 @@ class GpuDescriptorSetLayout {
   // void addStorageImage();
   // void addUniformTexelBuffer();
   // void addStorageTexelBuffer();
-  void addDynamicUniformBuffer();
+  void addDynamicUniformBuffer(uint32_t);
   // void addDynamicStorageBuffer();
   // void addInputAttachment();
 
   VkDescriptorSetLayout getSetLayout();
+  uint32_t getBufferSize(uint32_t index) { return buffer_sizes[index]; }
   uint32_t getDynamicOffsetCount() { return dynamic_offset_count; }
 
  private:
   GpuInstance* gpu;
 
   std::vector<VkDescriptorSetLayoutBinding> layout_bindings;
+  std::vector<uint32_t> buffer_sizes;
   uint32_t dynamic_offset_count = 0;
 
   VkDescriptorSetLayout set_layout = VK_NULL_HANDLE;

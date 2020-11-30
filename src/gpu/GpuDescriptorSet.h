@@ -23,9 +23,12 @@ namespace mondradiko {
 // TODO(marceline-cramer) Named descriptors
 // TODO(marceline-cramer) Reflection
 
+// Forward declaration because of codependence
+class GpuDescriptorSetLayout;
+
 class GpuDescriptorSet {
  public:
-  GpuDescriptorSet(GpuInstance*, VkDescriptorSet, uint32_t);
+  GpuDescriptorSet(GpuInstance*, GpuDescriptorSetLayout*, VkDescriptorSet);
   ~GpuDescriptorSet();
 
   void updateBuffer(uint32_t, GpuBuffer*);
@@ -37,6 +40,7 @@ class GpuDescriptorSet {
  private:
   GpuInstance* gpu;
 
+  GpuDescriptorSetLayout* set_layout;
   VkDescriptorSet descriptor_set;
   std::vector<uint32_t> dynamic_offsets;
 };

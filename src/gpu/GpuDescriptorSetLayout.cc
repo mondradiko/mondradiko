@@ -22,7 +22,7 @@ GpuDescriptorSetLayout::~GpuDescriptorSetLayout() {
     vkDestroyDescriptorSetLayout(gpu->device, set_layout, nullptr);
 }
 
-void GpuDescriptorSetLayout::addDynamicUniformBuffer() {
+void GpuDescriptorSetLayout::addDynamicUniformBuffer(uint32_t buffer_size) {
   dynamic_offset_count++;
 
   VkDescriptorSetLayoutBinding dubo_binding{
@@ -33,6 +33,7 @@ void GpuDescriptorSetLayout::addDynamicUniformBuffer() {
       .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT};
 
   layout_bindings.push_back(dubo_binding);
+  buffer_sizes.push_back(buffer_size);
 }
 
 VkDescriptorSetLayout GpuDescriptorSetLayout::getSetLayout() {
