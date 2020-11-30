@@ -14,8 +14,11 @@
 namespace mondradiko {
 
 GpuDescriptorSet::GpuDescriptorSet(GpuInstance* gpu,
-                                   VkDescriptorSet descriptor_set)
-    : gpu(gpu), descriptor_set(descriptor_set) {}
+                                   VkDescriptorSet descriptor_set,
+                                   uint32_t dynamic_offset_count)
+    : gpu(gpu),
+      descriptor_set(descriptor_set),
+      dynamic_offsets(dynamic_offset_count) {}
 
 GpuDescriptorSet::~GpuDescriptorSet() {}
 
@@ -33,6 +36,19 @@ void GpuDescriptorSet::updateBuffer(uint32_t binding, GpuBuffer* buffer) {
       .pBufferInfo = &buffer_info};
 
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
+}
+
+void GpuDescriptorSet::updateDynamicOffset(uint32_t index, uint32_t offset) {
+  dynamic_offsets[index] = offset;
+}
+
+void GpuDescriptorSet::cmdBind(VkCommandBuffer command_buffer,
+                               VkPipelineLayout pipeline_layout,
+                               uint32_t binding) {
+  vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          pipeline_layout, 0, 1, &descriptor_set,
+                          static_cast<uint32_t>(dynamic_offsets.size()),
+                          dynamic_offsets.data());
 }
 
 }  // namespace mondradiko

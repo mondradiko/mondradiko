@@ -12,23 +12,33 @@
 #ifndef SRC_GPU_GPUDESCRIPTORSET_H_
 #define SRC_GPU_GPUDESCRIPTORSET_H_
 
+#include <vector>
+
 #include "gpu/GpuBuffer.h"
 #include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
 
+// TODO(marceline-cramer) Named descriptors
+// TODO(marceline-cramer) Reflection
+
 class GpuDescriptorSet {
  public:
-  GpuDescriptorSet(GpuInstance*, VkDescriptorSet);
+  GpuDescriptorSet(GpuInstance*, VkDescriptorSet, uint32_t);
   ~GpuDescriptorSet();
 
   void updateBuffer(uint32_t, GpuBuffer*);
 
-  VkDescriptorSet descriptor_set;
+  void updateDynamicOffset(uint32_t, uint32_t);
+
+  void cmdBind(VkCommandBuffer, VkPipelineLayout, uint32_t);
 
  private:
   GpuInstance* gpu;
+
+  VkDescriptorSet descriptor_set;
+  std::vector<uint32_t> dynamic_offsets;
 };
 
 }  // namespace mondradiko

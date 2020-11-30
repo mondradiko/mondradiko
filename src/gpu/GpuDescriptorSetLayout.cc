@@ -10,6 +10,7 @@
  */
 
 #include "gpu/GpuDescriptorSetLayout.h"
+
 #include "log/log.h"
 
 namespace mondradiko {
@@ -22,6 +23,8 @@ GpuDescriptorSetLayout::~GpuDescriptorSetLayout() {
 }
 
 void GpuDescriptorSetLayout::addDynamicUniformBuffer() {
+  dynamic_offset_count++;
+
   VkDescriptorSetLayoutBinding dubo_binding{
       .binding = static_cast<uint32_t>(layout_bindings.size()),
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,

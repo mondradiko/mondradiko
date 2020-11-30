@@ -113,9 +113,8 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer,
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
-  vkCmdBindDescriptorSets(
-      commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0, 1,
-      &viewport_descriptor->descriptor_set, 1, &viewport_offset);
+  viewport_descriptor->updateDynamicOffset(0, viewport_offset);
+  viewport_descriptor->cmdBind(commandBuffer, pipeline_layout, 0);
 
   // TODO(marceline-cramer) Actually update and use materials
 

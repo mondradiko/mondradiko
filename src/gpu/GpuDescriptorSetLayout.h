@@ -36,11 +36,13 @@ class GpuDescriptorSetLayout {
   // void addInputAttachment();
 
   VkDescriptorSetLayout getSetLayout();
+  uint32_t getDynamicOffsetCount() { return dynamic_offset_count; }
 
  private:
   GpuInstance* gpu;
 
   std::vector<VkDescriptorSetLayoutBinding> layout_bindings;
+  uint32_t dynamic_offset_count = 0;
 
   VkDescriptorSetLayout set_layout = VK_NULL_HANDLE;
 };
