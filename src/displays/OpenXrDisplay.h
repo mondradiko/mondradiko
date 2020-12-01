@@ -58,14 +58,11 @@ class OpenXrDisplay : public DisplayInterface {
  private:
   GpuInstance* gpu;
 
-  void populateDebugMessengerCreateInfo(XrDebugUtilsMessengerCreateInfoEXT*);
-  void createInstance();
-  void setupDebugMessenger();
-  void findSystem();
-
   void createViewports(Renderer*);
 
-  VkFormat swapchain_format;
+  XrDebugUtilsMessengerCreateInfoEXT debug_messenger_info;
+
+      VkFormat swapchain_format;
 
   std::vector<OpenXrViewport*> viewports;
 

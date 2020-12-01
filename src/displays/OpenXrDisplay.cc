@@ -62,13 +62,89 @@ void splitString(std::vector<std::string>* split, const std::string& source) {
 OpenXrDisplay::OpenXrDisplay() {
   log_zone;
 
-  createInstance();
+  {
+    log_zone_named("Populate debug messenger info");
 
-  if (enable_validation_layers) {
-    setupDebugMessenger();
+    debug_messenger_info = XrDebugUtilsMessengerCreateInfoEXT{
+        .type = XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+        .messageSeverities = XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+                             XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                             XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+        .messageTypes = XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                        XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                        XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
+                        XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT,
+        .userCallback = debugCallback};
   }
 
-  findSystem();
+  {
+    log_zone_named("Create instance");
+
+    XrApplicationInfo appInfo{.applicationVersion = XR_MAKE_VERSION(0, 0, 0),
+                              .engineVersion = MONDRADIKO_OPENXR_VERSION,
+                              .apiVersion = XR_MAKE_VERSION(1, 0, 0)};
+
+    snprintf(appInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE,
+             "Mondradiko Client");
+    snprintf(appInfo.engineName, XR_MAX_ENGINE_NAME_SIZE, MONDRADIKO_NAME);
+
+    std::vector<const char*> extensions{XR_KHR_VULKAN_ENABLE_EXTENSION_NAME,
+                                        XR_EXT_DEBUG_UTILS_EXTENSION_NAME};
+
+    // TODO(marceline-cramer) Validation layers
+    XrInstanceCreateInfo instance_info{
+        .type = XR_TYPE_INSTANCE_CREATE_INFO,
+        .applicationInfo = appInfo,
+        .enabledApiLayerCount = 0,
+        .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
+        .enabledExtensionNames = extensions.data()};
+
+    XrResult result = xrCreateInstance(&instance_info, &instance);
+
+    if (result != XR_SUCCESS || instance == nullptr) {
+      log_ftl(
+          "Failed to create OpenXR instance. Is an OpenXR runtime running?");
+    }
+
+    XR_LOAD_FN_PTR("xrCreateDebugUtilsMessengerEXT",
+                   ext_xrCreateDebugUtilsMessengerEXT);
+
+    XR_LOAD_FN_PTR("xrDestroyDebugUtilsMessengerEXT",
+                   ext_xrDestroyDebugUtilsMessengerEXT);
+
+    XR_LOAD_FN_PTR("xrGetVulkanGraphicsRequirementsKHR",
+                   ext_xrGetVulkanGraphicsRequirementsKHR);
+
+    XR_LOAD_FN_PTR("xrGetVulkanInstanceExtensionsKHR",
+                   ext_xrGetVulkanInstanceExtensionsKHR);
+
+    XR_LOAD_FN_PTR("xrGetVulkanGraphicsDeviceKHR",
+                   ext_xrGetVulkanGraphicsDeviceKHR);
+
+    XR_LOAD_FN_PTR("xrGetVulkanDeviceExtensionsKHR",
+                   ext_xrGetVulkanDeviceExtensionsKHR);
+  }
+
+  if (enable_validation_layers) {
+    log_zone_named("Create debug messenger");
+
+    if (ext_xrCreateDebugUtilsMessengerEXT(instance, &debug_messenger_info,
+                                           &debug_messenger) != XR_SUCCESS) {
+      log_ftl("Failed to create debug messenger.");
+    }
+  }
+
+  {
+    log_zone_named("Find system");
+
+    XrSystemGetInfo systemInfo{
+        .type = XR_TYPE_SYSTEM_GET_INFO,
+        .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY};
+
+    if (xrGetSystem(instance, &systemInfo, &system_id) != XR_SUCCESS) {
+      log_ftl("Failed to find HMD.");
+    }
+  }
 }
 
 OpenXrDisplay::~OpenXrDisplay() {
@@ -368,88 +444,6 @@ void OpenXrDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
       .layers = &layer};
 
   xrEndFrame(session, &endInfo);
-}
-
-void OpenXrDisplay::populateDebugMessengerCreateInfo(
-    XrDebugUtilsMessengerCreateInfoEXT* messenger_info) {
-  *messenger_info = XrDebugUtilsMessengerCreateInfoEXT{
-      .type = XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-      .messageSeverities = XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-                           XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                           XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-      .messageTypes = XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                      XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                      XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
-                      XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT,
-      .userCallback = debugCallback};
-}
-
-void OpenXrDisplay::createInstance() {
-  log_dbg("Creating OpenXR instance.");
-
-  XrApplicationInfo appInfo{.applicationVersion = XR_MAKE_VERSION(0, 0, 0),
-                            .engineVersion = MONDRADIKO_OPENXR_VERSION,
-                            .apiVersion = XR_MAKE_VERSION(1, 0, 0)};
-
-  snprintf(appInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE,
-           "Mondradiko Client");
-  snprintf(appInfo.engineName, XR_MAX_ENGINE_NAME_SIZE, MONDRADIKO_NAME);
-
-  std::vector<const char*> extensions{XR_KHR_VULKAN_ENABLE_EXTENSION_NAME,
-                                      XR_EXT_DEBUG_UTILS_EXTENSION_NAME};
-
-  // TODO(marceline-cramer) Validation layers
-  XrInstanceCreateInfo instance_info{
-      .type = XR_TYPE_INSTANCE_CREATE_INFO,
-      .applicationInfo = appInfo,
-      .enabledApiLayerCount = 0,
-      .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
-      .enabledExtensionNames = extensions.data()};
-
-  XrResult result = xrCreateInstance(&instance_info, &instance);
-
-  if (result != XR_SUCCESS || instance == nullptr) {
-    log_ftl("Failed to create OpenXR instance. Is an OpenXR runtime running?");
-  }
-
-  XR_LOAD_FN_PTR("xrCreateDebugUtilsMessengerEXT",
-                 ext_xrCreateDebugUtilsMessengerEXT);
-
-  XR_LOAD_FN_PTR("xrDestroyDebugUtilsMessengerEXT",
-                 ext_xrDestroyDebugUtilsMessengerEXT);
-
-  XR_LOAD_FN_PTR("xrGetVulkanGraphicsRequirementsKHR",
-                 ext_xrGetVulkanGraphicsRequirementsKHR);
-
-  XR_LOAD_FN_PTR("xrGetVulkanInstanceExtensionsKHR",
-                 ext_xrGetVulkanInstanceExtensionsKHR);
-
-  XR_LOAD_FN_PTR("xrGetVulkanGraphicsDeviceKHR",
-                 ext_xrGetVulkanGraphicsDeviceKHR);
-
-  XR_LOAD_FN_PTR("xrGetVulkanDeviceExtensionsKHR",
-                 ext_xrGetVulkanDeviceExtensionsKHR);
-}
-
-void OpenXrDisplay::setupDebugMessenger() {
-  XrDebugUtilsMessengerCreateInfoEXT messenger_info;
-  populateDebugMessengerCreateInfo(&messenger_info);
-
-  if (ext_xrCreateDebugUtilsMessengerEXT(instance, &messenger_info,
-                                         &debug_messenger) != XR_SUCCESS) {
-    log_ftl("Failed to create OpenXR debug messenger.");
-  }
-}
-
-void OpenXrDisplay::findSystem() {
-  log_dbg("Choosing OpenXR system.");
-
-  XrSystemGetInfo systemInfo{.type = XR_TYPE_SYSTEM_GET_INFO,
-                             .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY};
-
-  if (xrGetSystem(instance, &systemInfo, &system_id) != XR_SUCCESS) {
-    log_ftl("Failed to find OpenXR HMD.");
-  }
 }
 
 void OpenXrDisplay::createViewports(Renderer* renderer) {

@@ -63,12 +63,6 @@ class MeshPipeline {
   AssetPool<MaterialAsset> material_pool;
   AssetPool<MeshAsset> mesh_pool;
   AssetPool<TextureAsset> texture_pool;
-
-  void createSetLayouts();
-  void createPipelineLayout(GpuDescriptorSetLayout*);
-  void createPipeline(VkRenderPass, uint32_t);
-  void createTextureSampler();
-  void createMaterialBuffer();
 };
 
 }  // namespace mondradiko

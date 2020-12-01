@@ -56,12 +56,6 @@ class Renderer {
 
   uint32_t current_frame = 0;
   std::vector<PipelinedFrameData> frames_in_flight;
-
-  void findSwapchainFormat();
-  void createRenderPasses();
-  void createDescriptorSetLayout();
-  void createFrameData();
-  void createPipelines();
 };
 
 }  // namespace mondradiko
