@@ -15,9 +15,7 @@
 
 namespace mondradiko {
 
-TextureAsset::TextureAsset(GpuInstance* gpu, aiTexture* texture,
-                           VkSampler sampler)
-    : sampler(sampler), gpu(gpu) {
+TextureAsset::TextureAsset(GpuInstance* gpu, aiTexture* texture) : gpu(gpu) {
   // By default, load directly from the embedded texture
   void* texData = texture->pcData;
   VkFormat texFormat = VK_FORMAT_R8G8B8A8_SRGB;
@@ -45,10 +43,10 @@ TextureAsset::TextureAsset(GpuInstance* gpu, aiTexture* texture,
     }
   }
 
-  image = new GpuImage(
-      gpu, texFormat, texWidth, texHeight,
-      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-      VMA_MEMORY_USAGE_GPU_ONLY);
+  image =
+      new GpuImage(gpu, texFormat, texWidth, texHeight,
+                   VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                   VMA_MEMORY_USAGE_GPU_ONLY);
 
   image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
   image->writeData(texData);

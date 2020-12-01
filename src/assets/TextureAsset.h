@@ -23,7 +23,7 @@ namespace mondradiko {
 
 class TextureAsset : public Asset {
  public:
-  TextureAsset(GpuInstance*, aiTexture*, VkSampler);
+  TextureAsset(GpuInstance*, aiTexture*);
   ~TextureAsset();
 
   /**
@@ -33,7 +33,6 @@ class TextureAsset : public Asset {
   uint32_t index = 0;
 
   GpuImage* image = nullptr;
-  VkSampler sampler;
 
  private:
   GpuInstance* gpu;
