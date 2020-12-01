@@ -34,11 +34,27 @@ void GpuDescriptorSet::updateBuffer(uint32_t binding, GpuBuffer* buffer) {
   VkWriteDescriptorSet descriptor_writes{
       .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
       .dstSet = descriptor_set,
-      .dstBinding = 0,
+      .dstBinding = binding,
       .dstArrayElement = 0,
       .descriptorCount = 1,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
       .pBufferInfo = &buffer_info};
+
+  vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
+}
+
+void GpuDescriptorSet::updateImage(uint32_t binding, GpuImage* image) {
+  VkDescriptorImageInfo image_info{.imageView = image->view,
+                                   .imageLayout = image->layout};
+
+  VkWriteDescriptorSet descriptor_writes{
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = descriptor_set,
+      .dstBinding = binding,
+      .dstArrayElement = 0,
+      .descriptorCount = 1,
+      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .pImageInfo = &image_info};
 
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
 }
@@ -51,7 +67,7 @@ void GpuDescriptorSet::cmdBind(VkCommandBuffer command_buffer,
                                VkPipelineLayout pipeline_layout,
                                uint32_t binding) {
   vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          pipeline_layout, 0, 1, &descriptor_set,
+                          pipeline_layout, binding, 1, &descriptor_set,
                           static_cast<uint32_t>(dynamic_offsets.size()),
                           dynamic_offsets.data());
 }

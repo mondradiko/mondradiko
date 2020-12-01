@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "gpu/GpuBuffer.h"
+#include "gpu/GpuImage.h"
 #include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
@@ -32,6 +33,7 @@ class GpuDescriptorSet {
   ~GpuDescriptorSet();
 
   void updateBuffer(uint32_t, GpuBuffer*);
+  void updateImage(uint32_t, GpuImage*);
 
   void updateDynamicOffset(uint32_t, uint32_t);
 
