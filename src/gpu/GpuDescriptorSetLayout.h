@@ -26,7 +26,7 @@ class GpuDescriptorSetLayout {
   // TODO(marceline-cramer) SPIR-V reflection w/ stage flags
   // TODO(marceline-cramer) Implement these as needed
   // void addSampler();
-  // void addCombinedImageSampler();
+  void addCombinedImageSampler(VkSampler);
   // void addSampledImage();
   // void addStorageImage();
   // void addUniformTexelBuffer();
@@ -43,6 +43,7 @@ class GpuDescriptorSetLayout {
   GpuInstance* gpu;
 
   std::vector<VkDescriptorSetLayoutBinding> layout_bindings;
+  std::vector<VkSampler> immutable_samplers;
   std::vector<uint32_t> buffer_sizes;
   uint32_t dynamic_offset_count = 0;
 
