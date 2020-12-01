@@ -17,6 +17,7 @@
 #include "assets/Asset.h"
 #include "assets/AssetHandle.h"
 #include "assets/TextureAsset.h"
+#include "gpu/GpuDescriptorSet.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
@@ -33,14 +34,9 @@ class MaterialAsset : public Asset {
   ~MaterialAsset();
 
   void updateUniform(MaterialUniform*);
+  void updateDescriptor(GpuDescriptorSet*);
 
   AssetHandle<TextureAsset> albedo_texture;
-
-  /**
-   * @brief Stores the index into the CURRENT FRAME's material array.
-   * 
-   */
-  uint32_t index = 0;
 
  private:
   MeshPipeline* mesh_pipeline;

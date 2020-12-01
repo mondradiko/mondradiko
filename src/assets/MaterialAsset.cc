@@ -31,4 +31,8 @@ void MaterialAsset::updateUniform(MaterialUniform *uniform) {
   uniform->albedo_texture = albedo_texture->index;
 }
 
+void MaterialAsset::updateDescriptor(GpuDescriptorSet *descriptor_set) {
+  descriptor_set->updateImage(0, albedo_texture->image);
+}
+
 }  // namespace mondradiko
