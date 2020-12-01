@@ -25,6 +25,7 @@
 #include "components/MeshRendererComponent.h"
 #include "gpu/GpuDescriptorSet.h"
 #include "gpu/GpuDescriptorSetLayout.h"
+#include "gpu/GpuDescriptorPool.h"
 #include "gpu/GpuInstance.h"
 #include "src/api_headers.h"
 
@@ -35,7 +36,7 @@ class MeshPipeline {
   MeshPipeline(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
   ~MeshPipeline();
 
-  void updateDescriptors(VkDescriptorSet);  // unused for now
+  void allocateDescriptors(GpuDescriptorPool*);
   void render(VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 
   MeshRendererComponent* createMeshRenderer(std::string, const aiScene*,
@@ -63,6 +64,9 @@ class MeshPipeline {
   AssetPool<MaterialAsset> material_pool;
   AssetPool<MeshAsset> mesh_pool;
   AssetPool<TextureAsset> texture_pool;
+
+  // Non-persistent frame data
+  std::map<AssetHandle<MaterialAsset>, GpuDescriptorSet*> frame_materials;
 };
 
 }  // namespace mondradiko

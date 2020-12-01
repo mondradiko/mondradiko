@@ -30,9 +30,36 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
   log_zone;
 
   {
+    log_zone_named("Create texture sampler");
+
+    VkSamplerCreateInfo sampler_info{
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = 0.0f,
+        // TODO(marceline-cramer) Anisotropy support
+        .anisotropyEnable = VK_FALSE,
+        .compareEnable = VK_FALSE,
+        .minLod = 0.0f,
+        .maxLod = 0.0f,
+        .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = VK_FALSE};
+
+    if (vkCreateSampler(gpu->device, &sampler_info, nullptr,
+                        &texture_sampler) != VK_SUCCESS) {
+      log_ftl("Failed to create texture sampler.");
+    }
+  }
+
+  {
     log_zone_named("Create set layouts");
 
     material_layout = new GpuDescriptorSetLayout(gpu);
+    material_layout->addCombinedImageSampler(texture_sampler);
   }
 
   {
@@ -162,32 +189,6 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
   }
 
   {
-    log_zone_named("Create texture sampler");
-
-    VkSamplerCreateInfo sampler_info{
-        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .magFilter = VK_FILTER_LINEAR,
-        .minFilter = VK_FILTER_LINEAR,
-        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .mipLodBias = 0.0f,
-        // TODO(marceline-cramer) Anisotropy support
-        .anisotropyEnable = VK_FALSE,
-        .compareEnable = VK_FALSE,
-        .minLod = 0.0f,
-        .maxLod = 0.0f,
-        .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-        .unnormalizedCoordinates = VK_FALSE};
-
-    if (vkCreateSampler(gpu->device, &sampler_info, nullptr,
-                        &texture_sampler) != VK_SUCCESS) {
-      log_ftl("Failed to create texture sampler.");
-    }
-  }
-
-  {
     log_zone_named("Create buffers");
 
     material_buffer = new GpuBuffer(gpu, 128 * sizeof(MaterialUniform),
@@ -209,60 +210,21 @@ MeshPipeline::~MeshPipeline() {
   if (material_layout != nullptr) delete material_layout;
 }
 
-void MeshPipeline::updateDescriptors(VkDescriptorSet descriptors) {
+void MeshPipeline::allocateDescriptors(GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  std::vector<VkDescriptorImageInfo> texture_infos;
+  frame_materials.clear();
+  for (auto mesh_renderer : mesh_renderers) {
+    auto mesh_material = mesh_renderer->material_asset;
+    auto iter = frame_materials.find(mesh_material);
 
-  for (auto& iter : texture_pool.pool) {
-    auto& texture = iter.second;
-
-    texture->index = texture_infos.size();
-    texture_infos.push_back(VkDescriptorImageInfo{
-        .sampler = texture->sampler,
-        .imageView = texture->image->view,
-        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
+    if (iter == frame_materials.end()) {
+      GpuDescriptorSet* material_descriptor =
+          descriptor_pool->allocate(material_layout);
+      mesh_material->updateDescriptor(material_descriptor);
+      frame_materials.emplace(mesh_material, material_descriptor);
+    }
   }
-
-  std::vector<VkWriteDescriptorSet> descriptor_writes;
-
-  descriptor_writes.push_back(VkWriteDescriptorSet{
-      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-      .dstSet = descriptors,
-      .dstBinding = 1,
-      .dstArrayElement = 0,
-      .descriptorCount = static_cast<uint32_t>(texture_infos.size()),
-      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-      .pImageInfo = texture_infos.data()});
-
-  std::vector<MaterialUniform> materials(64);
-  uint32_t material_index = 0;
-
-  for (auto& iter : material_pool.pool) {
-    auto& material = iter.second;
-
-    material->index = material_index;
-    material->updateUniform(&materials[material_index]);
-    material_index++;
-  }
-
-  material_buffer->writeData(materials.data());
-
-  VkDescriptorBufferInfo material_info{.buffer = material_buffer->buffer,
-                                       .offset = 0,
-                                       .range = material_buffer->buffer_size};
-
-  descriptor_writes.push_back(
-      VkWriteDescriptorSet{.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                           .dstSet = descriptors,
-                           .dstBinding = 2,
-                           .dstArrayElement = 0,
-                           .descriptorCount = 1,
-                           .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                           .pBufferInfo = &material_info});
-
-  vkUpdateDescriptorSets(gpu->device, descriptor_writes.size(),
-                         descriptor_writes.data(), 0, nullptr);
 }
 
 void MeshPipeline::render(VkCommandBuffer commandBuffer,
@@ -279,6 +241,9 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer,
   // TODO(marceline-cramer) Actually update and use materials
 
   for (auto mesh_renderer : mesh_renderers) {
+    frame_materials.find(mesh_renderer->material_asset)
+        ->second->cmdBind(commandBuffer, pipeline_layout, 1);
+
     VkBuffer vertex_buffers[] = {
         mesh_renderer->mesh_asset->vertex_buffer->buffer};
     VkDeviceSize offsets[] = {0};
@@ -363,8 +328,8 @@ AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string filename,
     auto cached_texture = texture_pool.findCached(textureName);
 
     if (!cached_texture) {
-      cached_texture = texture_pool.load(
-          textureName, new TextureAsset(gpu, texture, texture_sampler));
+      cached_texture =
+          texture_pool.load(textureName, new TextureAsset(gpu, texture));
     }
 
     return cached_texture;

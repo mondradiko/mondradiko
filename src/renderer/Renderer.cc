@@ -157,7 +157,8 @@ void Renderer::renderFrame() {
 
     viewport_descriptor = frame->descriptor_pool->allocate(viewport_layout);
     viewport_descriptor->updateBuffer(0, frame->viewports);
-    // mesh_pipeline->updateDescriptors(frame->viewport_descriptor);
+
+    mesh_pipeline->allocateDescriptors(frame->descriptor_pool);
   }
 
   std::vector<ViewportInterface*> viewports;
