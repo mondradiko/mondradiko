@@ -25,6 +25,10 @@ class AssetHandle {
   operator bool() { return ptr; }
   void operator=(const AssetHandle<T>&);
 
+  friend bool operator<(const AssetHandle<T>& lhs, const AssetHandle<T>& rhs) {
+    return lhs.ptr < rhs.ptr;
+  }
+
  private:
   T* ptr;
 };
