@@ -35,7 +35,7 @@ bool Filesystem::exists(const char* fileName) {
 }
 
 bool Filesystem::loadBinaryFile(const char* filename,
-                                std::vector<char>* buffer) {
+                                std::vector<unsigned char>* buffer) {
   std::ostringstream infoMessage;
   infoMessage << "Loading file '" << filename << "'.";
   log_inf(infoMessage.str().c_str());

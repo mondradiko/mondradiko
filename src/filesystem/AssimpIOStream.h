@@ -34,7 +34,7 @@ class AssimpIOStream : public Assimp::IOStream {
  private:
   Filesystem* fs;
 
-  std::vector<char> contents;
+  std::vector<unsigned char> contents;
   size_t position;
 };
 

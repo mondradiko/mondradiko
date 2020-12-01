@@ -26,7 +26,7 @@ class Filesystem {
   const char* archive;
 
   bool exists(const char*);
-  bool loadBinaryFile(const char*, std::vector<char>*);
+  bool loadBinaryFile(const char*, std::vector<unsigned char>*);
 
  private:
 };
