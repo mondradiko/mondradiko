@@ -74,7 +74,7 @@ physfs = dependency('physfs')
 sdl2 = dependency('sdl2')
 
 subdir('lib')
-subdir('shaders')
+subdir('src')
 
 dependencies = [
     openxr,
