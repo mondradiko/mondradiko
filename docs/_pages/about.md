@@ -37,6 +37,8 @@ performance are:
 - Fixed foveated rendering (and dynamic foveated rendering, when available)
 - Clustered forward+ shading, with clusters shared between views
 - Light bloom, flare, and halo effects modeled around the human eye
+- Only rendering per-eye for close-up objects, and sharing a separately
+  rendered view for farther away objects
 
 Luckily, some post-processing effects that you may find in other rendering
 engines, like motion blur or depth-of-field, are VR-unfriendly, and can
