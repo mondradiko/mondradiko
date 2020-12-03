@@ -17,8 +17,6 @@
 
 #include "filesystem/Filesystem.h"
 #include "renderer/Renderer.h"
-#include "scene/Entity.h"
-#include "src/api_headers.h"
 
 namespace mondradiko {
 
@@ -34,9 +32,10 @@ class Scene {
   Filesystem* fs;
   Renderer* renderer;
 
- private:
-  Entity root_entity;
+  // TODO(marceline-cramer) Move session lifetime to Scene
+  entt::registry registry;
 
+ private:
   Assimp::Importer importer;
 };
 

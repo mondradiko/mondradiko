@@ -21,8 +21,7 @@
 
 namespace mondradiko {
 
-Scene::Scene(Filesystem* fs, Renderer* renderer)
-    : fs(fs), renderer(renderer), root_entity(this) {
+Scene::Scene(Filesystem* fs, Renderer* renderer) : fs(fs), renderer(renderer) {
   log_zone;
 
   // Abandon all hope, ye who enter here.
@@ -59,8 +58,24 @@ bool Scene::loadModel(const char* fileName) {
     return false;
   }
 
-  root_entity.addChild(
-      new Entity(this, fileName, modelScene, modelScene->mRootNode));
+  aiNode* root_node = modelScene->mRootNode;
+  auto node_entity = registry.create();
+
+  if (root_node->mNumChildren > 0) {
+    log_err("Child nodes are unsupported for now");
+  }
+
+  for (uint32_t i = 0; i < root_node->mNumMeshes; i++) {
+    uint32_t mesh_index = root_node->mMeshes[i];
+    uint32_t material_index = modelScene->mMeshes[mesh_index]->mMaterialIndex;
+
+    MeshRendererComponent& mesh_renderer_component =
+        registry.emplace<MeshRendererComponent>(node_entity);
+    mesh_renderer_component.mesh_asset =
+        renderer->loadMesh(fileName, modelScene, mesh_index);
+    mesh_renderer_component.material_asset =
+        renderer->loadMaterial(fileName, modelScene, material_index);
+  }
 
   // aiScene is freed automatically
   return true;

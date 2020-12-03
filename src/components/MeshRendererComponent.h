@@ -15,24 +15,14 @@
 #include "assets/AssetHandle.h"
 #include "assets/MaterialAsset.h"
 #include "assets/MeshAsset.h"
-#include "components/Component.h"
 #include "src/api_headers.h"
 
 namespace mondradiko {
 
-class MeshPipeline;  // Forward declaration because of codependence
-
-class MeshRendererComponent : public Component {
+class MeshRendererComponent {
  public:
-  MeshRendererComponent(MeshPipeline*, AssetHandle<MeshAsset>&,
-                        AssetHandle<MaterialAsset>&);
-  ~MeshRendererComponent();
-
   AssetHandle<MeshAsset> mesh_asset;
   AssetHandle<MaterialAsset> material_asset;
-
- private:
-  MeshPipeline* mesh_pipeline;
 };
 
 }  // namespace mondradiko
