@@ -210,12 +210,15 @@ MeshPipeline::~MeshPipeline() {
   if (material_layout != nullptr) delete material_layout;
 }
 
-void MeshPipeline::allocateDescriptors(GpuDescriptorPool* descriptor_pool) {
+void MeshPipeline::allocateDescriptors(entt::registry& registry,
+                                       GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
   frame_materials.clear();
-  for (auto mesh_renderer : mesh_renderers) {
-    auto mesh_material = mesh_renderer->material_asset;
+  auto mesh_renderers = registry.view<MeshRendererComponent>();
+  for (auto e : mesh_renderers) {
+    auto mesh_renderer = mesh_renderers.get(e);
+    auto mesh_material = mesh_renderer.material_asset;
     auto iter = frame_materials.find(mesh_material);
 
     if (iter == frame_materials.end()) {
@@ -227,7 +230,8 @@ void MeshPipeline::allocateDescriptors(GpuDescriptorPool* descriptor_pool) {
   }
 }
 
-void MeshPipeline::render(VkCommandBuffer commandBuffer,
+void MeshPipeline::render(entt::registry& registry,
+                          VkCommandBuffer commandBuffer,
                           GpuDescriptorSet* viewport_descriptor,
                           uint32_t viewport_offset) {
   log_zone;
@@ -240,102 +244,23 @@ void MeshPipeline::render(VkCommandBuffer commandBuffer,
 
   // TODO(marceline-cramer) Actually update and use materials
 
-  for (auto mesh_renderer : mesh_renderers) {
-    frame_materials.find(mesh_renderer->material_asset)
+  auto mesh_renderers = registry.view<MeshRendererComponent>();
+  for (auto e : mesh_renderers) {
+    log_zone_named("Render mesh");
+
+    auto mesh_renderer = mesh_renderers.get(e);
+    frame_materials.find(mesh_renderer.material_asset)
         ->second->cmdBind(commandBuffer, pipeline_layout, 1);
 
     VkBuffer vertex_buffers[] = {
-        mesh_renderer->mesh_asset->vertex_buffer->buffer};
+        mesh_renderer.mesh_asset->vertex_buffer->buffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer,
-                         mesh_renderer->mesh_asset->index_buffer->buffer, 0,
+                         mesh_renderer.mesh_asset->index_buffer->buffer, 0,
                          VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(commandBuffer, mesh_renderer->mesh_asset->index_count, 1,
+    vkCmdDrawIndexed(commandBuffer, mesh_renderer.mesh_asset->index_count, 1,
                      0, 0, 0);
-  }
-}
-
-MeshRendererComponent* MeshPipeline::createMeshRenderer(
-    std::string filename, const aiScene* model_scene, uint32_t mesh_index) {
-  log_zone;
-
-  aiMesh* mesh = model_scene->mMeshes[mesh_index];
-  auto mesh_asset = loadMesh(filename, model_scene, mesh_index);
-  auto material_asset =
-      loadMaterial(filename, model_scene, mesh->mMaterialIndex);
-
-  return new MeshRendererComponent(this, mesh_asset, material_asset);
-}
-
-AssetHandle<MaterialAsset> MeshPipeline::loadMaterial(
-    std::string filename, const aiScene* model_scene, uint32_t material_index) {
-  log_zone;
-
-  aiMaterial* material = model_scene->mMaterials[material_index];
-  std::string material_name =
-      filename + '/' + std::string(material->GetName().C_Str());
-
-  auto cached_material = material_pool.findCached(material_name);
-
-  if (!cached_material) {
-    cached_material = material_pool.load(
-        material_name,
-        new MaterialAsset(this, filename, model_scene, material));
-  }
-
-  return cached_material;
-}
-
-AssetHandle<MeshAsset> MeshPipeline::loadMesh(std::string filename,
-                                              const aiScene* model_scene,
-                                              uint32_t mesh_index) {
-  log_zone;
-
-  aiMesh* mesh = model_scene->mMeshes[mesh_index];
-  std::string mesh_name = filename + '/' + std::string(mesh->mName.C_Str());
-
-  auto cached_mesh = mesh_pool.findCached(mesh_name);
-
-  if (!cached_mesh) {
-    cached_mesh =
-        mesh_pool.load(mesh_name, new MeshAsset(mesh_name, gpu, mesh));
-  }
-
-  return cached_mesh;
-}
-
-AssetHandle<TextureAsset> MeshPipeline::loadTexture(std::string filename,
-                                                    const aiScene* model_scene,
-                                                    aiString texture_string) {
-  log_zone;
-  log_dbg(texture_string.C_Str());
-
-  // If the texture is embedded, it'll begin with a '*'
-  if (texture_string.C_Str()[0] == '*') {
-    // The rest of the string contains the index
-    uint32_t texture_index = atoi(texture_string.C_Str() + 1);
-
-    aiTexture* texture = model_scene->mTextures[texture_index];
-    std::ostringstream texture_format;
-    texture_format << filename + '/';
-    texture_format << texture->mFilename.C_Str() << "_";
-    texture_format << texture_index;
-
-    std::string textureName = texture_format.str();
-    log_err(textureName.c_str());
-
-    auto cached_texture = texture_pool.findCached(textureName);
-
-    if (!cached_texture) {
-      cached_texture =
-          texture_pool.load(textureName, new TextureAsset(gpu, texture));
-    }
-
-    return cached_texture;
-  } else {
-    log_ftl("Unable to load non-embedded textures.");
-    return AssetHandle<TextureAsset>(nullptr);
   }
 }
 

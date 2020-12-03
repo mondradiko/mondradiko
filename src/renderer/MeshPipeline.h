@@ -36,16 +36,8 @@ class MeshPipeline {
   MeshPipeline(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
   ~MeshPipeline();
 
-  void allocateDescriptors(GpuDescriptorPool*);
-  void render(VkCommandBuffer, GpuDescriptorSet*, uint32_t);
-
-  MeshRendererComponent* createMeshRenderer(std::string, const aiScene*,
-                                            uint32_t);
-
-  AssetHandle<MaterialAsset> loadMaterial(std::string, const aiScene*,
-                                          uint32_t);
-  AssetHandle<MeshAsset> loadMesh(std::string, const aiScene*, uint32_t);
-  AssetHandle<TextureAsset> loadTexture(std::string, const aiScene*, aiString);
+  void allocateDescriptors(entt::registry&, GpuDescriptorPool*);
+  void render(entt::registry&, VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 
   GpuDescriptorSetLayout* material_layout;
 
@@ -54,16 +46,10 @@ class MeshPipeline {
 
   VkSampler texture_sampler = VK_NULL_HANDLE;
 
-  std::set<MeshRendererComponent*> mesh_renderers;
-
   GpuBuffer* material_buffer = nullptr;
 
  private:
   GpuInstance* gpu;
-
-  AssetPool<MaterialAsset> material_pool;
-  AssetPool<MeshAsset> mesh_pool;
-  AssetPool<TextureAsset> texture_pool;
 
   // Non-persistent frame data
   std::map<AssetHandle<MaterialAsset>, GpuDescriptorSet*> frame_materials;

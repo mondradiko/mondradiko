@@ -124,7 +124,7 @@ Renderer::~Renderer() {
     vkDestroyRenderPass(gpu->device, composite_pass, nullptr);
 }
 
-void Renderer::renderFrame() {
+void Renderer::renderFrame(entt::registry& registry) {
   log_zone;
 
   {
@@ -158,7 +158,7 @@ void Renderer::renderFrame() {
     viewport_descriptor = frame->descriptor_pool->allocate(viewport_layout);
     viewport_descriptor->updateBuffer(0, frame->viewports);
 
-    mesh_pipeline->allocateDescriptors(frame->descriptor_pool);
+    mesh_pipeline->allocateDescriptors(registry, frame->descriptor_pool);
   }
 
   std::vector<ViewportInterface*> viewports;
@@ -183,7 +183,8 @@ void Renderer::renderFrame() {
       viewports[viewport_index]->acquire();
       viewports[viewport_index]->beginRenderPass(frame->command_buffer,
                                                  composite_pass);
-      mesh_pipeline->render(frame->command_buffer, viewport_descriptor,
+      mesh_pipeline->render(registry, frame->command_buffer,
+                            viewport_descriptor,
                             viewport_index * sizeof(ViewportUniform));
       vkCmdEndRenderPass(frame->command_buffer);
     }
@@ -238,6 +239,78 @@ void Renderer::renderFrame() {
          viewportIndex++) {
       viewports[viewportIndex]->release();
     }
+  }
+}
+
+AssetHandle<MaterialAsset> Renderer::loadMaterial(std::string filename,
+                                                  const aiScene* model_scene,
+                                                  uint32_t material_index) {
+  log_zone;
+
+  aiMaterial* material = model_scene->mMaterials[material_index];
+  std::string material_name =
+      filename + '/' + std::string(material->GetName().C_Str());
+
+  auto cached_material = material_pool.findCached(material_name);
+
+  if (!cached_material) {
+    cached_material = material_pool.load(
+        material_name,
+        new MaterialAsset(this, filename, model_scene, material));
+  }
+
+  return cached_material;
+}
+
+AssetHandle<MeshAsset> Renderer::loadMesh(std::string filename,
+                                          const aiScene* model_scene,
+                                          uint32_t mesh_index) {
+  log_zone;
+
+  aiMesh* mesh = model_scene->mMeshes[mesh_index];
+  std::string mesh_name = filename + '/' + std::string(mesh->mName.C_Str());
+
+  auto cached_mesh = mesh_pool.findCached(mesh_name);
+
+  if (!cached_mesh) {
+    cached_mesh =
+        mesh_pool.load(mesh_name, new MeshAsset(mesh_name, gpu, mesh));
+  }
+
+  return cached_mesh;
+}
+
+AssetHandle<TextureAsset> Renderer::loadTexture(std::string filename,
+                                                const aiScene* model_scene,
+                                                aiString texture_string) {
+  log_zone;
+  log_dbg(texture_string.C_Str());
+
+  // If the texture is embedded, it'll begin with a '*'
+  if (texture_string.C_Str()[0] == '*') {
+    // The rest of the string contains the index
+    uint32_t texture_index = atoi(texture_string.C_Str() + 1);
+
+    aiTexture* texture = model_scene->mTextures[texture_index];
+    std::ostringstream texture_format;
+    texture_format << filename + '/';
+    texture_format << texture->mFilename.C_Str() << "_";
+    texture_format << texture_index;
+
+    std::string textureName = texture_format.str();
+    log_err(textureName.c_str());
+
+    auto cached_texture = texture_pool.findCached(textureName);
+
+    if (!cached_texture) {
+      cached_texture =
+          texture_pool.load(textureName, new TextureAsset(gpu, texture));
+    }
+
+    return cached_texture;
+  } else {
+    log_ftl("Unable to load non-embedded textures.");
+    return AssetHandle<TextureAsset>(nullptr);
   }
 }
 
