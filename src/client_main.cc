@@ -69,7 +69,7 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu,
       }
 
       if (frame_info.should_render) {
-        renderer.renderFrame();
+        renderer.renderFrame(scene.registry);
       }
 
       display->endFrame(&frame_info);
