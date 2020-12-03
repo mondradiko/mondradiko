@@ -49,4 +49,6 @@
 
 #include "tracy/Tracy.hpp"
 
+#include "lib/entt.hpp"
+
 #endif  // SRC_API_HEADERS_H_

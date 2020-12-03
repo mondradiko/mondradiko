@@ -6,7 +6,8 @@ project('mondradiko', 'cpp')
 cpp = meson.get_compiler('cpp')
 
 add_project_arguments(cpp.get_supported_arguments([
-    '-DTRACY_ENABLE'
+    '-DTRACY_ENABLE',
+    '-std=c++17'
 ]), language: 'cpp')
 
 majorVersion = 0
@@ -34,8 +35,6 @@ src = [
     'src/assets/MaterialAsset.cc',
     'src/assets/MeshAsset.cc',
     'src/assets/TextureAsset.cc',
-    'src/components/Component.cc',
-    'src/components/MeshRendererComponent.cc',
     'src/displays/OpenXrDisplay.cc',
     'src/displays/OpenXrViewport.cc',
     'src/displays/SdlDisplay.cc',
@@ -55,7 +54,6 @@ src = [
     'src/log/log.cc',
     'src/network/NetworkClient.cc',
     'src/network/NetworkShared.cc',
-    'src/scene/Entity.cc',
     'src/scene/Scene.cc',
 ]
 
