@@ -22,7 +22,7 @@
 
 namespace mondradiko {
 
-class MeshPipeline;  // Forward declaration because of codependence
+class Renderer;  // Forward declaration because of codependence
 
 struct MaterialUniform {
   uint32_t albedo_texture;
@@ -30,7 +30,7 @@ struct MaterialUniform {
 
 class MaterialAsset : public Asset {
  public:
-  MaterialAsset(MeshPipeline*, std::string, const aiScene*, aiMaterial*);
+  MaterialAsset(Renderer*, std::string, const aiScene*, aiMaterial*);
   ~MaterialAsset();
 
   void updateUniform(MaterialUniform*);
@@ -39,7 +39,7 @@ class MaterialAsset : public Asset {
   AssetHandle<TextureAsset> albedo_texture;
 
  private:
-  MeshPipeline* mesh_pipeline;
+  Renderer* renderer;
 };
 
 }  // namespace mondradiko

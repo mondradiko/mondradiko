@@ -13,16 +13,16 @@
 
 #include <string>
 
-#include "renderer/MeshPipeline.h"
+#include "renderer/Renderer.h"
 
 namespace mondradiko {
 
-MaterialAsset::MaterialAsset(MeshPipeline *mesh_pipeline, std::string filename,
+MaterialAsset::MaterialAsset(Renderer *renderer, std::string filename,
                              const aiScene *model_scene, aiMaterial *material)
-    : mesh_pipeline(mesh_pipeline) {
+    : renderer(renderer) {
   aiString baseColor;
   material->GetTexture(aiTextureType_DIFFUSE, 0, &baseColor);
-  albedo_texture = mesh_pipeline->loadTexture(filename, model_scene, baseColor);
+  albedo_texture = renderer->loadTexture(filename, model_scene, baseColor);
 }
 
 MaterialAsset::~MaterialAsset() {}
