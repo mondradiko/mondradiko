@@ -13,7 +13,7 @@
 #define SRC_LOG_ASSIMPLOGSTREAM_H_
 
 #include "log/log.h"
-#include "src/api_headers.h"
+#include "common/api_headers.h"
 
 namespace mondradiko {
 

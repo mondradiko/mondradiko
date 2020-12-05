@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "common/api_headers.h"
 #include "displays/OpenXrDisplay.h"
 #include "displays/SdlDisplay.h"
 #include "filesystem/Filesystem.h"
@@ -21,7 +22,6 @@
 #include "network/NetworkClient.h"
 #include "renderer/Renderer.h"
 #include "scene/Scene.h"
-#include "src/api_headers.h"
 
 // The using statement is fine because
 // this is the main entrypoint

@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "displays/DisplayInterface.h"
-#include "src/api_headers.h"
+#include "common/api_headers.h"
 
 namespace mondradiko {
 

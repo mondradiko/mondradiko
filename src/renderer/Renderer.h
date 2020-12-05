@@ -18,7 +18,7 @@
 #include "gpu/GpuDescriptorPool.h"
 #include "gpu/GpuInstance.h"
 #include "renderer/MeshPipeline.h"
-#include "src/api_headers.h"
+#include "common/api_headers.h"
 
 namespace mondradiko {
 

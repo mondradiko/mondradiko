@@ -17,7 +17,7 @@
 #include "displays/DisplayInterface.h"
 #include "displays/SdlViewport.h"
 #include "gpu/GpuInstance.h"
-#include "src/api_headers.h"
+#include "common/api_headers.h"
 
 namespace mondradiko {
 

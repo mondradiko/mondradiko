@@ -13,7 +13,7 @@
 #define SRC_FILESYSTEM_ASSIMPIOSYSTEM_H_
 
 #include "filesystem/Filesystem.h"
-#include "src/api_headers.h"
+#include "common/api_headers.h"
 
 namespace mondradiko {
 

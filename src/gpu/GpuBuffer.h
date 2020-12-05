@@ -13,7 +13,7 @@
 #define SRC_GPU_GPUBUFFER_H_
 
 #include "gpu/GpuInstance.h"
-#include "src/api_headers.h"
+#include "common/api_headers.h"
 
 namespace mondradiko {
 

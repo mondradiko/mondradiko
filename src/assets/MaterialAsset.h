@@ -17,8 +17,8 @@
 #include "assets/Asset.h"
 #include "assets/AssetHandle.h"
 #include "assets/TextureAsset.h"
+#include "common/api_headers.h"
 #include "gpu/GpuDescriptorSet.h"
-#include "src/api_headers.h"
 
 namespace mondradiko {
 

@@ -15,7 +15,7 @@
 #include "assets/AssetHandle.h"
 #include "assets/MaterialAsset.h"
 #include "assets/MeshAsset.h"
-#include "src/api_headers.h"
+#include "common/api_headers.h"
 
 namespace mondradiko {
 

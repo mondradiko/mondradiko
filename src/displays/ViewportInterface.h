@@ -12,7 +12,7 @@
 #ifndef SRC_DISPLAYS_VIEWPORTINTERFACE_H_
 #define SRC_DISPLAYS_VIEWPORTINTERFACE_H_
 
-#include "src/api_headers.h"
+#include "common/api_headers.h"
 
 namespace mondradiko {
 
