@@ -13,12 +13,14 @@
 #ifndef SRC_BUILD_CONFIG_H_
 #define SRC_BUILD_CONFIG_H_
 
-#define MONDRADIKO_NAME "@name@"
-#define MONDRADIKO_VERSION "@version@"
+#define MONDRADIKO_NAME "Mondradiko"
+#define MONDRADIKO_VERSION "@Mondradiko_VERSION@"
 
-#define MONDRADIKO_OPENXR_VERSION \
-  XR_MAKE_VERSION(@majorVersion@, @minorVersion@, @patchVersion@)
-#define MONDRADIKO_VULKAN_VERSION \
-  VK_MAKE_VERSION(@majorVersion@, @minorVersion@, @patchVersion@)
+#define MONDRADIKO_OPENXR_VERSION                                           \
+  XR_MAKE_VERSION(@Mondradiko_VERSION_MAJOR@, @Mondradiko_VERSION_MINOR@, \
+                  @Mondradiko_VERSION_PATCH@)
+#define MONDRADIKO_VULKAN_VERSION                                           \
+  VK_MAKE_VERSION(@Mondradiko_VERSION_MAJOR@, @Mondradiko_VERSION_MINOR@, \
+                  @Mondradiko_VERSION_PATCH@)
 
 #endif  // SRC_BUILD_CONFIG_H_
