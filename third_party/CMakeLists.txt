@@ -1,6 +1,9 @@
 # Copyright (c) 2020 Marceline Cramer
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+add_subdirectory(assimp)
+include_directories("assimp/include")
+
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(THIRD_PARTY_SRC
@@ -9,6 +12,7 @@ set(THIRD_PARTY_SRC
 )
 
 add_library(third_party STATIC ${THIRD_PARTY_SRC})
+target_link_libraries(third_party assimp)
 
 # find_package(assimp REQUIRED)
 # target_link_libraries(third_party assimp::assimp)
