@@ -57,6 +57,6 @@ Built with [CMake](https://cmake.org/):
 ```
 mkdir builddir
 cd builddir
-cmake -GNinja ..
-ninja
+cmake ..
+make
 ```
