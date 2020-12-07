@@ -27,50 +27,53 @@
 // this is the main entrypoint
 using namespace mondradiko;  // NOLINT
 
-Scene* g_scene = nullptr;
+bool g_interrupted = false;
 
 void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
 
-  if (g_scene) g_scene->signalExit();
+  g_interrupted = true;
 
   return;
 }
 
-void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu,
-                  NetworkClient* client) {
+void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   if (!display->createSession(gpu)) {
     log_ftl("Failed to create display session!");
   }
 
   Renderer renderer(display, gpu);
-
   Scene scene(display, fs, gpu, &renderer);
-  g_scene = &scene;
+  NetworkClient client(&scene, "127.0.0.1", 10555);
 
   scene.loadModel("DamagedHelmet.gltf");
-  scene.run(client);
+  
+  while (!g_interrupted) {
+    scene.update();
+
+    ClientEvent event;
+    while (client.readEvent(&event)) {
+      log_dbg("Received client event.");
+    }
+  }
 
   display->destroySession();
-  g_scene = nullptr;
 }
 
 void player_session_run(const char* server_address, int port) {
   Filesystem fs("../test-folder/");
   OpenXrDisplay display;
   GpuInstance gpu(&display);
-  NetworkClient client(server_address, port);
 
-  session_loop(&fs, &display, &gpu, &client);
+  session_loop(&fs, &display, &gpu);
 }
 
 void spectator_session_run(const char* server_address, int port) {
   Filesystem fs("../test-folder/");
   SdlDisplay display;
   GpuInstance gpu(&display);
-  NetworkClient client(server_address, port);
 
-  session_loop(&fs, &display, &gpu, &client);
+  session_loop(&fs, &display, &gpu);
 }
 
 int main(int argc, const char* argv[]) {
