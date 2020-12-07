@@ -36,7 +36,6 @@ set(MONDRADIKO_CORE_SRC
   scene/Scene.cc
 )
 
-message(${SHADER_HEADERS})
 add_library(mondradiko-core STATIC ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
 target_link_libraries(mondradiko-core third_party)
 
