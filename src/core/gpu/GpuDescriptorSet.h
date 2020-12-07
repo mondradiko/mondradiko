@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_GPU_GPUDESCRIPTORSET_H_
-#define SRC_GPU_GPUDESCRIPTORSET_H_
+#pragma once
 
 #include <vector>
 
@@ -48,5 +47,3 @@ class GpuDescriptorSet {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_GPU_GPUDESCRIPTORSET_H_

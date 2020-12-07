@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_ASSETS_MATERIALASSET_H_
-#define SRC_ASSETS_MATERIALASSET_H_
+#pragma once
 
 #include <string>
 
@@ -43,5 +42,3 @@ class MaterialAsset : public Asset {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_ASSETS_MATERIALASSET_H_

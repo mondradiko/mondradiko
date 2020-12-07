@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_DISPLAYS_SDLVIEWPORT_H_
-#define SRC_DISPLAYS_SDLVIEWPORT_H_
+#pragma once
 
 #include <vector>
 
@@ -48,5 +47,3 @@ class SdlViewport : public ViewportInterface {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_DISPLAYS_SDLVIEWPORT_H_

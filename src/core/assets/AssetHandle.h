@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_ASSETS_ASSETHANDLE_H_
-#define SRC_ASSETS_ASSETHANDLE_H_
+#pragma once
 
 namespace mondradiko {
 
@@ -54,5 +53,3 @@ void AssetHandle<T>::operator=(const AssetHandle<T>& other) {
 }
 
 }  // namespace mondradiko
-
-#endif  // SRC_ASSETS_ASSETHANDLE_H_

@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_DISPLAYS_VIEWPORTINTERFACE_H_
-#define SRC_DISPLAYS_VIEWPORTINTERFACE_H_
+#pragma once
 
 #include "common/api_headers.h"
 
@@ -38,5 +37,3 @@ class ViewportInterface {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_DISPLAYS_VIEWPORTINTERFACE_H_

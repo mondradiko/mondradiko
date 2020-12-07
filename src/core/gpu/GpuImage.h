@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_GPU_GPUIMAGE_H_
-#define SRC_GPU_GPUIMAGE_H_
+#pragma once
 
 #include "gpu/GpuBuffer.h"
 #include "gpu/GpuInstance.h"
@@ -42,5 +41,3 @@ class GpuImage {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_GPU_GPUIMAGE_H_

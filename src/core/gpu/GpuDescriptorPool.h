@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_GPU_GPUDESCRIPTORPOOL_H_
-#define SRC_GPU_GPUDESCRIPTORPOOL_H_
+#pragma once
 
 #include <set>
 
@@ -37,5 +36,3 @@ class GpuDescriptorPool {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_GPU_GPUDESCRIPTORPOOL_H_

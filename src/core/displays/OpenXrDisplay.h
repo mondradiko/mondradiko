@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_DISPLAYS_OPENXRDISPLAY_H_
-#define SRC_DISPLAYS_OPENXRDISPLAY_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -80,5 +79,3 @@ class OpenXrDisplay : public DisplayInterface {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_DISPLAYS_OPENXRDISPLAY_H_

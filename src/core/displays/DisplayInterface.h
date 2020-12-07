@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_DISPLAYS_DISPLAYINTERFACE_H_
-#define SRC_DISPLAYS_DISPLAYINTERFACE_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -64,5 +63,3 @@ class DisplayInterface {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_DISPLAYS_DISPLAYINTERFACE_H_

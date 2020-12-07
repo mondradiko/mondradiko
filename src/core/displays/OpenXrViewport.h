@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_DISPLAYS_OPENXRVIEWPORT_H_
-#define SRC_DISPLAYS_OPENXRVIEWPORT_H_
+#pragma once
 
 #include <vector>
 
@@ -52,5 +51,3 @@ class OpenXrViewport : public ViewportInterface {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_DISPLAYS_OPENXRVIEWPORT_H_

@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_API_HEADERS_H_
-#define SRC_API_HEADERS_H_
+#pragma once
 
 #include "vulkan/vulkan.h"
 
@@ -50,5 +49,3 @@
 #include "tracy/Tracy.hpp"
 
 #include "lib/entt.hpp"
-
-#endif  // SRC_API_HEADERS_H_

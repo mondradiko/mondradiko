@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_DISPLAYS_SDLDISPLAY_H_
-#define SRC_DISPLAYS_SDLDISPLAY_H_
+#pragma once
 
 #include <vector>
 
@@ -64,5 +63,3 @@ class SdlDisplay : public DisplayInterface {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_DISPLAYS_SDLDISPLAY_H_

@@ -10,8 +10,7 @@
  *
  */
 
-#ifndef SRC_SCENE_SCENE_H_
-#define SRC_SCENE_SCENE_H_
+#pragma once
 
 #include <map>
 
@@ -40,5 +39,3 @@ class Scene {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_SCENE_SCENE_H_

@@ -10,8 +10,7 @@
  *
  */
 
-#ifndef SRC_NETWORK_NETWORKCLIENT_H_
-#define SRC_NETWORK_NETWORKCLIENT_H_
+#pragma once
 
 #include <queue>
 
@@ -43,5 +42,3 @@ class NetworkClient : public NetworkShared {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_NETWORK_NETWORKCLIENT_H_

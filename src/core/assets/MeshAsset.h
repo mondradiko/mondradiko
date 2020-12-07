@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_ASSETS_MESHASSET_H_
-#define SRC_ASSETS_MESHASSET_H_
+#pragma once
 
 #include <array>
 #include <string>
@@ -79,5 +78,3 @@ class MeshAsset : public Asset {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_ASSETS_MESHASSET_H_

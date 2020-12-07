@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_GPU_GPUBUFFER_H_
-#define SRC_GPU_GPUBUFFER_H_
+#pragma once
 
 #include "gpu/GpuInstance.h"
 #include "common/api_headers.h"
@@ -34,5 +33,3 @@ class GpuBuffer {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_GPU_GPUBUFFER_H_

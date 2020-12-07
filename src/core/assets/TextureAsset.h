@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_ASSETS_TEXTUREASSET_H_
-#define SRC_ASSETS_TEXTUREASSET_H_
+#pragma once
 
 #include <string>
 
@@ -39,5 +38,3 @@ class TextureAsset : public Asset {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_ASSETS_TEXTUREASSET_H_

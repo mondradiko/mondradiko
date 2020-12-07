@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_GPU_GPUSHADER_H_
-#define SRC_GPU_GPUSHADER_H_
+#pragma once
 
 #include "gpu/GpuInstance.h"
 
@@ -31,5 +30,3 @@ class GpuShader {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_GPU_GPUSHADER_H_

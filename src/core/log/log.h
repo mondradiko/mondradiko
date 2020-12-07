@@ -11,8 +11,7 @@
 
 #include "common/api_headers.h"
 
-#ifndef SRC_LOG_LOG_H_
-#define SRC_LOG_LOG_H_
+#pragma once
 
 #define log_at(logLevel, ...) \
   mondradiko::log(__FILE__, __LINE__, logLevel, __VA_ARGS__)
@@ -43,5 +42,3 @@ const char* getLogPrefix(LogLevel);
 void log(const char*, int, LogLevel, const char*);
 
 }  // namespace mondradiko
-
-#endif  // SRC_LOG_LOG_H_

@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_FILESYSTEM_ASSIMPIOSTREAM_H_
-#define SRC_FILESYSTEM_ASSIMPIOSTREAM_H_
+#pragma once
 
 #include <vector>
 
@@ -39,5 +38,3 @@ class AssimpIOStream : public Assimp::IOStream {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_FILESYSTEM_ASSIMPIOSTREAM_H_

@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_ASSETS_ASSET_H_
-#define SRC_ASSETS_ASSET_H_
+#pragma once
 
 namespace mondradiko {
 
@@ -25,5 +24,3 @@ class Asset {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_ASSETS_ASSET_H_

@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_FILESYSTEM_FILESYSTEM_H_
-#define SRC_FILESYSTEM_FILESYSTEM_H_
+#pragma once
 
 #include <vector>
 
@@ -32,5 +31,3 @@ class Filesystem {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_FILESYSTEM_FILESYSTEM_H_

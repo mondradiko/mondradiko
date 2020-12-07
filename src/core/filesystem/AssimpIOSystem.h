@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_FILESYSTEM_ASSIMPIOSYSTEM_H_
-#define SRC_FILESYSTEM_ASSIMPIOSYSTEM_H_
+#pragma once
 
 #include "filesystem/Filesystem.h"
 #include "common/api_headers.h"
@@ -32,5 +31,3 @@ class AssimpIOSystem : public Assimp::IOSystem {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_FILESYSTEM_ASSIMPIOSYSTEM_H_

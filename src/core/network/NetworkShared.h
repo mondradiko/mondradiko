@@ -10,8 +10,7 @@
  *
  */
 
-#ifndef SRC_NETWORK_NETWORKSHARED_H_
-#define SRC_NETWORK_NETWORKSHARED_H_
+#pragma once
 
 namespace mondradiko {
 
@@ -27,5 +26,3 @@ class NetworkShared {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_NETWORK_NETWORKSHARED_H_

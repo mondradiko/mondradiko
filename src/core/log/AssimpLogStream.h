@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_LOG_ASSIMPLOGSTREAM_H_
-#define SRC_LOG_ASSIMPLOGSTREAM_H_
+#pragma once
 
 #include "log/log.h"
 #include "common/api_headers.h"
@@ -34,5 +33,3 @@ class AssimpLogStream : public Assimp::LogStream {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_LOG_ASSIMPLOGSTREAM_H_

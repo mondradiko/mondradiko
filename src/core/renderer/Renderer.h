@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_RENDERER_RENDERER_H_
-#define SRC_RENDERER_RENDERER_H_
+#pragma once
 
 #include <vector>
 
@@ -68,5 +67,3 @@ class Renderer {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_RENDERER_RENDERER_H_

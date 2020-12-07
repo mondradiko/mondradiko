@@ -10,8 +10,7 @@
  *
  */
 
-#ifndef SRC_ASSETS_ASSETPOOL_H_
-#define SRC_ASSETS_ASSETPOOL_H_
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -55,5 +54,3 @@ AssetHandle<T> AssetPool<T>::load(std::string key, T* newAsset) {
 }
 
 }  // namespace mondradiko
-
-#endif  // SRC_ASSETS_ASSETPOOL_H_

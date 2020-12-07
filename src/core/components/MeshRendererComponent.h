@@ -9,8 +9,7 @@
  *
  */
 
-#ifndef SRC_COMPONENTS_MESHRENDERERCOMPONENT_H_
-#define SRC_COMPONENTS_MESHRENDERERCOMPONENT_H_
+#pragma once
 
 #include "assets/AssetHandle.h"
 #include "assets/MaterialAsset.h"
@@ -26,5 +25,3 @@ class MeshRendererComponent {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_COMPONENTS_MESHRENDERERCOMPONENT_H_

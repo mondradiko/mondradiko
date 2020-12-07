@@ -10,8 +10,7 @@
  *
  */
 
-#ifndef SRC_GPU_GPUINSTANCE_H_
-#define SRC_GPU_GPUINSTANCE_H_
+#pragma once
 
 #include <vector>
 
@@ -67,5 +66,3 @@ class GpuInstance {
 };
 
 }  // namespace mondradiko
-
-#endif  // SRC_GPU_GPUINSTANCE_H_
