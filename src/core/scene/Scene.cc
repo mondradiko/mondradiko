@@ -21,7 +21,8 @@
 
 namespace mondradiko {
 
-Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu, Renderer* renderer)
+Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
+             Renderer* renderer)
     : display(display), fs(fs), gpu(gpu), renderer(renderer) {
   log_zone;
 

@@ -3,10 +3,10 @@
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Entrypoint for a server.
  * @date 2020-12-06
- * 
+ *
  * @copyright Copyright (c) 2020 Marceline Cramer
  * SPDX-License-Identifier: LGPL-3.0-or-later
- * 
+ *
  */
 
 #include <csignal>
@@ -56,14 +56,14 @@ int main(int argc, const char* argv[]) {
     if (!display.createSession(&gpu)) {
       log_ftl("Failed to create display session!");
     }
-    
+
     Renderer renderer(&display, &gpu);
     Scene scene(&display, &fs, &gpu, &renderer);
     NetworkServer server(&scene, "127.0.0.1", 10555);
 
     scene.loadModel("DamagedHelmet.gltf");
 
-    while(!g_interrupted) {
+    while (!g_interrupted) {
       scene.update();
     }
 
