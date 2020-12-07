@@ -1,6 +1,3 @@
-[submodule "assimp"]
-	path = third_party/assimp
-	url = https://github.com/assimp/assimp
 [submodule "tracy"]
 	path = third_party/tracy
 	url = https://github.com/wolfpld/tracy
