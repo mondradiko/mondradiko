@@ -32,6 +32,7 @@ set(MONDRADIKO_CORE_SRC
   renderer/Renderer.cc
   log/log.cc
   network/NetworkClient.cc
+  network/NetworkServer.cc
   network/NetworkShared.cc
   scene/Scene.cc
 )
