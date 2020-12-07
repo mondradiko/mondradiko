@@ -18,7 +18,10 @@
 
 namespace mondradiko {
 
-NetworkClient::NetworkClient(const char* server_address, int port) {
+NetworkClient::NetworkClient(Scene* scene, const char* server_address, int port)
+    : scene(scene) {
+  log_zone;
+
   state = ClientState::Connecting;
 
   if (!connect(server_address, port)) {
@@ -42,7 +45,11 @@ NetworkClient::NetworkClient(const char* server_address, int port) {
   state = ClientState::Connected;
 }
 
-NetworkClient::~NetworkClient() { disconnect(); }
+NetworkClient::~NetworkClient() {
+  log_zone;
+
+  disconnect();
+}
 
 void NetworkClient::update() {}
 
@@ -56,6 +63,10 @@ bool NetworkClient::readEvent(ClientEvent* event) {
   return false;
 }
 
-void NetworkClient::disconnect() { state = ClientState::Disconnected; }
+void NetworkClient::disconnect() {
+  log_zone;
+
+  state = ClientState::Disconnected;
+}
 
 }  // namespace mondradiko

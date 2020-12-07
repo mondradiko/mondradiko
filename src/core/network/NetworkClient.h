@@ -14,6 +14,7 @@
 
 #include <queue>
 
+#include "scene/Scene.h"
 #include "network/NetworkShared.h"
 
 namespace mondradiko {
@@ -28,7 +29,7 @@ enum class ClientState { Disconnected, Connecting, Authenticating, Connected };
 
 class NetworkClient : public NetworkShared {
  public:
-  NetworkClient(const char*, int);
+  NetworkClient(Scene*, const char*, int);
   ~NetworkClient();
 
   void update();
@@ -38,6 +39,8 @@ class NetworkClient : public NetworkShared {
   ClientState state = ClientState::Disconnected;
 
  private:
+  Scene* scene;
+
   std::queue<ClientEvent> event_queue;
 };
 

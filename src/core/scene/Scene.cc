@@ -21,8 +21,7 @@
 
 namespace mondradiko {
 
-Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
-             Renderer* renderer)
+Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu, Renderer* renderer)
     : display(display), fs(fs), gpu(gpu), renderer(renderer) {
   log_zone;
 
@@ -46,40 +45,27 @@ Scene::~Scene() {
   Assimp::DefaultLogger::kill();
 }
 
-void Scene::run(NetworkClient* client) {
-  g_should_quit = false;
+bool Scene::update() {
+  DisplayPollEventsInfo poll_info;
+  poll_info.renderer = renderer;
 
-  while(!g_should_quit) {
-    DisplayPollEventsInfo poll_info;
-    poll_info.renderer = renderer;
+  display->pollEvents(&poll_info);
+  if (poll_info.should_quit) return false;
 
-    display->pollEvents(&poll_info);
-    if (poll_info.should_quit) signalExit();
+  if (poll_info.should_run) {
+    DisplayBeginFrameInfo frame_info;
+    display->beginFrame(&frame_info);
 
-    if (poll_info.should_run) {
-      DisplayBeginFrameInfo frame_info;
-      display->beginFrame(&frame_info);
-
-      client->update();
-      update(frame_info.dt);
-
-      ClientEvent event;
-      while (client->readEvent(&event)) {
-        log_dbg("Received client event.");
-      }
-
-      if (frame_info.should_render) {
-        renderer->renderFrame(registry);
-      }
-
-      display->endFrame(&frame_info);
+    if (frame_info.should_render) {
+      renderer->renderFrame(registry);
     }
 
-    FrameMark;
+    display->endFrame(&frame_info);
   }
-}
 
-void Scene::update(double dt) {}
+  FrameMark;
+  return true;
+}
 
 bool Scene::loadModel(const char* fileName) {
   log_zone;

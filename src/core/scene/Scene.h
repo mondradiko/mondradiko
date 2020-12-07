@@ -16,7 +16,6 @@
 
 #include "filesystem/Filesystem.h"
 #include "renderer/Renderer.h"
-#include "network/NetworkClient.h"
 
 namespace mondradiko {
 
@@ -25,11 +24,7 @@ class Scene {
   Scene(DisplayInterface*, Filesystem*, GpuInstance*, Renderer*);
   ~Scene();
 
-  void run(NetworkClient*);
-
-  void update(double);
-  void signalExit() { g_should_quit = true; }
-
+  bool update();
   bool loadModel(const char*);
 
   DisplayInterface* display;
@@ -42,8 +37,6 @@ class Scene {
 
  private:
   Assimp::Importer importer;
-
-  bool g_should_quit;
 };
 
 }  // namespace mondradiko
