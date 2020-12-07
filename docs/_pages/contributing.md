@@ -5,9 +5,13 @@ toc: false
 ---
 
 When writing source code for Mondradiko, please follow the
-[Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html), and
-run `cpplint` on all modified files to check conformance. GitHub will also
-automatically check your formatting when you make a pull request.
+[Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html),
+with a couple exceptions:
+
+- For convenience's sake, please use #pragma once over include guards.
+- Forward declarations are preferred whenever possible, to decrease compilation time.
+
+GitHub will automatically check your formatting when you make a pull request.
 
 Before making any major changes, please raise an issue to discuss the planned
 changes with the maintainers. When making a pull request, we may ask that you
