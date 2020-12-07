@@ -27,11 +27,12 @@
 // this is the main entrypoint
 using namespace mondradiko;  // NOLINT
 
-bool g_interrupted = false;
+Scene* g_scene = nullptr;
 
 void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
-  g_interrupted = true;
+
+  if (g_scene) g_scene->signalExit();
 
   return;
 }
@@ -43,42 +44,15 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu,
   }
 
   Renderer renderer(display, gpu);
-  Scene scene(fs, &renderer);
+
+  Scene scene(display, fs, gpu, &renderer);
+  g_scene = &scene;
 
   scene.loadModel("DamagedHelmet.gltf");
-
-  // Break is triggered on Ctrl+C or SIGTERM
-  g_interrupted = false;
-  while (!g_interrupted) {
-    DisplayPollEventsInfo poll_info;
-    poll_info.renderer = &renderer;
-
-    display->pollEvents(&poll_info);
-    if (poll_info.should_quit) break;
-
-    if (poll_info.should_run) {
-      DisplayBeginFrameInfo frame_info;
-      display->beginFrame(&frame_info);
-
-      client->update();
-      scene.update(frame_info.dt);
-
-      ClientEvent event;
-      while (client->readEvent(&event)) {
-        log_dbg("Received client event.");
-      }
-
-      if (frame_info.should_render) {
-        renderer.renderFrame(scene.registry);
-      }
-
-      display->endFrame(&frame_info);
-    }
-
-    FrameMark;
-  }
+  scene.run(client);
 
   display->destroySession();
+  g_scene = nullptr;
 }
 
 void player_session_run(const char* server_address, int port) {

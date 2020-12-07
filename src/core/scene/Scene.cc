@@ -21,7 +21,9 @@
 
 namespace mondradiko {
 
-Scene::Scene(Filesystem* fs, Renderer* renderer) : fs(fs), renderer(renderer) {
+Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
+             Renderer* renderer)
+    : display(display), fs(fs), gpu(gpu), renderer(renderer) {
   log_zone;
 
   // Abandon all hope, ye who enter here.
@@ -42,6 +44,39 @@ Scene::~Scene() {
   log_zone;
 
   Assimp::DefaultLogger::kill();
+}
+
+void Scene::run(NetworkClient* client) {
+  g_should_quit = false;
+
+  while(!g_should_quit) {
+    DisplayPollEventsInfo poll_info;
+    poll_info.renderer = renderer;
+
+    display->pollEvents(&poll_info);
+    if (poll_info.should_quit) signalExit();
+
+    if (poll_info.should_run) {
+      DisplayBeginFrameInfo frame_info;
+      display->beginFrame(&frame_info);
+
+      client->update();
+      update(frame_info.dt);
+
+      ClientEvent event;
+      while (client->readEvent(&event)) {
+        log_dbg("Received client event.");
+      }
+
+      if (frame_info.should_render) {
+        renderer->renderFrame(registry);
+      }
+
+      display->endFrame(&frame_info);
+    }
+
+    FrameMark;
+  }
 }
 
 void Scene::update(double dt) {}

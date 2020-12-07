@@ -16,19 +16,25 @@
 
 #include "filesystem/Filesystem.h"
 #include "renderer/Renderer.h"
+#include "network/NetworkClient.h"
 
 namespace mondradiko {
 
 class Scene {
  public:
-  Scene(Filesystem*, Renderer*);
+  Scene(DisplayInterface*, Filesystem*, GpuInstance*, Renderer*);
   ~Scene();
 
+  void run(NetworkClient*);
+
   void update(double);
+  void signalExit() { g_should_quit = true; }
 
   bool loadModel(const char*);
 
+  DisplayInterface* display;
   Filesystem* fs;
+  GpuInstance* gpu;
   Renderer* renderer;
 
   // TODO(marceline-cramer) Move session lifetime to Scene
@@ -36,6 +42,8 @@ class Scene {
 
  private:
   Assimp::Importer importer;
+
+  bool g_should_quit;
 };
 
 }  // namespace mondradiko
