@@ -12,11 +12,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.x'
-
-      - run: pip install meson
 
       - name: Install Dependencies
         shell: bash
@@ -56,5 +51,8 @@ jobs:
       - name: Compile
         shell: bash
         run: |
-          meson setup builddir/
-          meson test -C builddir/ -v
+          mkdir builddir
+          pushd builddir
+          cmake ..
+          make
+          popd
