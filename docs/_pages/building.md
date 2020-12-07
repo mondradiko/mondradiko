@@ -5,7 +5,7 @@ permalink: /building
 
 # Dependencies
 
-- [Meson](https://mesonbuild.com)
+- [CMake](https://cmake.org/)
 - [OpenXR SDK](https://github.com/KhronosGroup/OpenXR-SDK)
 - [Vulkan](https://www.lunarg.com/vulkan-sdk/)
 - [Assimp](http://assimp.org/)
@@ -44,7 +44,7 @@ sudo ninja install
 # Debian/Ubuntu
 
 ```bash
-sudo apt install meson pkg-config libvulkan-dev libglm-dev libphysfs-dev \
+sudo apt install cmake pkg-config libvulkan-dev libglm-dev libphysfs-dev \
                      libassimp-dev libsdl2-dev glslang-tools
 ```
 
@@ -52,11 +52,11 @@ Also see [Installing the OpenXR SDK](#installing-the-openxr-sdk).
 
 # Compiling
 
-Built with [meson](https://mesonbuild.com/):
+Built with [CMake](https://cmake.org/):
 
 ```
 mkdir builddir
 cd builddir
-meson ..
+cmake -GNinja ..
 ninja
 ```
