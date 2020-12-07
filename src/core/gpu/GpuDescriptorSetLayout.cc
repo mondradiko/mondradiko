@@ -50,7 +50,7 @@ VkDescriptorSetLayout GpuDescriptorSetLayout::getSetLayout() {
   if (set_layout == VK_NULL_HANDLE) {
     uint32_t sampler_index = 0;
 
-    for(auto& binding : layout_bindings) {
+    for (auto& binding : layout_bindings) {
       if (binding.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
         binding.pImmutableSamplers = &immutable_samplers[sampler_index];
         sampler_index++;
