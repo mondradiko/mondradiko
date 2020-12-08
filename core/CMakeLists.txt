@@ -41,7 +41,7 @@ set(MONDRADIKO_CORE_SRC
 )
 
 add_library(mondradiko-core STATIC ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
-target_link_libraries(mondradiko-core third_party)
+target_link_libraries(mondradiko-core mondradiko-lib)
 
 include(FindVulkan)
 target_link_libraries(mondradiko-core ${Vulkan_LIBRARIES})

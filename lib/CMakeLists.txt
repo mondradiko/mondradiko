@@ -9,25 +9,25 @@ pkg_check_modules(OPENXR REQUIRED openxr)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(THIRD_PARTY_SRC
+set(MONDRADIKO_LIB_SRC
   library_implementation.cc
   tracy/TracyClient.cpp
 )
 
-add_library(third_party STATIC ${THIRD_PARTY_SRC})
+add_library(mondradiko-lib STATIC ${MONDRADIKO_LIB_SRC})
 
-target_link_libraries(third_party PUBLIC ${ASSIMP_LIBRARIES})
-target_include_directories(third_party PUBLIC ${ASSIMP_INCLUDE_DIRS})
-target_compile_options(third_party PUBLIC ${ASSIMP_CFLAGS_OTHER})
+target_link_libraries(mondradiko-lib PUBLIC ${ASSIMP_LIBRARIES})
+target_include_directories(mondradiko-lib PUBLIC ${ASSIMP_INCLUDE_DIRS})
+target_compile_options(mondradiko-lib PUBLIC ${ASSIMP_CFLAGS_OTHER})
 
-target_link_libraries(third_party PUBLIC ${PHYSFS_LIBRARIES})
-target_include_directories(third_party PUBLIC ${PHYSFS_INCLUDE_DIRS})
-target_compile_options(third_party PUBLIC ${PHYSFS_CFLAGS_OTHER})
+target_link_libraries(mondradiko-lib PUBLIC ${PHYSFS_LIBRARIES})
+target_include_directories(mondradiko-lib PUBLIC ${PHYSFS_INCLUDE_DIRS})
+target_compile_options(mondradiko-lib PUBLIC ${PHYSFS_CFLAGS_OTHER})
 
-target_link_libraries(third_party PUBLIC ${SDL2_LIBRARIES})
-target_include_directories(third_party PUBLIC ${SDL2_INCLUDE_DIRS})
-target_compile_options(third_party PUBLIC ${SDL2_CFLAGS_OTHER})
+target_link_libraries(mondradiko-lib PUBLIC ${SDL2_LIBRARIES})
+target_include_directories(mondradiko-lib PUBLIC ${SDL2_INCLUDE_DIRS})
+target_compile_options(mondradiko-lib PUBLIC ${SDL2_CFLAGS_OTHER})
 
-target_link_libraries(third_party PUBLIC ${OPENXR_LIBRARIES})
-target_include_directories(third_party PUBLIC ${OPENXR_INCLUDE_DIRS})
-target_compile_options(third_party PUBLIC ${OPENXR_CFLAGS_OTHER})
+target_link_libraries(mondradiko-lib PUBLIC ${OPENXR_LIBRARIES})
+target_include_directories(mondradiko-lib PUBLIC ${OPENXR_INCLUDE_DIRS})
+target_compile_options(mondradiko-lib PUBLIC ${OPENXR_CFLAGS_OTHER})
