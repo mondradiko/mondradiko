@@ -10,13 +10,13 @@
  *
  */
 
-#include "gpu/GpuInstance.h"
+#include "core/gpu/GpuInstance.h"
 
 #include <cstring>
 #include <set>
 
 #include "./build_config.h"
-#include "log/log.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

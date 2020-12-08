@@ -9,9 +9,9 @@
  *
  */
 
-#include "assets/TextureAsset.h"
+#include "core/assets/TextureAsset.h"
 
-#include "log/log.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

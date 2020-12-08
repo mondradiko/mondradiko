@@ -14,8 +14,8 @@
 
 #include <map>
 
-#include "filesystem/Filesystem.h"
-#include "renderer/Renderer.h"
+#include "core/filesystem/Filesystem.h"
+#include "core/renderer/Renderer.h"
 
 namespace mondradiko {
 

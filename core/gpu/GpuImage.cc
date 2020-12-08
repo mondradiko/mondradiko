@@ -9,10 +9,10 @@
  *
  */
 
-#include "gpu/GpuImage.h"
+#include "core/gpu/GpuImage.h"
 
-#include "gpu/GpuInstance.h"
-#include "log/log.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

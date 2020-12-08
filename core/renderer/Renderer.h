@@ -14,11 +14,11 @@
 #include <string>
 #include <vector>
 
-#include "common/api_headers.h"
-#include "displays/DisplayInterface.h"
-#include "gpu/GpuDescriptorPool.h"
-#include "gpu/GpuInstance.h"
-#include "renderer/MeshPipeline.h"
+#include "core/common/api_headers.h"
+#include "core/displays/DisplayInterface.h"
+#include "core/gpu/GpuDescriptorPool.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/renderer/MeshPipeline.h"
 
 namespace mondradiko {
 

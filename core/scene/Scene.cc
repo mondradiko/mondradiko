@@ -10,14 +10,14 @@
  *
  */
 
-#include "scene/Scene.h"
+#include "core/scene/Scene.h"
 
 #include <iostream>
 
-#include "filesystem/AssimpIOSystem.h"
-#include "filesystem/Filesystem.h"
-#include "log/AssimpLogStream.h"
-#include "log/log.h"
+#include "core/filesystem/AssimpIOSystem.h"
+#include "core/filesystem/Filesystem.h"
+#include "core/log/AssimpLogStream.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

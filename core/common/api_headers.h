@@ -46,6 +46,6 @@
 #define TRACY_ENABLE
 #endif
 
-#include "tracy/Tracy.hpp"
+#include "lib/tracy/Tracy.hpp"
 
 #include "lib/entt.hpp"

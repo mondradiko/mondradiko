@@ -10,11 +10,11 @@
  *
  */
 
-#include "network/NetworkClient.h"
+#include "core/network/NetworkClient.h"
 
 #include <sstream>
 
-#include "log/log.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

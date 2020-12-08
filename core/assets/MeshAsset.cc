@@ -9,11 +9,11 @@
  *
  */
 
-#include "assets/MeshAsset.h"
+#include "core/assets/MeshAsset.h"
 
 #include <vector>
 
-#include "log/log.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

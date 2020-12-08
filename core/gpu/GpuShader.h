@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "gpu/GpuInstance.h"
+#include "core/gpu/GpuInstance.h"
 
 namespace mondradiko {
 

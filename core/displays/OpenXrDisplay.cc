@@ -9,11 +9,11 @@
  *
  */
 
-#include "displays/OpenXrDisplay.h"
+#include "core/displays/OpenXrDisplay.h"
 
 #include "./build_config.h"
-#include "gpu/GpuInstance.h"
-#include "log/log.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/log/log.h"
 
 #define XR_LOAD_FN_PTR(name, fnPtr)     \
   xrGetInstanceProcAddr(instance, name, \

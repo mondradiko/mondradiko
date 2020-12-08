@@ -13,8 +13,8 @@
 
 #include <vector>
 
-#include "filesystem/Filesystem.h"
-#include "common/api_headers.h"
+#include "core/filesystem/Filesystem.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
 

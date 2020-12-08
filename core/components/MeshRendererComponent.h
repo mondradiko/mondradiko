@@ -11,10 +11,10 @@
 
 #pragma once
 
-#include "assets/AssetHandle.h"
-#include "assets/MaterialAsset.h"
-#include "assets/MeshAsset.h"
-#include "common/api_headers.h"
+#include "core/assets/AssetHandle.h"
+#include "core/assets/MaterialAsset.h"
+#include "core/assets/MeshAsset.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
 

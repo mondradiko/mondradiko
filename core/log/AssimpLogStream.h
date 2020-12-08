@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "log/log.h"
-#include "common/api_headers.h"
+#include "core/log/log.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
 

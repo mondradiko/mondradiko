@@ -10,14 +10,14 @@
  *
  */
 
-#include "renderer/MeshPipeline.h"
+#include "core/renderer/MeshPipeline.h"
 
 #include <vector>
 
-#include "gpu/GpuInstance.h"
-#include "gpu/GpuShader.h"
-#include "log/log.h"
-#include "renderer/Renderer.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/gpu/GpuShader.h"
+#include "core/log/log.h"
+#include "core/renderer/Renderer.h"
 #include "shaders/mesh.frag.h"
 #include "shaders/mesh.vert.h"
 

@@ -9,9 +9,9 @@
  *
  */
 
-#include "filesystem/AssimpIOStream.h"
+#include "core/filesystem/AssimpIOStream.h"
 
-#include "filesystem/Filesystem.h"
+#include "core/filesystem/Filesystem.h"
 
 namespace mondradiko {
 

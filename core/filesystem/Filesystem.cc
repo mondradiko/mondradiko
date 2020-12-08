@@ -9,11 +9,11 @@
  *
  */
 
-#include "filesystem/Filesystem.h"
+#include "core/filesystem/Filesystem.h"
 
 #include <sstream>
 
-#include "log/log.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

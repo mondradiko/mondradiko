@@ -13,15 +13,15 @@
 #include <iostream>
 #include <sstream>
 
-#include "common/api_headers.h"
-#include "displays/OpenXrDisplay.h"
-#include "displays/SdlDisplay.h"
-#include "filesystem/Filesystem.h"
-#include "gpu/GpuInstance.h"
-#include "log/log.h"
-#include "network/NetworkClient.h"
-#include "renderer/Renderer.h"
-#include "scene/Scene.h"
+#include "core/common/api_headers.h"
+#include "core/displays/OpenXrDisplay.h"
+#include "core/displays/SdlDisplay.h"
+#include "core/filesystem/Filesystem.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/log/log.h"
+#include "core/network/NetworkClient.h"
+#include "core/renderer/Renderer.h"
+#include "core/scene/Scene.h"
 
 // The using statement is fine because
 // this is the main entrypoint

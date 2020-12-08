@@ -9,10 +9,10 @@
  *
  */
 
-#include "displays/OpenXrViewport.h"
+#include "core/displays/OpenXrViewport.h"
 
-#include "displays/OpenXrDisplay.h"
-#include "log/log.h"
+#include "core/displays/OpenXrDisplay.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

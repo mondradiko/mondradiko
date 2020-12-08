@@ -9,10 +9,10 @@
  *
  */
 
-#include "displays/SdlViewport.h"
+#include "core/displays/SdlViewport.h"
 
-#include "displays/SdlDisplay.h"
-#include "log/log.h"
+#include "core/displays/SdlDisplay.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

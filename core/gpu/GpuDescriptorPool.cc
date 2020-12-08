@@ -9,11 +9,11 @@
  *
  */
 
-#include "gpu/GpuDescriptorPool.h"
+#include "core/gpu/GpuDescriptorPool.h"
 
 #include <vector>
 
-#include "log/log.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

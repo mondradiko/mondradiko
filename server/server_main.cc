@@ -12,14 +12,14 @@
 #include <csignal>
 #include <iostream>
 
-#include "common/api_headers.h"
-#include "displays/SdlDisplay.h"
-#include "filesystem/Filesystem.h"
-#include "gpu/GpuInstance.h"
-#include "log/log.h"
-#include "network/NetworkServer.h"
-#include "renderer/Renderer.h"
-#include "scene/Scene.h"
+#include "core/common/api_headers.h"
+#include "core/displays/SdlDisplay.h"
+#include "core/filesystem/Filesystem.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/log/log.h"
+#include "core/network/NetworkServer.h"
+#include "core/renderer/Renderer.h"
+#include "core/scene/Scene.h"
 
 // The using statement is fine because
 // this is the main entrypoint

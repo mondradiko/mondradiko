@@ -10,6 +10,9 @@ spirv_shaders(SHADER_HEADERS
 add_subdirectory(shaders)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+configure_file(build_config.h.in build_config.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 set(MONDRADIKO_CORE_SRC
   assets/MaterialAsset.cc
   assets/MeshAsset.cc

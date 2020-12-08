@@ -9,8 +9,8 @@
  *
  */
 
-#include "gpu/GpuShader.h"
-#include "log/log.h"
+#include "core/gpu/GpuShader.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

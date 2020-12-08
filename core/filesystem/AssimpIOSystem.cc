@@ -9,11 +9,11 @@
  *
  */
 
-#include "filesystem/AssimpIOSystem.h"
+#include "core/filesystem/AssimpIOSystem.h"
 
-#include "filesystem/AssimpIOStream.h"
-#include "filesystem/Filesystem.h"
-#include "log/log.h"
+#include "core/filesystem/AssimpIOStream.h"
+#include "core/filesystem/Filesystem.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

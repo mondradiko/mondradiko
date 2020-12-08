@@ -10,9 +10,9 @@
  *
  */
 
-#include "network/NetworkServer.h"
+#include "core/network/NetworkServer.h"
 
-#include "log/log.h"
+#include "core/log/log.h"
 
 namespace mondradiko {
 

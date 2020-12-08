@@ -16,17 +16,17 @@
 #include <set>
 #include <string>
 
-#include "assets/AssetHandle.h"
-#include "assets/AssetPool.h"
-#include "assets/MaterialAsset.h"
-#include "assets/MeshAsset.h"
-#include "assets/TextureAsset.h"
-#include "components/MeshRendererComponent.h"
-#include "gpu/GpuDescriptorSet.h"
-#include "gpu/GpuDescriptorSetLayout.h"
-#include "gpu/GpuDescriptorPool.h"
-#include "gpu/GpuInstance.h"
-#include "common/api_headers.h"
+#include "core/assets/AssetHandle.h"
+#include "core/assets/AssetPool.h"
+#include "core/assets/MaterialAsset.h"
+#include "core/assets/MeshAsset.h"
+#include "core/assets/TextureAsset.h"
+#include "core/components/MeshRendererComponent.h"
+#include "core/gpu/GpuDescriptorSet.h"
+#include "core/gpu/GpuDescriptorSetLayout.h"
+#include "core/gpu/GpuDescriptorPool.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
 

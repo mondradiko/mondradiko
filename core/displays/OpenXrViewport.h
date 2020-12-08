@@ -13,8 +13,8 @@
 
 #include <vector>
 
-#include "displays/ViewportInterface.h"
-#include "gpu/GpuInstance.h"
+#include "core/displays/ViewportInterface.h"
+#include "core/gpu/GpuInstance.h"
 
 namespace mondradiko {
 
