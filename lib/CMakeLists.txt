@@ -10,7 +10,7 @@ pkg_check_modules(OPENXR REQUIRED openxr)
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(THIRD_PARTY_SRC
-  lib/library_implementation.cc
+  library_implementation.cc
   tracy/TracyClient.cpp
 )
 
