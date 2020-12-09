@@ -50,8 +50,9 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       return AssetResult::WrongVersion;
     }
 
-    {
-      // Check max lumps
+    if (header.lump_count > ASSET_REGISTRY_MAX_LUMPS) {
+      registry_file.close();
+      return AssetResult::BadSize;
     }
 
     for (uint32_t lump_index = 0; lump_index < header.lump_count;
@@ -60,8 +61,9 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       registry_file.read(reinterpret_cast<char*>(&lump_entry),
                          sizeof(lump_entry));
 
-      {
-        // Check max assets
+      if (lump_entry.asset_count > ASSET_LUMP_MAX_ASSETS) {
+        registry_file.close();
+        return AssetResult::BadSize;
       }
 
       char lump_file[32];
@@ -88,9 +90,14 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
         asset_offset += asset_entry.size;
       }
 
-      AssetLump lump(lump_path);
-
       // asset_offset now represents the size of the whole lump
+      if (asset_offset > ASSET_LUMP_MAX_SIZE) {
+        registry_file.close();
+        return AssetResult::BadSize;
+      }
+
+      AssetLump lump(lump_path);
+      
       if (!lump.assertLength(asset_offset)) {
         registry_file.close();
         return AssetResult::BadSize;

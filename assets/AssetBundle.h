@@ -13,9 +13,9 @@
 #pragma once
 
 #include <cstring>
-#include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <vector>
 
 #include "assets/Asset.h"
@@ -26,6 +26,10 @@ namespace assets {
 
 const size_t ASSET_REGISTRY_MAGIC_LENGTH = 4;
 const char ASSET_REGISTRY_MAGIC[] = "MDOA";
+
+const uint32_t ASSET_REGISTRY_MAX_LUMPS = 256;
+const uint32_t ASSET_LUMP_MAX_ASSETS = 4096;
+const uint32_t ASSET_LUMP_MAX_SIZE = 128 * 1024 * 1024;  // 128 MiB
 
 struct AssetRegistryHeader {
   char magic[ASSET_REGISTRY_MAGIC_LENGTH];
