@@ -32,6 +32,8 @@ const char* getAssetResultString(AssetResult result) {
       return "BadSize";
     case AssetResult::InvalidChecksum:
       return "InvalidChecksum";
+    case AssetResult::DuplicateAsset:
+      return "DuplicateAsset";
     default:
       return "Unknown result";
   }

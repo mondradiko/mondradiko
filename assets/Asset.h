@@ -36,7 +36,8 @@ enum class AssetResult {
   WrongMagic,
   WrongVersion,
   BadSize,
-  InvalidChecksum
+  InvalidChecksum,
+  DuplicateAsset
 };
 
 const char* getAssetResultString(AssetResult);
