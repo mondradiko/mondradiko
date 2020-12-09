@@ -6,6 +6,7 @@ pkg_check_modules(ASSIMP REQUIRED assimp)
 pkg_check_modules(PHYSFS REQUIRED physfs)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(OPENXR REQUIRED openxr)
+pkg_check_modules(XXHASH REQUIRED libxxhash)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -27,3 +28,7 @@ target_compile_options(mondradiko-lib PUBLIC ${SDL2_CFLAGS_OTHER})
 target_link_libraries(mondradiko-lib PUBLIC ${OPENXR_LIBRARIES})
 target_include_directories(mondradiko-lib PUBLIC ${OPENXR_INCLUDE_DIRS})
 target_compile_options(mondradiko-lib PUBLIC ${OPENXR_CFLAGS_OTHER})
+
+target_link_libraries(mondradiko-lib PUBLIC ${XXHASH_LIBRARIES})
+target_include_directories(mondradiko-lib PUBLIC ${XXHASH_INCLUDE_DIRS})
+target_compile_options(mondradiko-lib PUBLIC ${XXHASH_CFLAGS_OTHER})
