@@ -52,7 +52,7 @@ struct AssetRegistryEntry {
 
 class AssetBundle {
  public:
-  AssetBundle(const std::filesystem::path&);
+  explicit AssetBundle(const std::filesystem::path&);
   ~AssetBundle();
 
   AssetResult loadRegistry(const char*);

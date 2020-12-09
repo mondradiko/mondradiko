@@ -97,7 +97,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       }
 
       AssetLump lump(lump_path);
-      
+
       if (!lump.assertLength(asset_offset)) {
         registry_file.close();
         return AssetResult::BadSize;

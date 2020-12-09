@@ -29,7 +29,7 @@ class Scene {
   DisplayInterface* display;
   Filesystem* fs;
   GpuInstance* gpu;
-  Renderer* renderer;  
+  Renderer* renderer;
 
  private:
   entt::registry registry;

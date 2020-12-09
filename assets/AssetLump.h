@@ -32,7 +32,7 @@ enum class LumpCompressionMethod : uint32_t {
 
 class AssetLump {
  public:
-  AssetLump(const std::filesystem::path&);
+  explicit AssetLump(const std::filesystem::path&);
 
   bool assertLength(size_t);
   bool assertHash(LumpHashMethod, LumpHash);

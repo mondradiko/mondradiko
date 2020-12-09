@@ -11,10 +11,10 @@
 
 #pragma once
 
-#include <fstream>
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fstream>
 #include <string>
 #include <vector>
 
