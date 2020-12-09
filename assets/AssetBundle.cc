@@ -61,12 +61,19 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
                          sizeof(lump_entry));
 
       {
-          // Check sum :P
-      }
-
-      {
         // Check max assets
       }
+
+      char lump_file[32];
+      snprintf(lump_file, sizeof(lump_file), "lump_%4u.bin", lump_index);
+      auto lump_path = bundle_root / lump_file;
+
+      if (!std::filesystem::exists(lump_path)) {
+        registry_file.close();
+        return AssetResult::FileNotFound;
+      }
+
+      uint32_t asset_offset = 0;
 
       for (uint32_t asset_index = 0; asset_index < lump_entry.asset_count;
            asset_index++) {
@@ -77,6 +84,21 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
         {
           // Add to unordered_map
         }
+
+        asset_offset += asset_entry.size;
+      }
+
+      AssetLump lump(lump_path);
+
+      // asset_offset now represents the size of the whole lump
+      if (!lump.assertLength(asset_offset)) {
+        registry_file.close();
+        return AssetResult::BadSize;
+      }
+
+      if (!lump.assertHash(lump_entry.hash_method, lump_entry.checksum)) {
+        registry_file.close();
+        return AssetResult::InvalidChecksum;
       }
     }
   } catch (std::ifstream::failure e) {
