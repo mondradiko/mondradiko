@@ -20,7 +20,9 @@ AssetLump::AssetLump(const std::filesystem::path& lump_path)
     : lump_path(lump_path) {}
 
 // TODO(marceline-cramer) Implement these
-bool AssetLump::assertLength(size_t) { return false; }
+bool AssetLump::assertLength(size_t check_size) {
+  return std::filesystem::file_size(lump_path) == check_size;
+}
 
 bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
   LumpHash computed_hash;
