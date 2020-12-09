@@ -16,21 +16,21 @@
 namespace mondradiko {
 namespace assets {
 
-using AssetLumpHash = uint32_t;
+using LumpHash = uint32_t;
 
-enum class AssetLumpHashMethod : uint32_t {
+enum class LumpHashMethod : uint32_t {
   None = 0,
   xxHash = 1
 };
 
-enum class AssetLumpCompressionMethod : uint32_t {
+enum class LumpCompressionMethod : uint32_t {
   None = 0,
   LZ4 = 1
 };
 
 class AssetLump {
  public:
-  AssetLump(const char*, AssetLumpHashMethod, AssetLumpHash, AssetLumpCompressionMethod);
+  AssetLump(const char*, LumpHashMethod, LumpHash, LumpCompressionMethod);
 
  private:
 };

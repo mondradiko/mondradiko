@@ -28,12 +28,12 @@ const char* getAssetResultString(AssetResult result) {
       return "WrongMagic";
     case AssetResult::WrongVersion:
       return "WrongVersion";
+    case AssetResult::BadSize:
+      return "BadSize";
     default:
       return "Unknown result";
   }
 }
-
-AssetId Asset::generateId(AssetHashMethod) { return 0; }
 
 }  // namespace assets
 }  // namespace mondradiko

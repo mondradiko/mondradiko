@@ -31,19 +31,19 @@ struct AssetRegistryHeader {
   char magic[ASSET_REGISTRY_MAGIC_LENGTH];
   uint32_t version;
 
-  AssetHashMethod hash_method;
-  AssetLumpCompressionMethod compression_method;
+  LumpHashMethod hash_method;
+  LumpCompressionMethod compression_method;
 
   uint32_t lump_count;
-  uint32_t asset_count;
 };
 
 struct AssetRegistryLumpEntry {
-  AssetLumpHash checksum;
+  LumpHash checksum;
   uint32_t asset_count;
 };
 
 struct AssetRegistryEntry {
+  AssetId id;
   uint32_t size;
 };
 

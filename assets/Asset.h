@@ -28,27 +28,21 @@ namespace assets {
 
 using AssetId = uint32_t;
 
-enum class AssetHashMethod : uint32_t { None = 0, xxHash = 1 };
-
 enum class AssetResult {
   Success,
   FileNotFound,
   UnexpectedEof,
   BadFile,
   WrongMagic,
-  WrongVersion
+  WrongVersion,
+  BadSize
 };
 
 const char* getAssetResultString(AssetResult);
 
-class Asset {
- public:
+struct Asset {
   std::string metadata;
   std::vector<uint8_t> data;
-
-  AssetId generateId(AssetHashMethod);
-
- private:
 };
 
 }  // namespace assets

@@ -39,7 +39,8 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
     AssetRegistryHeader header;
     registry_file.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-    if (strncmp(header.magic, ASSET_REGISTRY_MAGIC, ASSET_REGISTRY_MAGIC_LENGTH) != 0) {
+    if (strncmp(header.magic, ASSET_REGISTRY_MAGIC,
+                ASSET_REGISTRY_MAGIC_LENGTH) != 0) {
       registry_file.close();
       return AssetResult::WrongMagic;
     }
@@ -48,9 +49,39 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       registry_file.close();
       return AssetResult::WrongVersion;
     }
+
+    {
+      // Check max lumps
+    }
+
+    for (uint32_t lump_index = 0; lump_index < header.lump_count;
+         lump_index++) {
+      AssetRegistryLumpEntry lump_entry;
+      registry_file.read(reinterpret_cast<char*>(&lump_entry),
+                         sizeof(lump_entry));
+
+      {
+          // Check sum :P
+      }
+
+      {
+        // Check max assets
+      }
+
+      for (uint32_t asset_index = 0; asset_index < lump_entry.asset_count;
+           asset_index++) {
+        AssetRegistryEntry asset_entry;
+        registry_file.read(reinterpret_cast<char*>(&asset_entry),
+                           sizeof(asset_entry));
+
+        {
+          // Add to unordered_map
+        }
+      }
+    }
   } catch (std::ifstream::failure e) {
     AssetResult result;
-    if(registry_file.eof()) {
+    if (registry_file.eof()) {
       result = AssetResult::UnexpectedEof;
     } else {
       result = AssetResult::BadFile;
