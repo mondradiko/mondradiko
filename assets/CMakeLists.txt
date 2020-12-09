@@ -3,9 +3,11 @@
 
 set(MONDRADIKO_ASSETS_SRC
   Asset.cc
+  AssetBundle.cc
   AssetLump.cc
-  AssetRegistry.cc
 )
+
+add_compile_definitions(MONDRADIKO_ASSET_VERSION=0)
 
 add_library(mondradiko-assets STATIC ${MONDRADIKO_ASSETS_SRC})
 target_link_libraries(mondradiko-assets mondradiko-lib)

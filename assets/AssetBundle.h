@@ -1,8 +1,8 @@
 /**
- * @file AssetRegistry.h
+ * @file AssetBundle.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Contains global asset version, and info into
- * where each asset is stored, by ID.
+ * @brief Loads an asset bundle, its registry, its
+ * lumps, and the assets themselves.
  * @date 2020-12-08
  *
  * @copyright Copyright (c) 2020 Marceline Cramer
@@ -12,6 +12,10 @@
 
 #pragma once
 
+#include <cstring>
+#include <iostream>
+#include <filesystem>
+#include <fstream>
 #include <vector>
 
 #include "assets/Asset.h"
@@ -20,8 +24,11 @@
 namespace mondradiko {
 namespace assets {
 
+const size_t ASSET_REGISTRY_MAGIC_LENGTH = 4;
+const char ASSET_REGISTRY_MAGIC[] = "MDOA";
+
 struct AssetRegistryHeader {
-  char magic[4];
+  char magic[ASSET_REGISTRY_MAGIC_LENGTH];
   uint32_t version;
 
   AssetHashMethod hash_method;
@@ -40,12 +47,15 @@ struct AssetRegistryEntry {
   uint32_t size;
 };
 
-class AssetRegistry {
+class AssetBundle {
  public:
-  AssetRegistry(const char*);
-  ~AssetRegistry();
+  AssetBundle(const std::filesystem::path&);
+  ~AssetBundle();
+
+  AssetResult loadRegistry(const char*);
 
  private:
+  std::filesystem::path bundle_root;
   std::vector<AssetLump*> lump_cache;
 };
 

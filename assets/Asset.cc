@@ -14,6 +14,25 @@
 namespace mondradiko {
 namespace assets {
 
+const char* getAssetResultString(AssetResult result) {
+  switch (result) {
+    case AssetResult::Success:
+      return "Success";
+    case AssetResult::FileNotFound:
+      return "FileNotFound";
+    case AssetResult::UnexpectedEof:
+      return "UnexpectedEof";
+    case AssetResult::BadFile:
+      return "BadFile";
+    case AssetResult::WrongMagic:
+      return "WrongMagic";
+    case AssetResult::WrongVersion:
+      return "WrongVersion";
+    default:
+      return "Unknown result";
+  }
+}
+
 AssetId Asset::generateId(AssetHashMethod) { return 0; }
 
 }  // namespace assets
