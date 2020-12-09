@@ -67,7 +67,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       }
 
       char lump_file[32];
-      snprintf(lump_file, sizeof(lump_file), "lump_%4u.bin", lump_index);
+      snprintf(lump_file, sizeof(lump_file), "lump_%04u.bin", lump_index);
       auto lump_path = bundle_root / lump_file;
 
       if (!std::filesystem::exists(lump_path)) {
@@ -82,10 +82,21 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
         AssetRegistryEntry asset_entry;
         registry_file.read(reinterpret_cast<char*>(&asset_entry),
                            sizeof(asset_entry));
+        
+        auto lookup_iter = asset_lookup.find(asset_entry.id);
 
-        {
-          // Add to unordered_map
+        if (lookup_iter != asset_lookup.end()) {
+          registry_file.close();
+          return AssetResult::DuplicateAsset;
         }
+
+        AssetLookupEntry lookup_entry{
+          .lump_index = lump_index,
+          .offset = asset_offset,
+          .size = asset_entry.size
+        };
+
+        asset_lookup.emplace(asset_entry.id, lookup_entry);
 
         asset_offset += asset_entry.size;
       }

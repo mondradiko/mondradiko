@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
 #include <vector>
 
 #include "assets/Asset.h"
@@ -59,6 +60,14 @@ class AssetBundle {
 
  private:
   std::filesystem::path bundle_root;
+
+  struct AssetLookupEntry {
+    uint32_t lump_index;
+    uint32_t offset;
+    uint32_t size;
+  };
+
+  std::unordered_map<AssetId, AssetLookupEntry> asset_lookup;
   std::vector<AssetLump*> lump_cache;
 };
 
