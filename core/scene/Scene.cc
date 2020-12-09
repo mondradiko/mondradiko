@@ -14,7 +14,6 @@
 
 #include <iostream>
 
-#include "core/filesystem/AssimpIOSystem.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/log/AssimpLogStream.h"
 #include "core/log/log.h"
@@ -25,19 +24,6 @@ Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
              Renderer* renderer)
     : display(display), fs(fs), gpu(gpu), renderer(renderer) {
   log_zone;
-
-  // Abandon all hope, ye who enter here.
-  Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
-  Assimp::DefaultLogger::get()->attachStream(
-      new AssimpLogStream(LOG_LEVEL_INFO), Assimp::Logger::Info);
-  Assimp::DefaultLogger::get()->attachStream(
-      new AssimpLogStream(LOG_LEVEL_DEBUG), Assimp::Logger::Debugging);
-  Assimp::DefaultLogger::get()->attachStream(
-      new AssimpLogStream(LOG_LEVEL_WARNING), Assimp::Logger::Warn);
-  Assimp::DefaultLogger::get()->attachStream(
-      new AssimpLogStream(LOG_LEVEL_ERROR), Assimp::Logger::Err);
-
-  importer.SetIOHandler(new AssimpIOSystem(fs));
 }
 
 Scene::~Scene() {
@@ -68,7 +54,8 @@ bool Scene::update() {
   return true;
 }
 
-bool Scene::loadModel(const char* fileName) {
+// Saving this for later so I can write a tool
+/* bool Scene::loadModel(const char* fileName) {
   log_zone;
 
   // TODO(marceline-cramer) Go into more detail on flags
@@ -101,6 +88,6 @@ bool Scene::loadModel(const char* fileName) {
 
   // aiScene is freed automatically
   return true;
-}
+} */
 
 }  // namespace mondradiko

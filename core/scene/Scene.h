@@ -25,18 +25,14 @@ class Scene {
   ~Scene();
 
   bool update();
-  bool loadModel(const char*);
 
   DisplayInterface* display;
   Filesystem* fs;
   GpuInstance* gpu;
-  Renderer* renderer;
-
-  // TODO(marceline-cramer) Move session lifetime to Scene
-  entt::registry registry;
+  Renderer* renderer;  
 
  private:
-  Assimp::Importer importer;
+  entt::registry registry;
 };
 
 }  // namespace mondradiko
