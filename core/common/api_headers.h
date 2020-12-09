@@ -36,8 +36,6 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "physfs.h"  // NOLINT (PhysFS is not in an include directory)
-
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_vulkan.h"
 

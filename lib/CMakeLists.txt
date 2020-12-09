@@ -20,10 +20,6 @@ target_link_libraries(mondradiko-lib PUBLIC ${ASSIMP_LIBRARIES})
 target_include_directories(mondradiko-lib PUBLIC ${ASSIMP_INCLUDE_DIRS})
 target_compile_options(mondradiko-lib PUBLIC ${ASSIMP_CFLAGS_OTHER})
 
-target_link_libraries(mondradiko-lib PUBLIC ${PHYSFS_LIBRARIES})
-target_include_directories(mondradiko-lib PUBLIC ${PHYSFS_INCLUDE_DIRS})
-target_compile_options(mondradiko-lib PUBLIC ${PHYSFS_CFLAGS_OTHER})
-
 target_link_libraries(mondradiko-lib PUBLIC ${SDL2_LIBRARIES})
 target_include_directories(mondradiko-lib PUBLIC ${SDL2_INCLUDE_DIRS})
 target_compile_options(mondradiko-lib PUBLIC ${SDL2_CFLAGS_OTHER})
