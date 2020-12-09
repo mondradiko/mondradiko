@@ -46,7 +46,7 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   Scene scene(display, fs, gpu, &renderer);
   NetworkClient client(&scene, "127.0.0.1", 10555);
 
-  scene.loadModel("DamagedHelmet.gltf");
+  // scene.loadModel("DamagedHelmet.gltf");
 
   while (!g_interrupted) {
     scene.update();
@@ -80,8 +80,6 @@ int main(int argc, const char* argv[]) {
   TracyMessageL("Hello Tracy!");
   log_inf("Hello VR!");
 
-  PHYSFS_init(argv[0]);
-
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
   }
@@ -96,10 +94,8 @@ int main(int argc, const char* argv[]) {
   } catch (const std::exception& e) {
     log_err("Mondradiko player session failed with message:");
     log_err(e.what());
-    PHYSFS_deinit();
     return 1;
   }
 
-  PHYSFS_deinit();
   return 0;
 }
