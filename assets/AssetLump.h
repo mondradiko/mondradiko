@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <filesystem>
+
 #include "assets/Asset.h"
 
 namespace mondradiko {
@@ -30,9 +32,14 @@ enum class LumpCompressionMethod : uint32_t {
 
 class AssetLump {
  public:
-  AssetLump(const char*, LumpHashMethod, LumpHash, LumpCompressionMethod);
+  AssetLump(const std::filesystem::path&);
 
+  bool assertLength(size_t);
+  bool assertHash(LumpHashMethod, LumpHash);
+
+  void decompress(LumpCompressionMethod);
  private:
+  std::filesystem::path lump_path;
 };
 
 }  // namespace assets

@@ -14,5 +14,13 @@
 namespace mondradiko {
 namespace assets {
 
+AssetLump::AssetLump(const std::filesystem::path& lump_path)
+    : lump_path(lump_path) {}
+
+// TODO(marceline-cramer) Implement these
+bool AssetLump::assertLength(size_t) { return false; }
+bool AssetLump::assertHash(LumpHashMethod, LumpHash) { return false; }
+void AssetLump::decompress(LumpCompressionMethod) {}
+
 }  // namespace assets
 }  // namespace mondradiko
