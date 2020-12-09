@@ -30,6 +30,8 @@ const char* getAssetResultString(AssetResult result) {
       return "WrongVersion";
     case AssetResult::BadSize:
       return "BadSize";
+    case AssetResult::InvalidChecksum:
+      return "InvalidChecksum";
     default:
       return "Unknown result";
   }
