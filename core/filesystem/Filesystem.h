@@ -11,23 +11,21 @@
 
 #pragma once
 
+#include <filesystem>
 #include <vector>
 
+#include "assets/AssetBundle.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
 
 class Filesystem {
  public:
-  explicit Filesystem(const char*);
+  explicit Filesystem(const std::filesystem::path&);
   ~Filesystem();
 
-  const char* archive;
-
-  bool exists(const char*);
-  bool loadBinaryFile(const char*, std::vector<unsigned char>*);
-
  private:
+  assets::AssetBundle asset_bundle;
 };
 
 }  // namespace mondradiko
