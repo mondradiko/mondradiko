@@ -14,7 +14,7 @@
 #include <filesystem>
 #include <vector>
 
-#include "assets/AssetBundle.h"
+#include "assets/loading/AssetBundle.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {

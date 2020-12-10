@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "assets/AssetLump.h"
+#include "assets/format/AssetTypes.h"
 
 namespace mondradiko {
 namespace assets {

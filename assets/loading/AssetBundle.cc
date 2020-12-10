@@ -10,9 +10,9 @@
  *
  */
 
-#include "assets/AssetBundle.h"
+#include "assets/loading/AssetBundle.h"
 
-#include "assets/AssetFile.h"
+#include "assets/format/AssetFile.h"
 
 namespace mondradiko {
 namespace assets {

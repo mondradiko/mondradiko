@@ -48,5 +48,13 @@ struct Asset {
   std::vector<uint8_t> data;
 };
 
+using LumpHash = uint32_t;
+
+enum class LumpHashMethod : uint8_t { None = 0, xxHash = 1 };
+
+enum class LumpCompressionMethod : uint8_t { None = 0, LZ4 = 1 };
+
+std::string generateLumpName(uint32_t);
+
 }  // namespace assets
 }  // namespace mondradiko

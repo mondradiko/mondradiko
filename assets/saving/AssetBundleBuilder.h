@@ -12,9 +12,10 @@
 
 #pragma once
 
+#include <filesystem>
 #include <vector>
 
-#include "assets/AssetFile.h"
+#include "assets/format/AssetFile.h"
 
 namespace mondradiko {
 namespace assets {

@@ -19,8 +19,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "assets/AssetLump.h"
-#include "assets/AssetTypes.h"
+#include "assets/format/AssetTypes.h"
+#include "assets/loading/AssetLump.h"
 
 namespace mondradiko {
 namespace assets {

@@ -10,7 +10,7 @@
  *
  */
 
-#include "assets/AssetBundleBuilder.h"
+#include "assets/saving/AssetBundleBuilder.h"
 
 #include <cstring>
 

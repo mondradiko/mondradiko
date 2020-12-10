@@ -9,7 +9,7 @@
  *
  */
 
-#include "assets/AssetLump.h"
+#include "assets/loading/AssetLump.h"
 
 #include "lz4frame.h"
 #include "xxhash.h"
@@ -19,12 +19,6 @@ namespace assets {
 
 const uint32_t ASSET_LOAD_CHUNK_SIZE = 1024;
 static_assert(ASSET_LOAD_CHUNK_SIZE >= LZ4F_HEADER_SIZE_MAX);
-
-std::string generateLumpName(uint32_t lump_index) {
-  char buf[32];
-  snprintf(buf, sizeof(buf), "lump_%04u.bin", lump_index);
-  return buf;
-}
 
 AssetLump::AssetLump(const std::filesystem::path& lump_path)
     : lump_path(lump_path) {}

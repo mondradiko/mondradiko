@@ -9,7 +9,7 @@
  *
  */
 
-#include "assets/AssetTypes.h"
+#include "assets/format/AssetTypes.h"
 
 namespace mondradiko {
 namespace assets {
@@ -37,6 +37,12 @@ const char* getAssetResultString(AssetResult result) {
     default:
       return "Unknown result";
   }
+}
+
+std::string generateLumpName(uint32_t lump_index) {
+  char buf[32];
+  snprintf(buf, sizeof(buf), "lump_%04u.bin", lump_index);
+  return buf;
 }
 
 }  // namespace assets
