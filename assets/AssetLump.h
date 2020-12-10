@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 
 #include "assets/AssetTypes.h"
 
@@ -21,15 +21,9 @@ namespace assets {
 
 using LumpHash = uint32_t;
 
-enum class LumpHashMethod : uint32_t {
-  None = 0,
-  xxHash = 1
-};
+enum class LumpHashMethod : uint8_t { None = 0, xxHash = 1 };
 
-enum class LumpCompressionMethod : uint32_t {
-  None = 0,
-  LZ4 = 1
-};
+enum class LumpCompressionMethod : uint8_t { None = 0, LZ4 = 1 };
 
 std::string generateLumpName(uint32_t);
 
@@ -42,6 +36,7 @@ class AssetLump {
   bool assertHash(LumpHashMethod, LumpHash);
 
   void decompress(LumpCompressionMethod);
+
  private:
   std::filesystem::path lump_path;
 
