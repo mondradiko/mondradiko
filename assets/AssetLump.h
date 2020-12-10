@@ -31,6 +31,8 @@ enum class LumpCompressionMethod : uint32_t {
   LZ4 = 1
 };
 
+std::string generateLumpName(uint32_t);
+
 class AssetLump {
  public:
   explicit AssetLump(const std::filesystem::path&);
