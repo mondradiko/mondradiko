@@ -14,7 +14,7 @@
 #include <iostream>
 #include <filesystem>
 
-#include "assets/Asset.h"
+#include "assets/AssetTypes.h"
 
 namespace mondradiko {
 namespace assets {

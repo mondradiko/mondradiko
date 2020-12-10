@@ -12,6 +12,8 @@
 
 #include "assets/AssetBundle.h"
 
+#include "assets/AssetFile.h"
+
 namespace mondradiko {
 namespace assets {
 
@@ -82,7 +84,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
         AssetRegistryEntry asset_entry;
         registry_file.read(reinterpret_cast<char*>(&asset_entry),
                            sizeof(asset_entry));
-        
+
         auto lookup_iter = asset_lookup.find(asset_entry.id);
 
         if (lookup_iter != asset_lookup.end()) {
@@ -90,11 +92,9 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
           return AssetResult::DuplicateAsset;
         }
 
-        AssetLookupEntry lookup_entry{
-          .lump_index = lump_index,
-          .offset = asset_offset,
-          .size = asset_entry.size
-        };
+        AssetLookupEntry lookup_entry{.lump_index = lump_index,
+                                      .offset = asset_offset,
+                                      .size = asset_entry.size};
 
         asset_lookup.emplace(asset_entry.id, lookup_entry);
 
