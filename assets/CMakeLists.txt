@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 set(MONDRADIKO_ASSETS_SRC
-  Asset.cc
   AssetBundle.cc
+  AssetBundleBuilder.cc
   AssetLump.cc
+  AssetTypes.cc
 )
 
 add_compile_definitions(MONDRADIKO_ASSET_VERSION=0)
