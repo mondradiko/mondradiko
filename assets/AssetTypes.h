@@ -1,7 +1,7 @@
 /**
  * @file Asset.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Stores the raw Asset data found in a lump.
+ * @brief Stores global asset type definitions.
  * @date 2020-12-08
  *
  * @copyright Copyright (c) 2020 Marceline Cramer

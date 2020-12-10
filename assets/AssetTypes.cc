@@ -1,7 +1,7 @@
 /**
  * @file Asset.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Stores the raw Asset data found in a lump.
+ * @brief Implements AssetType.h's helper functions.
  * @date 2020-12-08
  *
  * @copyright Copyright (c) 2020 Marceline Cramer
@@ -9,7 +9,7 @@
  *
  */
 
-#include "assets/Asset.h"
+#include "assets/AssetTypes.h"
 
 namespace mondradiko {
 namespace assets {
