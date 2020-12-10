@@ -62,7 +62,7 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
     default:
     case LumpHashMethod::None: {
       lump_file.close();
-      return false;
+      return true;
     }
   }  // switch (hash_method)
 
