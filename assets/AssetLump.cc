@@ -11,15 +11,22 @@
 
 #include "assets/AssetLump.h"
 
+#include "lz4frame.h"
 #include "xxhash.h"
 
 namespace mondradiko {
 namespace assets {
 
+const uint32_t ASSET_LOAD_CHUNK_SIZE = 1024;
+static_assert(ASSET_LOAD_CHUNK_SIZE >= LZ4F_HEADER_SIZE_MAX);
+
 AssetLump::AssetLump(const std::filesystem::path& lump_path)
     : lump_path(lump_path) {}
 
-// TODO(marceline-cramer) Implement these
+AssetLump::~AssetLump() {
+  if (loaded_data) delete[] loaded_data;
+}
+
 bool AssetLump::assertLength(size_t check_size) {
   return std::filesystem::file_size(lump_path) == check_size;
 }
@@ -31,8 +38,9 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
 
   switch (hash_method) {
     case LumpHashMethod::xxHash: {
-      char buffer[256];
+      char buffer[ASSET_LOAD_CHUNK_SIZE];
       XXH32_state_t* hash_state = XXH32_createState();
+      XXH32_reset(hash_state, 0);
 
       while (!lump_file.eof()) {
         lump_file.read(buffer, sizeof(buffer));
@@ -56,7 +64,66 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
   return computed_hash == checksum;
 }
 
-void AssetLump::decompress(LumpCompressionMethod) {}
+void AssetLump::decompress(LumpCompressionMethod compression_method) {
+  if (loaded_data) return;
+
+  std::ifstream lump_file(lump_path.c_str(),
+                          std::ifstream::in | std::ifstream::binary);
+  lump_file.seekg(0, std::ifstream::end);
+  size_t file_size = lump_file.tellg();
+  lump_file.seekg(0);
+
+  switch (compression_method) {
+    case LumpCompressionMethod::LZ4: {
+      LZ4F_dctx* context;
+      LZ4F_createDecompressionContext(&context, LZ4F_VERSION);
+
+      std::vector<char> buffer(ASSET_LOAD_CHUNK_SIZE);
+
+      {
+        lump_file.read(buffer.data(), buffer.size());
+        size_t bytes_read = lump_file.gcount();
+
+        LZ4F_frameInfo_t frame_info;
+        size_t result = LZ4F_getFrameInfo(context, &frame_info, buffer.data(), &bytes_read);
+
+        if (LZ4F_isError(result)) {
+          std::cerr << "shite" << std::endl;
+        }
+
+        loaded_size = frame_info.contentSize;
+        loaded_data = new char[loaded_size];
+
+        buffer.resize(result);
+        lump_file.seekg(bytes_read);
+      }
+
+      // TODO(marceline-cramer) Finish this
+
+      /*while (!lump_file.eof()) {
+        lump_file.read(buffer.data(), buffer.size());
+        auto bytes_read = lump_file.gcount();
+        LZ4F_decompress(context, )
+      }*/
+
+      LZ4F_freeDecompressionContext(context);
+      break;
+    }
+
+    default:
+    case LumpCompressionMethod::None: {
+      loaded_size = file_size;
+      loaded_data = new char[loaded_size];
+      lump_file.read(loaded_data, loaded_size);
+      break;
+    }
+  }
+
+  std::cout << loaded_size << std::endl;
+  // std::cout << loaded_data << std::endl;
+
+  lump_file.close();
+}
 
 }  // namespace assets
 }  // namespace mondradiko

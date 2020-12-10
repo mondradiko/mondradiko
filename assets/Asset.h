@@ -28,6 +28,7 @@ namespace assets {
 
 using AssetId = uint32_t;
 
+// TODO(marceline-cramer) AssetLump error handling
 enum class AssetResult {
   Success,
   FileNotFound,

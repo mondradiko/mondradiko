@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <filesystem>
 
 #include "assets/Asset.h"
@@ -33,6 +34,7 @@ enum class LumpCompressionMethod : uint32_t {
 class AssetLump {
  public:
   explicit AssetLump(const std::filesystem::path&);
+  ~AssetLump();
 
   bool assertLength(size_t);
   bool assertHash(LumpHashMethod, LumpHash);
@@ -40,6 +42,9 @@ class AssetLump {
   void decompress(LumpCompressionMethod);
  private:
   std::filesystem::path lump_path;
+
+  size_t loaded_size;
+  char* loaded_data;
 };
 
 }  // namespace assets
