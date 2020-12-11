@@ -10,17 +10,23 @@
  *
  */
 
-#include "assets/saving/AssetBundleBuilder.h"
-
 #include <cstring>
+#include <iostream>
+
+#include "assets/saving/AssetBundleBuilder.h"
+#include "converter/MeshAsset/assimp_converter.h"
 
 using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 
 int main(int argc, const char* argv[]) {
   assets::AssetBundleBuilder bundle_builder("../test-folder/");
 
-  const char test_asset[] = "Despite all known laws of aviation...";
-  bundle_builder.addAsset(0xdeadbeef, test_asset, strlen(test_asset));
+  const char* assimp_test = "../test-folder/DamagedHelmet.gltf";
+
+  if (!convert_assimp(&bundle_builder, assimp_test)) {
+    std::cerr << "whoops" << std::endl;
+    return 1;
+  }
 
   bundle_builder.buildBundle("registry.bin");
 
