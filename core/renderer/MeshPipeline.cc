@@ -16,7 +16,7 @@
 
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuShader.h"
-#include "core/log/log.h"
+#include "log/log.h"
 #include "core/renderer/Renderer.h"
 #include "shaders/mesh.frag.h"
 #include "shaders/mesh.vert.h"

@@ -31,7 +31,6 @@ set(MONDRADIKO_CORE_SRC
   gpu/GpuShader.cc
   renderer/MeshPipeline.cc
   renderer/Renderer.cc
-  log/log.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
   network/NetworkShared.cc
@@ -40,6 +39,7 @@ set(MONDRADIKO_CORE_SRC
 
 add_library(mondradiko-core STATIC ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
 target_link_libraries(mondradiko-core mondradiko-assets)
+target_link_libraries(mondradiko-core mondradiko-log)
 target_link_libraries(mondradiko-core mondradiko-lib)
 
 include(FindVulkan)

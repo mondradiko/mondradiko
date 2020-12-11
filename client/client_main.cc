@@ -18,7 +18,7 @@
 #include "core/displays/SdlDisplay.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
-#include "core/log/log.h"
+#include "log/log.h"
 #include "core/network/NetworkClient.h"
 #include "core/renderer/Renderer.h"
 #include "core/scene/Scene.h"

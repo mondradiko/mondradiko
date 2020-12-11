@@ -12,7 +12,7 @@
 #include "core/gpu/GpuBuffer.h"
 
 #include "core/gpu/GpuInstance.h"
-#include "core/log/log.h"
+#include "log/log.h"
 
 namespace mondradiko {
 

@@ -15,8 +15,7 @@
 #include <iostream>
 
 #include "core/filesystem/Filesystem.h"
-#include "core/log/AssimpLogStream.h"
-#include "core/log/log.h"
+#include "log/log.h"
 
 namespace mondradiko {
 

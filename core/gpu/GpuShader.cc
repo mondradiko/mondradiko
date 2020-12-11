@@ -10,7 +10,7 @@
  */
 
 #include "core/gpu/GpuShader.h"
-#include "core/log/log.h"
+#include "log/log.h"
 
 namespace mondradiko {
 

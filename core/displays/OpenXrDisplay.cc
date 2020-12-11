@@ -13,7 +13,7 @@
 
 #include "./build_config.h"
 #include "core/gpu/GpuInstance.h"
-#include "core/log/log.h"
+#include "log/log.h"
 
 #define XR_LOAD_FN_PTR(name, fnPtr)     \
   xrGetInstanceProcAddr(instance, name, \

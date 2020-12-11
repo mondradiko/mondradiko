@@ -12,7 +12,7 @@
 #include "core/displays/OpenXrViewport.h"
 
 #include "core/displays/OpenXrDisplay.h"
-#include "core/log/log.h"
+#include "log/log.h"
 
 namespace mondradiko {
 
