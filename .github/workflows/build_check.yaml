@@ -51,8 +51,10 @@ jobs:
       - name: Compile
         shell: bash
         run: |
+          pushd src
           mkdir builddir
           pushd builddir
-          cmake ..
-          make
+          cmake -GNinja ..
+          ninja
+          popd
           popd
