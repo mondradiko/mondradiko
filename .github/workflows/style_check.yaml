@@ -6,12 +6,10 @@ name: Code Style Check
 on:
   push:
     paths:
-      - "src/**.cc"
-      - "src/**.h"
+      - "src/**"
   pull_request:
     paths:
-      - "src/**.cc"
-      - "src/**.h"
+      - "src/**"
 
 jobs:
   cpplint-check:
