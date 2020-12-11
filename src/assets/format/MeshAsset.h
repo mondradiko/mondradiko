@@ -18,7 +18,7 @@ namespace assets {
 
 /**
  * MeshAssets are laid out like this:
- * 
+ *
  * MeshHeader header;
  * MeshVertex vertices[header.vertex_count];
  * MeshIndex indices[header.index_count];

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cpplint --recursive assets bundler client converter core launcher log launcher
+cpplint --recursive --quiet assets bundler client converter core launcher log launcher

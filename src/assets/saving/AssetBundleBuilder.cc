@@ -29,7 +29,6 @@ AssetBundleBuilder::~AssetBundleBuilder() {
 
 AssetResult AssetBundleBuilder::addAsset(AssetId id, const void* data,
                                          size_t size) {
-
   if (lumps.size() == 0) {
     lumps.resize(1);
     allocateLump(&lumps[0]);

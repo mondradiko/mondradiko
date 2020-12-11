@@ -22,7 +22,7 @@ namespace assets {
 
 class AssetBundleBuilder {
  public:
-  AssetBundleBuilder(const std::filesystem::path&);
+  explicit AssetBundleBuilder(const std::filesystem::path&);
   ~AssetBundleBuilder();
 
   AssetResult addAsset(AssetId, const void*, size_t);

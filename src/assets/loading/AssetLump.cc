@@ -11,8 +11,10 @@
 
 #include "assets/loading/AssetLump.h"
 
-#include "lz4frame.h"
-#include "xxhash.h"
+#include <vector>
+
+#include "lz4frame.h"  // NOLINT
+#include "xxhash.h"    // NOLINT
 
 namespace mondradiko {
 namespace assets {
@@ -85,7 +87,8 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
         size_t bytes_read = lump_file.gcount();
 
         LZ4F_frameInfo_t frame_info;
-        size_t result = LZ4F_getFrameInfo(context, &frame_info, buffer.data(), &bytes_read);
+        size_t result =
+            LZ4F_getFrameInfo(context, &frame_info, buffer.data(), &bytes_read);
 
         if (LZ4F_isError(result)) {
           std::cerr << "shite" << std::endl;
