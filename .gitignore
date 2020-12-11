@@ -1,7 +1,5 @@
-builddir/
-test-folder/
-shaders/compiled/
-shaders/headers/
+src/builddir/
+src/test-folder/
 
 # Local Jekyll builds
 docs/Gemfile.lock
