@@ -9,9 +9,9 @@
  *
  */
 
-#include "gpu/GpuDescriptorSet.h"
+#include "core/gpu/GpuDescriptorSet.h"
 
-#include "gpu/GpuDescriptorSetLayout.h"
+#include "core/gpu/GpuDescriptorSetLayout.h"
 
 namespace mondradiko {
 

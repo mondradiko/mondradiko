@@ -14,8 +14,8 @@
 
 #include <queue>
 
-#include "scene/Scene.h"
-#include "network/NetworkShared.h"
+#include "core/scene/Scene.h"
+#include "core/network/NetworkShared.h"
 
 namespace mondradiko {
 

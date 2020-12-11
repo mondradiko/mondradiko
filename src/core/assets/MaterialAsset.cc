@@ -9,11 +9,11 @@
  *
  */
 
-#include "assets/MaterialAsset.h"
+#include "core/assets/MaterialAsset.h"
 
 #include <string>
 
-#include "renderer/Renderer.h"
+#include "core/renderer/Renderer.h"
 
 namespace mondradiko {
 

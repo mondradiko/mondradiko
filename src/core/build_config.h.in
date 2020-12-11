@@ -2,7 +2,7 @@
  * @file build_config.h.in
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Contains build configuration info. This file is automatically filled
- * out during Meson project configuration.
+ * out during CMake project configuration.
  * @date 2020-10-24
  *
  * @copyright Copyright (c) 2020 Marceline Cramer
@@ -10,8 +10,7 @@
  *
  */
 
-#ifndef SRC_BUILD_CONFIG_H_
-#define SRC_BUILD_CONFIG_H_
+#pragma once
 
 #define MONDRADIKO_NAME "Mondradiko"
 #define MONDRADIKO_VERSION "@Mondradiko_VERSION@"
@@ -22,5 +21,3 @@
 #define MONDRADIKO_VULKAN_VERSION                                           \
   VK_MAKE_VERSION(@Mondradiko_VERSION_MAJOR@, @Mondradiko_VERSION_MINOR@, \
                   @Mondradiko_VERSION_PATCH@)
-
-#endif  // SRC_BUILD_CONFIG_H_

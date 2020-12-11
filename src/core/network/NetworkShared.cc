@@ -10,7 +10,7 @@
  *
  */
 
-#include "network/NetworkShared.h"
+#include "core/network/NetworkShared.h"
 
 #include "log/log.h"
 

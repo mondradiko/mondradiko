@@ -10,7 +10,7 @@
  *
  */
 
-#include "gpu/GpuInstance.h"
+#include "core/gpu/GpuInstance.h"
 
 #include <cstring>
 #include <set>

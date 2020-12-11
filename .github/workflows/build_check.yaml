@@ -3,7 +3,13 @@
 
 name: Continuous Integration
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "src/**"
+  pull_request:
+    paths:
+      - "src/**"
 
 jobs:
   build:
@@ -22,7 +28,8 @@ jobs:
                            libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
                            mesa-common-dev \
                            pkg-config libvulkan-dev libglm-dev libphysfs-dev \
-                           libassimp-dev ninja-build libsdl2-dev glslang-tools
+                           libassimp-dev ninja-build libsdl2-dev glslang-tools \
+                           libxxhash-dev liblz4-dev
 
       - name: Install OpenXR SDK
         shell: bash
@@ -51,8 +58,10 @@ jobs:
       - name: Compile
         shell: bash
         run: |
+          pushd src
           mkdir builddir
           pushd builddir
-          cmake ..
-          make
+          cmake -GNinja ..
+          ninja
+          popd
           popd

@@ -9,7 +9,7 @@
  *
  */
 
-#include "assets/MeshAsset.h"
+#include "core/assets/MeshAsset.h"
 
 #include <vector>
 

@@ -9,7 +9,7 @@
  *
  */
 
-#include "renderer/Renderer.h"
+#include "core/renderer/Renderer.h"
 
 #include "log/log.h"
 

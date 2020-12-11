@@ -14,8 +14,8 @@
 
 #include <map>
 
-#include "filesystem/Filesystem.h"
-#include "renderer/Renderer.h"
+#include "core/filesystem/Filesystem.h"
+#include "core/renderer/Renderer.h"
 
 namespace mondradiko {
 
@@ -25,18 +25,14 @@ class Scene {
   ~Scene();
 
   bool update();
-  bool loadModel(const char*);
 
   DisplayInterface* display;
   Filesystem* fs;
   GpuInstance* gpu;
   Renderer* renderer;
 
-  // TODO(marceline-cramer) Move session lifetime to Scene
-  entt::registry registry;
-
  private:
-  Assimp::Importer importer;
+  entt::registry registry;
 };
 
 }  // namespace mondradiko

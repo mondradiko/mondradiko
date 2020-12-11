@@ -10,7 +10,7 @@
  *
  */
 
-#include "network/NetworkClient.h"
+#include "core/network/NetworkClient.h"
 
 #include <sstream>
 

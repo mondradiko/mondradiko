@@ -9,9 +9,9 @@
  *
  */
 
-#include "gpu/GpuBuffer.h"
+#include "core/gpu/GpuBuffer.h"
 
-#include "gpu/GpuInstance.h"
+#include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {

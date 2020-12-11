@@ -13,9 +13,9 @@
 
 #include <set>
 
-#include "gpu/GpuDescriptorSet.h"
-#include "gpu/GpuDescriptorSetLayout.h"
-#include "gpu/GpuInstance.h"
+#include "core/gpu/GpuDescriptorSet.h"
+#include "core/gpu/GpuDescriptorSetLayout.h"
+#include "core/gpu/GpuInstance.h"
 
 namespace mondradiko {
 

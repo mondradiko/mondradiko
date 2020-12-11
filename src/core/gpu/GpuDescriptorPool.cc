@@ -9,7 +9,7 @@
  *
  */
 
-#include "gpu/GpuDescriptorPool.h"
+#include "core/gpu/GpuDescriptorPool.h"
 
 #include <vector>
 

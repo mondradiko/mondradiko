@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "displays/ViewportInterface.h"
-#include "common/api_headers.h"
+#include "core/displays/ViewportInterface.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
 

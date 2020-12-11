@@ -10,7 +10,7 @@
  *
  */
 
-#include "network/NetworkServer.h"
+#include "core/network/NetworkServer.h"
 
 #include "log/log.h"
 

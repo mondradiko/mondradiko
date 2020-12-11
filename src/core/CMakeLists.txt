@@ -10,6 +10,9 @@ spirv_shaders(SHADER_HEADERS
 add_subdirectory(shaders)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+configure_file(build_config.h.in build_config.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 set(MONDRADIKO_CORE_SRC
   assets/MaterialAsset.cc
   assets/MeshAsset.cc
@@ -18,8 +21,6 @@ set(MONDRADIKO_CORE_SRC
   displays/OpenXrViewport.cc
   displays/SdlDisplay.cc
   displays/SdlViewport.cc
-  filesystem/AssimpIOStream.cc
-  filesystem/AssimpIOSystem.cc
   filesystem/Filesystem.cc
   gpu/GpuBuffer.cc
   gpu/GpuDescriptorPool.cc
@@ -30,7 +31,6 @@ set(MONDRADIKO_CORE_SRC
   gpu/GpuShader.cc
   renderer/MeshPipeline.cc
   renderer/Renderer.cc
-  log/log.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
   network/NetworkShared.cc
@@ -38,7 +38,9 @@ set(MONDRADIKO_CORE_SRC
 )
 
 add_library(mondradiko-core STATIC ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
-target_link_libraries(mondradiko-core third_party)
+target_link_libraries(mondradiko-core mondradiko-assets)
+target_link_libraries(mondradiko-core mondradiko-log)
+target_link_libraries(mondradiko-core mondradiko-lib)
 
 include(FindVulkan)
 target_link_libraries(mondradiko-core ${Vulkan_LIBRARIES})

@@ -12,6 +12,8 @@ permalink: /building
 - [GLM](https://github.com/g-truc/glm)
 - [glslang](https://github.com/KhronosGroup/glslang)
 - [PhysFS](https://www.icculus.org/physfs/)
+- [LZ4](https://lz4.org/)
+- [xxHash](https://cyan4973.github.io/xxHash/)
 
 Most of these packages should be available through your package manager, but if not, links are provided for convenience.
 
@@ -45,7 +47,8 @@ sudo ninja install
 
 ```bash
 sudo apt install cmake pkg-config libvulkan-dev libglm-dev libphysfs-dev \
-                     libassimp-dev libsdl2-dev glslang-tools
+                     libassimp-dev libsdl2-dev glslang-tools \
+                     liblz4-dev libxxhash-dev
 ```
 
 Also see [Installing the OpenXR SDK](#installing-the-openxr-sdk).

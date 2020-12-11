@@ -13,10 +13,10 @@
 
 #include <vector>
 
-#include "displays/DisplayInterface.h"
-#include "displays/SdlViewport.h"
-#include "gpu/GpuInstance.h"
-#include "common/api_headers.h"
+#include "core/displays/DisplayInterface.h"
+#include "core/displays/SdlViewport.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
 

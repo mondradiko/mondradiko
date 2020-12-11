@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "gpu/GpuInstance.h"
-#include "common/api_headers.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
 

@@ -13,15 +13,15 @@
 #include <iostream>
 #include <sstream>
 
-#include "common/api_headers.h"
-#include "displays/OpenXrDisplay.h"
-#include "displays/SdlDisplay.h"
-#include "filesystem/Filesystem.h"
-#include "gpu/GpuInstance.h"
+#include "core/common/api_headers.h"
+#include "core/displays/OpenXrDisplay.h"
+#include "core/displays/SdlDisplay.h"
+#include "core/filesystem/Filesystem.h"
+#include "core/gpu/GpuInstance.h"
 #include "log/log.h"
-#include "network/NetworkClient.h"
-#include "renderer/Renderer.h"
-#include "scene/Scene.h"
+#include "core/network/NetworkClient.h"
+#include "core/renderer/Renderer.h"
+#include "core/scene/Scene.h"
 
 // The using statement is fine because
 // this is the main entrypoint
@@ -46,7 +46,7 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   Scene scene(display, fs, gpu, &renderer);
   NetworkClient client(&scene, "127.0.0.1", 10555);
 
-  scene.loadModel("DamagedHelmet.gltf");
+  // scene.loadModel("DamagedHelmet.gltf");
 
   while (!g_interrupted) {
     scene.update();
@@ -80,8 +80,6 @@ int main(int argc, const char* argv[]) {
   TracyMessageL("Hello Tracy!");
   log_inf("Hello VR!");
 
-  PHYSFS_init(argv[0]);
-
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
   }
@@ -96,10 +94,8 @@ int main(int argc, const char* argv[]) {
   } catch (const std::exception& e) {
     log_err("Mondradiko player session failed with message:");
     log_err(e.what());
-    PHYSFS_deinit();
     return 1;
   }
 
-  PHYSFS_deinit();
   return 0;
 }

@@ -9,7 +9,7 @@
  *
  */
 
-#include "displays/SdlDisplay.h"
+#include "core/displays/SdlDisplay.h"
 
 #include "./build_config.h"
 #include "log/log.h"
