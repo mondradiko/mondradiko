@@ -94,8 +94,6 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
       mesh_asset << vertex;
     }
 
-    // lol
-    uint32_t index_index = 0;
     for (uint32_t face_index = 0; face_index < mesh->mNumFaces; face_index++) {
       aiFace& face = mesh->mFaces[face_index];
 

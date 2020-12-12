@@ -16,8 +16,8 @@
 namespace mondradiko {
 namespace assets {
 
-static const size_t ASSET_REGISTRY_MAGIC_LENGTH = 4;
-static const char ASSET_REGISTRY_MAGIC[] = "MDOA";
+static const char ASSET_REGISTRY_MAGIC[] = {'M', 'D', 'O', 'A'};
+static const size_t ASSET_REGISTRY_MAGIC_LENGTH = sizeof(ASSET_REGISTRY_MAGIC);
 
 static const uint32_t ASSET_REGISTRY_MAX_LUMPS = 256;
 static const uint32_t ASSET_LUMP_MAX_ASSETS = 4096;

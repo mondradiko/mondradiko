@@ -119,7 +119,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
         return AssetResult::InvalidChecksum;
       }
     }
-  } catch (std::ifstream::failure e) {
+  } catch (std::ifstream::failure& e) {
     AssetResult result;
     if (registry_file.eof()) {
       result = AssetResult::UnexpectedEof;
