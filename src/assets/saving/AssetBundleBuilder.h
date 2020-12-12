@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "assets/format/AssetFile.h"
+#include "assets/saving/MutableAsset.h"
 
 namespace mondradiko {
 namespace assets {
@@ -25,7 +26,7 @@ class AssetBundleBuilder {
   explicit AssetBundleBuilder(const std::filesystem::path&);
   ~AssetBundleBuilder();
 
-  AssetResult addAsset(AssetId, const void*, size_t);
+  AssetResult addAsset(AssetId, MutableAsset*);
   AssetResult buildBundle(const char*);
 
  private:

@@ -27,8 +27,9 @@ AssetBundleBuilder::~AssetBundleBuilder() {
   }
 }
 
-AssetResult AssetBundleBuilder::addAsset(AssetId id, const void* data,
-                                         size_t size) {
+AssetResult AssetBundleBuilder::addAsset(AssetId id, MutableAsset* asset) {
+  size_t asset_size = asset->data.size();
+
   if (lumps.size() == 0) {
     lumps.resize(1);
     allocateLump(&lumps[0]);
@@ -36,7 +37,7 @@ AssetResult AssetBundleBuilder::addAsset(AssetId id, const void* data,
 
   uint32_t lump_index = lumps.size() - 1;
 
-  if (lumps[lump_index].total_size + size > ASSET_LUMP_MAX_SIZE) {
+  if (lumps[lump_index].total_size + asset_size > ASSET_LUMP_MAX_SIZE) {
     LumpToSave new_lump;
     allocateLump(&new_lump);
     lumps.push_back(new_lump);
@@ -45,12 +46,13 @@ AssetResult AssetBundleBuilder::addAsset(AssetId id, const void* data,
 
   AssetToSave new_asset;
   new_asset.id = id;
-  new_asset.size = size;
+  new_asset.size = asset_size;
   lumps[lump_index].assets.push_back(new_asset);
 
-  memcpy(lumps[lump_index].data + lumps[lump_index].total_size, data, size);
+  memcpy(lumps[lump_index].data + lumps[lump_index].total_size,
+         asset->data.data(), asset_size);
 
-  lumps[lump_index].total_size += size;
+  lumps[lump_index].total_size += asset_size;
 
   return AssetResult::Success;
 }

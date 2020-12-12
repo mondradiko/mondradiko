@@ -69,13 +69,14 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
       return false;
     }
 
-    std::ostringstream asset_stream;
+    assets::MutableAsset mesh_asset;
 
     assets::MeshHeader header;
     header.vertex_count = mesh->mNumVertices;
     // Three indices per triangle face
     header.index_count = mesh->mNumFaces * 3;
-    asset_stream.write(reinterpret_cast<char*>(&header), sizeof(header));
+
+    mesh_asset << header;
 
     for (uint32_t vertex_index = 0; vertex_index < mesh->mNumVertices;
          vertex_index++) {
@@ -89,7 +90,8 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
       // Take only the UV coordinates
       // Invert the Y coordinate into range [0, 1]
       vertex.tex_coord = glm::vec2(texCoord.x, -texCoord.y);
-      asset_stream.write(reinterpret_cast<char*>(&vertex), sizeof(vertex));
+
+      mesh_asset << vertex;
     }
 
     // lol
@@ -100,12 +102,12 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
       for (uint32_t corner_index = 0; corner_index < face.mNumIndices;
            corner_index++) {
         assets::MeshIndex index = face.mIndices[corner_index];
-        asset_stream.write(reinterpret_cast<char*>(&index), sizeof(index));
+
+        mesh_asset << index;
       }
     }
 
-    auto asset_data = asset_stream.str();
-    builder->addAsset(0xdeadbeef, asset_data.data(), asset_data.size());
+    builder->addAsset(0xdeadbeef, &mesh_asset);
   }
 
   return true;
