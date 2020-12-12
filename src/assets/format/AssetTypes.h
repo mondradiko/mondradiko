@@ -41,20 +41,15 @@ enum class AssetResult {
   DuplicateAsset
 };
 
-const char* getAssetResultString(AssetResult);
-
-struct Asset {
-  std::string metadata;
-  std::vector<uint8_t> data;
-};
-
 using LumpHash = uint32_t;
 
 enum class LumpHashMethod : uint8_t { None = 0, xxHash = 1 };
 
 enum class LumpCompressionMethod : uint8_t { None = 0, LZ4 = 1 };
 
+// Global helper functions
 std::string generateLumpName(uint32_t);
+const char* getAssetResultString(AssetResult);
 
 }  // namespace assets
 }  // namespace mondradiko
