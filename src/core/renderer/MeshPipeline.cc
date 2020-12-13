@@ -14,10 +14,11 @@
 
 #include <vector>
 
+#include "core/assets/MeshAsset.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuShader.h"
-#include "log/log.h"
 #include "core/renderer/Renderer.h"
+#include "log/log.h"
 #include "shaders/mesh.frag.h"
 #include "shaders/mesh.vert.h"
 
@@ -211,6 +212,7 @@ MeshPipeline::~MeshPipeline() {
 }
 
 void MeshPipeline::allocateDescriptors(entt::registry& registry,
+                                       const AssetPool* asset_pool,
                                        GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
@@ -218,19 +220,24 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
   auto mesh_renderers = registry.view<MeshRendererComponent>();
   for (auto e : mesh_renderers) {
     auto mesh_renderer = mesh_renderers.get(e);
-    auto mesh_material = mesh_renderer.material_asset;
-    auto iter = frame_materials.find(mesh_material);
+
+    if (!mesh_renderer.isLoaded(asset_pool)) continue;
+
+    auto iter = frame_materials.find(mesh_renderer.material_asset);
 
     if (iter == frame_materials.end()) {
+      auto mesh_material =
+          asset_pool->getAsset<MaterialAsset>(mesh_renderer.material_asset);
       GpuDescriptorSet* material_descriptor =
           descriptor_pool->allocate(material_layout);
-      mesh_material->updateDescriptor(material_descriptor);
-      frame_materials.emplace(mesh_material, material_descriptor);
+      mesh_material.updateDescriptor(material_descriptor);
+      frame_materials.emplace(mesh_renderer.material_asset,
+                              material_descriptor);
     }
   }
 }
 
-void MeshPipeline::render(entt::registry& registry,
+void MeshPipeline::render(entt::registry& registry, const AssetPool* asset_pool,
                           VkCommandBuffer commandBuffer,
                           GpuDescriptorSet* viewport_descriptor,
                           uint32_t viewport_offset) {
@@ -249,18 +256,21 @@ void MeshPipeline::render(entt::registry& registry,
     log_zone_named("Render mesh");
 
     auto mesh_renderer = mesh_renderers.get(e);
+    if (!mesh_renderer.isLoaded(asset_pool)) continue;
+
+    log_dbg("Actually draw mesh");
+
     frame_materials.find(mesh_renderer.material_asset)
         ->second->cmdBind(commandBuffer, pipeline_layout, 1);
 
-    VkBuffer vertex_buffers[] = {
-        mesh_renderer.mesh_asset->vertex_buffer->buffer};
+    auto mesh_asset = asset_pool->getAsset<MeshAsset>(mesh_renderer.mesh_asset);
+
+    VkBuffer vertex_buffers[] = {mesh_asset.vertex_buffer->buffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer,
-                         mesh_renderer.mesh_asset->index_buffer->buffer, 0,
+    vkCmdBindIndexBuffer(commandBuffer, mesh_asset.index_buffer->buffer, 0,
                          VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(commandBuffer, mesh_renderer.mesh_asset->index_count, 1,
-                     0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, mesh_asset.index_count, 1, 0, 0, 0);
   }
 }
 

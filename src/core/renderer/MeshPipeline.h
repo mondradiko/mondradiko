@@ -16,11 +16,7 @@
 #include <set>
 #include <string>
 
-#include "core/assets/AssetHandle.h"
 #include "core/assets/AssetPool.h"
-#include "core/assets/MaterialAsset.h"
-#include "core/assets/MeshAsset.h"
-#include "core/assets/TextureAsset.h"
 #include "core/components/MeshRendererComponent.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
@@ -35,8 +31,8 @@ class MeshPipeline {
   MeshPipeline(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
   ~MeshPipeline();
 
-  void allocateDescriptors(entt::registry&, GpuDescriptorPool*);
-  void render(entt::registry&, VkCommandBuffer, GpuDescriptorSet*, uint32_t);
+  void allocateDescriptors(entt::registry&, const AssetPool*, GpuDescriptorPool*);
+  void render(entt::registry&, const AssetPool*, VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 
   GpuDescriptorSetLayout* material_layout;
 
@@ -51,7 +47,7 @@ class MeshPipeline {
   GpuInstance* gpu;
 
   // Non-persistent frame data
-  std::map<AssetHandle<MaterialAsset>, GpuDescriptorSet*> frame_materials;
+  std::map<AssetId, GpuDescriptorSet*> frame_materials;
 };
 
 }  // namespace mondradiko
