@@ -1,8 +1,8 @@
 /**
  * @file MeshAsset.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Contains the geometry for a mesh.
- * @date 2020-10-24
+ * @brief Loads a mesh.
+ * @date 2020-12-12
  *
  * @copyright Copyright (c) 2020 Marceline Cramer
  * SPDX-License-Identifier: LGPL-3.0-or-later
@@ -11,13 +11,9 @@
 
 #pragma once
 
-#include <array>
-#include <string>
-
 #include "core/assets/Asset.h"
-#include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuInstance.h"
-#include "core/common/api_headers.h"
+#include "core/gpu/GpuBuffer.h"
 
 namespace mondradiko {
 
@@ -64,17 +60,12 @@ using MeshIndex = uint32_t;
 
 class MeshAsset : public Asset {
  public:
-  MeshAsset(std::string, GpuInstance*, aiMesh*);
+  MeshAsset(assets::ImmutableAsset&, GpuInstance*);
   ~MeshAsset();
 
   GpuBuffer* vertex_buffer = nullptr;
   GpuBuffer* index_buffer = nullptr;
   size_t index_count = 0;
-
-  std::string mesh_name = nullptr;
-
- private:
-  GpuInstance* gpu;
 };
 
 }  // namespace mondradiko
