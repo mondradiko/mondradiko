@@ -1,8 +1,8 @@
 /**
  * @file Asset.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Implements a base class for Assets loaded from disk.
- * @date 2020-10-24
+ * @brief Base class for a core asset and its ID.
+ * @date 2020-12-12
  *
  * @copyright Copyright (c) 2020 Marceline Cramer
  * SPDX-License-Identifier: LGPL-3.0-or-later
@@ -11,16 +11,19 @@
 
 #pragma once
 
+#include "assets/loading/ImmutableAsset.h"
+#include "assets/format/AssetTypes.h"
+
 namespace mondradiko {
 
-class Asset {
- public:
-  virtual ~Asset() {}
- private:
-  template<class T>
-  friend class AssetHandle;
+using AssetId = assets::AssetId;
 
-  int ref_count = 0;
+class Asset {
+ private:
+  AssetId id_;
+  bool loaded;
+
+  friend class AssetPool;
 };
 
 }  // namespace mondradiko
