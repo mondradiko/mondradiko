@@ -1,9 +1,8 @@
 /**
  * @file AssetPool.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Holds Assets of a given type, caching by filename,
- * and automatically freeing on expiration.
- * @date 2020-10-24
+ * @brief Loads and maintains Assets by ID.
+ * @date 2020-12-12
  *
  * @copyright Copyright (c) 2020 Marceline Cramer
  * SPDX-License-Identifier: LGPL-3.0-or-later
@@ -12,45 +11,54 @@
 
 #pragma once
 
-#include <string>
+#include <type_traits>
 #include <unordered_map>
+
+#include "assets/loading/ImmutableAsset.h"
+#include "core/assets/Asset.h"
+#include "core/filesystem/Filesystem.h"
+#include "log/log.h"
 
 namespace mondradiko {
 
-template <class T>
 class AssetPool {
  public:
-  ~AssetPool();
+  explicit AssetPool(Filesystem* fs) : fs(fs) {}
 
-  AssetHandle<T> findCached(std::string);
-  AssetHandle<T> load(std::string, T*);
+  template <typename AssetType, typename... Args>
+  [[nodiscard]] AssetId loadAsset(AssetId id, Args&&... args) {
+    assets::ImmutableAsset asset_data;
+    fs->loadAsset(&asset_data, id);
 
-  std::unordered_map<std::string, T*> pool;
+    AssetId asset = asset_registry.create(id);
+    
+    asset_registry.emplace<AssetType>(asset, asset_data, std::forward<Args>(args)...);
+    asset_registry.get<AssetType>(asset).loaded = true;
+    return asset;
+  }
+
+  template <typename AssetType>
+  bool isAssetLoaded(AssetId id) const {
+    if (!asset_registry.valid(id)) return false;
+
+    auto asset = asset_registry.try_get<AssetType>(id);
+
+    if (asset) {
+      return asset->loaded;
+    } else {
+      return false;
+    }
+  }
+
+  template <typename AssetType>
+  const AssetType& getAsset(AssetId id) const {
+    return asset_registry.get<AssetType>(id);
+  }
+
+ private:
+  Filesystem* fs;
+
+  entt::basic_registry<AssetId> asset_registry;
 };
-
-template <class T>
-AssetPool<T>::~AssetPool() {
-  for (const auto& asset : pool) {
-    delete asset.second;
-  }
-}
-
-template <class T>
-AssetHandle<T> AssetPool<T>::findCached(std::string key) {
-  auto it = pool.find(key);
-
-  if (it == pool.end()) {
-    return AssetHandle<T>();
-  }
-
-  return AssetHandle<T>(it->second);
-}
-
-// TODO(marceline-cramer) Use argument templates to initialize in-function
-template <class T>
-AssetHandle<T> AssetPool<T>::load(std::string key, T* newAsset) {
-  pool.emplace(key, newAsset);
-  return AssetHandle<T>(newAsset);
-}
 
 }  // namespace mondradiko
