@@ -12,6 +12,7 @@
 #include <csignal>
 #include <iostream>
 
+#include "core/assets/AssetPool.h"
 #include "core/common/api_headers.h"
 #include "core/displays/SdlDisplay.h"
 #include "core/filesystem/Filesystem.h"
@@ -48,6 +49,7 @@ int main(int argc, const char* argv[]) {
 
   try {
     Filesystem fs("../test-folder/");
+    AssetPool asset_pool(&fs);
     SdlDisplay display;
     GpuInstance gpu(&display);
 
@@ -56,7 +58,7 @@ int main(int argc, const char* argv[]) {
     }
 
     Renderer renderer(&display, &gpu);
-    Scene scene(&display, &fs, &gpu, &renderer);
+    Scene scene(&asset_pool, &display, &fs, &gpu, &renderer);
     NetworkServer server(&scene, "127.0.0.1", 10555);
 
     // scene.loadModel("DamagedHelmet.gltf");
