@@ -11,17 +11,22 @@
 
 #pragma once
 
-#include "core/assets/AssetHandle.h"
-#include "core/assets/MaterialAsset.h"
+#include "core/assets/AssetPool.h"
 #include "core/assets/MeshAsset.h"
+#include "core/assets/MaterialAsset.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
 
 class MeshRendererComponent {
  public:
-  AssetHandle<MeshAsset> mesh_asset;
-  AssetHandle<MaterialAsset> material_asset;
+  AssetId mesh_asset;
+  AssetId material_asset;
+
+  bool isLoaded(const AssetPool* asset_pool) const {
+    return asset_pool->isAssetLoaded<MeshAsset>(mesh_asset) &&
+           asset_pool->isAssetLoaded<MaterialAsset>(material_asset);
+  }
 };
 
 }  // namespace mondradiko
