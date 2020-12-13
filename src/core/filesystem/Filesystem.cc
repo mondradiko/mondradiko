@@ -30,4 +30,13 @@ Filesystem::Filesystem(const std::filesystem::path& asset_bundle_root)
 
 Filesystem::~Filesystem() {}
 
+bool Filesystem::loadAsset(assets::ImmutableAsset* asset, AssetId id) {
+  if (!asset_bundle.isAssetRegistered(id)) {
+    // TODO(marceline-cramer) Make this log better
+    log_ftl("Asset does not exist");
+  }
+
+  return asset_bundle.loadAsset(asset, id);
+}
+
 }  // namespace mondradiko

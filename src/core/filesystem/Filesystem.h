@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "assets/loading/AssetBundle.h"
+#include "core/assets/Asset.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
@@ -23,6 +24,8 @@ class Filesystem {
  public:
   explicit Filesystem(const std::filesystem::path&);
   ~Filesystem();
+
+  bool loadAsset(assets::ImmutableAsset*, AssetId);
 
  private:
   assets::AssetBundle asset_bundle;
