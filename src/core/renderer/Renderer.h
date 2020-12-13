@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "core/assets/AssetPool.h"
 #include "core/common/api_headers.h"
 #include "core/displays/DisplayInterface.h"
 #include "core/gpu/GpuDescriptorPool.h"
@@ -42,12 +43,7 @@ class Renderer {
   Renderer(DisplayInterface*, GpuInstance*);
   ~Renderer();
 
-  void renderFrame(entt::registry&);
-
-  AssetHandle<MaterialAsset> loadMaterial(std::string, const aiScene*,
-                                          uint32_t);
-  AssetHandle<MeshAsset> loadMesh(std::string, const aiScene*, uint32_t);
-  AssetHandle<TextureAsset> loadTexture(std::string, const aiScene*, aiString);
+  void renderFrame(entt::registry&, const AssetPool*);
 
   VkRenderPass composite_pass = VK_NULL_HANDLE;
 
@@ -58,10 +54,6 @@ class Renderer {
  private:
   DisplayInterface* display;
   GpuInstance* gpu;
-
-  AssetPool<MaterialAsset> material_pool;
-  AssetPool<MeshAsset> mesh_pool;
-  AssetPool<TextureAsset> texture_pool;
 
   uint32_t current_frame = 0;
   std::vector<PipelinedFrameData> frames_in_flight;
