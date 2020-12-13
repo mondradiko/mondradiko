@@ -17,21 +17,20 @@ namespace assets {
 
 class ImmutableAsset {
  public:
-  ImmutableAsset(const void* data, size_t data_size)
-      : data(data), cursor(data), data_size(data_size) {}
-  
   template<class T>
-  const ImmutableAsset& operator>>(T&);
+  ImmutableAsset& operator>>(T&);
 
  private:
-  const void* data;
-  const void* cursor;
+  char* data;
+  char* cursor;
   size_t data_size;
+
+  friend class AssetLump;
 };
 
 template <class T>
-const ImmutableAsset& ImmutableAsset::operator>>(T& other) {
-  other = *static_cast<T*>(cursor);
+ImmutableAsset& ImmutableAsset::operator>>(T& other) {
+  other = *reinterpret_cast<T*>(cursor);
   cursor += sizeof(T);
   return *this;
 }
