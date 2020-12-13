@@ -14,6 +14,7 @@
 
 #include <map>
 
+#include "core/assets/AssetPool.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/renderer/Renderer.h"
 
@@ -21,17 +22,18 @@ namespace mondradiko {
 
 class Scene {
  public:
-  Scene(DisplayInterface*, Filesystem*, GpuInstance*, Renderer*);
+  Scene(AssetPool*, DisplayInterface*, Filesystem*, GpuInstance*, Renderer*);
   ~Scene();
 
   bool update();
 
+  AssetPool* asset_pool;
   DisplayInterface* display;
   Filesystem* fs;
   GpuInstance* gpu;
   Renderer* renderer;
 
- private:
+ //private:
   entt::registry registry;
 };
 
