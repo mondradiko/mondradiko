@@ -57,6 +57,8 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       return AssetResult::BadSize;
     }
 
+    lump_cache.resize(header.lump_count, nullptr);
+
     for (uint32_t lump_index = 0; lump_index < header.lump_count;
          lump_index++) {
       AssetRegistryLumpEntry lump_entry;
@@ -133,6 +135,29 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
 
   registry_file.close();
   return AssetResult::Success;
+}
+
+bool AssetBundle::isAssetRegistered(AssetId id) {
+  return asset_lookup.find(id) != asset_lookup.end();
+}
+
+bool AssetBundle::loadAsset(ImmutableAsset* asset, AssetId id) {
+  // TODO(marceline-cramer) Better error checking and logging
+  // TODO(marceline-cramer) Check lump checksums when loading into cache
+  auto stored_asset = asset_lookup.find(id)->second;
+  auto lump_index = stored_asset.lump_index;
+
+  AssetLump* lump = lump_cache[lump_index];
+
+  if (lump == nullptr) {
+    lump = new AssetLump(bundle_root / generateLumpName(lump_index));
+    lump_cache[lump_index] = lump;
+  }
+
+  // TODO(marceline-cramer) Pack lump data in cache
+  lump->decompress(LumpCompressionMethod::None);
+
+  return lump->loadAsset(asset, stored_asset.offset, stored_asset.size);
 }
 
 }  // namespace assets

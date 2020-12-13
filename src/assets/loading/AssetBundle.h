@@ -21,6 +21,7 @@
 
 #include "assets/format/AssetTypes.h"
 #include "assets/loading/AssetLump.h"
+#include "assets/loading/ImmutableAsset.h"
 
 namespace mondradiko {
 namespace assets {
@@ -31,6 +32,9 @@ class AssetBundle {
   ~AssetBundle();
 
   AssetResult loadRegistry(const char*);
+
+  bool isAssetRegistered(AssetId);
+  bool loadAsset(ImmutableAsset*, AssetId);
 
  private:
   std::filesystem::path bundle_root;
