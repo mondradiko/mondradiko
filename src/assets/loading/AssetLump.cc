@@ -128,5 +128,14 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
   lump_file.close();
 }
 
+bool AssetLump::loadAsset(ImmutableAsset* asset, size_t offset, size_t size) {
+  // TODO(marceline-cramer) Error checking
+  asset->data = loaded_data + offset;
+  asset->cursor = asset->data;
+  asset->data_size = size;
+
+  return true;
+}
+
 }  // namespace assets
 }  // namespace mondradiko

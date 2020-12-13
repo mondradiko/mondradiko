@@ -15,6 +15,7 @@
 #include <iostream>
 
 #include "assets/format/AssetTypes.h"
+#include "assets/loading/ImmutableAsset.h"
 
 namespace mondradiko {
 namespace assets {
@@ -29,11 +30,13 @@ class AssetLump {
 
   void decompress(LumpCompressionMethod);
 
+  bool loadAsset(ImmutableAsset*, size_t, size_t);
+
  private:
   std::filesystem::path lump_path;
 
   size_t loaded_size;
-  char* loaded_data;
+  char* loaded_data = nullptr;
 };
 
 }  // namespace assets
