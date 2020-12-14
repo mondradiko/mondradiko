@@ -14,7 +14,7 @@
 #include <iostream>
 
 #include "assets/saving/AssetBundleBuilder.h"
-#include "converter/MeshAsset/assimp_converter.h"
+#include "converter/assimp_converter.h"
 
 using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 
