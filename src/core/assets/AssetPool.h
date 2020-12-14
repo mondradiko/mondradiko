@@ -30,18 +30,24 @@ class AssetPool {
     assets::ImmutableAsset asset_data;
     fs->loadAsset(&asset_data, id);
 
-    AssetId asset = asset_registry.create(id);
-    
-    asset_registry.emplace<AssetType>(asset, asset_data, std::forward<Args>(args)...);
-    asset_registry.get<AssetType>(asset).loaded = true;
-    return asset;
+    AssetType* asset_component = new AssetType(asset_data, args...);
+    asset_component->loaded = true;
+
+    AssetId asset_entity = asset_registry.create(id);
+    asset_registry.emplace<AssetType*>(asset_entity, asset_component);
+
+    return asset_entity;
   }
 
   template <typename AssetType>
   bool isAssetLoaded(AssetId id) const {
     if (!asset_registry.valid(id)) return false;
 
-    auto asset = asset_registry.try_get<AssetType>(id);
+    AssetType* const* asset_ptr = asset_registry.try_get<AssetType*>(id);
+
+    if (!asset_ptr) return false;
+
+    AssetType* asset = *asset_ptr;
 
     if (asset) {
       return asset->loaded;
@@ -51,8 +57,17 @@ class AssetPool {
   }
 
   template <typename AssetType>
-  const AssetType& getAsset(AssetId id) const {
-    return asset_registry.get<AssetType>(id);
+  const AssetType* getAsset(AssetId id) const {
+    return asset_registry.get<AssetType*>(id);
+  }
+
+  template <typename AssetType>
+  void unloadAll() {
+    auto assets_view = asset_registry.view<AssetType*>();
+    for (auto asset : assets_view) {
+      delete assets_view.get(asset);
+    }
+    asset_registry.clear<AssetType*>();
   }
 
  private:
