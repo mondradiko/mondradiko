@@ -17,17 +17,22 @@
 namespace mondradiko {
 
 struct MaterialUniform {
-  uint32_t albedo_texture;
+  glm::vec4 albedo_factor;
+  //glm::vec1 metallic_factor;
+  //glm::vec1 roughness_factor;
 };
 
 class MaterialAsset : public Asset {
  public:
-  MaterialAsset(assets::ImmutableAsset&, GpuInstance*) {}
+  MaterialAsset(assets::ImmutableAsset&, GpuInstance*);
 
-  void updateUniform(MaterialUniform*) const {}
-  void updateDescriptor(GpuDescriptorSet*) const {}
+  const MaterialUniform& getUniform() const { return uniform; };
+  void updateTextureDescriptor(GpuDescriptorSet*) const;
 
  private:
+  GpuInstance* gpu;
+
+  MaterialUniform uniform;
 };
 
 }  // namespace mondradiko
