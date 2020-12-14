@@ -22,12 +22,11 @@ namespace mondradiko {
 
 class Scene {
  public:
-  Scene(AssetPool*, DisplayInterface*, Filesystem*, GpuInstance*, Renderer*);
+  Scene(DisplayInterface*, Filesystem*, GpuInstance*, Renderer*);
   ~Scene();
 
   bool update();
 
-  AssetPool* asset_pool;
   DisplayInterface* display;
   Filesystem* fs;
   GpuInstance* gpu;
@@ -35,6 +34,7 @@ class Scene {
 
  //private:
   entt::registry registry;
+  AssetPool asset_pool;
 };
 
 }  // namespace mondradiko

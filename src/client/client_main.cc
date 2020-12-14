@@ -43,18 +43,9 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
     log_ftl("Failed to create display session!");
   }
 
-  AssetPool asset_pool(fs);
   Renderer renderer(display, gpu);
-  Scene scene(&asset_pool, display, fs, gpu, &renderer);
+  Scene scene(display, fs, gpu, &renderer);
   NetworkClient client(&scene, "127.0.0.1", 10555);
-
-  MeshRendererComponent mesh_renderer{
-    .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
-    .material_asset = asset_pool.loadAsset<MaterialAsset>(0xdeadbeef, gpu)
-  };
-
-  auto test_entity = scene.registry.create();
-  scene.registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer);
 
   while (!g_interrupted) {
     scene.update();

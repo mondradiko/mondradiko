@@ -14,25 +14,30 @@
 
 #include <iostream>
 
+#include "core/components/MeshRendererComponent.h"
 #include "core/filesystem/Filesystem.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-Scene::Scene(AssetPool* asset_pool, DisplayInterface* display, Filesystem* fs,
-             GpuInstance* gpu, Renderer* renderer)
-    : asset_pool(asset_pool),
-      display(display),
-      fs(fs),
-      gpu(gpu),
-      renderer(renderer) {
+Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
+             Renderer* renderer)
+    : display(display), fs(fs), gpu(gpu), renderer(renderer), asset_pool(fs) {
   log_zone;
+
+  MeshRendererComponent mesh_renderer{
+      .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
+      .material_asset = asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAA, gpu)};
+
+  auto test_entity = registry.create();
+  registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer);
 }
 
 Scene::~Scene() {
   log_zone;
 
-  Assimp::DefaultLogger::kill();
+  asset_pool.unloadAll<MeshAsset>();
+  asset_pool.unloadAll<MaterialAsset>();
 }
 
 bool Scene::update() {
@@ -47,7 +52,7 @@ bool Scene::update() {
     display->beginFrame(&frame_info);
 
     if (frame_info.should_render) {
-      renderer->renderFrame(registry, asset_pool);
+      renderer->renderFrame(registry, &asset_pool);
     }
 
     display->endFrame(&frame_info);
