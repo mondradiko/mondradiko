@@ -12,17 +12,17 @@
 
 #pragma once
 
-#include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 
 #include "core/assets/AssetPool.h"
+#include "core/common/api_headers.h"
 #include "core/components/MeshRendererComponent.h"
+#include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
-#include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuInstance.h"
-#include "core/common/api_headers.h"
 
 namespace mondradiko {
 
@@ -31,10 +31,13 @@ class MeshPipeline {
   MeshPipeline(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
   ~MeshPipeline();
 
-  void allocateDescriptors(entt::registry&, const AssetPool*, GpuDescriptorPool*);
-  void render(entt::registry&, const AssetPool*, VkCommandBuffer, GpuDescriptorSet*, uint32_t);
+  void allocateDescriptors(entt::registry&, const AssetPool*,
+                           GpuDescriptorPool*);
+  void render(entt::registry&, const AssetPool*, VkCommandBuffer,
+              GpuDescriptorSet*, uint32_t);
 
   GpuDescriptorSetLayout* material_layout;
+  GpuDescriptorSetLayout* texture_layout;
 
   VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
   VkPipeline pipeline = VK_NULL_HANDLE;
@@ -47,7 +50,9 @@ class MeshPipeline {
   GpuInstance* gpu;
 
   // Non-persistent frame data
-  std::map<AssetId, GpuDescriptorSet*> frame_materials;
+  GpuDescriptorSet* material_descriptor;
+  std::unordered_map<AssetId, uint32_t> frame_materials;
+  std::unordered_map<AssetId, GpuDescriptorSet*> frame_textures;
 };
 
 }  // namespace mondradiko

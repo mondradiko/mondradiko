@@ -60,14 +60,18 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
     log_zone_named("Create set layouts");
 
     material_layout = new GpuDescriptorSetLayout(gpu);
-    material_layout->addCombinedImageSampler(texture_sampler);
+    material_layout->addDynamicUniformBuffer(sizeof(MaterialUniform));
+
+    texture_layout = new GpuDescriptorSetLayout(gpu);
+    // texture_layout->addCombinedImageSampler(texture_sampler);
   }
 
   {
     log_zone_named("Create pipeline layout");
 
     std::vector<VkDescriptorSetLayout> set_layouts{
-        viewport_layout->getSetLayout(), material_layout->getSetLayout()};
+        viewport_layout->getSetLayout(), material_layout->getSetLayout(),
+        texture_layout->getSetLayout()};
 
     VkPipelineLayoutCreateInfo layoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -192,6 +196,7 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
   {
     log_zone_named("Create buffers");
 
+    // TODO(marceline-cramer) GpuHeap
     material_buffer = new GpuBuffer(gpu, 128 * sizeof(MaterialUniform),
                                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                     VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -209,6 +214,7 @@ MeshPipeline::~MeshPipeline() {
   if (pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, pipeline_layout, nullptr);
   if (material_layout != nullptr) delete material_layout;
+  if (texture_layout != nullptr) delete texture_layout;
 }
 
 void MeshPipeline::allocateDescriptors(entt::registry& registry,
@@ -216,24 +222,38 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
                                        GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  frame_materials.clear();
+  std::vector<MaterialUniform> material_uniforms;
+
+  frame_textures.clear();
   auto mesh_renderers = registry.view<MeshRendererComponent>();
   for (auto e : mesh_renderers) {
     auto mesh_renderer = mesh_renderers.get(e);
 
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
-    auto iter = frame_materials.find(mesh_renderer.material_asset);
+    auto iter = frame_textures.find(mesh_renderer.material_asset);
 
-    if (iter == frame_materials.end()) {
+    if (iter == frame_textures.end()) {
       auto mesh_material =
           asset_pool->getAsset<MaterialAsset>(mesh_renderer.material_asset);
-      GpuDescriptorSet* material_descriptor =
-          descriptor_pool->allocate(material_layout);
-      mesh_material.updateDescriptor(material_descriptor);
+
       frame_materials.emplace(mesh_renderer.material_asset,
-                              material_descriptor);
+                              material_uniforms.size());
+      material_uniforms.push_back(mesh_material->getUniform());
+
+      GpuDescriptorSet* texture_descriptor =
+          descriptor_pool->allocate(texture_layout);
+      mesh_material->updateTextureDescriptor(texture_descriptor);
+      frame_textures.emplace(mesh_renderer.material_asset, texture_descriptor);
     }
+  }
+
+  if (material_uniforms.size() > 0) {
+    // TODO(marceline-cramer) Make GpuBuffer use vectors
+    material_uniforms.reserve(128);
+    material_buffer->writeData(material_uniforms.data());
+    material_descriptor = descriptor_pool->allocate(material_layout);
+    material_descriptor->updateBuffer(0, material_buffer);
   }
 }
 
@@ -249,8 +269,6 @@ void MeshPipeline::render(entt::registry& registry, const AssetPool* asset_pool,
   viewport_descriptor->updateDynamicOffset(0, viewport_offset);
   viewport_descriptor->cmdBind(commandBuffer, pipeline_layout, 0);
 
-  // TODO(marceline-cramer) Actually update and use materials
-
   auto mesh_renderers = registry.view<MeshRendererComponent>();
   for (auto e : mesh_renderers) {
     log_zone_named("Render mesh");
@@ -260,17 +278,21 @@ void MeshPipeline::render(entt::registry& registry, const AssetPool* asset_pool,
 
     log_dbg("Actually draw mesh");
 
-    frame_materials.find(mesh_renderer.material_asset)
-        ->second->cmdBind(commandBuffer, pipeline_layout, 1);
+    material_descriptor->updateDynamicOffset(
+        0, frame_materials.find(mesh_renderer.material_asset)->second);
+    material_descriptor->cmdBind(commandBuffer, pipeline_layout, 1);
+
+    frame_textures.find(mesh_renderer.material_asset)
+        ->second->cmdBind(commandBuffer, pipeline_layout, 2);
 
     auto mesh_asset = asset_pool->getAsset<MeshAsset>(mesh_renderer.mesh_asset);
 
-    VkBuffer vertex_buffers[] = {mesh_asset.vertex_buffer->buffer};
+    VkBuffer vertex_buffers[] = {mesh_asset->vertex_buffer->buffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, mesh_asset.index_buffer->buffer, 0,
+    vkCmdBindIndexBuffer(commandBuffer, mesh_asset->index_buffer->buffer, 0,
                          VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(commandBuffer, mesh_asset.index_count, 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, mesh_asset->index_count, 1, 0, 0, 0);
   }
 }
 
