@@ -14,7 +14,7 @@
 #pragma once
 
 #define log_at(logLevel, ...) \
-  mondradiko::log(__FILE__, __LINE__, logLevel, __VA_ARGS__)
+  mondradiko::log_formatted(__FILE__, __LINE__, logLevel, __VA_ARGS__)
 #define log_inf(...) log_at(mondradiko::LOG_LEVEL_INFO, __VA_ARGS__)
 #define log_dbg(...) log_at(mondradiko::LOG_LEVEL_DEBUG, __VA_ARGS__)
 #define log_wrn(...) log_at(mondradiko::LOG_LEVEL_WARNING, __VA_ARGS__)
@@ -25,7 +25,7 @@
 //  mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
 #define log_zone_named(name) \
   ZoneScopedN(name);         \
-//  mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
+  //  mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
 
 namespace mondradiko {
 
@@ -39,6 +39,14 @@ enum LogLevel {
 };
 
 const char* getLogPrefix(LogLevel);
+
 void log(const char*, int, LogLevel, const char*);
+
+template <typename... Args>
+void log_formatted(const char* file, int line, LogLevel level, const char* format, Args&&... args) {
+  char message[100];
+  snprintf(message, sizeof(message), format, args...);
+  log(file, line, level, message);
+}
 
 }  // namespace mondradiko
