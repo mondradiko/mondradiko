@@ -34,7 +34,8 @@ template <class T>
 MutableAsset& MutableAsset::operator<<(const T& other) {
   size_t append_ptr = data.size();
   data.resize(append_ptr + sizeof(T));
-  memcpy(data.data() + append_ptr, reinterpret_cast<const void*>(&other), sizeof(T));
+  memcpy(data.data() + append_ptr, reinterpret_cast<const void*>(&other),
+         sizeof(T));
   return *this;
 }
 

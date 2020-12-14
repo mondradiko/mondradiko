@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "assets/loading/ImmutableAsset.h"
 #include "assets/format/AssetTypes.h"
+#include "assets/loading/ImmutableAsset.h"
 
 namespace mondradiko {
 

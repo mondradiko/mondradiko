@@ -23,6 +23,7 @@ MaterialAsset::MaterialAsset(assets::ImmutableAsset& asset, GpuInstance* gpu)
   uniform.albedo_factor = header.albedo_factor;
 }
 
-void MaterialAsset::updateTextureDescriptor(GpuDescriptorSet* descriptor) const {}
+void MaterialAsset::updateTextureDescriptor(
+    GpuDescriptorSet* descriptor) const {}
 
 }  // namespace mondradiko

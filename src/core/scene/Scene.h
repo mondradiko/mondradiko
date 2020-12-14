@@ -32,7 +32,7 @@ class Scene {
   GpuInstance* gpu;
   Renderer* renderer;
 
- //private:
+  // private:
   entt::registry registry;
   AssetPool asset_pool;
 };

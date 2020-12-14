@@ -43,7 +43,8 @@ const char* getLogPrefix(LogLevel);
 void log(const char*, int, LogLevel, const char*);
 
 template <typename... Args>
-void log_formatted(const char* file, int line, LogLevel level, const char* format, Args&&... args) {
+void log_formatted(const char* file, int line, LogLevel level,
+                   const char* format, Args&&... args) {
   char message[100];
   snprintf(message, sizeof(message), format, args...);
   log(file, line, level, message);

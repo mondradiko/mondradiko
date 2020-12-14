@@ -187,6 +187,9 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
     main_viewport = new SdlViewport(gpu, this, poll_info->renderer);
   }
 
+  poll_info->should_quit = false;
+  poll_info->should_run = true;
+
   SDL_Event e;
   while (SDL_PollEvent(&e) != 0) {
     switch (e.type) {
@@ -204,15 +207,17 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
             break;
           }
 
+          case SDL_WINDOWEVENT_CLOSE: {
+            poll_info->should_quit = true;
+            poll_info->should_run = false;
+            break;
+          }
+
           default: break;
         }  // switch (e.window.event)
       }
 
-      default: {
-        poll_info->should_quit = false;
-        poll_info->should_run = true;
-        break;
-      }
+      default: break;
     }  // switch (e.type)
   }
 }

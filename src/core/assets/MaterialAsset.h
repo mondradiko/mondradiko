@@ -18,15 +18,15 @@ namespace mondradiko {
 
 struct MaterialUniform {
   glm::vec4 albedo_factor;
-  //glm::vec1 metallic_factor;
-  //glm::vec1 roughness_factor;
+  // glm::vec1 metallic_factor;
+  // glm::vec1 roughness_factor;
 };
 
 class MaterialAsset : public Asset {
  public:
   MaterialAsset(assets::ImmutableAsset&, GpuInstance*);
 
-  const MaterialUniform& getUniform() const { return uniform; };
+  const MaterialUniform& getUniform() const { return uniform; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;
 
  private:
