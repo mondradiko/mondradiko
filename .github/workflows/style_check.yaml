@@ -21,6 +21,4 @@ jobs:
       - name: Style Check
         shell: bash
         run: |
-          pushd src
           ./style_check.sh
-          popd
