@@ -23,9 +23,9 @@ SdlDisplay::SdlDisplay() {
     log_ftl("Failed to initialize SDL.");
   }
 
-  window = SDL_CreateWindow(MONDRADIKO_NAME, SDL_WINDOWPOS_UNDEFINED,
-                            SDL_WINDOWPOS_UNDEFINED, 800, 600,
-                            SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
+  window = SDL_CreateWindow(
+      MONDRADIKO_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800,
+      600, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 
   if (!window) {
     log_ftl("Failed to create SDL window.");
@@ -146,7 +146,8 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
 
   swapchain_present_mode = VK_PRESENT_MODE_MAX_ENUM_KHR;
   for (const auto& surface_present_mode : present_modes) {
-    if (surface_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+    if (surface_present_mode == VK_PRESENT_MODE_MAILBOX_KHR ||
+        surface_present_mode == VK_PRESENT_MODE_FIFO_KHR) {
       swapchain_present_mode = surface_present_mode;
     }
   }
@@ -202,8 +203,11 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
       case SDL_WINDOWEVENT: {
         switch (e.window.event) {
           case SDL_WINDOWEVENT_SIZE_CHANGED: {
-            delete main_viewport;
-            main_viewport = nullptr;
+            if (main_viewport) {
+              delete main_viewport;
+              main_viewport = nullptr;
+            }
+
             break;
           }
 
@@ -213,11 +217,13 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
             break;
           }
 
-          default: break;
+          default:
+            break;
         }  // switch (e.window.event)
       }
 
-      default: break;
+      default:
+        break;
     }  // switch (e.type)
   }
 }

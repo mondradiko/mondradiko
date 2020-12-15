@@ -108,6 +108,8 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
 SdlViewport::~SdlViewport() {
   log_zone;
 
+  vkDeviceWaitIdle(gpu->device);
+
   if (on_image_available != VK_NULL_HANDLE) {
     vkDestroyFence(gpu->device, on_image_available, nullptr);
   }
