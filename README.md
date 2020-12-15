@@ -3,7 +3,7 @@
 </div>
 <br>
 
-![Discord](https://img.shields.io/discord/750058861578289347?label=Discord) ![GitHub](https://img.shields.io/github/license/marceline-cramer/mondradiko) [![CodeFactor](https://www.codefactor.io/repository/github/marceline-cramer/mondradiko/badge)](https://www.codefactor.io/repository/github/marceline-cramer/mondradiko)
+![Discord](https://img.shields.io/discord/750058861578289347?label=Discord) ![GitHub](https://img.shields.io/github/license/mondradiko/mondradiko) [![CodeFactor](https://www.codefactor.io/repository/github/mondradiko/mondradiko/badge)](https://www.codefactor.io/repository/github/mondradiko/mondradiko)
 
 # Mondradiko
 Mondradiko is a future-proof VR engine for creating multiplayer virtual reality experiences.
@@ -19,11 +19,11 @@ Mondradiko is strictly designed around a client-server architecture, allowing mu
 
 # Contributing
 
-Please see the [GitHub Pages](https://marceline-cramer.github.io/mondradiko/contributing) for information on how to contribute.
+Please see the [GitHub Pages](https://mondradiko.github.io/mondradiko/contributing) for information on how to contribute.
 
 # Building
 
-Please see the [GitHub Pages](https://marceline-cramer.github.io/mondradiko/building) for information on how to build.
+Please see the [GitHub Pages](https://mondradiko.github.io/mondradiko/building) for information on how to build.
 
 # Licenses
 Mondradiko's source code is licensed under [LGPL-v3](https://www.gnu.org/licenses/).
