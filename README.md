@@ -19,11 +19,11 @@ Mondradiko is strictly designed around a client-server architecture, allowing mu
 
 # Contributing
 
-Please see the [GitHub Pages](https://mondradiko.github.io/mondradiko/contributing) for information on how to contribute.
+Please see the [GitHub Pages](https://mondradiko.github.io/contributing) for information on how to contribute.
 
 # Building
 
-Please see the [GitHub Pages](https://mondradiko.github.io/mondradiko/building) for information on how to build.
+Please see the [GitHub Pages](https://mondradiko.github.io/building) for information on how to build.
 
 # Licenses
 Mondradiko's source code is licensed under [LGPL-v3](https://www.gnu.org/licenses/).
