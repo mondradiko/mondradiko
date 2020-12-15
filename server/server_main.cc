@@ -63,7 +63,7 @@ int main(int argc, const char* argv[]) {
     // scene.loadModel("DamagedHelmet.gltf");
 
     while (!g_interrupted) {
-      scene.update();
+      if (!scene.update()) break;
     }
 
     display.destroySession();
