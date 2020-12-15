@@ -1,5 +1,5 @@
-src/builddir/
-src/test-folder/
+builddir/
+test-folder/
 
 # Local Jekyll builds
 docs/Gemfile.lock
