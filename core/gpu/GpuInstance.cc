@@ -16,6 +16,7 @@
 #include <set>
 
 #include "./build_config.h"
+#include "core/displays/DisplayInterface.h"
 #include "log/log.h"
 
 namespace mondradiko {

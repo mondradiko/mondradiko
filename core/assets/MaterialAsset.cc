@@ -12,6 +12,8 @@
 #include "core/assets/MaterialAsset.h"
 
 #include "assets/format/MaterialAsset.h"
+#include "core/assets/Asset.h"
+#include "core/gpu/GpuDescriptorSet.h"
 
 namespace mondradiko {
 

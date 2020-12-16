@@ -18,13 +18,16 @@
 
 #include "core/assets/AssetPool.h"
 #include "core/common/api_headers.h"
-#include "core/components/MeshRendererComponent.h"
-#include "core/gpu/GpuDescriptorPool.h"
-#include "core/gpu/GpuDescriptorSet.h"
-#include "core/gpu/GpuDescriptorSetLayout.h"
-#include "core/gpu/GpuInstance.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class MeshRendererComponent;
+class GpuBuffer;
+class GpuDescriptorPool;
+class GpuDescriptorSet;
+class GpuDescriptorSetLayout;
+class GpuInstance;
 
 class MeshPipeline {
  public:

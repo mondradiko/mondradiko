@@ -12,9 +12,13 @@
 #pragma once
 
 #include "core/assets/Asset.h"
-#include "core/gpu/GpuDescriptorSet.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class GpuDescriptorSet;
+class GpuInstance;
 
 struct MaterialUniform {
   glm::vec4 albedo_factor;

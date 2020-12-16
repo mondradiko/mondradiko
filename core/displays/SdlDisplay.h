@@ -13,12 +13,14 @@
 
 #include <vector>
 
-#include "core/displays/DisplayInterface.h"
-#include "core/displays/SdlViewport.h"
-#include "core/gpu/GpuInstance.h"
 #include "core/common/api_headers.h"
+#include "core/displays/DisplayInterface.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class SdlViewport;
+class GpuInstance;
 
 class SdlDisplay : public DisplayInterface {
  public:

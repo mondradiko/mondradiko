@@ -14,12 +14,13 @@
 #include <vector>
 
 #include "core/displays/ViewportInterface.h"
-#include "core/gpu/GpuInstance.h"
 
 namespace mondradiko {
 
-// Forward declaration because of codependence
+// Forward declaration
+class GpuInstance;
 class OpenXrDisplay;
+class Renderer;
 
 class OpenXrViewport : public ViewportInterface {
  public:

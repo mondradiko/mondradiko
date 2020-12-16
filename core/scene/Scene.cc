@@ -15,7 +15,10 @@
 #include <iostream>
 
 #include "core/components/MeshRendererComponent.h"
+#include "core/displays/DisplayInterface.h"
 #include "core/filesystem/Filesystem.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/renderer/Renderer.h"
 #include "log/log.h"
 
 namespace mondradiko {

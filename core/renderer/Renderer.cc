@@ -11,6 +11,12 @@
 
 #include "core/renderer/Renderer.h"
 
+#include "core/displays/DisplayInterface.h"
+#include "core/displays/ViewportInterface.h"
+#include "core/gpu/GpuBuffer.h"
+#include "core/gpu/GpuDescriptorPool.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/renderer/MeshPipeline.h"
 #include "log/log.h"
 
 namespace mondradiko {

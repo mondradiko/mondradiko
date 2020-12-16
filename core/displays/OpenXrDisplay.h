@@ -15,10 +15,12 @@
 #include <vector>
 
 #include "core/displays/DisplayInterface.h"
-#include "core/displays/OpenXrViewport.h"
-#include "core/renderer/Renderer.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class OpenXrViewport;
+class Renderer;
 
 class OpenXrDisplay : public DisplayInterface {
  public:

@@ -16,6 +16,7 @@
 
 #include "assets/loading/ImmutableAsset.h"
 #include "core/assets/Asset.h"
+#include "core/common/api_headers.h"
 #include "core/filesystem/Filesystem.h"
 #include "log/log.h"
 

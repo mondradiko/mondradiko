@@ -14,10 +14,12 @@
 
 #include <queue>
 
-#include "core/scene/Scene.h"
 #include "core/network/NetworkShared.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class Scene;
 
 enum class ClientEventType { Ping };
 

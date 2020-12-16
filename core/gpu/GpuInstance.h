@@ -14,10 +14,13 @@
 
 #include <vector>
 
-#include "core/displays/DisplayInterface.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class DisplayInterface;
+struct VulkanRequirements;
 
 class GpuInstance {
  public:

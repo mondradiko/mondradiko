@@ -16,12 +16,16 @@
 
 #include "core/assets/AssetPool.h"
 #include "core/common/api_headers.h"
-#include "core/displays/DisplayInterface.h"
-#include "core/gpu/GpuDescriptorPool.h"
-#include "core/gpu/GpuInstance.h"
-#include "core/renderer/MeshPipeline.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class DisplayInterface;
+class GpuBuffer;
+class GpuDescriptorPool;
+class GpuDescriptorSetLayout;
+class GpuInstance;
+class MeshPipeline;
 
 struct PipelinedFrameData {
   // TODO(marceline-cramer) Use command pool per frame, per thread

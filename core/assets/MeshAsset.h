@@ -11,11 +11,17 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
+
 #include "core/assets/Asset.h"
-#include "core/gpu/GpuInstance.h"
-#include "core/gpu/GpuBuffer.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class GpuInstance;
+class GpuBuffer;
 
 using MeshVertexAttributeDescriptions =
     std::array<VkVertexInputAttributeDescription, 3>;

@@ -14,14 +14,14 @@
 #include <string>
 #include <vector>
 
-#include "core/displays/ViewportInterface.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
 
-// Forward declaration because of codependence
+// Forward declaration
 class GpuInstance;
 class Renderer;
+class ViewportInterface;
 
 struct VulkanRequirements {
   uint32_t min_api_version;

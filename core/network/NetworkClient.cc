@@ -14,6 +14,7 @@
 
 #include <sstream>
 
+#include "core/scene/Scene.h"
 #include "log/log.h"
 
 namespace mondradiko {

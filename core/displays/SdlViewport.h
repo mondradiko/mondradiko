@@ -14,12 +14,12 @@
 #include <vector>
 
 #include "core/displays/ViewportInterface.h"
-#include "core/gpu/GpuInstance.h"
-#include "core/renderer/Renderer.h"
 
 namespace mondradiko {
 
-// Forward declaration because of codependence
+// Forward declarations
+class GpuInstance;
+class Renderer;
 class SdlDisplay;
 
 class SdlViewport : public ViewportInterface {

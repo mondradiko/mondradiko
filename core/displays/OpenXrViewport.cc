@@ -12,6 +12,8 @@
 #include "core/displays/OpenXrViewport.h"
 
 #include "core/displays/OpenXrDisplay.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/renderer/Renderer.h"
 #include "log/log.h"
 
 namespace mondradiko {

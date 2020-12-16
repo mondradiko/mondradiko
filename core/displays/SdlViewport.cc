@@ -12,6 +12,8 @@
 #include "core/displays/SdlViewport.h"
 
 #include "core/displays/SdlDisplay.h"
+#include "core/gpu/GpuInstance.h"
+#include "core/renderer/Renderer.h"
 #include "log/log.h"
 
 namespace mondradiko {

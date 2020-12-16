@@ -15,10 +15,14 @@
 #include <map>
 
 #include "core/assets/AssetPool.h"
-#include "core/filesystem/Filesystem.h"
-#include "core/renderer/Renderer.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class DisplayInterface;
+class Filesystem;
+class GpuInstance;
+class Renderer;
 
 class Scene {
  public:

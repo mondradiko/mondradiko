@@ -15,6 +15,9 @@
 #include <vector>
 
 #include "assets/format/MeshAsset.h"
+#include "core/assets/Asset.h"
+#include "core/gpu/GpuBuffer.h"
+#include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {

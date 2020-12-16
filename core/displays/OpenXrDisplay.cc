@@ -12,6 +12,7 @@
 #include "core/displays/OpenXrDisplay.h"
 
 #include "./build_config.h"
+#include "core/displays/OpenXrViewport.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 

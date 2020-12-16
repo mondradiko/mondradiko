@@ -12,10 +12,12 @@
 
 #pragma once
 
-#include "core/scene/Scene.h"
 #include "core/network/NetworkShared.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class Scene;
 
 class NetworkServer : public NetworkShared {
  public:

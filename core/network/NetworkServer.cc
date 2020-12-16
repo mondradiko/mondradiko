@@ -12,6 +12,7 @@
 
 #include "core/network/NetworkServer.h"
 
+#include "core/scene/Scene.h"
 #include "log/log.h"
 
 namespace mondradiko {

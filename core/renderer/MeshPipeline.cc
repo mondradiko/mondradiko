@@ -15,6 +15,11 @@
 #include <vector>
 
 #include "core/assets/MeshAsset.h"
+#include "core/components/MeshRendererComponent.h"
+#include "core/gpu/GpuBuffer.h"
+#include "core/gpu/GpuDescriptorPool.h"
+#include "core/gpu/GpuDescriptorSet.h"
+#include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuShader.h"
 #include "core/renderer/Renderer.h"
