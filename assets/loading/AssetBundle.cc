@@ -72,7 +72,8 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
 
       if (lump_entry.asset_count > ASSET_LUMP_MAX_ASSETS) {
         registry_file.close();
-        log_err("Asset lump asset count exceeds limit of %d", ASSET_LUMP_MAX_ASSETS);
+        log_err("Asset lump asset count exceeds limit of %d",
+                ASSET_LUMP_MAX_ASSETS);
         return AssetResult::BadSize;
       }
 

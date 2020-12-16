@@ -19,10 +19,10 @@
 #include "core/displays/SdlDisplay.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
-#include "log/log.h"
 #include "core/network/NetworkClient.h"
 #include "core/renderer/Renderer.h"
 #include "core/scene/Scene.h"
+#include "log/log.h"
 
 // The using statement is fine because
 // this is the main entrypoint
@@ -48,7 +48,7 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   NetworkClient client(&scene, "127.0.0.1", 10555);
 
   while (!g_interrupted) {
-    if (!scene.update()) break;;
+    if (!scene.update()) break;
 
     ClientEvent event;
     while (client.readEvent(&event)) {
