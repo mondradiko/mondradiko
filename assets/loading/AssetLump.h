@@ -12,7 +12,6 @@
 #pragma once
 
 #include <filesystem>
-#include <iostream>
 
 #include "assets/format/AssetTypes.h"
 #include "assets/loading/ImmutableAsset.h"

@@ -12,6 +12,9 @@
 
 #include "assets/loading/AssetBundle.h"
 
+#include <cstring>
+#include <fstream>
+
 #include "assets/format/AssetFile.h"
 #include "log/log.h"
 

@@ -11,6 +11,7 @@
 
 #include "assets/loading/AssetLump.h"
 
+#include <fstream>
 #include <vector>
 
 #include "log/log.h"
@@ -117,7 +118,7 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
             LZ4F_getFrameInfo(context, &frame_info, buffer.data(), &bytes_read);
 
         if (LZ4F_isError(result)) {
-          std::cerr << "shite" << std::endl;
+          log_ftl("LZ4 decompression error");
         }
 
         loaded_size = frame_info.contentSize;

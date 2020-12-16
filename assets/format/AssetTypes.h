@@ -11,12 +11,9 @@
 
 #pragma once
 
-#include <stddef.h>
 #include <stdint.h>
 
-#include <fstream>
 #include <string>
-#include <vector>
 
 // Provided by build system
 #ifndef MONDRADIKO_ASSET_VERSION
