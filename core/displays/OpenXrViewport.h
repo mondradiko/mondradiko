@@ -28,9 +28,9 @@ class OpenXrViewport : public ViewportInterface {
   ~OpenXrViewport();
 
   VkSemaphore acquire();
-  void beginRenderPass(VkCommandBuffer, VkRenderPass) override;
-  void writeUniform(ViewportUniform*) override;
-  void release(VkSemaphore) override;
+  void beginRenderPass(VkCommandBuffer, VkRenderPass) final;
+  void writeUniform(ViewportUniform*) final;
+  void release(VkSemaphore) final;
 
   void updateView(const XrView&);
   void writeCompositionLayers(XrCompositionLayerProjectionView*);

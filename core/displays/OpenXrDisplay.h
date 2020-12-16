@@ -25,22 +25,22 @@ class OpenXrDisplay : public DisplayInterface {
   OpenXrDisplay();
   ~OpenXrDisplay();
 
-  bool getVulkanRequirements(VulkanRequirements*) override;
-  bool getVulkanDevice(VkInstance, VkPhysicalDevice*) override;
-  bool createSession(GpuInstance*) override;
-  void destroySession() override;
+  bool getVulkanRequirements(VulkanRequirements*) final;
+  bool getVulkanDevice(VkInstance, VkPhysicalDevice*) final;
+  bool createSession(GpuInstance*) final;
+  void destroySession() final;
 
-  VkFormat getSwapchainFormat() override { return swapchain_format; };
-  VkImageLayout getFinalLayout() override {
+  VkFormat getSwapchainFormat() final { return swapchain_format; };
+  VkImageLayout getFinalLayout() final {
     // OpenXR expects the final swapchain image layout to be
     // _COLOR_ATTACHMENT_OPTIMAL
     return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   }
 
-  void pollEvents(DisplayPollEventsInfo*) override;
-  void beginFrame(DisplayBeginFrameInfo*) override;
-  void acquireViewports(std::vector<ViewportInterface*>*) override;
-  void endFrame(DisplayBeginFrameInfo*) override;
+  void pollEvents(DisplayPollEventsInfo*) final;
+  void beginFrame(DisplayBeginFrameInfo*) final;
+  void acquireViewports(std::vector<ViewportInterface*>*) final;
+  void endFrame(DisplayBeginFrameInfo*) final;
 
   bool enable_validation_layers = true;
 

@@ -25,22 +25,22 @@ class SdlDisplay : public DisplayInterface {
   SdlDisplay();
   ~SdlDisplay();
 
-  bool getVulkanRequirements(VulkanRequirements*) override;
-  bool getVulkanDevice(VkInstance, VkPhysicalDevice*) override;
-  bool createSession(GpuInstance*) override;
-  void destroySession() override;
+  bool getVulkanRequirements(VulkanRequirements*) final;
+  bool getVulkanDevice(VkInstance, VkPhysicalDevice*) final;
+  bool createSession(GpuInstance*) final;
+  void destroySession() final;
 
-  VkFormat getSwapchainFormat() override { return swapchain_format; }
-  VkImageLayout getFinalLayout() override {
+  VkFormat getSwapchainFormat() final { return swapchain_format; }
+  VkImageLayout getFinalLayout() final {
     // SDL expects the final swapchain image layout to be
     // _PRESENT_SRC_KHR
     return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
   }
 
-  void pollEvents(DisplayPollEventsInfo*) override;
-  void beginFrame(DisplayBeginFrameInfo*) override;
-  void acquireViewports(std::vector<ViewportInterface*>*) override;
-  void endFrame(DisplayBeginFrameInfo*) override;
+  void pollEvents(DisplayPollEventsInfo*) final;
+  void beginFrame(DisplayBeginFrameInfo*) final;
+  void acquireViewports(std::vector<ViewportInterface*>*) final;
+  void endFrame(DisplayBeginFrameInfo*) final;
 
   SDL_Window* window = nullptr;
   SDL_Surface* window_surface;

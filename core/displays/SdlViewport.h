@@ -27,10 +27,10 @@ class SdlViewport : public ViewportInterface {
   SdlViewport(GpuInstance*, SdlDisplay*, Renderer*);
   ~SdlViewport();
 
-  VkSemaphore acquire() override;
-  void beginRenderPass(VkCommandBuffer, VkRenderPass) override;
-  void writeUniform(ViewportUniform*) override;
-  void release(VkSemaphore) override;
+  VkSemaphore acquire() final;
+  void beginRenderPass(VkCommandBuffer, VkRenderPass) final;
+  void writeUniform(ViewportUniform*) final;
+  void release(VkSemaphore) final;
 
  private:
   GpuInstance* gpu;
