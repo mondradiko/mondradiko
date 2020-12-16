@@ -20,16 +20,6 @@
 #include "lib/vk_mem_alloc.h"
 #include "lib/stb_image.h"
 
-#include "assimp/DefaultLogger.hpp"
-#include "assimp/Importer.hpp"
-#include "assimp/IOStream.hpp"
-#include "assimp/IOSystem.hpp"
-#include "assimp/Logger.hpp"
-#include "assimp/mesh.h"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
-#include "assimp/texture.h"
-
 #define GLM_FORCE_RADIANS
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
