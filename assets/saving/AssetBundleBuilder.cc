@@ -15,13 +15,19 @@
 #include <cstring>
 #include <fstream>
 
+#include "log/log.h"
+
 namespace mondradiko {
 namespace assets {
 
 AssetBundleBuilder::AssetBundleBuilder(const std::filesystem::path& bundle_root)
-    : bundle_root(bundle_root) {}
+    : bundle_root(bundle_root) {
+  log_dbg("Building asset bundle at %s", bundle_root.c_str());
+}
 
 AssetBundleBuilder::~AssetBundleBuilder() {
+  log_dbg("Cleaning up asset bundle %s", bundle_root.c_str());
+
   for (auto& lump : lumps) {
     delete[] lump.data;
   }

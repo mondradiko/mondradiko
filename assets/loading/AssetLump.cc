@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include "log/log.h"
 #include "lz4frame.h"  // NOLINT
 #include "xxhash.h"    // NOLINT
 
@@ -23,23 +24,42 @@ const uint32_t ASSET_LOAD_CHUNK_SIZE = 1024;
 static_assert(ASSET_LOAD_CHUNK_SIZE >= LZ4F_HEADER_SIZE_MAX);
 
 AssetLump::AssetLump(const std::filesystem::path& lump_path)
-    : lump_path(lump_path) {}
+    : lump_path(lump_path) {
+  log_dbg("Loading lump %s", lump_path.c_str());
+}
 
 AssetLump::~AssetLump() {
+  log_dbg("Unloading lump %s", lump_path.c_str());
+
   if (loaded_data) delete[] loaded_data;
 }
 
 bool AssetLump::assertLength(size_t check_size) {
-  return std::filesystem::file_size(lump_path) == check_size;
+  log_dbg("Asserting size of lump %s", lump_path.c_str());
+
+  size_t lump_length = std::filesystem::file_size(lump_path);
+
+  if (lump_length != check_size) {
+    log_err("Lump size assertion failed (expected 0x%4u bytes, got ox%4u)",
+            check_size, lump_length);
+    return false;
+  }
+
+  return true;
 }
 
 bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
   LumpHash computed_hash;
+
+  log_dbg("Asserting hash from lump %s", lump_path.c_str());
+
   std::ifstream lump_file(lump_path.c_str(),
                           std::ifstream::in | std::ifstream::binary);
 
   switch (hash_method) {
     case LumpHashMethod::xxHash: {
+      log_inf("Hashing lump with xxHash");
+
       char buffer[ASSET_LOAD_CHUNK_SIZE];
       XXH32_state_t* hash_state = XXH32_createState();
       XXH32_reset(hash_state, 0);
@@ -55,8 +75,12 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
       break;
     }
 
-    default:
+    default: {
+      log_wrn("Unrecognized lump hash method");
+    }
+
     case LumpHashMethod::None: {
+      log_dbg("Lump has unrecognized or no hash method; approving");
       lump_file.close();
       return true;
     }
@@ -77,6 +101,8 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
 
   switch (compression_method) {
     case LumpCompressionMethod::LZ4: {
+      log_dbg("Decompressing lump %s with LZ4", lump_path.c_str());
+
       LZ4F_dctx* context;
       LZ4F_createDecompressionContext(&context, LZ4F_VERSION);
 
@@ -113,8 +139,13 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
       break;
     }
 
-    default:
+    default: {
+      log_wrn("Unrecognized lump compression method");
+    }
+
     case LumpCompressionMethod::None: {
+      log_dbg("Loading lump %s directly from disk", lump_path.c_str());
+
       loaded_size = file_size;
       loaded_data = new char[loaded_size];
       lump_file.read(loaded_data, loaded_size);
@@ -122,14 +153,17 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
     }
   }
 
-  std::cout << loaded_size << std::endl;
-  // std::cout << loaded_data << std::endl;
-
   lump_file.close();
 }
 
 bool AssetLump::loadAsset(ImmutableAsset* asset, size_t offset, size_t size) {
-  // TODO(marceline-cramer) Error checking
+  log_dbg("Loading asset from %s at 0x%4u", lump_path.c_str(), offset);
+
+  if (offset + size > loaded_size) {
+    log_err("Asset range exceeds lump size of 0x%4u", loaded_size);
+    return false;
+  }
+
   asset->data = loaded_data + offset;
   asset->cursor = asset->data;
   asset->data_size = size;

@@ -13,6 +13,7 @@
 #include "assets/loading/AssetBundle.h"
 
 #include "assets/format/AssetFile.h"
+#include "log/log.h"
 
 namespace mondradiko {
 namespace assets {
@@ -28,6 +29,8 @@ AssetBundle::~AssetBundle() {
 
 AssetResult AssetBundle::loadRegistry(const char* registry_name) {
   auto registry_path = bundle_root / registry_name;
+
+  log_dbg("Opening asset bundle at %s", registry_path.c_str());
 
   if (!std::filesystem::exists(registry_path)) {
     return AssetResult::FileNotFound;
@@ -54,6 +57,8 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
 
     if (header.lump_count > ASSET_REGISTRY_MAX_LUMPS) {
       registry_file.close();
+      log_err("Asset registry lump count exceeds limit of %d",
+              ASSET_REGISTRY_MAX_LUMPS);
       return AssetResult::BadSize;
     }
 
@@ -67,6 +72,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
 
       if (lump_entry.asset_count > ASSET_LUMP_MAX_ASSETS) {
         registry_file.close();
+        log_err("Asset lump asset count exceeds limit of %d", ASSET_LUMP_MAX_ASSETS);
         return AssetResult::BadSize;
       }
 
@@ -113,6 +119,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
 
       if (!lump.assertLength(asset_offset)) {
         registry_file.close();
+        log_err("Lump size assert failed");
         return AssetResult::BadSize;
       }
 
