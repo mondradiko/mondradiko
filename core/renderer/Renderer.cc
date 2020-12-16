@@ -41,12 +41,23 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
         .colorAttachmentCount = 1,
         .pColorAttachments = &swapchainTargetReference};
 
+    VkSubpassDependency swapchain_dependency = {
+        .srcSubpass = VK_SUBPASS_EXTERNAL,
+        .dstSubpass = 0,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .srcAccessMask = 0,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        .dependencyFlags = 0};
+
     VkRenderPassCreateInfo compositePassCreateInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         .attachmentCount = (uint32_t)attachments.size(),
         .pAttachments = attachments.data(),
         .subpassCount = 1,
-        .pSubpasses = &compositeSubpassDescription};
+        .pSubpasses = &compositeSubpassDescription,
+        .dependencyCount = 1,
+        .pDependencies = &swapchain_dependency};
 
     if (vkCreateRenderPass(gpu->device, &compositePassCreateInfo, nullptr,
                            &composite_pass) != VK_SUCCESS) {
@@ -67,6 +78,8 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
     // Pipeline two frames
     frames_in_flight.resize(2);
 
+    current_frame = 0;
+
     for (auto& frame : frames_in_flight) {
       VkCommandBufferAllocateInfo alloc_info{
           .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -79,14 +92,21 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
         log_ftl("Failed to allocate frame command buffers.");
       }
 
-      VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+      VkSemaphoreCreateInfo semaphore_info{
+          .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+
+      if (vkCreateSemaphore(gpu->device, &semaphore_info, nullptr,
+                            &frame.on_render_finished) != VK_SUCCESS) {
+        log_ftl("Failed to create frame render finished semaphore.");
+      }
+
+      VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+                                  .flags = VK_FENCE_CREATE_SIGNALED_BIT};
 
       if (vkCreateFence(gpu->device, &fenceInfo, nullptr, &frame.is_in_use) !=
           VK_SUCCESS) {
         log_ftl("Failed to create frame fence.");
       }
-
-      frame.submitted = false;
 
       frame.descriptor_pool = new GpuDescriptorPool(gpu);
 
@@ -111,6 +131,8 @@ Renderer::~Renderer() {
 
   for (auto& frame : frames_in_flight) {
     if (frame.viewports != nullptr) delete frame.viewports;
+    if (frame.on_render_finished != VK_NULL_HANDLE)
+      vkDestroySemaphore(gpu->device, frame.on_render_finished, nullptr);
     if (frame.is_in_use != VK_NULL_HANDLE)
       vkDestroyFence(gpu->device, frame.is_in_use, nullptr);
     if (frame.descriptor_pool != nullptr) delete frame.descriptor_pool;
@@ -128,22 +150,13 @@ void Renderer::renderFrame(entt::registry& registry,
                            const AssetPool* asset_pool) {
   log_zone;
 
+  PipelinedFrameData* frame = &frames_in_flight[current_frame];
+
   {
     log_zone_named("Fence frame");
 
-    if (frames_in_flight[current_frame].submitted) {
-      vkWaitForFences(gpu->device, 1,
-                      &frames_in_flight[current_frame].is_in_use, VK_TRUE,
-                      UINT64_MAX);
-      frames_in_flight[current_frame].submitted = false;
-    }
-
-    if (++current_frame >= frames_in_flight.size()) {
-      current_frame = 0;
-    }
+    vkWaitForFences(gpu->device, 1, &frame->is_in_use, VK_TRUE, UINT64_MAX);
   }
-
-  PipelinedFrameData* frame = &frames_in_flight[current_frame];
 
   {
     log_zone_named("Clean up last frame");
@@ -164,11 +177,20 @@ void Renderer::renderFrame(entt::registry& registry,
   }
 
   std::vector<ViewportInterface*> viewports;
+  std::vector<VkSemaphore> on_viewport_acquire(0);
 
   {
     log_zone_named("Acquire viewports");
 
     display->acquireViewports(&viewports);
+
+    for (uint32_t viewport_index = 0; viewport_index < viewports.size();
+         viewport_index++) {
+      VkSemaphore on_image_acquire = viewports[viewport_index]->acquire();
+      if (on_image_acquire != VK_NULL_HANDLE) {
+        on_viewport_acquire.push_back(on_image_acquire);
+      }
+    }
   }
 
   {
@@ -182,7 +204,6 @@ void Renderer::renderFrame(entt::registry& registry,
 
     for (uint32_t viewport_index = 0; viewport_index < viewports.size();
          viewport_index++) {
-      viewports[viewport_index]->acquire();
       viewports[viewport_index]->beginRenderPass(frame->command_buffer,
                                                  composite_pass);
       mesh_pipeline->render(registry, asset_pool, frame->command_buffer,
@@ -214,15 +235,17 @@ void Renderer::renderFrame(entt::registry& registry,
 
     VkPipelineStageFlags waitStages[] = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 0;
-    submitInfo.pWaitSemaphores = nullptr;
+
+    submitInfo.waitSemaphoreCount = on_viewport_acquire.size();
+    submitInfo.pWaitSemaphores = on_viewport_acquire.data();
+
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &frame->command_buffer;
 
-    submitInfo.signalSemaphoreCount = 0;
-    submitInfo.pSignalSemaphores = nullptr;
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &frame->on_render_finished;
 
     vkResetFences(gpu->device, 1, &frame->is_in_use);
 
@@ -230,8 +253,6 @@ void Renderer::renderFrame(entt::registry& registry,
         VK_SUCCESS) {
       log_ftl("Failed to submit primary frame command buffer.");
     }
-
-    frame->submitted = true;
   }
 
   {
@@ -239,8 +260,13 @@ void Renderer::renderFrame(entt::registry& registry,
 
     for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
          viewportIndex++) {
-      viewports[viewportIndex]->release();
+      viewports[viewportIndex]->release(frame->on_render_finished);
     }
+  }
+
+  current_frame++;
+  if (current_frame >= frames_in_flight.size()) {
+    current_frame = 0;
   }
 }
 

@@ -29,7 +29,7 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
   VkSwapchainCreateInfoKHR swapchain_info{
       .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
       .surface = display->surface,
-      .minImageCount = display->surface_capabilities.minImageCount,
+      .minImageCount = display->surface_capabilities.minImageCount + 2,
       .imageFormat = display->swapchain_format,
       .imageColorSpace = display->swapchain_color_space,
       .imageExtent = {.width = static_cast<uint32_t>(window_width),
@@ -97,11 +97,17 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
     }
   }
 
-  VkFenceCreateInfo fence_info{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+  acquire_image_index = 0;
+  on_image_acquire.resize(10);
 
-  if (vkCreateFence(gpu->device, &fence_info, nullptr, &on_image_available) !=
-      VK_SUCCESS) {
-    log_ftl("Failed to create image availability fence.");
+  for (uint32_t i = 0; i < on_image_acquire.size(); i++) {
+    VkSemaphoreCreateInfo semaphore_info{
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+
+    if (vkCreateSemaphore(gpu->device, &semaphore_info, nullptr,
+                          &on_image_acquire[i]) != VK_SUCCESS) {
+      log_ftl("Failed to create image acquisition semaphore.");
+    }
   }
 }
 
@@ -110,8 +116,8 @@ SdlViewport::~SdlViewport() {
 
   vkDeviceWaitIdle(gpu->device);
 
-  if (on_image_available != VK_NULL_HANDLE) {
-    vkDestroyFence(gpu->device, on_image_available, nullptr);
+  for (auto semaphore : on_image_acquire) {
+    vkDestroySemaphore(gpu->device, semaphore, nullptr);
   }
 
   for (ViewportImage& image : images) {
@@ -124,21 +130,19 @@ SdlViewport::~SdlViewport() {
   }
 }
 
-void SdlViewport::acquire() {
+VkSemaphore SdlViewport::acquire() {
   log_zone;
 
-  if (vkAcquireNextImageKHR(gpu->device, swapchain, UINT64_MAX, VK_NULL_HANDLE,
-                            on_image_available,
-                            &current_image_index) != VK_SUCCESS) {
-    // TODO(marceline-cramer) acquire() returns true on success, otherwise
-    // Renderer skips
-    return;
+  acquire_image_index++;
+  if (acquire_image_index >= on_image_acquire.size()) {
+    acquire_image_index = 0;
   }
 
-  // Block CPU until SDL swapchain image is available
-  // This is suboptimal, but OpenXR blocks CPU too, so...
-  vkWaitForFences(gpu->device, 1, &on_image_available, VK_TRUE, UINT64_MAX);
-  vkResetFences(gpu->device, 1, &on_image_available);
+  vkAcquireNextImageKHR(gpu->device, swapchain, UINT64_MAX,
+                        on_image_acquire[acquire_image_index], VK_NULL_HANDLE,
+                        &current_image_index);
+
+  return on_image_acquire[acquire_image_index];
 }
 
 void SdlViewport::beginRenderPass(VkCommandBuffer command_buffer,
@@ -189,11 +193,12 @@ void SdlViewport::writeUniform(ViewportUniform* uniform) {
   uniform->projection[1][1] *= -1.0;
 }
 
-void SdlViewport::release() {
+void SdlViewport::release(VkSemaphore on_render_finished) {
   log_zone;
 
-  // TODO(marceline-cramer) Add render finished semaphores
   VkPresentInfoKHR present_info{.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+                                .waitSemaphoreCount = 1,
+                                .pWaitSemaphores = &on_render_finished,
                                 .swapchainCount = 1,
                                 .pSwapchains = &swapchain,
                                 .pImageIndices = &current_image_index};

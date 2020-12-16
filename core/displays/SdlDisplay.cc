@@ -220,6 +220,8 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
           default:
             break;
         }  // switch (e.window.event)
+
+        break;
       }
 
       default:

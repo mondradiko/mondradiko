@@ -27,17 +27,18 @@ class SdlViewport : public ViewportInterface {
   SdlViewport(GpuInstance*, SdlDisplay*, Renderer*);
   ~SdlViewport();
 
-  void acquire() override;
+  VkSemaphore acquire() override;
   void beginRenderPass(VkCommandBuffer, VkRenderPass) override;
   void writeUniform(ViewportUniform*) override;
-  void release() override;
+  void release(VkSemaphore) override;
 
  private:
   GpuInstance* gpu;
   SdlDisplay* display;
   Renderer* renderer;
 
-  VkFence on_image_available = VK_NULL_HANDLE;
+  uint32_t acquire_image_index;
+  std::vector<VkSemaphore> on_image_acquire;
 
   VkSwapchainKHR swapchain = VK_NULL_HANDLE;
   std::vector<ViewportImage> images;

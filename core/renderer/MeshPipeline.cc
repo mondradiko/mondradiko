@@ -276,8 +276,6 @@ void MeshPipeline::render(entt::registry& registry, const AssetPool* asset_pool,
     auto mesh_renderer = mesh_renderers.get(e);
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
-    log_dbg("Actually draw mesh");
-
     material_descriptor->updateDynamicOffset(
         0, frame_materials.find(mesh_renderer.material_asset)->second);
     material_descriptor->cmdBind(commandBuffer, pipeline_layout, 1);

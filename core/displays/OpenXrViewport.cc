@@ -125,7 +125,7 @@ OpenXrViewport::~OpenXrViewport() {
   if (swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
 }
 
-void OpenXrViewport::acquire() {
+VkSemaphore OpenXrViewport::acquire() {
   log_zone;
 
   XrSwapchainImageAcquireInfo acquireInfo{
@@ -137,6 +137,8 @@ void OpenXrViewport::acquire() {
                                     .timeout = XR_INFINITE_DURATION};
 
   xrWaitSwapchainImage(swapchain, &waitInfo);
+
+  return VK_NULL_HANDLE;
 }
 
 void OpenXrViewport::beginRenderPass(VkCommandBuffer command_buffer,
@@ -189,7 +191,7 @@ void OpenXrViewport::writeUniform(ViewportUniform* uniform) {
   uniform->projection = createProjectionFromFOV(view.fov, 0.001, 1000.0);
 }
 
-void OpenXrViewport::release() {
+void OpenXrViewport::release(VkSemaphore) {
   log_zone;
 
   XrSwapchainImageReleaseInfo release_info{

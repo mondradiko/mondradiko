@@ -26,8 +26,8 @@ namespace mondradiko {
 struct PipelinedFrameData {
   // TODO(marceline-cramer) Use command pool per frame, per thread
   VkCommandBuffer command_buffer;
+  VkSemaphore on_render_finished;
   VkFence is_in_use;
-  bool submitted;
 
   GpuDescriptorPool* descriptor_pool;
   GpuBuffer* viewports;
