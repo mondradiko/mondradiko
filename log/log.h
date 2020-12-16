@@ -9,9 +9,16 @@
  *
  */
 
-#include "core/common/api_headers.h"
-
 #pragma once
+
+#include <cstdio>
+
+// Enable Tracy for Intellisense
+#if defined(__INTELLISENSE__) && !defined(TRACY_ENABLE)
+#define TRACY_ENABLE
+#endif
+
+#include "lib/tracy/Tracy.hpp"
 
 #define log_at(logLevel, ...) \
   mondradiko::log_formatted(__FILE__, __LINE__, logLevel, __VA_ARGS__)
