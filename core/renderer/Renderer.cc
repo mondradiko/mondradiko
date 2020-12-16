@@ -15,6 +15,8 @@
 #include "core/displays/ViewportInterface.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuDescriptorPool.h"
+#include "core/gpu/GpuDescriptorSet.h"
+#include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/renderer/MeshPipeline.h"
 #include "log/log.h"

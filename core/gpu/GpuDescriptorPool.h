@@ -13,11 +13,14 @@
 
 #include <set>
 
-#include "core/gpu/GpuDescriptorSet.h"
-#include "core/gpu/GpuDescriptorSetLayout.h"
-#include "core/gpu/GpuInstance.h"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class GpuDescriptorSet;
+class GpuDescriptorSetLayout;
+class GpuInstance;
 
 class GpuDescriptorPool {
  public:

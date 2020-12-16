@@ -11,7 +11,10 @@
 
 #include "core/gpu/GpuDescriptorSet.h"
 
+#include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
+#include "core/gpu/GpuImage.h"
+#include "core/gpu/GpuInstance.h"
 
 namespace mondradiko {
 

@@ -11,10 +11,12 @@
 
 #pragma once
 
-#include "core/gpu/GpuInstance.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
+
+// Forward declarations
+class GpuInstance;
 
 class GpuBuffer {
  public:

@@ -13,9 +13,6 @@
 
 #include <vector>
 
-#include "core/gpu/GpuBuffer.h"
-#include "core/gpu/GpuImage.h"
-#include "core/gpu/GpuInstance.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
@@ -23,8 +20,11 @@ namespace mondradiko {
 // TODO(marceline-cramer) Named descriptors
 // TODO(marceline-cramer) Reflection
 
-// Forward declaration because of codependence
+// Forward declarations
+class GpuBuffer;
 class GpuDescriptorSetLayout;
+class GpuImage;
+class GpuInstance;
 
 class GpuDescriptorSet {
  public:

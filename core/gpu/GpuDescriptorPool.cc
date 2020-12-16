@@ -13,6 +13,9 @@
 
 #include <vector>
 
+#include "core/gpu/GpuDescriptorSet.h"
+#include "core/gpu/GpuDescriptorSetLayout.h"
+#include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {

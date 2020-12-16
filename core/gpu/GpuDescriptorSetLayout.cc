@@ -11,6 +11,7 @@
 
 #include "core/gpu/GpuDescriptorSetLayout.h"
 
+#include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {

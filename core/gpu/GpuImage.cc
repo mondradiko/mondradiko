@@ -11,6 +11,7 @@
 
 #include "core/gpu/GpuImage.h"
 
+#include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 
