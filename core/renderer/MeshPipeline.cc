@@ -16,6 +16,7 @@
 
 #include "core/assets/MeshAsset.h"
 #include "core/components/MeshRendererComponent.h"
+#include "core/components/TransformComponent.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
@@ -70,6 +71,9 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
 
     texture_layout = new GpuDescriptorSetLayout(gpu);
     // texture_layout->addCombinedImageSampler(texture_sampler);
+
+    mesh_layout = new GpuDescriptorSetLayout(gpu);
+    mesh_layout->addDynamicUniformBuffer(sizeof(MeshUniform));
   }
 
   {
@@ -77,7 +81,7 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
 
     std::vector<VkDescriptorSetLayout> set_layouts{
         viewport_layout->getSetLayout(), material_layout->getSetLayout(),
-        texture_layout->getSetLayout()};
+        texture_layout->getSetLayout(), mesh_layout->getSetLayout()};
 
     VkPipelineLayoutCreateInfo layoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -204,6 +208,9 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
 
     material_buffer = new GpuVector(gpu, sizeof(MaterialUniform),
                                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+    mesh_buffer = new GpuVector(gpu, sizeof(MeshUniform),
+                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
   }
 }
 
@@ -211,6 +218,7 @@ MeshPipeline::~MeshPipeline() {
   log_zone;
 
   if (material_buffer != nullptr) delete material_buffer;
+  if (mesh_buffer != nullptr) delete mesh_buffer;
   if (texture_sampler != VK_NULL_HANDLE)
     vkDestroySampler(gpu->device, texture_sampler, nullptr);
   if (pipeline != VK_NULL_HANDLE)
@@ -219,6 +227,7 @@ MeshPipeline::~MeshPipeline() {
     vkDestroyPipelineLayout(gpu->device, pipeline_layout, nullptr);
   if (material_layout != nullptr) delete material_layout;
   if (texture_layout != nullptr) delete texture_layout;
+  if (mesh_layout != nullptr) delete mesh_layout;
 }
 
 void MeshPipeline::allocateDescriptors(entt::registry& registry,
@@ -227,11 +236,16 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
   log_zone;
 
   std::vector<MaterialUniform> material_uniforms;
+  std::vector<MeshUniform> mesh_uniforms;
 
   frame_textures.clear();
-  auto mesh_renderers = registry.view<MeshRendererComponent>();
-  for (auto e : mesh_renderers) {
-    auto mesh_renderer = mesh_renderers.get(e);
+  frame_meshes.clear();
+
+  auto mesh_renderers =
+      registry.view<MeshRendererComponent, TransformComponent>();
+
+  for (EntityId e : mesh_renderers) {
+    auto mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
 
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
@@ -250,6 +264,14 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
       mesh_material->updateTextureDescriptor(texture_descriptor);
       frame_textures.emplace(mesh_renderer.material_asset, texture_descriptor);
     }
+
+    auto transform = mesh_renderers.get<TransformComponent>(e);
+
+    MeshUniform mesh_uniform;
+    mesh_uniform.model = transform.world_transform;
+
+    frame_meshes.emplace(e, mesh_uniforms.size());
+    mesh_uniforms.push_back(mesh_uniform);
   }
 
   if (material_uniforms.size() > 0) {
@@ -259,6 +281,15 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
 
     material_descriptor = descriptor_pool->allocate(material_layout);
     material_descriptor->updateDynamicBuffer(0, material_buffer);
+  }
+
+  if (mesh_uniforms.size() > 0) {
+    for (uint32_t i = 0; i < mesh_uniforms.size(); i++) {
+      mesh_buffer->writeElement(i, mesh_uniforms[i]);
+    }
+
+    mesh_descriptor = descriptor_pool->allocate(mesh_layout);
+    mesh_descriptor->updateDynamicBuffer(0, mesh_buffer);
   }
 }
 
@@ -275,7 +306,7 @@ void MeshPipeline::render(entt::registry& registry, const AssetPool* asset_pool,
   viewport_descriptor->cmdBind(commandBuffer, pipeline_layout, 0);
 
   auto mesh_renderers = registry.view<MeshRendererComponent>();
-  for (auto e : mesh_renderers) {
+  for (EntityId e : mesh_renderers) {
     log_zone_named("Render mesh");
 
     auto mesh_renderer = mesh_renderers.get(e);
@@ -287,6 +318,9 @@ void MeshPipeline::render(entt::registry& registry, const AssetPool* asset_pool,
 
     frame_textures.find(mesh_renderer.material_asset)
         ->second->cmdBind(commandBuffer, pipeline_layout, 2);
+
+    mesh_descriptor->updateDynamicOffset(0, frame_meshes.find(e)->second);
+    mesh_descriptor->cmdBind(commandBuffer, pipeline_layout, 3);
 
     auto mesh_asset = asset_pool->getAsset<MeshAsset>(mesh_renderer.mesh_asset);
 

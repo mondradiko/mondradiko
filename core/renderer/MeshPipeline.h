@@ -17,6 +17,7 @@
 #include <unordered_map>
 
 #include "core/assets/AssetPool.h"
+#include "core/components/Component.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
@@ -30,6 +31,10 @@ class GpuDescriptorSetLayout;
 class GpuInstance;
 class GpuVector;
 
+struct MeshUniform {
+  glm::mat4 model;
+};
+
 class MeshPipeline {
  public:
   MeshPipeline(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
@@ -42,6 +47,7 @@ class MeshPipeline {
 
   GpuDescriptorSetLayout* material_layout;
   GpuDescriptorSetLayout* texture_layout;
+  GpuDescriptorSetLayout* mesh_layout;
 
   VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
   VkPipeline pipeline = VK_NULL_HANDLE;
@@ -49,14 +55,17 @@ class MeshPipeline {
   VkSampler texture_sampler = VK_NULL_HANDLE;
 
   GpuVector* material_buffer = nullptr;
+  GpuVector* mesh_buffer = nullptr;
 
  private:
   GpuInstance* gpu;
 
   // Non-persistent frame data
   GpuDescriptorSet* material_descriptor;
+  GpuDescriptorSet* mesh_descriptor;
   std::unordered_map<AssetId, uint32_t> frame_materials;
   std::unordered_map<AssetId, GpuDescriptorSet*> frame_textures;
+  std::unordered_map<EntityId, uint32_t> frame_meshes;
 };
 
 }  // namespace mondradiko
