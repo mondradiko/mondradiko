@@ -109,13 +109,25 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
     builder->addAsset(0xdeadbeef, &mesh_asset);
   }
 
-  assets::MutableAsset material_asset;
+  {
+    assets::MutableAsset material_asset;
 
-  assets::MaterialHeader header;
-  header.albedo_factor = glm::vec4(1.0, 0.0, 1.0, 1.0);
+    assets::MaterialHeader header;
+    header.albedo_factor = glm::vec4(1.0, 0.0, 1.0, 1.0);
 
-  material_asset << header;
-  builder->addAsset(0xAAAAAAAA, &material_asset);
+    material_asset << header;
+    builder->addAsset(0xAAAAAAAA, &material_asset);
+  }
+
+  {
+    assets::MutableAsset material_asset;
+
+    assets::MaterialHeader header;
+    header.albedo_factor = glm::vec4(0.0, 1.0, 0.0, 1.0);
+
+    material_asset << header;
+    builder->addAsset(0xAAAAAAAB, &material_asset);
+  }
 
   return true;
 }
