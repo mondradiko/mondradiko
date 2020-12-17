@@ -15,22 +15,43 @@
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
+#include "core/gpu/GpuVector.h"
 
 namespace mondradiko {
 
 GpuDescriptorSet::GpuDescriptorSet(GpuInstance* gpu,
                                    GpuDescriptorSetLayout* set_layout,
                                    VkDescriptorSet descriptor_set)
-    : gpu(gpu),
-      set_layout(set_layout),
-      descriptor_set(descriptor_set),
-      dynamic_offsets(set_layout->getDynamicOffsetCount()) {}
+    : gpu(gpu), set_layout(set_layout), descriptor_set(descriptor_set) {
+  uint32_t dynamic_offset_count = set_layout->getDynamicOffsetCount();
+  dynamic_offset_granularity.resize(dynamic_offset_count);
+  dynamic_offsets.resize(dynamic_offset_count);
+}
 
 GpuDescriptorSet::~GpuDescriptorSet() {}
 
 void GpuDescriptorSet::updateBuffer(uint32_t binding, GpuBuffer* buffer) {
   VkDescriptorBufferInfo buffer_info{
-      .buffer = buffer->buffer,
+      .buffer = buffer->getBuffer(),
+      .offset = 0,
+      .range = set_layout->getBufferSize(binding)};
+
+  VkWriteDescriptorSet descriptor_writes{
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = descriptor_set,
+      .dstBinding = binding,
+      .dstArrayElement = 0,
+      .descriptorCount = 1,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+      .pBufferInfo = &buffer_info};
+
+  vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
+}
+
+void GpuDescriptorSet::updateDynamicBuffer(uint32_t binding,
+                                           GpuVector* buffer) {
+  VkDescriptorBufferInfo buffer_info{
+      .buffer = buffer->getBuffer(),
       .offset = 0,
       .range = set_layout->getBufferSize(binding)};
 
@@ -44,6 +65,8 @@ void GpuDescriptorSet::updateBuffer(uint32_t binding, GpuBuffer* buffer) {
       .pBufferInfo = &buffer_info};
 
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
+
+  dynamic_offset_granularity[binding] = buffer->getGranularity();
 }
 
 void GpuDescriptorSet::updateImage(uint32_t binding, GpuImage* image) {
@@ -62,8 +85,8 @@ void GpuDescriptorSet::updateImage(uint32_t binding, GpuImage* image) {
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
 }
 
-void GpuDescriptorSet::updateDynamicOffset(uint32_t index, uint32_t offset) {
-  dynamic_offsets[index] = offset;
+void GpuDescriptorSet::updateDynamicOffset(uint32_t binding, uint32_t offset) {
+  dynamic_offsets[binding] = offset * dynamic_offset_granularity[binding];
 }
 
 void GpuDescriptorSet::cmdBind(VkCommandBuffer command_buffer,

@@ -25,6 +25,7 @@ class GpuBuffer;
 class GpuDescriptorSetLayout;
 class GpuImage;
 class GpuInstance;
+class GpuVector;
 
 class GpuDescriptorSet {
  public:
@@ -32,6 +33,7 @@ class GpuDescriptorSet {
   ~GpuDescriptorSet();
 
   void updateBuffer(uint32_t, GpuBuffer*);
+  void updateDynamicBuffer(uint32_t, GpuVector*);
   void updateImage(uint32_t, GpuImage*);
 
   void updateDynamicOffset(uint32_t, uint32_t);
@@ -43,6 +45,7 @@ class GpuDescriptorSet {
 
   GpuDescriptorSetLayout* set_layout;
   VkDescriptorSet descriptor_set;
+  std::vector<uint32_t> dynamic_offset_granularity;
   std::vector<uint32_t> dynamic_offsets;
 };
 
