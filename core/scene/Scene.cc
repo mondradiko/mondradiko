@@ -15,6 +15,7 @@
 #include <iostream>
 
 #include "core/components/MeshRendererComponent.h"
+#include "core/components/TransformComponent.h"
 #include "core/displays/DisplayInterface.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
@@ -28,12 +29,39 @@ Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
     : display(display), fs(fs), gpu(gpu), renderer(renderer), asset_pool(fs) {
   log_zone;
 
-  MeshRendererComponent mesh_renderer{
-      .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
-      .material_asset = asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAA, gpu)};
+  EntityId parent_entity;
 
-  auto test_entity = registry.create();
-  registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer);
+  {
+    MeshRendererComponent mesh_renderer{
+        .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
+        .material_asset = asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAA, gpu)};
+
+    TransformComponent transform;
+    transform.parent = NullEntity;
+    transform.local_transform = glm::mat4(1.0);
+
+    parent_entity = registry.create();
+    registry.emplace<MeshRendererComponent>(parent_entity, mesh_renderer);
+    registry.emplace<TransformComponent>(parent_entity, transform);
+  }
+
+  for(uint32_t i = 0; i < 32; i++) {
+    MeshRendererComponent mesh_renderer{
+        .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
+        .material_asset = asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAB, gpu)};
+
+    TransformComponent transform;
+    transform.parent = parent_entity;
+    transform.local_transform = glm::mat4(1.0);
+    transform.local_transform =
+        glm::translate(transform.local_transform, glm::vec3(0.0, -2.0, 0.0));
+
+    auto test_entity = registry.create();
+    registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer);
+    registry.emplace<TransformComponent>(test_entity, transform);
+
+    parent_entity = test_entity;
+  }
 }
 
 Scene::~Scene() {
@@ -53,6 +81,32 @@ bool Scene::update() {
   if (poll_info.should_run) {
     DisplayBeginFrameInfo frame_info;
     display->beginFrame(&frame_info);
+
+    auto transform_view = registry.view<TransformComponent>();
+
+    for (auto e : transform_view) {
+      transform_view.get(e).this_entity = e;
+    }
+
+    registry.sort<TransformComponent>([](const auto& parent, const auto& child){
+      // Sort children after parents
+      return parent.this_entity == child.parent;
+    });
+
+    for (auto e : transform_view) {
+      TransformComponent& transform = transform_view.get(e);
+      transform.this_entity = e;
+
+      glm::mat4 parent_transform;
+      if (transform.parent == NullEntity) {
+        parent_transform = glm::mat4(1.0);
+      } else {
+        parent_transform =
+            registry.get<TransformComponent>(transform.parent).world_transform;
+      }
+
+      transform.world_transform = parent_transform * transform.local_transform;
+    }
 
     if (frame_info.should_render) {
       renderer->renderFrame(registry, &asset_pool);

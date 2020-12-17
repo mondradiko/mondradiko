@@ -17,6 +17,8 @@ namespace mondradiko {
 
 struct TransformComponent {
   EntityId parent;
+  // Used to sort by parent
+  EntityId this_entity;
 
   glm::mat4 local_transform;
   glm::mat4 world_transform;
