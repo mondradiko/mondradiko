@@ -28,6 +28,8 @@ class AssetPool {
 
   template <typename AssetType, typename... Args>
   [[nodiscard]] AssetId loadAsset(AssetId id, Args&&... args) {
+    if (isAssetLoaded<AssetType>(id)) return id;
+
     assets::ImmutableAsset asset_data;
     fs->loadAsset(&asset_data, id);
 
@@ -68,7 +70,7 @@ class AssetPool {
     for (auto asset : assets_view) {
       delete assets_view.get(asset);
     }
-    asset_registry.clear<AssetType*>();
+    asset_registry.destroy(assets_view.begin(), assets_view.end());
   }
 
  private:
