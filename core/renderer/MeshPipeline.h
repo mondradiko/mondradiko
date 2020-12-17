@@ -28,6 +28,7 @@ class GpuDescriptorPool;
 class GpuDescriptorSet;
 class GpuDescriptorSetLayout;
 class GpuInstance;
+class GpuVector;
 
 class MeshPipeline {
  public:
@@ -47,7 +48,7 @@ class MeshPipeline {
 
   VkSampler texture_sampler = VK_NULL_HANDLE;
 
-  GpuBuffer* material_buffer = nullptr;
+  GpuVector* material_buffer = nullptr;
 
  private:
   GpuInstance* gpu;

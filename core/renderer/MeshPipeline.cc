@@ -22,6 +22,7 @@
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuShader.h"
+#include "core/gpu/GpuVector.h"
 #include "core/renderer/Renderer.h"
 #include "log/log.h"
 #include "shaders/mesh.frag.h"
@@ -201,10 +202,8 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
   {
     log_zone_named("Create buffers");
 
-    // TODO(marceline-cramer) GpuHeap
-    material_buffer = new GpuBuffer(gpu, 128 * sizeof(MaterialUniform),
-                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                    VMA_MEMORY_USAGE_CPU_TO_GPU);
+    material_buffer = new GpuVector(gpu, sizeof(MaterialUniform),
+                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
   }
 }
 
@@ -254,11 +253,12 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
   }
 
   if (material_uniforms.size() > 0) {
-    // TODO(marceline-cramer) Make GpuBuffer use vectors
-    material_uniforms.reserve(128);
-    material_buffer->writeData(material_uniforms.data());
+    for (uint32_t i = 0; i < material_uniforms.size(); i++) {
+      material_buffer->writeElement(i, material_uniforms[i]);
+    }
+
     material_descriptor = descriptor_pool->allocate(material_layout);
-    material_descriptor->updateBuffer(0, material_buffer);
+    material_descriptor->updateDynamicBuffer(0, material_buffer);
   }
 }
 
@@ -290,11 +290,11 @@ void MeshPipeline::render(entt::registry& registry, const AssetPool* asset_pool,
 
     auto mesh_asset = asset_pool->getAsset<MeshAsset>(mesh_renderer.mesh_asset);
 
-    VkBuffer vertex_buffers[] = {mesh_asset->vertex_buffer->buffer};
+    VkBuffer vertex_buffers[] = {mesh_asset->vertex_buffer->getBuffer()};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, mesh_asset->index_buffer->buffer, 0,
-                         VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(commandBuffer, mesh_asset->index_buffer->getBuffer(),
+                         0, VK_INDEX_TYPE_UINT32);
     vkCmdDrawIndexed(commandBuffer, mesh_asset->index_count, 1, 0, 0, 0);
   }
 }

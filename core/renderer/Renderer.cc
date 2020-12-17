@@ -13,11 +13,11 @@
 
 #include "core/displays/DisplayInterface.h"
 #include "core/displays/ViewportInterface.h"
-#include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
+#include "core/gpu/GpuVector.h"
 #include "core/renderer/MeshPipeline.h"
 #include "log/log.h"
 
@@ -118,10 +118,9 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
 
       frame.descriptor_pool = new GpuDescriptorPool(gpu);
 
-      frame.viewports = new GpuBuffer(
+      frame.viewports = new GpuVector(
           // TODO(marceline-cramer) Better descriptor management
-          gpu, sizeof(ViewportUniform) * 2, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-          VMA_MEMORY_USAGE_CPU_TO_GPU);
+          gpu, sizeof(ViewportUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     }
   }
 
@@ -172,18 +171,6 @@ void Renderer::renderFrame(entt::registry& registry,
     frame->descriptor_pool->reset();
   }
 
-  GpuDescriptorSet* viewport_descriptor;
-
-  {
-    log_zone_named("Allocate descriptors");
-
-    viewport_descriptor = frame->descriptor_pool->allocate(viewport_layout);
-    viewport_descriptor->updateBuffer(0, frame->viewports);
-
-    mesh_pipeline->allocateDescriptors(registry, asset_pool,
-                                       frame->descriptor_pool);
-  }
-
   std::vector<ViewportInterface*> viewports;
   std::vector<VkSemaphore> on_viewport_acquire(0);
 
@@ -201,6 +188,18 @@ void Renderer::renderFrame(entt::registry& registry,
     }
   }
 
+  GpuDescriptorSet* viewport_descriptor;
+
+  {
+    log_zone_named("Allocate descriptors");
+
+    viewport_descriptor = frame->descriptor_pool->allocate(viewport_layout);
+    viewport_descriptor->updateDynamicBuffer(0, frame->viewports);
+
+    mesh_pipeline->allocateDescriptors(registry, asset_pool,
+                                       frame->descriptor_pool);
+  }
+
   {
     log_zone_named("Record command buffers");
 
@@ -215,8 +214,7 @@ void Renderer::renderFrame(entt::registry& registry,
       viewports[viewport_index]->beginRenderPass(frame->command_buffer,
                                                  composite_pass);
       mesh_pipeline->render(registry, asset_pool, frame->command_buffer,
-                            viewport_descriptor,
-                            viewport_index * sizeof(ViewportUniform));
+                            viewport_descriptor, viewport_index);
       vkCmdEndRenderPass(frame->command_buffer);
     }
 
@@ -226,13 +224,11 @@ void Renderer::renderFrame(entt::registry& registry,
   {
     log_zone_named("Write viewport uniforms");
 
-    std::vector<ViewportUniform> view_uniforms(viewports.size());
-
     for (uint32_t i = 0; i < viewports.size(); i++) {
-      viewports[i]->writeUniform(&view_uniforms.at(i));
+      ViewportUniform uniform;
+      viewports[i]->writeUniform(&uniform);
+      frame->viewports->writeElement(i, uniform);
     }
-
-    frame->viewports->writeData(view_uniforms.data());
   }
 
   {

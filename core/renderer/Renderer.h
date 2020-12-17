@@ -21,10 +21,10 @@ namespace mondradiko {
 
 // Forward declarations
 class DisplayInterface;
-class GpuBuffer;
 class GpuDescriptorPool;
 class GpuDescriptorSetLayout;
 class GpuInstance;
+class GpuVector;
 class MeshPipeline;
 
 struct PipelinedFrameData {
@@ -34,7 +34,7 @@ struct PipelinedFrameData {
   VkFence is_in_use;
 
   GpuDescriptorPool* descriptor_pool;
-  GpuBuffer* viewports;
+  GpuVector* viewports;
 };
 
 struct FramePushConstant {
