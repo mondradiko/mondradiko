@@ -241,6 +241,8 @@ void GpuInstance::findPhysicalDevice(DisplayInterface* display) {
   if (!display->getVulkanDevice(instance, &physical_device)) {
     log_ftl("Failed to find Vulkan physical device.");
   }
+
+  vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
 }
 
 void GpuInstance::findQueueFamilies() {

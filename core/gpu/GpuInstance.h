@@ -41,6 +41,8 @@ class GpuInstance {
   VkPhysicalDevice physical_device = VK_NULL_HANDLE;
   VkDevice device = VK_NULL_HANDLE;
 
+  VkPhysicalDeviceProperties physical_device_properties;
+
   uint32_t graphics_queue_family;
   VkQueue graphics_queue;
 
