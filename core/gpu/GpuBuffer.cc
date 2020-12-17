@@ -16,12 +16,30 @@
 
 namespace mondradiko {
 
-GpuBuffer::GpuBuffer(GpuInstance* gpu, size_t buffer_size,
+GpuBuffer::GpuBuffer(GpuInstance* gpu, size_t initial_size,
                      VkBufferUsageFlags buffer_usage_flags,
                      VmaMemoryUsage memory_usage)
-    : buffer_size(buffer_size), gpu(gpu) {
+    : buffer_usage_flags(buffer_usage_flags),
+      memory_usage(memory_usage),
+      gpu(gpu) {
+  reserve(initial_size);
+}
+
+GpuBuffer::~GpuBuffer() {
+  if (allocation != nullptr)
+    vmaDestroyBuffer(gpu->allocator, buffer, allocation);
+}
+
+void GpuBuffer::reserve(size_t target_size) {
+  if (target_size <= buffer_size) return;
+
+  if (allocation != nullptr)
+    vmaDestroyBuffer(gpu->allocator, buffer, allocation);
+
+  allocation = nullptr;
+
   VkBufferCreateInfo bufferInfo{.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-                                .size = buffer_size,
+                                .size = target_size,
                                 .usage = buffer_usage_flags,
                                 .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
 
@@ -32,11 +50,8 @@ GpuBuffer::GpuBuffer(GpuInstance* gpu, size_t buffer_size,
                       &buffer, &allocation, &allocation_info) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan buffer.");
   }
-}
 
-GpuBuffer::~GpuBuffer() {
-  if (allocation != nullptr)
-    vmaDestroyBuffer(gpu->allocator, buffer, allocation);
+  buffer_size = target_size;
 }
 
 void GpuBuffer::writeData(void* src) {

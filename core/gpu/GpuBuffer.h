@@ -20,12 +20,30 @@ class GpuInstance;
 
 class GpuBuffer {
  public:
-  GpuBuffer(GpuInstance*, size_t, VkBufferUsageFlags, VmaMemoryUsage);
+  GpuBuffer(GpuInstance* gpu, size_t initial_size,
+            VkBufferUsageFlags buffer_usage_flags)
+      : GpuBuffer(gpu, initial_size, buffer_usage_flags,
+                  VMA_MEMORY_USAGE_CPU_TO_GPU) {}
   ~GpuBuffer();
 
+  VkBuffer getBuffer() { return buffer; }
+
+  // TODO(marceline-cramer) Get rid of this method
   void writeData(void*);
 
+ protected:
+  GpuBuffer(GpuInstance*, size_t, VkBufferUsageFlags, VmaMemoryUsage);
+
+  /**
+   * @warning This method may potentially recreate the buffer handle,
+   * making any former references to this buffer invalid.
+   *
+   */
+  void reserve(size_t);
+
   size_t buffer_size = 0;
+  VkBufferUsageFlags buffer_usage_flags;
+  VmaMemoryUsage memory_usage;
   VmaAllocation allocation = nullptr;
   VmaAllocationInfo allocation_info;
   VkBuffer buffer = VK_NULL_HANDLE;
