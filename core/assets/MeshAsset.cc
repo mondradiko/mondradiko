@@ -50,14 +50,12 @@ MeshAsset::MeshAsset(assets::ImmutableAsset& asset, GpuInstance* gpu) {
 
   size_t vertex_size = sizeof(MeshVertex) * vertices.size();
   vertex_buffer =
-      new GpuBuffer(gpu, vertex_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                    VMA_MEMORY_USAGE_CPU_TO_GPU);
+      new GpuBuffer(gpu, vertex_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
   vertex_buffer->writeData(vertices.data());
 
   size_t index_size = sizeof(indices[0]) * indices.size();
   index_buffer =
-      new GpuBuffer(gpu, index_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                    VMA_MEMORY_USAGE_CPU_TO_GPU);
+      new GpuBuffer(gpu, index_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
   index_buffer->writeData(indices.data());
 
   index_count = header.index_count;

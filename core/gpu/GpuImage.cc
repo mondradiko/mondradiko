@@ -55,8 +55,7 @@ GpuImage::~GpuImage() {
 void GpuImage::writeData(void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
-  GpuBuffer stage(gpu, allocation_info.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                  VMA_MEMORY_USAGE_CPU_TO_GPU);
+  GpuBuffer stage(gpu, allocation_info.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
   stage.writeData(src);
 
   VkCommandBuffer commandBuffer = gpu->beginSingleTimeCommands();
@@ -72,7 +71,7 @@ void GpuImage::writeData(void* src) {
       .imageOffset = {0, 0, 0},
       .imageExtent = {width, height, 1}};
 
-  vkCmdCopyBufferToImage(commandBuffer, stage.buffer, image, layout, 1,
+  vkCmdCopyBufferToImage(commandBuffer, stage.getBuffer(), image, layout, 1,
                          &region);
 
   gpu->endSingleTimeCommands(commandBuffer);
