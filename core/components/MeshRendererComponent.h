@@ -17,8 +17,7 @@
 
 namespace mondradiko {
 
-class MeshRendererComponent {
- public:
+struct MeshRendererComponent {
   AssetId mesh_asset;
   AssetId material_asset;
 
