@@ -23,6 +23,7 @@ class GpuImage {
  public:
   GpuImage(GpuInstance*, VkFormat, uint32_t, uint32_t, VkImageUsageFlags,
            VmaMemoryUsage);
+  GpuImage(GpuInstance*, ktxTexture*, VkImageUsageFlags);
   ~GpuImage();
 
   void writeData(void*);
@@ -36,6 +37,10 @@ class GpuImage {
   VmaAllocation allocation = nullptr;
   VmaAllocationInfo allocation_info;
   VkImage image = VK_NULL_HANDLE;
+
+  bool using_ktx = false;
+  ktxVulkanTexture ktx_texture;
+
   VkImageView view = VK_NULL_HANDLE;
 
  private:
