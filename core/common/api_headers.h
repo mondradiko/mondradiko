@@ -30,3 +30,5 @@
 #include "SDL2/SDL_vulkan.h"
 
 #include "lib/entt.hpp"
+
+#include "ktxvulkan.h"

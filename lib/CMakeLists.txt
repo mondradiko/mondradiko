@@ -9,6 +9,11 @@ pkg_check_modules(OPENXR REQUIRED openxr)
 pkg_check_modules(XXHASH REQUIRED libxxhash)
 pkg_check_modules(LZ4 REQUIRED liblz4)
 
+include(FindVulkan)
+
+find_package(Threads REQUIRED)
+find_package(Ktx REQUIRED COMPONENTS ktx)
+
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(MONDRADIKO_LIB_SRC
@@ -17,6 +22,10 @@ set(MONDRADIKO_LIB_SRC
 )
 
 add_library(mondradiko-lib STATIC ${MONDRADIKO_LIB_SRC})
+
+target_link_libraries(mondradiko-lib PUBLIC ${Vulkan_LIBRARIES})
+target_include_directories(mondradiko-lib PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_compile_options(mondradiko-lib PUBLIC ${Vulkan_CFLAGS_OTHER})
 
 target_link_libraries(mondradiko-lib PUBLIC ${ASSIMP_LIBRARIES})
 target_include_directories(mondradiko-lib PUBLIC ${ASSIMP_INCLUDE_DIRS})
@@ -37,3 +46,5 @@ target_compile_options(mondradiko-lib PUBLIC ${XXHASH_CFLAGS_OTHER})
 target_link_libraries(mondradiko-lib PUBLIC ${LZ4_LIBRARIES})
 target_include_directories(mondradiko-lib PUBLIC ${LZ4_INCLUDE_DIRS})
 target_compile_options(mondradiko-lib PUBLIC ${LZ4_CFLAGS_OTHER})
+
+target_link_libraries(mondradiko-lib PRIVATE KTX::ktx)
