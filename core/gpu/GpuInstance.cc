@@ -75,6 +75,8 @@ GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
 GpuInstance::~GpuInstance() {
   log_zone;
 
+  display->destroySession();
+
   vkDeviceWaitIdle(device);
 
   if (allocator != nullptr) vmaDestroyAllocator(allocator);
