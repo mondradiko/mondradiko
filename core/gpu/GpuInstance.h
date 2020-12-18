@@ -50,6 +50,9 @@ class GpuInstance {
 
   VmaAllocator allocator = nullptr;
 
+  bool using_ktx = false;
+  ktxVulkanDeviceInfo ktx_info;
+
  private:
   const std::vector<const char*> validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
