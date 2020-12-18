@@ -20,6 +20,14 @@ class ImmutableAsset {
   template<class T>
   ImmutableAsset& operator>>(T&);
 
+  inline const char* getData(size_t* remaining_size) {
+    if(remaining_size) {
+      *remaining_size = data_size + (data - cursor);
+    }
+
+    return cursor;
+  }
+
  private:
   char* data;
   char* cursor;
