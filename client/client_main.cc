@@ -47,6 +47,8 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   Scene scene(display, fs, gpu, &renderer);
   NetworkClient client(&scene, "127.0.0.1", 10555);
 
+  scene.testInitialize();
+
   while (!g_interrupted) {
     if (!scene.update()) break;
 

@@ -28,13 +28,23 @@ Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
              Renderer* renderer)
     : display(display), fs(fs), gpu(gpu), renderer(renderer), asset_pool(fs) {
   log_zone;
+}
 
+Scene::~Scene() {
+  log_zone;
+
+  asset_pool.unloadAll<MeshAsset>();
+  asset_pool.unloadAll<MaterialAsset>();
+}
+
+void Scene::testInitialize() {
   EntityId parent_entity;
 
   {
     MeshRendererComponent mesh_renderer{
         .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
-        .material_asset = asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAA, gpu)};
+        .material_asset =
+            asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAA, &asset_pool, gpu)};
 
     TransformComponent transform;
     transform.parent = NullEntity;
@@ -45,10 +55,11 @@ Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
     registry.emplace<TransformComponent>(parent_entity, transform);
   }
 
-  for(uint32_t i = 0; i < 32; i++) {
+  for (uint32_t i = 0; i < 32; i++) {
     MeshRendererComponent mesh_renderer{
         .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
-        .material_asset = asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAB, gpu)};
+        .material_asset =
+            asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAB, &asset_pool, gpu)};
 
     TransformComponent transform;
     transform.parent = parent_entity;
@@ -62,13 +73,6 @@ Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
 
     parent_entity = test_entity;
   }
-}
-
-Scene::~Scene() {
-  log_zone;
-
-  asset_pool.unloadAll<MeshAsset>();
-  asset_pool.unloadAll<MaterialAsset>();
 }
 
 bool Scene::update() {

@@ -29,6 +29,7 @@ class Scene {
   Scene(DisplayInterface*, Filesystem*, GpuInstance*, Renderer*);
   ~Scene();
 
+  void testInitialize();
   bool update();
 
   DisplayInterface* display;
