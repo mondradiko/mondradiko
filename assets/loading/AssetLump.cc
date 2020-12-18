@@ -41,7 +41,7 @@ bool AssetLump::assertLength(size_t check_size) {
   size_t lump_length = std::filesystem::file_size(lump_path);
 
   if (lump_length != check_size) {
-    log_err("Lump size assertion failed (expected 0x%4u bytes, got ox%4u)",
+    log_err("Lump size assertion failed (expected 0x%08x bytes, got 0x%08x)",
             check_size, lump_length);
     return false;
   }
@@ -158,10 +158,10 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
 }
 
 bool AssetLump::loadAsset(ImmutableAsset* asset, size_t offset, size_t size) {
-  log_dbg("Loading asset from %s at 0x%4u", lump_path.c_str(), offset);
+  log_dbg("Loading asset from %s at 0x%08x", lump_path.c_str(), offset);
 
   if (offset + size > loaded_size) {
-    log_err("Asset range exceeds lump size of 0x%4u", loaded_size);
+    log_err("Asset range exceeds lump size of 0x%08x", loaded_size);
     return false;
   }
 

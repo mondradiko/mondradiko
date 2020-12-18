@@ -32,8 +32,7 @@ Filesystem::~Filesystem() {}
 
 bool Filesystem::loadAsset(assets::ImmutableAsset* asset, AssetId id) {
   if (!asset_bundle.isAssetRegistered(id)) {
-    // TODO(marceline-cramer) Make this log better
-    log_ftl("Asset does not exist");
+    log_ftl("Asset 0x%08x does not exist", id);
   }
 
   return asset_bundle.loadAsset(asset, id);

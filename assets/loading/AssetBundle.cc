@@ -80,8 +80,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
         return AssetResult::BadSize;
       }
 
-      char lump_file[32];
-      snprintf(lump_file, sizeof(lump_file), "lump_%04u.bin", lump_index);
+      auto lump_file = generateLumpName(lump_index);
       auto lump_path = bundle_root / lump_file;
 
       if (!std::filesystem::exists(lump_path)) {
