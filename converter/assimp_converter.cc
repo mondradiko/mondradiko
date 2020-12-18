@@ -11,21 +11,18 @@
 
 #include "converter/assimp_converter.h"
 
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/texture.h>
+
+#include <assimp/Importer.hpp>
 #include <iostream>
 #include <sstream>
 #include <vector>
 
 #include "assets/format/MaterialAsset.h"
 #include "assets/format/MeshAsset.h"
-#include "assimp/DefaultLogger.hpp"
-#include "assimp/IOStream.hpp"
-#include "assimp/IOSystem.hpp"
-#include "assimp/Importer.hpp"
-#include "assimp/Logger.hpp"
-#include "assimp/mesh.h"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
-#include "assimp/texture.h"
+#include "converter/stb_converter.h"
 
 namespace mondradiko {
 
@@ -109,11 +106,14 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
     builder->addAsset(0xdeadbeef, &mesh_asset);
   }
 
+  assets::AssetId texture_asset = stb_convert(builder);
+
   {
     assets::MutableAsset material_asset;
 
     assets::MaterialHeader header;
     header.albedo_factor = glm::vec4(1.0, 0.0, 1.0, 1.0);
+    header.albedo_texture = texture_asset;
 
     material_asset << header;
     builder->addAsset(0xAAAAAAAA, &material_asset);
@@ -124,6 +124,7 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
 
     assets::MaterialHeader header;
     header.albedo_factor = glm::vec4(0.0, 1.0, 0.0, 1.0);
+    header.albedo_texture = texture_asset;
 
     material_asset << header;
     builder->addAsset(0xAAAAAAAB, &material_asset);
