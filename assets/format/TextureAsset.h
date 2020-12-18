@@ -1,8 +1,8 @@
 /**
- * @file MaterialAsset.h
+ * @file TextureAsset.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief
- * @date 2020-12-13
+ * @date 2020-12-17
  *
  * @copyright Copyright (c) 2020 Marceline Cramer
  * SPDX-License-Identifier: LGPL-3.0-or-later
@@ -11,16 +11,14 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
-
-#include "assets/format/AssetTypes.h"
-
 namespace mondradiko {
 namespace assets {
 
-struct MaterialHeader {
-  glm::vec4 albedo_factor;
-  AssetId albedo_texture;
+enum class TextureFormat : uint8_t { None = 0, KTX };
+
+struct TextureHeader {
+  TextureFormat format;
+  uint32_t data_length;
 };
 
 }  // namespace assets
