@@ -12,6 +12,7 @@
 #pragma once
 
 #include "core/assets/Asset.h"
+#include "core/assets/AssetPool.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
@@ -28,13 +29,16 @@ struct MaterialUniform {
 
 class MaterialAsset : public Asset {
  public:
-  MaterialAsset(assets::ImmutableAsset&, GpuInstance*);
+  MaterialAsset(assets::ImmutableAsset&, AssetPool*, GpuInstance*);
 
   const MaterialUniform& getUniform() const { return uniform; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;
 
  private:
+  AssetPool* asset_pool;
   GpuInstance* gpu;
+
+  AssetId albedo_texture;
 
   MaterialUniform uniform;
 };
