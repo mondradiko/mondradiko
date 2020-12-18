@@ -38,6 +38,7 @@ MeshAsset::MeshAsset(assets::ImmutableAsset& asset, GpuInstance* gpu) {
 
     vertices[i].position = vertex.position;
     vertices[i].tex_coord = vertex.tex_coord;
+    vertices[i].color = vertex.color;
     vertices[i].normal = vertex.normal;
   }
 

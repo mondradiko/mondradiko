@@ -20,6 +20,6 @@ layout(location = 0) out vec4 outColor;
 void main() {
   //outColor = texture(textures[material.albedo_texture], fragTexCoord);  // * vec4(fragColor, 1.0);
   // outColor = vec4(fragColor, 1.0);
-  outColor = texture(albedo_texture, fragTexCoord) * vec4(fragColor, 1.0);
+  outColor = texture(albedo_texture, fragTexCoord) * vec4(fragColor, 1.0) * material.albedo_factor;
   // outColor = material.albedo_factor;
 }

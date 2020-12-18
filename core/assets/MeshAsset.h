@@ -24,11 +24,12 @@ class GpuInstance;
 class GpuBuffer;
 
 using MeshVertexAttributeDescriptions =
-    std::array<VkVertexInputAttributeDescription, 3>;
+    std::array<VkVertexInputAttributeDescription, 4>;
 
 struct MeshVertex {
   glm::vec3 position;
   glm::vec3 normal;
+  glm::vec3 color;
   glm::vec2 tex_coord;
 
   static VkVertexInputBindingDescription getBindingDescription() {
@@ -52,8 +53,13 @@ struct MeshVertex {
                        .binding = 0,
                        .format = VK_FORMAT_R32G32B32_SFLOAT,
                        .offset = offsetof(MeshVertex, normal)};
-
+    
     descriptions[2] = {.location = 2,
+                       .binding = 0,
+                       .format = VK_FORMAT_R32G32B32_SFLOAT,
+                       .offset = offsetof(MeshVertex, color)};
+
+    descriptions[3] = {.location = 3,
                        .binding = 0,
                        .format = VK_FORMAT_R32G32_SFLOAT,
                        .offset = offsetof(MeshVertex, tex_coord)};

@@ -85,6 +85,7 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
       assets::MeshVertex vertex;
       vertex.position = glm::vec3(position.x, position.y, position.z);
       vertex.normal = glm::vec3(normal.x, normal.y, normal.z);
+      vertex.color = glm::vec3(1.0, 1.0, 1.0);
       // Take only the UV coordinates
       // Invert the Y coordinate into range [0, 1]
       vertex.tex_coord = glm::vec2(texCoord.x, -texCoord.y);
