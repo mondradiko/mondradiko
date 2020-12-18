@@ -24,6 +24,13 @@ class MutableAsset {
   template <class T>
   MutableAsset& operator<<(const T&);
 
+  void writeData(const char* src, size_t size) {
+    size_t append_ptr = data.size();
+    size_t required_size = data.size() + size;
+    data.resize(required_size);
+    memcpy(data.data() + append_ptr, reinterpret_cast<const void*>(src), size);
+  }
+
   friend class AssetBundleBuilder;
 
  private:
