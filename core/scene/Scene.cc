@@ -14,6 +14,7 @@
 
 #include <iostream>
 
+#include "core/assets/TextureAsset.h"
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/displays/DisplayInterface.h"
@@ -35,6 +36,7 @@ Scene::~Scene() {
 
   asset_pool.unloadAll<MeshAsset>();
   asset_pool.unloadAll<MaterialAsset>();
+  asset_pool.unloadAll<TextureAsset>();
 }
 
 void Scene::testInitialize() {

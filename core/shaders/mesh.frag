@@ -10,7 +10,7 @@ layout(set = 1, binding = 0) uniform MaterialUniform {
   vec4 albedo_factor;
 } material;
 
-// layout(set = 1, binding = 0) uniform sampler2D albedo_texture;
+layout(set = 2, binding = 0) uniform sampler2D albedo_texture;
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
@@ -20,6 +20,6 @@ layout(location = 0) out vec4 outColor;
 void main() {
   //outColor = texture(textures[material.albedo_texture], fragTexCoord);  // * vec4(fragColor, 1.0);
   // outColor = vec4(fragColor, 1.0);
-  // outColor = texture(albedo_texture, fragTexCoord);
-  outColor = material.albedo_factor;
+  outColor = texture(albedo_texture, fragTexCoord) * vec4(fragColor, 1.0);
+  // outColor = material.albedo_factor;
 }
