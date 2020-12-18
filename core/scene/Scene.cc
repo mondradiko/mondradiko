@@ -57,7 +57,7 @@ void Scene::testInitialize() {
     registry.emplace<TransformComponent>(parent_entity, transform);
   }
 
-  for (uint32_t i = 0; i < 32; i++) {
+  for (uint32_t i = 0; i < 10; i++) {
     MeshRendererComponent mesh_renderer{
         .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
         .material_asset =
@@ -88,30 +88,45 @@ bool Scene::update() {
     DisplayBeginFrameInfo frame_info;
     display->beginFrame(&frame_info);
 
-    auto transform_view = registry.view<TransformComponent>();
+    {
+      log_zone_named("Update TransformComponent self-reference");
 
-    for (auto e : transform_view) {
-      transform_view.get(e).this_entity = e;
+      auto transform_view = registry.view<TransformComponent>();
+
+      for (EntityId e : transform_view) {
+        transform_view.get(e).this_entity = e;
+      }
     }
 
-    registry.sort<TransformComponent>([](const auto& parent, const auto& child){
-      // Sort children after parents
-      return parent.this_entity == child.parent;
-    });
+    {
+      log_zone_named("Sort transform hierarchy");
 
-    for (auto e : transform_view) {
-      TransformComponent& transform = transform_view.get(e);
-      transform.this_entity = e;
+      registry.sort<TransformComponent>(
+          [](const auto& parent, const auto& child) {
+            // Sort children after parents
+            return parent.this_entity >= child.parent;
+          });
+    }
 
-      glm::mat4 parent_transform;
-      if (transform.parent == NullEntity) {
-        parent_transform = glm::mat4(1.0);
-      } else {
-        parent_transform =
-            registry.get<TransformComponent>(transform.parent).world_transform;
+    {
+      log_zone_named("Transform children under parents");
+
+      auto transform_view = registry.view<TransformComponent>();
+
+      for (EntityId e : transform_view) {
+        TransformComponent& transform = transform_view.get(e);
+
+        glm::mat4 parent_transform;
+        if (transform.parent == NullEntity) {
+          parent_transform = glm::mat4(1.0);
+        } else {
+          parent_transform = registry.get<TransformComponent>(transform.parent)
+                                 .world_transform;
+        }
+
+        transform.world_transform =
+            parent_transform * transform.local_transform;
       }
-
-      transform.world_transform = parent_transform * transform.local_transform;
     }
 
     if (frame_info.should_render) {
