@@ -16,6 +16,7 @@
 #include <fstream>
 
 #include "log/log.h"
+#include "xxhash.h"  // NOLINT
 
 namespace mondradiko {
 namespace assets {
@@ -33,8 +34,16 @@ AssetBundleBuilder::~AssetBundleBuilder() {
   }
 }
 
-AssetResult AssetBundleBuilder::addAsset(AssetId id, MutableAsset* asset) {
+AssetResult AssetBundleBuilder::addAsset(AssetId* id, MutableAsset* asset) {
   size_t asset_size = asset->data.size();
+
+  // Generate ID by hashing asset data
+  *id = static_cast<AssetId>(XXH3_64bits(asset->data.data(), asset->data.size()));
+
+  if(used_ids.find(*id) != used_ids.end()) {
+    log_wrn("Attempting to build asset with duplicated ID 0x%08x; skipping", *id);
+    return AssetResult::DuplicateAsset;
+  }
 
   if (lumps.size() == 0) {
     lumps.resize(1);
@@ -51,7 +60,7 @@ AssetResult AssetBundleBuilder::addAsset(AssetId id, MutableAsset* asset) {
   }
 
   AssetToSave new_asset;
-  new_asset.id = id;
+  new_asset.id = *id;
   new_asset.size = asset_size;
   lumps[lump_index].assets.push_back(new_asset);
 
@@ -59,6 +68,7 @@ AssetResult AssetBundleBuilder::addAsset(AssetId id, MutableAsset* asset) {
          asset->data.data(), asset_size);
 
   lumps[lump_index].total_size += asset_size;
+  used_ids.emplace(*id);
 
   return AssetResult::Success;
 }

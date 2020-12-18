@@ -13,6 +13,7 @@
 #pragma once
 
 #include <filesystem>
+#include <unordered_set>
 #include <vector>
 
 #include "assets/format/AssetFile.h"
@@ -26,7 +27,7 @@ class AssetBundleBuilder {
   explicit AssetBundleBuilder(const std::filesystem::path&);
   ~AssetBundleBuilder();
 
-  AssetResult addAsset(AssetId, MutableAsset*);
+  AssetResult addAsset(AssetId*, MutableAsset*);
   AssetResult buildBundle(const char*);
 
  private:
@@ -45,6 +46,8 @@ class AssetBundleBuilder {
   };
 
   std::vector<LumpToSave> lumps;
+  std::unordered_set<AssetId> used_ids;
+
   void allocateLump(LumpToSave*);
 };
 
