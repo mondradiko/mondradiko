@@ -31,7 +31,7 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
   VkSwapchainCreateInfoKHR swapchain_info{
       .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
       .surface = display->surface,
-      .minImageCount = display->surface_capabilities.minImageCount + 2,
+      .minImageCount = display->surface_capabilities.minImageCount,
       .imageFormat = display->swapchain_format,
       .imageColorSpace = display->swapchain_color_space,
       .imageExtent = {.width = static_cast<uint32_t>(window_width),
@@ -111,6 +111,10 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
       log_ftl("Failed to create image acquisition semaphore.");
     }
   }
+
+  camera_position = glm::vec3(0.0, -5.0, -5.0);
+  camera_pan = 0.0;
+  camera_tilt = 0.0;
 }
 
 SdlViewport::~SdlViewport() {
@@ -182,12 +186,15 @@ void SdlViewport::beginRenderPass(VkCommandBuffer command_buffer,
 void SdlViewport::writeUniform(ViewportUniform* uniform) {
   log_zone;
 
-  // TODO(marceline-cramer) Add WASD+Mouse control
+  glm::quat camera_orientation =
+      glm::angleAxis((float)M_PI - camera_tilt, glm::vec3(1.0, 0.0, 0.0)) *
+      glm::angleAxis(camera_pan, glm::vec3(0.0, 1.0, 0.0));
+
   uniform->view =
-      glm::lookAt(glm::vec3(2.0, 2.0, 2.0), glm::vec3(0.0, 0.0, 0.0),
-                  glm::vec3(0.0, 1.0, 0.0));
+      glm::translate(glm::mat4(camera_orientation), -camera_position);
+
   uniform->projection = glm::perspective(
-      glm::radians(90.0f),
+      glm::radians(80.0f),
       static_cast<float>(image_width) / static_cast<float>(image_height), 0.01f,
       1000.0f);
 
@@ -207,6 +214,26 @@ void SdlViewport::release(VkSemaphore on_render_finished) {
 
   // TODO(marceline-cramer) Better queue management
   vkQueuePresentKHR(gpu->graphics_queue, &present_info);
+}
+
+void SdlViewport::moveCamera(float pan, float tilt, float truck, float dolly, float boom) {
+  camera_pan += -pan;
+  camera_tilt += -tilt;
+
+  if (camera_tilt <= -M_PI_2) camera_tilt = -M_PI_2;
+  if (camera_tilt >= M_PI_2) camera_tilt = M_PI_2;
+
+  auto dollyDirection =
+      glm::vec3(glm::cos(camera_pan), 0.0, glm::sin(camera_pan));
+  auto forwardDirection = glm::vec2(-glm::sin(camera_pan), glm::cos(camera_pan));
+  auto upDirection = glm::vec2(-glm::sin(camera_tilt), glm::cos(camera_tilt));
+  auto truckDirection =
+      glm::vec3(forwardDirection.x * upDirection.y, upDirection.x,
+                forwardDirection.y * upDirection.y);
+
+  camera_position += truckDirection * truck;
+  camera_position += dollyDirection * dolly;
+  camera_position.y += boom;
 }
 
 }  // namespace mondradiko

@@ -32,6 +32,9 @@ SdlDisplay::SdlDisplay() {
   if (!window) {
     log_ftl("Failed to create SDL window.");
   }
+
+  SDL_SetRelativeMouseMode(SDL_TRUE);
+  key_state = SDL_GetKeyboardState(nullptr);
 }
 
 SdlDisplay::~SdlDisplay() {
@@ -193,12 +196,21 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
   poll_info->should_quit = false;
   poll_info->should_run = true;
 
+  mouse_x = 0.0;
+  mouse_y = 0.0;
+
   SDL_Event e;
   while (SDL_PollEvent(&e) != 0) {
     switch (e.type) {
       case SDL_QUIT: {
         poll_info->should_quit = true;
         poll_info->should_run = false;
+        break;
+      }
+
+      case SDL_MOUSEMOTION: {
+        mouse_x += e.motion.xrel;
+        mouse_y += e.motion.yrel;
         break;
       }
 
@@ -237,6 +249,33 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 
   // TODO(marceline-cramer) SDL delta time
   if (main_viewport != nullptr) {
+    float camera_speed = 0.1;
+
+    float truck = 0.0;
+
+    if (key_state[SDL_SCANCODE_W]) {
+      truck = camera_speed;
+    } else if (key_state[SDL_SCANCODE_S]) {
+      truck = -camera_speed;
+    }
+
+    float dolly = 0.0;
+
+    if (key_state[SDL_SCANCODE_D]) {
+      dolly = camera_speed;
+    } else if (key_state[SDL_SCANCODE_A]) {
+      dolly = -camera_speed;
+    }
+
+    float boom = 0.0;
+
+    if (key_state[SDL_SCANCODE_LSHIFT]) {
+      boom = camera_speed;
+    } else if (key_state[SDL_SCANCODE_SPACE]) {
+      boom = -camera_speed;
+    }
+
+    main_viewport->moveCamera(mouse_x * 0.003, mouse_y * 0.003, truck, dolly, boom);
     frame_info->should_render = true;
   } else {
     frame_info->should_render = false;

@@ -62,6 +62,11 @@ class SdlDisplay : public DisplayInterface {
   // TODO(marceline-cramer) Move this into GpuInstance
   uint32_t present_queue_family;
   VkQueue present_queue = VK_NULL_HANDLE;
+
+  double mouse_x;
+  double mouse_y;
+
+  const Uint8* key_state;
 };
 
 }  // namespace mondradiko

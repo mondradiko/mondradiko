@@ -32,6 +32,8 @@ class SdlViewport : public ViewportInterface {
   void writeUniform(ViewportUniform*) final;
   void release(VkSemaphore) final;
 
+  void moveCamera(float, float, float, float, float);
+
  private:
   GpuInstance* gpu;
   SdlDisplay* display;
@@ -45,6 +47,10 @@ class SdlViewport : public ViewportInterface {
   uint32_t current_image_index;
   uint32_t image_width;
   uint32_t image_height;
+
+  glm::vec3 camera_position;
+  float camera_pan;
+  float camera_tilt;
 };
 
 }  // namespace mondradiko
