@@ -25,8 +25,8 @@ AssetBundle::AssetBundle(const std::filesystem::path& bundle_root)
     : bundle_root(bundle_root) {}
 
 AssetBundle::~AssetBundle() {
-  for (const auto& lump : lump_cache) {
-    if (lump) delete lump;
+  for (const auto& cached_lump : lump_cache) {
+    if (cached_lump.lump) delete cached_lump.lump;
   }
 }
 
@@ -65,7 +65,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       return AssetResult::BadSize;
     }
 
-    lump_cache.resize(header.lump_count, nullptr);
+    lump_cache.resize(header.lump_count, {.lump = nullptr});
 
     for (uint32_t lump_index = 0; lump_index < header.lump_count;
          lump_index++) {
@@ -118,18 +118,11 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
         return AssetResult::BadSize;
       }
 
-      AssetLump lump(lump_path);
-
-      if (!lump.assertLength(asset_offset)) {
-        registry_file.close();
-        log_err("Lump size assert failed");
-        return AssetResult::BadSize;
-      }
-
-      if (!lump.assertHash(lump_entry.hash_method, lump_entry.checksum)) {
-        registry_file.close();
-        return AssetResult::InvalidChecksum;
-      }
+      lump_cache[lump_index].lump = nullptr;
+      lump_cache[lump_index].expected_length = asset_offset;
+      lump_cache[lump_index].hash_method = lump_entry.hash_method;
+      lump_cache[lump_index].checksum = lump_entry.checksum;
+      lump_cache[lump_index].compression_method = lump_entry.compression_method;
     }
   } catch (std::ifstream::failure& e) {
     AssetResult result;
@@ -157,17 +150,26 @@ bool AssetBundle::loadAsset(ImmutableAsset* asset, AssetId id) {
   auto stored_asset = asset_lookup.find(id)->second;
   auto lump_index = stored_asset.lump_index;
 
-  AssetLump* lump = lump_cache[lump_index];
+  auto& cached_lump = lump_cache[lump_index];
 
-  if (lump == nullptr) {
-    lump = new AssetLump(bundle_root / generateLumpName(lump_index));
-    lump_cache[lump_index] = lump;
+  if (cached_lump.lump == nullptr) {
+    cached_lump.lump =
+        new AssetLump(bundle_root / generateLumpName(lump_index));
+
+    if (!cached_lump.lump->assertLength(cached_lump.expected_length)) {
+      return false;
+    }
+
+    if (!cached_lump.lump->assertHash(cached_lump.hash_method,
+                                      cached_lump.checksum)) {
+      return false;
+    }
+
+    cached_lump.lump->decompress(cached_lump.compression_method);
   }
 
-  // TODO(marceline-cramer) Pack lump data in cache
-  lump->decompress(LumpCompressionMethod::None);
-
-  return lump->loadAsset(asset, stored_asset.offset, stored_asset.size);
+  return cached_lump.lump->loadAsset(asset, stored_asset.offset,
+                                     stored_asset.size);
 }
 
 }  // namespace assets

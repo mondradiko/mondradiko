@@ -43,7 +43,16 @@ class AssetBundle {
   };
 
   std::unordered_map<AssetId, AssetLookupEntry> asset_lookup;
-  std::vector<AssetLump*> lump_cache;
+
+  struct LumpCacheEntry {
+    AssetLump* lump;
+    size_t expected_length;
+    LumpCompressionMethod compression_method;
+    LumpHashMethod hash_method;
+    LumpHash checksum;
+  };
+
+  std::vector<LumpCacheEntry> lump_cache;
 };
 
 }  // namespace assets
