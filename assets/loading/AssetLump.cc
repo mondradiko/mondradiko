@@ -62,33 +62,44 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
       log_inf("Hashing lump with xxHash");
 
       char buffer[ASSET_LOAD_CHUNK_SIZE];
-      XXH32_state_t* hash_state = XXH32_createState();
-      XXH32_reset(hash_state, 0);
+      XXH3_state_t* hash_state = XXH3_createState();
+      XXH3_64bits_reset(hash_state);
 
       while (!lump_file.eof()) {
         lump_file.read(buffer, sizeof(buffer));
         auto bytes_read = lump_file.gcount();
-        if (bytes_read) XXH32_update(hash_state, buffer, bytes_read);
+        if (bytes_read) XXH3_64bits_update(hash_state, buffer, bytes_read);
       }
 
-      computed_hash = XXH32_digest(hash_state);
-      XXH32_freeState(hash_state);
+      computed_hash = XXH3_64bits_digest(hash_state);
+      XXH3_freeState(hash_state);
       break;
     }
 
-    default: {
-      log_wrn("Unrecognized lump hash method");
-    }
-
     case LumpHashMethod::None: {
-      log_dbg("Lump has unrecognized or no hash method; approving");
+      log_dbg("Lump has no hash method; approving");
       lump_file.close();
       return true;
+    }
+
+    default: {
+      log_err("Unrecognized lump hash method");
+      lump_file.close();
+      return false;
     }
   }  // switch (hash_method)
 
   lump_file.close();
-  return computed_hash == checksum;
+
+  if (computed_hash == checksum) {
+    log_inf("Checksum passed with value 0x%08x", checksum);
+    return true;
+  } else {
+    log_err(
+        "Calculated checksum 0x%08x does not match expected checksum 0x%08x",
+        computed_hash, checksum);
+    return false;
+  }
 }
 
 void AssetLump::decompress(LumpCompressionMethod compression_method) {
