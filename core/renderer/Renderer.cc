@@ -30,7 +30,7 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
   {
     log_zone_named("Create render pass");
 
-    VkAttachmentDescription swapchainAttachmentDescription{
+    VkAttachmentDescription swapchain_attachment_description{
         .format = display->getSwapchainFormat(),
         .samples = VK_SAMPLE_COUNT_1_BIT,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -38,16 +38,29 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
         .finalLayout = display->getFinalLayout()};
 
-    VkAttachmentReference swapchainTargetReference{
+    VkAttachmentDescription depth_attachment_description{
+        .format = display->getDepthFormat(),
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+
+    VkAttachmentReference swapchain_attachment_reference{
         .attachment = 0, .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
 
-    std::vector<VkAttachmentDescription> attachments = {
-        swapchainAttachmentDescription};
+    VkAttachmentReference depth_attachment_reference{
+        .attachment = 1,
+        .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
 
-    VkSubpassDescription compositeSubpassDescription{
+    std::vector<VkAttachmentDescription> attachments = {
+        swapchain_attachment_description, depth_attachment_description};
+
+    VkSubpassDescription composite_subpass_description{
         .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
         .colorAttachmentCount = 1,
-        .pColorAttachments = &swapchainTargetReference};
+        .pColorAttachments = &swapchain_attachment_reference,
+        .pDepthStencilAttachment = &depth_attachment_reference};
 
     VkSubpassDependency swapchain_dependency = {
         .srcSubpass = VK_SUBPASS_EXTERNAL,
@@ -63,7 +76,7 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
         .attachmentCount = (uint32_t)attachments.size(),
         .pAttachments = attachments.data(),
         .subpassCount = 1,
-        .pSubpasses = &compositeSubpassDescription,
+        .pSubpasses = &composite_subpass_description,
         .dependencyCount = 1,
         .pDependencies = &swapchain_dependency};
 

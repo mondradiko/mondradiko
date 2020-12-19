@@ -159,6 +159,14 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
         .alphaToCoverageEnable = VK_FALSE,
         .alphaToOneEnable = VK_FALSE};
 
+    VkPipelineDepthStencilStateCreateInfo depth_stencil_info{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+        .depthTestEnable = VK_TRUE,
+        .depthWriteEnable = VK_TRUE,
+        .depthCompareOp = VK_COMPARE_OP_LESS,
+        .depthBoundsTestEnable = VK_FALSE,
+        .stencilTestEnable = VK_FALSE};
+
     VkPipelineColorBlendAttachmentState color_blend_attachment{
         .blendEnable = VK_FALSE,
         .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
@@ -187,7 +195,7 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
         .pViewportState = &viewport_info,
         .pRasterizationState = &rasterization_info,
         .pMultisampleState = &multisample_info,
-        .pDepthStencilState = nullptr,
+        .pDepthStencilState = &depth_stencil_info,
         .pColorBlendState = &color_blend_info,
         .pDynamicState = &dynamic_state_info,
         .layout = pipeline_layout,
