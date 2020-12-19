@@ -119,6 +119,28 @@ bool GpuInstance::findFormatFromOptions(const std::vector<VkFormat>* options,
   return false;
 }
 
+bool GpuInstance::findSupportedFormat(const std::vector<VkFormat>* options,
+                                      VkImageTiling tiling,
+                                      VkFormatFeatureFlags features,
+                                      VkFormat* selected) {
+  for (VkFormat format : *options) {
+    VkFormatProperties props;
+    vkGetPhysicalDeviceFormatProperties(physical_device, format, &props);
+
+    if (tiling == VK_IMAGE_TILING_LINEAR &&
+        (props.linearTilingFeatures & features) == features) {
+      *selected = format;
+      return true;
+    } else if (tiling == VK_IMAGE_TILING_OPTIMAL &&
+               (props.optimalTilingFeatures & features) == features) {
+      *selected = format;
+      return true;
+    }
+  }
+
+  return false;
+}
+
 VkCommandBuffer GpuInstance::beginSingleTimeCommands() {
   VkCommandBufferAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,

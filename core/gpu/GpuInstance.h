@@ -29,6 +29,8 @@ class GpuInstance {
 
   bool findFormatFromOptions(const std::vector<VkFormat>*,
                              const std::vector<VkFormat>*, VkFormat*);
+  bool findSupportedFormat(const std::vector<VkFormat>*, VkImageTiling,
+                           VkFormatFeatureFlags, VkFormat*);
   VkCommandBuffer beginSingleTimeCommands();
   void endSingleTimeCommands(VkCommandBuffer);
 

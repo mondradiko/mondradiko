@@ -49,10 +49,8 @@ TextureAsset::TextureAsset(assets::ImmutableAsset& asset, GpuInstance* gpu)
       }
 
       image = new GpuImage(gpu, k_texture, VK_IMAGE_USAGE_SAMPLED_BIT);
-      image->createView();
 
       ktxTexture_Destroy(k_texture);
-
       break;
     }
 
