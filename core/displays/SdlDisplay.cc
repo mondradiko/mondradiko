@@ -214,6 +214,27 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
         break;
       }
 
+      case SDL_MOUSEBUTTONDOWN: {
+        if (e.button.button == SDL_BUTTON_LEFT) {
+          SDL_SetRelativeMouseMode(SDL_TRUE);
+        }
+
+        break;
+      }
+
+      case SDL_KEYDOWN: {
+        switch (e.key.keysym.scancode) {
+          case SDL_SCANCODE_ESCAPE: {
+            SDL_SetRelativeMouseMode(SDL_FALSE);
+            break;
+          }
+
+          default:
+            break;
+        }  // switch (e.key)
+        break;
+      }
+
       case SDL_WINDOWEVENT: {
         switch (e.window.event) {
           case SDL_WINDOWEVENT_SIZE_CHANGED: {
@@ -249,33 +270,37 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 
   // TODO(marceline-cramer) SDL delta time
   if (main_viewport != nullptr) {
-    float camera_speed = 0.1;
+    if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
+      float camera_speed = 0.1;
 
-    float truck = 0.0;
+      float truck = 0.0;
 
-    if (key_state[SDL_SCANCODE_W]) {
-      truck = camera_speed;
-    } else if (key_state[SDL_SCANCODE_S]) {
-      truck = -camera_speed;
+      if (key_state[SDL_SCANCODE_W]) {
+        truck = camera_speed;
+      } else if (key_state[SDL_SCANCODE_S]) {
+        truck = -camera_speed;
+      }
+
+      float dolly = 0.0;
+
+      if (key_state[SDL_SCANCODE_D]) {
+        dolly = camera_speed;
+      } else if (key_state[SDL_SCANCODE_A]) {
+        dolly = -camera_speed;
+      }
+
+      float boom = 0.0;
+
+      if (key_state[SDL_SCANCODE_LSHIFT]) {
+        boom = camera_speed;
+      } else if (key_state[SDL_SCANCODE_SPACE]) {
+        boom = -camera_speed;
+      }
+
+      main_viewport->moveCamera(mouse_x * 0.003, mouse_y * 0.003, truck, dolly,
+                                boom);
     }
 
-    float dolly = 0.0;
-
-    if (key_state[SDL_SCANCODE_D]) {
-      dolly = camera_speed;
-    } else if (key_state[SDL_SCANCODE_A]) {
-      dolly = -camera_speed;
-    }
-
-    float boom = 0.0;
-
-    if (key_state[SDL_SCANCODE_LSHIFT]) {
-      boom = camera_speed;
-    } else if (key_state[SDL_SCANCODE_SPACE]) {
-      boom = -camera_speed;
-    }
-
-    main_viewport->moveCamera(mouse_x * 0.003, mouse_y * 0.003, truck, dolly, boom);
     frame_info->should_render = true;
   } else {
     frame_info->should_render = false;
