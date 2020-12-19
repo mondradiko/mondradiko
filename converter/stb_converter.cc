@@ -20,15 +20,17 @@
 
 namespace mondradiko {
 
-assets::AssetId stb_convert(assets::AssetBundleBuilder* builder) {
-  assets::AssetId texture_id = 0xFAFAFAFA;
+assets::AssetId stb_convert(assets::AssetBundleBuilder* builder,
+                            std::filesystem::path texture_path) {
+  if (!std::filesystem::exists(texture_path)) {
+    log_ftl("Texture %s does not exist", texture_path.c_str());
+  }
 
   int channels = 4;
 
   int width, height, file_channels;
-  unsigned char* texture_src = stbi_load(
-      "/home/marceline/Code/mondradiko/test-folder/Default_albedo.jpg", &width,
-      &height, &file_channels, channels);
+  unsigned char* texture_src = stbi_load(texture_path.c_str(), &width, &height,
+                                         &file_channels, channels);
 
   ktxTexture2* texture;
   ktxTextureCreateInfo create_info;
@@ -54,11 +56,10 @@ assets::AssetId stb_convert(assets::AssetBundleBuilder* builder) {
     log_ftl("KTX texture creation failed with error code %d", result);
   }
 
-  size_t src_size = width * height * 4;
+  size_t src_size = width * height * channels;
 
   ktxTexture_SetImageFromMemory(ktxTexture(texture), 0, 0, 0, texture_src,
                                 src_size);
-
 
   ktx_uint8_t* texture_data;
   ktx_size_t texture_size;
@@ -78,7 +79,8 @@ assets::AssetId stb_convert(assets::AssetBundleBuilder* builder) {
   ktxTexture_Destroy(ktxTexture(texture));
   stbi_image_free(texture_src);
 
-  builder->addAsset(texture_id, &texture_asset);
+  assets::AssetId texture_id;
+  builder->addAsset(&texture_id, &texture_asset);
   return texture_id;
 }
 

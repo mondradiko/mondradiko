@@ -11,11 +11,13 @@
 
 #pragma once
 
+#include <filesystem>
+
 #include "assets/format/AssetTypes.h"
 #include "assets/saving/AssetBundleBuilder.h"
 
 namespace mondradiko {
 
-assets::AssetId stb_convert(assets::AssetBundleBuilder*);
+assets::AssetId stb_convert(assets::AssetBundleBuilder*, std::filesystem::path);
 
 }
