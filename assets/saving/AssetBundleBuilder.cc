@@ -103,8 +103,8 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
 
     {
       AssetRegistryLumpEntry lump_entry;
-      lump_entry.checksum = 0;  // TODO(marceline-cramer) Generate checksums
-      lump_entry.hash_method = LumpHashMethod::None;
+      lump_entry.checksum = XXH3_64bits(lump.data, lump.total_size);
+      lump_entry.hash_method = LumpHashMethod::xxHash;
       lump_entry.compression_method = LumpCompressionMethod::None;
       lump_entry.asset_count = lump.assets.size();
       registry_file.write(reinterpret_cast<char*>(&lump_entry),
