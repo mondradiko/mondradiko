@@ -11,7 +11,6 @@
 
 #include "core/assets/MeshAsset.h"
 
-#include <iostream>
 #include <vector>
 
 #include "assets/format/MeshAsset.h"
@@ -25,9 +24,6 @@ namespace mondradiko {
 MeshAsset::MeshAsset(assets::ImmutableAsset& asset, GpuInstance* gpu) {
   assets::MeshHeader header;
   asset >> header;
-
-  std::cout << header.vertex_count << std::endl;
-  std::cout << header.index_count << std::endl;
 
   std::vector<MeshVertex> vertices(header.vertex_count);
   std::vector<MeshIndex> indices(header.index_count);

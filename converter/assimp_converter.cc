@@ -118,7 +118,7 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
     assets::MutableAsset material_asset;
 
     assets::MaterialHeader header;
-    header.albedo_factor = glm::vec4(1.0, 0.0, 1.0, 1.0);
+    header.albedo_factor = glm::vec4(1.0, 1.0, 1.0, 1.0);
     header.albedo_texture = stb_convert(builder, albedo_path);
 
     material_asset << header;
