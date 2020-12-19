@@ -53,6 +53,7 @@ class DisplayInterface {
 
   virtual VkFormat getSwapchainFormat() = 0;
   virtual VkImageLayout getFinalLayout() = 0;
+  virtual VkFormat getDepthFormat() = 0;
 
   virtual void pollEvents(DisplayPollEventsInfo*) = 0;
   virtual void beginFrame(DisplayBeginFrameInfo*) = 0;

@@ -38,6 +38,10 @@ class OpenXrDisplay : public DisplayInterface {
     // _COLOR_ATTACHMENT_OPTIMAL
     return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   }
+  VkFormat getDepthFormat() final {
+      // TODO(marceline-cramer) OxrDisplay depth image
+      return VK_FORMAT_D32_SFLOAT;
+  }
 
   void pollEvents(DisplayPollEventsInfo*) final;
   void beginFrame(DisplayBeginFrameInfo*) final;
