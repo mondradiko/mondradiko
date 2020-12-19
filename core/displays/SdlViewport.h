@@ -18,6 +18,7 @@
 namespace mondradiko {
 
 // Forward declarations
+class GpuImage;
 class GpuInstance;
 class Renderer;
 class SdlDisplay;
@@ -43,6 +44,7 @@ class SdlViewport : public ViewportInterface {
   std::vector<VkSemaphore> on_image_acquire;
 
   VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+  GpuImage* depth_image = nullptr;
   std::vector<ViewportImage> images;
   uint32_t current_image_index;
   uint32_t image_width;

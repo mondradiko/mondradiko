@@ -12,6 +12,7 @@
 #include "core/displays/SdlViewport.h"
 
 #include "core/displays/SdlDisplay.h"
+#include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/renderer/Renderer.h"
 #include "log/log.h"
@@ -53,6 +54,10 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
   image_width = window_width;
   image_height = window_height;
 
+  depth_image = new GpuImage(
+      gpu, display->getDepthFormat(), image_width, image_height,
+      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
   uint32_t image_count;
   vkGetSwapchainImagesKHR(gpu->device, swapchain, &image_count, nullptr);
   std::vector<VkImage> swapchain_images(image_count);
@@ -84,11 +89,14 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
       log_ftl("Failed to create swapchain image view.");
     }
 
+    std::array<VkImageView, 2> framebuffer_attachments = {
+        images[i].image_view, depth_image->view};
+
     VkFramebufferCreateInfo framebufferCreateInfo{
         .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
         .renderPass = renderer->composite_pass,
-        .attachmentCount = 1,
-        .pAttachments = &images[i].image_view,
+        .attachmentCount = framebuffer_attachments.size(),
+        .pAttachments = framebuffer_attachments.data(),
         .width = image_width,
         .height = image_height,
         .layers = 1};
@@ -131,6 +139,8 @@ SdlViewport::~SdlViewport() {
     vkDestroyFramebuffer(gpu->device, image.framebuffer, nullptr);
   }
 
+  if (depth_image != nullptr) delete depth_image;
+
   if (swapchain != VK_NULL_HANDLE) {
     vkDestroySwapchainKHR(gpu->device, swapchain, nullptr);
   }
@@ -155,9 +165,10 @@ void SdlViewport::beginRenderPass(VkCommandBuffer command_buffer,
                                   VkRenderPass render_pass) {
   log_zone;
 
-  std::array<VkClearValue, 1> clear_values;
+  std::array<VkClearValue, 2> clear_values;
 
   clear_values[0].color = {0.2, 0.0, 0.0, 1.0};
+  clear_values[1].depthStencil = {1.0f};
 
   VkRenderPassBeginInfo renderPassInfo{
       .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -216,7 +227,8 @@ void SdlViewport::release(VkSemaphore on_render_finished) {
   vkQueuePresentKHR(gpu->graphics_queue, &present_info);
 }
 
-void SdlViewport::moveCamera(float pan, float tilt, float truck, float dolly, float boom) {
+void SdlViewport::moveCamera(float pan, float tilt, float truck, float dolly,
+                             float boom) {
   camera_pan += -pan;
   camera_tilt += -tilt;
 
@@ -225,7 +237,8 @@ void SdlViewport::moveCamera(float pan, float tilt, float truck, float dolly, fl
 
   auto dollyDirection =
       glm::vec3(glm::cos(camera_pan), 0.0, glm::sin(camera_pan));
-  auto forwardDirection = glm::vec2(-glm::sin(camera_pan), glm::cos(camera_pan));
+  auto forwardDirection =
+      glm::vec2(-glm::sin(camera_pan), glm::cos(camera_pan));
   auto upDirection = glm::vec2(-glm::sin(camera_tilt), glm::cos(camera_tilt));
   auto truckDirection =
       glm::vec3(forwardDirection.x * upDirection.y, upDirection.x,

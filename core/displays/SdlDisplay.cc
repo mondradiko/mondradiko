@@ -170,6 +170,17 @@ bool SdlDisplay::createSession(GpuInstance* _gpu) {
 
   gpu = _gpu;
 
+  std::vector<VkFormat> depth_format_options = {VK_FORMAT_D32_SFLOAT,
+                                                VK_FORMAT_D32_SFLOAT_S8_UINT,
+                                                VK_FORMAT_D24_UNORM_S8_UINT};
+
+  if (!gpu->findSupportedFormat(&depth_format_options, VK_IMAGE_TILING_OPTIMAL,
+                                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                &depth_format)) {
+    log_err("Failed to find supported depth format.");
+    return false;
+  }
+
   return true;
 }
 

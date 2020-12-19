@@ -38,6 +38,7 @@ class SdlDisplay : public DisplayInterface {
     // _PRESENT_SRC_KHR
     return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
   }
+  VkFormat getDepthFormat() final { return depth_format; }
 
   void pollEvents(DisplayPollEventsInfo*) final;
   void beginFrame(DisplayBeginFrameInfo*) final;
@@ -53,6 +54,8 @@ class SdlDisplay : public DisplayInterface {
   VkFormat swapchain_format;
   VkColorSpaceKHR swapchain_color_space;
   VkPresentModeKHR swapchain_present_mode;
+
+  VkFormat depth_format;
 
   SdlViewport* main_viewport = nullptr;
 
