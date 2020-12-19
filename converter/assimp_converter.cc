@@ -23,18 +23,18 @@
 #include "assets/format/MaterialAsset.h"
 #include "assets/format/MeshAsset.h"
 #include "converter/stb_converter.h"
+#include "log/log.h"
 
 namespace mondradiko {
 
 bool convert_assimp(assets::AssetBundleBuilder* builder,
-                    const char* asset_name) {
+                    std::filesystem::path scene_path) {
   Assimp::Importer importer;
-  const aiScene* scene =
-      importer.ReadFile(asset_name, aiProcessPreset_TargetRealtime_Fast);
+  const aiScene* scene = importer.ReadFile(scene_path.c_str(),
+                                           aiProcessPreset_TargetRealtime_Fast);
 
   if (!scene) {
-    std::cerr << "Failed to read scene." << std::endl;
-    return false;
+    log_ftl("Failed to load Assimp scene from %s", scene_path.c_str());
   }
 
   for (uint32_t mesh_index = 0; mesh_index < scene->mNumMeshes; mesh_index++) {
@@ -104,31 +104,28 @@ bool convert_assimp(assets::AssetBundleBuilder* builder,
       }
     }
 
-    builder->addAsset(0xdeadbeef, &mesh_asset);
+    assets::AssetId mesh_id;
+    builder->addAsset(&mesh_id, &mesh_asset);
+    log_inf("Created mesh asset with ID 0x%08x", mesh_id);
   }
 
-  assets::AssetId texture_asset = stb_convert(builder);
-
   {
+    // TODO(marceline-cramer) Replace Assimp
+    std::filesystem::path albedo_path =
+        scene_path.parent_path() / "Default_albedo.jpg";
+    log_inf("Loading albedo texture from %s", albedo_path.c_str());
+
     assets::MutableAsset material_asset;
 
     assets::MaterialHeader header;
     header.albedo_factor = glm::vec4(1.0, 0.0, 1.0, 1.0);
-    header.albedo_texture = texture_asset;
+    header.albedo_texture = stb_convert(builder, albedo_path);
 
     material_asset << header;
-    builder->addAsset(0xAAAAAAAA, &material_asset);
-  }
 
-  {
-    assets::MutableAsset material_asset;
-
-    assets::MaterialHeader header;
-    header.albedo_factor = glm::vec4(0.0, 1.0, 0.0, 1.0);
-    header.albedo_texture = texture_asset;
-
-    material_asset << header;
-    builder->addAsset(0xAAAAAAAB, &material_asset);
+    assets::AssetId material_id;
+    builder->addAsset(&material_id, &material_asset);
+    log_inf("Created material asset with ID 0x%08x", material_id);
   }
 
   return true;

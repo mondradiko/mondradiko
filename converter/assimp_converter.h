@@ -11,10 +11,12 @@
 
 #pragma once
 
+#include <filesystem>
+
 #include "converter/converter.h"
 
 namespace mondradiko {
 
-bool convert_assimp(assets::AssetBundleBuilder*, const char*);
+bool convert_assimp(assets::AssetBundleBuilder*, std::filesystem::path);
 
 };
