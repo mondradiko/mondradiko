@@ -41,12 +41,15 @@ GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
       .initialLayout = layout};
 
   VmaAllocationCreateInfo allocationCreateInfo{
-      .flags = VMA_ALLOCATION_CREATE_MAPPED_BIT, .usage = memory_usage};
+      .flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
+      .usage = memory_usage};
 
   if (vmaCreateImage(gpu->allocator, &imageCreateInfo, &allocationCreateInfo,
                      &image, &allocation, &allocation_info) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan image.");
   }
+
+  createView();
 }
 
 GpuImage::GpuImage(GpuInstance* gpu, ktxTexture* texture,
@@ -68,6 +71,8 @@ GpuImage::GpuImage(GpuInstance* gpu, ktxTexture* texture,
   width = ktx_texture.width;
   height = ktx_texture.height;
   image = ktx_texture.image;
+
+  createView();
 }
 
 GpuImage::~GpuImage() {
@@ -81,7 +86,7 @@ GpuImage::~GpuImage() {
   }
 }
 
-void GpuImage::writeData(void* src) {
+/*void GpuImage::writeData(void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
   GpuBuffer stage(gpu, allocation_info.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -104,7 +109,7 @@ void GpuImage::writeData(void* src) {
                          &region);
 
   gpu->endSingleTimeCommands(commandBuffer);
-}
+}*/
 
 void GpuImage::transitionLayout(VkImageLayout targetLayout) {
   VkImageMemoryBarrier barrier{
@@ -150,12 +155,29 @@ void GpuImage::transitionLayout(VkImageLayout targetLayout) {
 }
 
 void GpuImage::createView() {
+  VkImageAspectFlags aspect_mask;
+
+  switch(format) {
+    case VK_FORMAT_D32_SFLOAT:
+    case VK_FORMAT_D32_SFLOAT_S8_UINT:
+    case VK_FORMAT_D24_UNORM_S8_UINT: {
+      aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+      break;
+    }
+
+    default: {
+      aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+      break;
+    }
+  }
+
+
   VkImageViewCreateInfo viewInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
       .image = image,
       .viewType = VK_IMAGE_VIEW_TYPE_2D,
       .format = format,
-      .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+      .subresourceRange = {.aspectMask = aspect_mask,
                            .baseMipLevel = 0,
                            .levelCount = 1,
                            .baseArrayLayer = 0,

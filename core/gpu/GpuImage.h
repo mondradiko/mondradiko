@@ -26,9 +26,8 @@ class GpuImage {
   GpuImage(GpuInstance*, ktxTexture*, VkImageUsageFlags);
   ~GpuImage();
 
-  void writeData(void*);
+  // void writeData(void*);
   void transitionLayout(VkImageLayout);
-  void createView();
 
   VkFormat format;
   VkImageLayout layout;
@@ -45,6 +44,8 @@ class GpuImage {
 
  private:
   GpuInstance* gpu;
+
+  void createView();
 };
 
 }  // namespace mondradiko
