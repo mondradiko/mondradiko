@@ -1,6 +1,9 @@
 # Copyright (c) 2020 Marceline Cramer
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+# TODO(marceline-cramer) Configure GameNetworkingSockets
+add_subdirectory(GameNetworkingSockets)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(ASSIMP REQUIRED assimp)
 pkg_check_modules(PHYSFS REQUIRED physfs)
@@ -22,6 +25,9 @@ set(MONDRADIKO_LIB_SRC
 )
 
 add_library(mondradiko-lib STATIC ${MONDRADIKO_LIB_SRC})
+
+target_link_libraries(mondradiko-lib PUBLIC GameNetworkingSockets)
+target_include_directories(mondradiko-lib PUBLIC GameNetworkingSockets/include)
 
 target_link_libraries(mondradiko-lib PUBLIC ${Vulkan_LIBRARIES})
 target_include_directories(mondradiko-lib PUBLIC ${Vulkan_INCLUDE_DIRS})

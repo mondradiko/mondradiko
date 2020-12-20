@@ -12,19 +12,22 @@
 
 #pragma once
 
-#include "core/network/NetworkShared.h"
+#include "steam/isteamnetworkingsockets.h"
 
 namespace mondradiko {
 
 // Forward declarations
 class Scene;
 
-class NetworkServer : public NetworkShared {
+class NetworkServer {
  public:
   NetworkServer(Scene*, const char*, int);
   ~NetworkServer();
+
  private:
   Scene* scene;
+
+  ISteamNetworkingSockets* sockets;
 };
 
 }  // namespace mondradiko

@@ -14,8 +14,6 @@
 
 #include <queue>
 
-#include "core/network/NetworkShared.h"
-
 namespace mondradiko {
 
 // Forward declarations
@@ -29,7 +27,7 @@ struct ClientEvent {
 
 enum class ClientState { Disconnected, Connecting, Authenticating, Connected };
 
-class NetworkClient : public NetworkShared {
+class NetworkClient {
  public:
   NetworkClient(Scene*, const char*, int);
   ~NetworkClient();
@@ -42,6 +40,9 @@ class NetworkClient : public NetworkShared {
 
  private:
   Scene* scene;
+
+  bool connect(const char*, int) { return true; }
+  bool authenticate() { return true; }
 
   std::queue<ClientEvent> event_queue;
 };
