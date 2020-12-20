@@ -1,5 +1,5 @@
 /**
- * @file MeshPipeline.h
+ * @file MeshPass.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Creates and renders MeshRendererComponents, and all its required
  * assets.
@@ -36,10 +36,10 @@ struct MeshUniform {
   glm::mat4 model;
 };
 
-class MeshPipeline {
+class MeshPass {
  public:
-  MeshPipeline(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
-  ~MeshPipeline();
+  MeshPass(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
+  ~MeshPass();
 
   void createFrameData(MeshPassFrameData&);
   void destroyFrameData(MeshPassFrameData&);

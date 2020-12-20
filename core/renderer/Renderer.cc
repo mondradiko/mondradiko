@@ -18,7 +18,7 @@
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuVector.h"
-#include "core/renderer/MeshPipeline.h"
+#include "core/renderer/MeshPass.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -96,7 +96,7 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
   {
     log_zone_named("Create pipelines");
 
-    mesh_pipeline = new MeshPipeline(gpu, viewport_layout, composite_pass, 0);
+    mesh_pass = new MeshPass(gpu, viewport_layout, composite_pass, 0);
   }
 
   {
@@ -141,7 +141,7 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
           // TODO(marceline-cramer) Better descriptor management
           gpu, sizeof(ViewportUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
-      mesh_pipeline->createFrameData(frame.mesh_pass);
+      mesh_pass->createFrameData(frame.mesh_pass);
     }
   }
 }
@@ -152,7 +152,7 @@ Renderer::~Renderer() {
   vkDeviceWaitIdle(gpu->device);
 
   for (auto& frame : frames_in_flight) {
-    mesh_pipeline->destroyFrameData(frame.mesh_pass);
+    mesh_pass->destroyFrameData(frame.mesh_pass);
 
     if (frame.viewports != nullptr) delete frame.viewports;
     if (frame.on_render_finished != VK_NULL_HANDLE)
@@ -162,7 +162,7 @@ Renderer::~Renderer() {
     if (frame.descriptor_pool != nullptr) delete frame.descriptor_pool;
   }
 
-  if (mesh_pipeline != nullptr) delete mesh_pipeline;
+  if (mesh_pass != nullptr) delete mesh_pass;
 
   if (viewport_layout != nullptr) delete viewport_layout;
 
@@ -218,8 +218,8 @@ void Renderer::renderFrame(entt::registry& registry,
     viewport_descriptor = frame->descriptor_pool->allocate(viewport_layout);
     viewport_descriptor->updateDynamicBuffer(0, frame->viewports);
 
-    mesh_pipeline->allocateDescriptors(registry, frame->mesh_pass, asset_pool,
-                                       frame->descriptor_pool);
+    mesh_pass->allocateDescriptors(registry, frame->mesh_pass, asset_pool,
+                                   frame->descriptor_pool);
   }
 
   {
@@ -235,9 +235,9 @@ void Renderer::renderFrame(entt::registry& registry,
          viewport_index++) {
       viewports[viewport_index]->beginRenderPass(frame->command_buffer,
                                                  composite_pass);
-      mesh_pipeline->render(registry, frame->mesh_pass, asset_pool,
-                            frame->command_buffer, viewport_descriptor,
-                            viewport_index);
+      mesh_pass->render(registry, frame->mesh_pass, asset_pool,
+                        frame->command_buffer, viewport_descriptor,
+                        viewport_index);
       vkCmdEndRenderPass(frame->command_buffer);
     }
 

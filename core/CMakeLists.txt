@@ -29,7 +29,7 @@ set(MONDRADIKO_CORE_SRC
   gpu/GpuImage.cc
   gpu/GpuInstance.cc
   gpu/GpuShader.cc
-  renderer/MeshPipeline.cc
+  renderer/MeshPass.cc
   renderer/Renderer.cc
   network/NetworkClient.cc
   network/NetworkServer.cc

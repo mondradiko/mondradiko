@@ -26,7 +26,7 @@ class GpuDescriptorPool;
 class GpuDescriptorSetLayout;
 class GpuInstance;
 class GpuVector;
-class MeshPipeline;
+class MeshPass;
 
 struct FramePushConstant {
   uint32_t view_index;
@@ -44,7 +44,7 @@ class Renderer {
 
   GpuDescriptorSetLayout* viewport_layout = nullptr;
 
-  MeshPipeline* mesh_pipeline = nullptr;
+  MeshPass* mesh_pass = nullptr;
 
  private:
   DisplayInterface* display;

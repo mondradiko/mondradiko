@@ -1,5 +1,5 @@
 /**
- * @file MeshPipeline.cc
+ * @file MeshPass.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Creates and renders MeshRendererComponents, and all its required
  * assets.
@@ -10,7 +10,7 @@
  *
  */
 
-#include "core/renderer/MeshPipeline.h"
+#include "core/renderer/MeshPass.h"
 
 #include <vector>
 
@@ -31,9 +31,8 @@
 
 namespace mondradiko {
 
-MeshPipeline::MeshPipeline(GpuInstance* gpu,
-                           GpuDescriptorSetLayout* viewport_layout,
-                           VkRenderPass render_pass, uint32_t subpass_index)
+MeshPass::MeshPass(GpuInstance* gpu, GpuDescriptorSetLayout* viewport_layout,
+                   VkRenderPass render_pass, uint32_t subpass_index)
     : gpu(gpu) {
   log_zone;
 
@@ -212,7 +211,7 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
   }
 }
 
-MeshPipeline::~MeshPipeline() {
+MeshPass::~MeshPass() {
   log_zone;
 
   if (texture_sampler != VK_NULL_HANDLE)
@@ -226,7 +225,7 @@ MeshPipeline::~MeshPipeline() {
   if (mesh_layout != nullptr) delete mesh_layout;
 }
 
-void MeshPipeline::createFrameData(MeshPassFrameData& frame) {
+void MeshPass::createFrameData(MeshPassFrameData& frame) {
   log_zone;
 
   frame.material_buffer = new GpuVector(gpu, sizeof(MaterialUniform),
@@ -236,15 +235,15 @@ void MeshPipeline::createFrameData(MeshPassFrameData& frame) {
                                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 }
 
-void MeshPipeline::destroyFrameData(MeshPassFrameData& frame) {
+void MeshPass::destroyFrameData(MeshPassFrameData& frame) {
   if (frame.material_buffer != nullptr) delete frame.material_buffer;
   if (frame.mesh_buffer != nullptr) delete frame.mesh_buffer;
 }
 
-void MeshPipeline::allocateDescriptors(entt::registry& registry,
-                                       MeshPassFrameData& frame,
-                                       const AssetPool* asset_pool,
-                                       GpuDescriptorPool* descriptor_pool) {
+void MeshPass::allocateDescriptors(entt::registry& registry,
+                                   MeshPassFrameData& frame,
+                                   const AssetPool* asset_pool,
+                                   GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
   std::vector<MaterialUniform> material_uniforms;
@@ -305,11 +304,11 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
   }
 }
 
-void MeshPipeline::render(entt::registry& registry, MeshPassFrameData& frame,
-                          const AssetPool* asset_pool,
-                          VkCommandBuffer commandBuffer,
-                          GpuDescriptorSet* viewport_descriptor,
-                          uint32_t viewport_offset) {
+void MeshPass::render(entt::registry& registry, MeshPassFrameData& frame,
+                      const AssetPool* asset_pool,
+                      VkCommandBuffer commandBuffer,
+                      GpuDescriptorSet* viewport_descriptor,
+                      uint32_t viewport_offset) {
   log_zone;
 
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
