@@ -27,6 +27,7 @@ class GpuDescriptorSetLayout;
 class GpuInstance;
 class GpuVector;
 class MeshPass;
+class OverlayPass;
 
 struct FramePushConstant {
   uint32_t view_index;
@@ -45,6 +46,7 @@ class Renderer {
   GpuDescriptorSetLayout* viewport_layout = nullptr;
 
   MeshPass* mesh_pass = nullptr;
+  OverlayPass* overlay_pass = nullptr;
 
  private:
   DisplayInterface* display;

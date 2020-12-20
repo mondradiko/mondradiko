@@ -19,6 +19,7 @@
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuVector.h"
 #include "core/renderer/MeshPass.h"
+#include "core/renderer/OverlayPass.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -97,6 +98,7 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
     log_zone_named("Create pipelines");
 
     mesh_pass = new MeshPass(gpu, viewport_layout, composite_pass, 0);
+    overlay_pass = new OverlayPass(gpu);
   }
 
   {
@@ -142,6 +144,7 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
           gpu, sizeof(ViewportUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
       mesh_pass->createFrameData(frame.mesh_pass);
+      overlay_pass->createFrameData(frame.overlay_pass);
     }
   }
 }
@@ -153,6 +156,7 @@ Renderer::~Renderer() {
 
   for (auto& frame : frames_in_flight) {
     mesh_pass->destroyFrameData(frame.mesh_pass);
+    overlay_pass->destroyFrameData(frame.overlay_pass);
 
     if (frame.viewports != nullptr) delete frame.viewports;
     if (frame.on_render_finished != VK_NULL_HANDLE)
@@ -220,6 +224,8 @@ void Renderer::renderFrame(entt::registry& registry,
 
     mesh_pass->allocateDescriptors(registry, frame->mesh_pass, asset_pool,
                                    frame->descriptor_pool);
+    overlay_pass->allocateDescriptors(registry, frame->overlay_pass, asset_pool,
+                                      frame->descriptor_pool);
   }
 
   {
@@ -238,6 +244,9 @@ void Renderer::renderFrame(entt::registry& registry,
       mesh_pass->render(registry, frame->mesh_pass, asset_pool,
                         frame->command_buffer, viewport_descriptor,
                         viewport_index);
+      overlay_pass->render(registry, frame->overlay_pass, asset_pool,
+                           frame->command_buffer, viewport_descriptor,
+                           viewport_index);
       vkCmdEndRenderPass(frame->command_buffer);
     }
 

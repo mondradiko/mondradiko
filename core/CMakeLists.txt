@@ -30,6 +30,7 @@ set(MONDRADIKO_CORE_SRC
   gpu/GpuInstance.cc
   gpu/GpuShader.cc
   renderer/MeshPass.cc
+  renderer/OverlayPass.cc
   renderer/Renderer.cc
   network/NetworkClient.cc
   network/NetworkServer.cc

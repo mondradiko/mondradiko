@@ -13,7 +13,7 @@
 
 #include <unordered_map>
 
-#include "core/assets/Asset.h"
+#include "core/assets/AssetPool.h"
 #include "core/components/Component.h"
 #include "core/common/api_headers.h"
 
@@ -36,6 +36,8 @@ struct MeshPassFrameData {
   std::unordered_map<EntityId, uint32_t> meshes;
 };
 
+struct OverlayPassFrameData {};
+
 struct PipelinedFrameData {
   // TODO(marceline-cramer) Use command pool per frame, per thread
   VkCommandBuffer command_buffer;
@@ -46,6 +48,7 @@ struct PipelinedFrameData {
   GpuVector* viewports;
 
   MeshPassFrameData mesh_pass;
+  OverlayPassFrameData overlay_pass;
 };
 
 }  // namespace mondradiko
