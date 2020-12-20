@@ -17,8 +17,9 @@
 #include <unordered_map>
 
 #include "core/assets/AssetPool.h"
-#include "core/components/Component.h"
 #include "core/common/api_headers.h"
+#include "core/components/Component.h"
+#include "core/renderer/RenderPass.h"
 
 namespace mondradiko {
 
@@ -40,10 +41,12 @@ class MeshPipeline {
   MeshPipeline(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
   ~MeshPipeline();
 
-  void allocateDescriptors(entt::registry&, const AssetPool*,
-                           GpuDescriptorPool*);
-  void render(entt::registry&, const AssetPool*, VkCommandBuffer,
-              GpuDescriptorSet*, uint32_t);
+  void createFrameData(MeshPassFrameData&);
+  void destroyFrameData(MeshPassFrameData&);
+  void allocateDescriptors(entt::registry&, MeshPassFrameData&,
+                           const AssetPool*, GpuDescriptorPool*);
+  void render(entt::registry&, MeshPassFrameData&, const AssetPool*,
+              VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 
   GpuDescriptorSetLayout* material_layout;
   GpuDescriptorSetLayout* texture_layout;
@@ -54,18 +57,8 @@ class MeshPipeline {
 
   VkSampler texture_sampler = VK_NULL_HANDLE;
 
-  GpuVector* material_buffer = nullptr;
-  GpuVector* mesh_buffer = nullptr;
-
  private:
   GpuInstance* gpu;
-
-  // Non-persistent frame data
-  GpuDescriptorSet* material_descriptor;
-  GpuDescriptorSet* mesh_descriptor;
-  std::unordered_map<AssetId, uint32_t> frame_materials;
-  std::unordered_map<AssetId, GpuDescriptorSet*> frame_textures;
-  std::unordered_map<EntityId, uint32_t> frame_meshes;
 };
 
 }  // namespace mondradiko

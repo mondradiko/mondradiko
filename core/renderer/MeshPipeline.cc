@@ -210,23 +210,11 @@ MeshPipeline::MeshPipeline(GpuInstance* gpu,
       log_ftl("Failed to create pipeline.");
     }
   }
-
-  {
-    log_zone_named("Create buffers");
-
-    material_buffer = new GpuVector(gpu, sizeof(MaterialUniform),
-                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-
-    mesh_buffer = new GpuVector(gpu, sizeof(MeshUniform),
-                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-  }
 }
 
 MeshPipeline::~MeshPipeline() {
   log_zone;
 
-  if (material_buffer != nullptr) delete material_buffer;
-  if (mesh_buffer != nullptr) delete mesh_buffer;
   if (texture_sampler != VK_NULL_HANDLE)
     vkDestroySampler(gpu->device, texture_sampler, nullptr);
   if (pipeline != VK_NULL_HANDLE)
@@ -238,7 +226,23 @@ MeshPipeline::~MeshPipeline() {
   if (mesh_layout != nullptr) delete mesh_layout;
 }
 
+void MeshPipeline::createFrameData(MeshPassFrameData& frame) {
+  log_zone;
+
+  frame.material_buffer = new GpuVector(gpu, sizeof(MaterialUniform),
+                                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+  frame.mesh_buffer = new GpuVector(gpu, sizeof(MeshUniform),
+                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+}
+
+void MeshPipeline::destroyFrameData(MeshPassFrameData& frame) {
+  if (frame.material_buffer != nullptr) delete frame.material_buffer;
+  if (frame.mesh_buffer != nullptr) delete frame.mesh_buffer;
+}
+
 void MeshPipeline::allocateDescriptors(entt::registry& registry,
+                                       MeshPassFrameData& frame,
                                        const AssetPool* asset_pool,
                                        GpuDescriptorPool* descriptor_pool) {
   log_zone;
@@ -246,8 +250,8 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
   std::vector<MaterialUniform> material_uniforms;
   std::vector<MeshUniform> mesh_uniforms;
 
-  frame_textures.clear();
-  frame_meshes.clear();
+  frame.textures.clear();
+  frame.meshes.clear();
 
   auto mesh_renderers =
       registry.view<MeshRendererComponent, TransformComponent>();
@@ -257,20 +261,20 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
 
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
-    auto iter = frame_textures.find(mesh_renderer.material_asset);
+    auto iter = frame.textures.find(mesh_renderer.material_asset);
 
-    if (iter == frame_textures.end()) {
+    if (iter == frame.textures.end()) {
       auto mesh_material =
           asset_pool->getAsset<MaterialAsset>(mesh_renderer.material_asset);
 
-      frame_materials.emplace(mesh_renderer.material_asset,
+      frame.materials.emplace(mesh_renderer.material_asset,
                               material_uniforms.size());
       material_uniforms.push_back(mesh_material->getUniform());
 
       GpuDescriptorSet* texture_descriptor =
           descriptor_pool->allocate(texture_layout);
       mesh_material->updateTextureDescriptor(texture_descriptor);
-      frame_textures.emplace(mesh_renderer.material_asset, texture_descriptor);
+      frame.textures.emplace(mesh_renderer.material_asset, texture_descriptor);
     }
 
     auto transform = mesh_renderers.get<TransformComponent>(e);
@@ -278,30 +282,31 @@ void MeshPipeline::allocateDescriptors(entt::registry& registry,
     MeshUniform mesh_uniform;
     mesh_uniform.model = transform.world_transform;
 
-    frame_meshes.emplace(e, mesh_uniforms.size());
+    frame.meshes.emplace(e, mesh_uniforms.size());
     mesh_uniforms.push_back(mesh_uniform);
   }
 
   if (material_uniforms.size() > 0) {
     for (uint32_t i = 0; i < material_uniforms.size(); i++) {
-      material_buffer->writeElement(i, material_uniforms[i]);
+      frame.material_buffer->writeElement(i, material_uniforms[i]);
     }
 
-    material_descriptor = descriptor_pool->allocate(material_layout);
-    material_descriptor->updateDynamicBuffer(0, material_buffer);
+    frame.material_descriptor = descriptor_pool->allocate(material_layout);
+    frame.material_descriptor->updateDynamicBuffer(0, frame.material_buffer);
   }
 
   if (mesh_uniforms.size() > 0) {
     for (uint32_t i = 0; i < mesh_uniforms.size(); i++) {
-      mesh_buffer->writeElement(i, mesh_uniforms[i]);
+      frame.mesh_buffer->writeElement(i, mesh_uniforms[i]);
     }
 
-    mesh_descriptor = descriptor_pool->allocate(mesh_layout);
-    mesh_descriptor->updateDynamicBuffer(0, mesh_buffer);
+    frame.mesh_descriptor = descriptor_pool->allocate(mesh_layout);
+    frame.mesh_descriptor->updateDynamicBuffer(0, frame.mesh_buffer);
   }
 }
 
-void MeshPipeline::render(entt::registry& registry, const AssetPool* asset_pool,
+void MeshPipeline::render(entt::registry& registry, MeshPassFrameData& frame,
+                          const AssetPool* asset_pool,
                           VkCommandBuffer commandBuffer,
                           GpuDescriptorSet* viewport_descriptor,
                           uint32_t viewport_offset) {
@@ -320,15 +325,15 @@ void MeshPipeline::render(entt::registry& registry, const AssetPool* asset_pool,
     auto mesh_renderer = mesh_renderers.get(e);
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
-    material_descriptor->updateDynamicOffset(
-        0, frame_materials.find(mesh_renderer.material_asset)->second);
-    material_descriptor->cmdBind(commandBuffer, pipeline_layout, 1);
+    frame.material_descriptor->updateDynamicOffset(
+        0, frame.materials.find(mesh_renderer.material_asset)->second);
+    frame.material_descriptor->cmdBind(commandBuffer, pipeline_layout, 1);
 
-    frame_textures.find(mesh_renderer.material_asset)
+    frame.textures.find(mesh_renderer.material_asset)
         ->second->cmdBind(commandBuffer, pipeline_layout, 2);
 
-    mesh_descriptor->updateDynamicOffset(0, frame_meshes.find(e)->second);
-    mesh_descriptor->cmdBind(commandBuffer, pipeline_layout, 3);
+    frame.mesh_descriptor->updateDynamicOffset(0, frame.meshes.find(e)->second);
+    frame.mesh_descriptor->cmdBind(commandBuffer, pipeline_layout, 3);
 
     auto mesh_asset = asset_pool->getAsset<MeshAsset>(mesh_renderer.mesh_asset);
 

@@ -16,6 +16,7 @@
 
 #include "core/assets/AssetPool.h"
 #include "core/common/api_headers.h"
+#include "core/renderer/RenderPass.h"
 
 namespace mondradiko {
 
@@ -26,16 +27,6 @@ class GpuDescriptorSetLayout;
 class GpuInstance;
 class GpuVector;
 class MeshPipeline;
-
-struct PipelinedFrameData {
-  // TODO(marceline-cramer) Use command pool per frame, per thread
-  VkCommandBuffer command_buffer;
-  VkSemaphore on_render_finished;
-  VkFence is_in_use;
-
-  GpuDescriptorPool* descriptor_pool;
-  GpuVector* viewports;
-};
 
 struct FramePushConstant {
   uint32_t view_index;

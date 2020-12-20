@@ -94,6 +94,12 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
   }
 
   {
+    log_zone_named("Create pipelines");
+
+    mesh_pipeline = new MeshPipeline(gpu, viewport_layout, composite_pass, 0);
+  }
+
+  {
     log_zone_named("Create frame data");
 
     // Pipeline two frames
@@ -134,13 +140,9 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
       frame.viewports = new GpuVector(
           // TODO(marceline-cramer) Better descriptor management
           gpu, sizeof(ViewportUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+      mesh_pipeline->createFrameData(frame.mesh_pass);
     }
-  }
-
-  {
-    log_zone_named("Create pipelines");
-
-    mesh_pipeline = new MeshPipeline(gpu, viewport_layout, composite_pass, 0);
   }
 }
 
@@ -150,6 +152,8 @@ Renderer::~Renderer() {
   vkDeviceWaitIdle(gpu->device);
 
   for (auto& frame : frames_in_flight) {
+    mesh_pipeline->destroyFrameData(frame.mesh_pass);
+
     if (frame.viewports != nullptr) delete frame.viewports;
     if (frame.on_render_finished != VK_NULL_HANDLE)
       vkDestroySemaphore(gpu->device, frame.on_render_finished, nullptr);
@@ -169,6 +173,11 @@ Renderer::~Renderer() {
 void Renderer::renderFrame(entt::registry& registry,
                            const AssetPool* asset_pool) {
   log_zone;
+
+  current_frame++;
+  if (current_frame >= frames_in_flight.size()) {
+    current_frame = 0;
+  }
 
   PipelinedFrameData* frame = &frames_in_flight[current_frame];
 
@@ -209,7 +218,7 @@ void Renderer::renderFrame(entt::registry& registry,
     viewport_descriptor = frame->descriptor_pool->allocate(viewport_layout);
     viewport_descriptor->updateDynamicBuffer(0, frame->viewports);
 
-    mesh_pipeline->allocateDescriptors(registry, asset_pool,
+    mesh_pipeline->allocateDescriptors(registry, frame->mesh_pass, asset_pool,
                                        frame->descriptor_pool);
   }
 
@@ -226,8 +235,9 @@ void Renderer::renderFrame(entt::registry& registry,
          viewport_index++) {
       viewports[viewport_index]->beginRenderPass(frame->command_buffer,
                                                  composite_pass);
-      mesh_pipeline->render(registry, asset_pool, frame->command_buffer,
-                            viewport_descriptor, viewport_index);
+      mesh_pipeline->render(registry, frame->mesh_pass, asset_pool,
+                            frame->command_buffer, viewport_descriptor,
+                            viewport_index);
       vkCmdEndRenderPass(frame->command_buffer);
     }
 
@@ -279,11 +289,6 @@ void Renderer::renderFrame(entt::registry& registry,
          viewportIndex++) {
       viewports[viewportIndex]->release(frame->on_render_finished);
     }
-  }
-
-  current_frame++;
-  if (current_frame >= frames_in_flight.size()) {
-    current_frame = 0;
   }
 }
 
