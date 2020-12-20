@@ -55,6 +55,8 @@ struct DebugDrawVertex {
   }
 };
 
+using DebugDrawIndex = uint16_t;
+
 class OverlayPass {
  public:
   OverlayPass(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);

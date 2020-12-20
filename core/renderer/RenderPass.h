@@ -36,7 +36,12 @@ struct MeshPassFrameData {
   std::unordered_map<EntityId, uint32_t> meshes;
 };
 
-struct OverlayPassFrameData {};
+struct OverlayPassFrameData {
+  GpuVector* debug_vertices = nullptr;
+  GpuVector* debug_indices = nullptr;
+
+  uint16_t index_count;
+};
 
 struct PipelinedFrameData {
   // TODO(marceline-cramer) Use command pool per frame, per thread

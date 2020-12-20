@@ -11,9 +11,11 @@
 
 #include "core/renderer/OverlayPass.h"
 
+#include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuShader.h"
+#include "core/gpu/GpuVector.h"
 #include "log/log.h"
 #include "shaders/debug.frag.h"
 #include "shaders/debug.vert.h"
@@ -67,7 +69,7 @@ OverlayPass::OverlayPass(GpuInstance* gpu,
 
     VkPipelineInputAssemblyStateCreateInfo input_assembly_info{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-        .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+        .topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
         .primitiveRestartEnable = VK_FALSE};
 
     // TODO(marceline-cramer) Get viewport state from Viewport
@@ -163,25 +165,59 @@ OverlayPass::OverlayPass(GpuInstance* gpu,
 }
 
 OverlayPass::~OverlayPass() {
+  log_zone;
+
   if (debug_pipeline != VK_NULL_HANDLE)
     vkDestroyPipeline(gpu->device, debug_pipeline, nullptr);
   if (debug_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, debug_pipeline_layout, nullptr);
 }
 
-void OverlayPass::createFrameData(OverlayPassFrameData& frame) {}
+void OverlayPass::createFrameData(OverlayPassFrameData& frame) {
+  log_zone;
 
-void OverlayPass::destroyFrameData(OverlayPassFrameData& frame) {}
+  frame.debug_vertices = new GpuVector(gpu, sizeof(DebugDrawVertex),
+                                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+  frame.debug_indices = new GpuVector(gpu, sizeof(DebugDrawIndex),
+                                      VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+}
+
+void OverlayPass::destroyFrameData(OverlayPassFrameData& frame) {
+  log_zone;
+
+  if (frame.debug_vertices != nullptr) delete frame.debug_vertices;
+  if (frame.debug_indices != nullptr) delete frame.debug_indices;
+}
 
 void OverlayPass::allocateDescriptors(entt::registry& registry,
                                       OverlayPassFrameData& frame,
                                       const AssetPool* asset_pool,
-                                      GpuDescriptorPool* descriptor_pool) {}
+                                      GpuDescriptorPool* descriptor_pool) {
+  log_zone;
+
+  frame.index_count = 0;
+}
 
 void OverlayPass::render(entt::registry& registry, OverlayPassFrameData& frame,
                          const AssetPool* asset_pool,
                          VkCommandBuffer command_buffer,
                          GpuDescriptorSet* viewport_descriptor,
-                         uint32_t viewport_offset) {}
+                         uint32_t viewport_offset) {
+  log_zone;
+
+  vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    debug_pipeline);
+
+  // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
+  viewport_descriptor->updateDynamicOffset(0, viewport_offset);
+  viewport_descriptor->cmdBind(command_buffer, debug_pipeline_layout, 0);
+
+  VkBuffer vertex_buffers[] = {frame.debug_vertices->getBuffer()};
+  VkDeviceSize offsets[] = {0};
+  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+  vkCmdBindIndexBuffer(command_buffer, frame.debug_indices->getBuffer(), 0,
+                       VK_INDEX_TYPE_UINT16);
+  vkCmdDrawIndexed(command_buffer, frame.index_count, 1, 0, 0, 0);
+}
 
 }  // namespace mondradiko
