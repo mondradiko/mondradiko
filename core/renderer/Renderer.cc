@@ -98,7 +98,7 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
     log_zone_named("Create pipelines");
 
     mesh_pass = new MeshPass(gpu, viewport_layout, composite_pass, 0);
-    overlay_pass = new OverlayPass(gpu);
+    overlay_pass = new OverlayPass(gpu, viewport_layout, composite_pass, 0);
   }
 
   {
@@ -167,6 +167,7 @@ Renderer::~Renderer() {
   }
 
   if (mesh_pass != nullptr) delete mesh_pass;
+  if (overlay_pass != nullptr) delete overlay_pass;
 
   if (viewport_layout != nullptr) delete viewport_layout;
 

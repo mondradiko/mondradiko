@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 spirv_shaders(SHADER_HEADERS
+  shaders/debug.frag
+  shaders/debug.vert
   shaders/mesh.frag
   shaders/mesh.vert
 )
