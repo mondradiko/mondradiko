@@ -1,6 +1,12 @@
 # Copyright (c) 2020 Marceline Cramer
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+#
+# Generate and include headers
+#
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+add_subdirectory(shaders)
 spirv_shaders(SHADER_HEADERS
   shaders/debug.frag
   shaders/debug.vert
@@ -8,13 +14,16 @@ spirv_shaders(SHADER_HEADERS
   shaders/mesh.vert
 )
 
-# Generate and include shaders
-add_subdirectory(shaders)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+add_subdirectory(protocol)
+flatc_schemas(PROTOCOL_HEADERS
+  protocol/example.fbs
+)
 
 configure_file(build_config.h.in build_config.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+#
+# Build core source
+#
 set(MONDRADIKO_CORE_SRC
   assets/MaterialAsset.cc
   assets/MeshAsset.cc
@@ -40,7 +49,7 @@ set(MONDRADIKO_CORE_SRC
   scene/Scene.cc
 )
 
-add_library(mondradiko-core STATIC ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
+add_library(mondradiko-core STATIC ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
 target_link_libraries(mondradiko-core mondradiko-assets)
 target_link_libraries(mondradiko-core mondradiko-log)
 target_link_libraries(mondradiko-core mondradiko-lib)

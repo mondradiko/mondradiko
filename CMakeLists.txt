@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(SPIR-V)
+include(flatc)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
