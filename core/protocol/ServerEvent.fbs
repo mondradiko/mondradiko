@@ -1,0 +1,18 @@
+namespace mondradiko.protocol;
+
+table Announcement {
+  message:string;
+}
+
+enum ServerEventType : ushort {
+  NoMessage = 0,
+  Announcement
+}
+
+table ServerEvent {
+  type:ServerEventType;
+
+  announcement:Announcement;
+}
+
+root_type ServerEvent;

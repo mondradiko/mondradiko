@@ -12,8 +12,11 @@
 
 #pragma once
 
+#include <deque>
+#include <string>
 #include <unordered_set>
 
+#include "flatbuffers/flatbuffers.h"
 #include "steam/isteamnetworkingsockets.h"
 
 namespace mondradiko {
@@ -35,12 +38,17 @@ class NetworkServer {
 
   std::unordered_set<HSteamNetConnection> connections;
 
+  void sendAnnouncement(std::string);
+
   void onConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t*);
 
   static void callback_ConnectionStatusChanged(
       SteamNetConnectionStatusChangedCallback_t*);
 
   HSteamListenSocket listen_socket;
+
+  using QueuedEvent = std::vector<uint8_t>;
+  std::deque<QueuedEvent> event_queue;
 };
 
 }  // namespace mondradiko

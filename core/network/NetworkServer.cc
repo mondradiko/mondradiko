@@ -16,6 +16,7 @@
 
 #include "core/scene/Scene.h"
 #include "log/log.h"
+#include "protocol/ServerEvent_generated.h"
 #include "steam/isteamnetworkingutils.h"
 #include "steam/steamnetworkingsockets.h"
 
@@ -78,6 +79,57 @@ void NetworkServer::update() {
   log_zone;
 
   sockets->RunCallbacks();
+
+  if (event_queue.size() == 0) return;
+
+  for (auto client : connections) {
+    std::vector<SteamNetworkingMessage_t*> outgoing_messages(
+        event_queue.size());
+
+    for (uint32_t i = 0; i < outgoing_messages.size(); i++) {
+      auto& message = outgoing_messages[i];
+      auto& event = event_queue[i];
+
+      // TODO(marceline-cramer) Avoid copies
+      size_t message_size = event.size();
+      message = SteamNetworkingUtils()->AllocateMessage(message_size);
+      memcpy(message->m_pData, event.data(), message_size);
+
+      message->m_conn = client;
+      message->m_nFlags = k_nSteamNetworkingSend_Reliable;
+    }
+
+    sockets->SendMessages(outgoing_messages.size(), outgoing_messages.data(),
+                          nullptr);
+  }
+
+  event_queue.clear();
+}
+
+void NetworkServer::sendAnnouncement(std::string message) {
+  flatbuffers::FlatBufferBuilder builder;
+  builder.Clear();
+
+  auto message_offset = builder.CreateString(message);
+
+  protocol::AnnouncementBuilder announcement(builder);
+  announcement.add_message(message_offset);
+  auto announcement_offset = announcement.Finish();
+
+  protocol::ServerEventBuilder event(builder);
+  event.add_type(protocol::ServerEventType::Announcement);
+  event.add_announcement(announcement_offset);
+  auto event_offset = event.Finish();
+
+  builder.Finish(event_offset);
+
+  uint8_t* event_data = builder.GetBufferPointer();
+  size_t event_size = builder.GetSize();
+
+  log_inf("Buffer size %d", event_size);
+
+  auto& event_buffer = event_queue.emplace_back(event_size);
+  memcpy(event_buffer.data(), event_data, event_size);
 }
 
 void NetworkServer::onConnectionStatusChanged(
@@ -102,6 +154,8 @@ void NetworkServer::onConnectionStatusChanged(
     case k_ESteamNetworkingConnectionState_Connected: {
       log_dbg("Connected");
       connections.emplace(event->m_hConn);
+      sendAnnouncement("Hello client!");
+      sendAnnouncement("Welcome to Mondradiko :)");
       break;
     }
 

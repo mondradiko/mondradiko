@@ -16,6 +16,7 @@
 
 #include "core/scene/Scene.h"
 #include "log/log.h"
+#include "protocol/ServerEvent_generated.h"
 #include "steam/isteamnetworkingutils.h"
 #include "steam/steamnetworkingsockets.h"
 
@@ -79,6 +80,39 @@ void NetworkClient::update() {
   log_zone;
 
   sockets->RunCallbacks();
+
+  while (true) {
+    ISteamNetworkingMessage* incoming_msg = nullptr;
+    int msg_num =
+        sockets->ReceiveMessagesOnConnection(connection, &incoming_msg, 1);
+
+    if (msg_num == 0) break;
+
+    if (msg_num < 0) {
+      log_err("Error receiving messages");
+      break;
+    }
+
+    auto event = protocol::GetServerEvent(incoming_msg->GetData());
+
+    log_dbg("Received server event");
+
+    switch (event->type()) {
+      case protocol::ServerEventType::Announcement: {
+        auto announcement = event->announcement();
+
+        log_dbg("Server announcement: %s", announcement->message()->c_str());
+        break;
+      }
+
+      case protocol::ServerEventType::NoMessage: {
+        log_dbg("Received empty server event");
+        break;
+      }
+    }  // switch (event->type())
+
+    incoming_msg->Release();
+  }
 }
 
 bool NetworkClient::readEvent(ClientEvent* event) {
