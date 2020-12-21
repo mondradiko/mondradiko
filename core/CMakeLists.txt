@@ -17,6 +17,7 @@ spirv_shaders(SHADER_HEADERS
 add_subdirectory(protocol)
 flatc_schemas(PROTOCOL_HEADERS
   protocol/ServerEvent.fbs
+  protocol/types.fbs
 )
 
 configure_file(build_config.h.in build_config.h)
