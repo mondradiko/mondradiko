@@ -14,6 +14,7 @@
 
 #include <queue>
 
+#include "core/network/NetworkShared.h"
 #include "steam/isteamnetworkingsockets.h"
 
 namespace mondradiko {
@@ -56,6 +57,8 @@ class NetworkClient {
       SteamNetConnectionStatusChangedCallback_t*);
 
   std::queue<ClientEvent> event_queue;
+
+  ClientId client_id;
 };
 
 }  // namespace mondradiko

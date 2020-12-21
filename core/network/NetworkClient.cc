@@ -81,6 +81,8 @@ void NetworkClient::update() {
 
   sockets->RunCallbacks();
 
+  if (connection == k_HSteamNetConnection_Invalid) return;
+
   while (true) {
     ISteamNetworkingMessage* incoming_msg = nullptr;
     int msg_num =
@@ -98,6 +100,11 @@ void NetworkClient::update() {
     log_dbg("Received server event");
 
     switch (event->type()) {
+      case protocol::ServerEventType::NoMessage: {
+        log_dbg("Received empty server event");
+        break;
+      }
+
       case protocol::ServerEventType::Announcement: {
         auto announcement = event->announcement();
 
@@ -105,8 +112,15 @@ void NetworkClient::update() {
         break;
       }
 
-      case protocol::ServerEventType::NoMessage: {
-        log_dbg("Received empty server event");
+      case protocol::ServerEventType::AssignClientId: {
+        auto assign_client_id = event->assign_client_id();
+        client_id = static_cast<ClientId>(assign_client_id->new_id());
+        log_dbg("Assigned new ID #%d", client_id);
+        break;
+      }
+
+      default: {
+        log_err("Unhandled server event %d", event->type());
         break;
       }
     }  // switch (event->type())
