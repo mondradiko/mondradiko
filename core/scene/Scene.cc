@@ -17,17 +17,14 @@
 #include "core/assets/TextureAsset.h"
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/TransformComponent.h"
-#include "core/displays/DisplayInterface.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
-#include "core/renderer/Renderer.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-Scene::Scene(DisplayInterface* display, Filesystem* fs, GpuInstance* gpu,
-             Renderer* renderer)
-    : display(display), fs(fs), gpu(gpu), renderer(renderer), asset_pool(fs) {
+Scene::Scene(Filesystem* fs, GpuInstance* gpu)
+    : fs(fs), gpu(gpu), asset_pool(fs) {
   log_zone;
 }
 
@@ -44,9 +41,9 @@ void Scene::testInitialize() {
 
   {
     MeshRendererComponent mesh_renderer{
-        .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
+        .mesh_asset = asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
         .material_asset =
-            asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAA, &asset_pool, gpu)};
+            asset_pool.loadAsset<MaterialAsset>(0xd316e038, gpu)};
 
     TransformComponent transform;
     transform.parent = NullEntity;
@@ -59,9 +56,9 @@ void Scene::testInitialize() {
 
   for (uint32_t i = 0; i < 10; i++) {
     MeshRendererComponent mesh_renderer{
-        .mesh_asset = asset_pool.loadAsset<MeshAsset>(0xdeadbeef, gpu),
+        .mesh_asset = asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
         .material_asset =
-            asset_pool.loadAsset<MaterialAsset>(0xAAAAAAAB, &asset_pool, gpu)};
+            asset_pool.loadAsset<MaterialAsset>(0xd316e038, gpu)};
 
     TransformComponent transform;
     transform.parent = parent_entity;
@@ -78,62 +75,46 @@ void Scene::testInitialize() {
 }
 
 bool Scene::update() {
-  DisplayPollEventsInfo poll_info;
-  poll_info.renderer = renderer;
+  log_zone;
 
-  display->pollEvents(&poll_info);
-  if (poll_info.should_quit) return false;
+  {
+    log_zone_named("Update TransformComponent self-reference");
 
-  if (poll_info.should_run) {
-    DisplayBeginFrameInfo frame_info;
-    display->beginFrame(&frame_info);
+    auto transform_view = registry.view<TransformComponent>();
 
-    {
-      log_zone_named("Update TransformComponent self-reference");
+    for (EntityId e : transform_view) {
+      transform_view.get(e).this_entity = e;
+    }
+  }
 
-      auto transform_view = registry.view<TransformComponent>();
+  {
+    log_zone_named("Sort transform hierarchy");
 
-      for (EntityId e : transform_view) {
-        transform_view.get(e).this_entity = e;
+    registry.sort<TransformComponent>(
+        [](const auto& parent, const auto& child) {
+          // Sort children after parents
+          return parent.this_entity >= child.parent;
+        });
+  }
+
+  {
+    log_zone_named("Transform children under parents");
+
+    auto transform_view = registry.view<TransformComponent>();
+
+    for (EntityId e : transform_view) {
+      TransformComponent& transform = transform_view.get(e);
+
+      glm::mat4 parent_transform;
+      if (transform.parent == NullEntity) {
+        parent_transform = glm::mat4(1.0);
+      } else {
+        parent_transform =
+            registry.get<TransformComponent>(transform.parent).world_transform;
       }
+
+      transform.world_transform = parent_transform * transform.local_transform;
     }
-
-    {
-      log_zone_named("Sort transform hierarchy");
-
-      registry.sort<TransformComponent>(
-          [](const auto& parent, const auto& child) {
-            // Sort children after parents
-            return parent.this_entity >= child.parent;
-          });
-    }
-
-    {
-      log_zone_named("Transform children under parents");
-
-      auto transform_view = registry.view<TransformComponent>();
-
-      for (EntityId e : transform_view) {
-        TransformComponent& transform = transform_view.get(e);
-
-        glm::mat4 parent_transform;
-        if (transform.parent == NullEntity) {
-          parent_transform = glm::mat4(1.0);
-        } else {
-          parent_transform = registry.get<TransformComponent>(transform.parent)
-                                 .world_transform;
-        }
-
-        transform.world_transform =
-            parent_transform * transform.local_transform;
-      }
-    }
-
-    if (frame_info.should_render) {
-      renderer->renderFrame(registry, &asset_pool);
-    }
-
-    display->endFrame(&frame_info);
   }
 
   FrameMark;

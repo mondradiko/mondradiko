@@ -49,26 +49,14 @@ int main(int argc, const char* argv[]) {
 
   try {
     Filesystem fs("../test-folder/");
-    SdlDisplay display;
-    GpuInstance gpu(&display);
 
-    if (!display.createSession(&gpu)) {
-      log_ftl("Failed to create display session!");
-    }
-
-    Renderer renderer(&display, &gpu);
-    Scene scene(&display, &fs, &gpu, &renderer);
+    Scene scene(&fs, nullptr);
     NetworkServer server(&scene, "127.0.0.1", 10555);
-
-    // scene.loadModel("DamagedHelmet.gltf");
 
     while (!g_interrupted) {
       if (!scene.update()) break;
-
       server.update();
     }
-
-    display.destroySession();
   } catch (const std::exception& e) {
     log_err("Mondradiko server failed with message:");
     log_err(e.what());

@@ -19,23 +19,19 @@
 namespace mondradiko {
 
 // Forward declarations
-class DisplayInterface;
 class Filesystem;
 class GpuInstance;
-class Renderer;
 
 class Scene {
  public:
-  Scene(DisplayInterface*, Filesystem*, GpuInstance*, Renderer*);
+  Scene(Filesystem*, GpuInstance*);
   ~Scene();
 
   void testInitialize();
   bool update();
 
-  DisplayInterface* display;
   Filesystem* fs;
   GpuInstance* gpu;
-  Renderer* renderer;
 
   // private:
   entt::registry registry;

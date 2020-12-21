@@ -44,13 +44,30 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   }
 
   Renderer renderer(display, gpu);
-  Scene scene(display, fs, gpu, &renderer);
+  Scene scene(fs, gpu);
   NetworkClient client(&scene, "127.0.0.1", 10555);
 
   scene.testInitialize();
 
   while (!g_interrupted) {
-    if (!scene.update()) break;
+    DisplayPollEventsInfo poll_info;
+    poll_info.renderer = &renderer;
+
+    display->pollEvents(&poll_info);
+    if (poll_info.should_quit) break;
+
+    if (poll_info.should_run) {
+      DisplayBeginFrameInfo frame_info;
+      display->beginFrame(&frame_info);
+
+      if(!scene.update()) break;
+
+      if (frame_info.should_render) {
+        renderer.renderFrame(scene.registry, &scene.asset_pool);
+      }
+
+      display->endFrame(&frame_info);
+    }
 
     client.update();
 
