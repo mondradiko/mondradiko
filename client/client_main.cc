@@ -52,6 +52,8 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   while (!g_interrupted) {
     if (!scene.update()) break;
 
+    client.update();
+
     ClientEvent event;
     while (client.readEvent(&event)) {
       log_dbg("Received client event.");

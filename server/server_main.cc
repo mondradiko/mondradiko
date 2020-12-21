@@ -64,6 +64,8 @@ int main(int argc, const char* argv[]) {
 
     while (!g_interrupted) {
       if (!scene.update()) break;
+
+      server.update();
     }
 
     display.destroySession();
