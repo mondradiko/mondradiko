@@ -14,6 +14,8 @@
 
 #include <queue>
 
+#include "steam/isteamnetworkingsockets.h"
+
 namespace mondradiko {
 
 // Forward declarations
@@ -41,8 +43,17 @@ class NetworkClient {
  private:
   Scene* scene;
 
-  bool connect(const char*, int) { return true; }
-  bool authenticate() { return true; }
+  ISteamNetworkingSockets* sockets;
+
+  HSteamNetConnection connection = k_HSteamNetConnection_Invalid;
+
+  bool connect(const char*, int);
+  bool authenticate();
+
+  void onConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t*);
+
+  static void callback_ConnectionStatusChanged(
+      SteamNetConnectionStatusChangedCallback_t*);
 
   std::queue<ClientEvent> event_queue;
 };
