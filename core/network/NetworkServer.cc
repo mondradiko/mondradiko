@@ -101,6 +101,7 @@ void NetworkServer::onConnectionStatusChanged(
 
     case k_ESteamNetworkingConnectionState_Connected: {
       log_dbg("Connected");
+      connections.emplace(event->m_hConn);
       break;
     }
 
@@ -113,6 +114,7 @@ void NetworkServer::onConnectionStatusChanged(
         log_dbg("Connection closed: Peer closed connection");
       }
 
+      connections.erase(event->m_hConn);
       sockets->CloseConnection(event->m_hConn, 0, nullptr, false);
 
       break;
