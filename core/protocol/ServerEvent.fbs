@@ -1,18 +1,29 @@
+// Copyright (c) 2020 Marceline Cramer
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
+include "types.fbs";
+
 namespace mondradiko.protocol;
 
 table Announcement {
   message:string;
 }
 
+table AssignClientId {
+  new_id:ClientId;
+}
+
 enum ServerEventType : ushort {
   NoMessage = 0,
-  Announcement
+  Announcement,
+  AssignClientId
 }
 
 table ServerEvent {
   type:ServerEventType;
 
   announcement:Announcement;
+  assign_client_id:AssignClientId;
 }
 
 root_type ServerEvent;
