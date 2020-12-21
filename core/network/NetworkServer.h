@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <unordered_set>
+
 #include "steam/isteamnetworkingsockets.h"
 
 namespace mondradiko {
@@ -24,10 +26,21 @@ class NetworkServer {
   NetworkServer(Scene*, const char*, int);
   ~NetworkServer();
 
+  void update();
+
  private:
   Scene* scene;
 
   ISteamNetworkingSockets* sockets;
+
+  std::unordered_set<HSteamNetConnection> connections;
+
+  void onConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t*);
+
+  static void callback_ConnectionStatusChanged(
+      SteamNetConnectionStatusChangedCallback_t*);
+
+  HSteamListenSocket listen_socket;
 };
 
 }  // namespace mondradiko
