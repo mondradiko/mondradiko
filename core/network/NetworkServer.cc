@@ -67,7 +67,7 @@ NetworkServer::~NetworkServer() {
   log_zone;
 
   for (auto connection : connections) {
-    sockets->CloseConnection(connection, 0, "Server shutdown", true);
+    sockets->CloseConnection(connection.second, 0, "Server shutdown", true);
   }
 
   if (listen_socket != k_HSteamListenSocket_Invalid) {
@@ -82,28 +82,52 @@ void NetworkServer::update() {
 
   if (event_queue.size() == 0) return;
 
-  for (auto client : connections) {
-    std::vector<SteamNetworkingMessage_t*> outgoing_messages(
-        event_queue.size());
+  std::vector<QueuedEvent> baked_queue;
+  baked_queue.reserve(event_queue.size());
 
-    for (uint32_t i = 0; i < outgoing_messages.size(); i++) {
-      auto& message = outgoing_messages[i];
-      auto& event = event_queue[i];
+  // TODO(marceline-cramer) Avoid duplicating event buffers
 
-      // TODO(marceline-cramer) Avoid copies
-      size_t message_size = event.size();
-      message = SteamNetworkingUtils()->AllocateMessage(message_size);
-      memcpy(message->m_pData, event.data(), message_size);
-
-      message->m_conn = client;
-      message->m_nFlags = k_nSteamNetworkingSend_Reliable;
+  for (const auto& event : event_queue) {
+    if (event.destination ==
+        static_cast<ClientId>(protocol::ClientId::AllClients)) {
+      for (auto& client : connections) {
+        QueuedEvent subevent(event);
+        subevent.destination = client.first;
+        baked_queue.push_back(subevent);
+      }
+    } else {
+      baked_queue.push_back(event);
     }
-
-    sockets->SendMessages(outgoing_messages.size(), outgoing_messages.data(),
-                          nullptr);
   }
 
   event_queue.clear();
+
+  std::vector<SteamNetworkingMessage_t*> outgoing_messages;
+  outgoing_messages.reserve(baked_queue.size());
+
+  for (uint32_t i = 0; i < baked_queue.size(); i++) {
+    auto& event = baked_queue[i];
+    auto destination = connections.find(event.destination);
+
+    if (destination == connections.end()) {
+      log_err("Invalid destination %d", destination->first);
+      continue;
+    }
+
+    // TODO(marceline-cramer) Avoid copies
+    size_t message_size = event.data.size();
+    SteamNetworkingMessage_t* message =
+        SteamNetworkingUtils()->AllocateMessage(message_size);
+    memcpy(message->m_pData, event.data.data(), message_size);
+
+    message->m_conn = destination->second;
+    message->m_nFlags = k_nSteamNetworkingSend_Reliable;
+
+    outgoing_messages.push_back(message);
+  }
+
+  sockets->SendMessages(outgoing_messages.size(), outgoing_messages.data(),
+                        nullptr);
 }
 
 void NetworkServer::sendAnnouncement(std::string message) {
@@ -125,11 +149,47 @@ void NetworkServer::sendAnnouncement(std::string message) {
 
   uint8_t* event_data = builder.GetBufferPointer();
   size_t event_size = builder.GetSize();
+  auto& event_buffer = event_queue.emplace_back();
+  event_buffer.destination =
+      static_cast<ClientId>(protocol::ClientId::AllClients);
+  event_buffer.data.resize(event_size);
+  memcpy(event_buffer.data.data(), event_data, event_size);
+}
 
-  log_inf("Buffer size %d", event_size);
+ClientId NetworkServer::createNewConnection(HSteamNetConnection connection) {
+  ClientId new_id = static_cast<ClientId>(protocol::ClientId::FirstClient);
 
-  auto& event_buffer = event_queue.emplace_back(event_size);
-  memcpy(event_buffer.data(), event_data, event_size);
+  while (true) {
+    auto it = connections.find(new_id);
+    if (it == connections.end()) break;
+    new_id++;
+  }
+
+  connections.emplace(new_id, connection);
+
+  flatbuffers::FlatBufferBuilder builder;
+  builder.Clear();
+
+  protocol::AssignClientIdBuilder assign_client_id(builder);
+  assign_client_id.add_new_id(
+      static_cast<mondradiko::protocol::ClientId>(new_id));
+  auto assign_client_id_offset = assign_client_id.Finish();
+
+  protocol::ServerEventBuilder event(builder);
+  event.add_type(protocol::ServerEventType::AssignClientId);
+  event.add_assign_client_id(assign_client_id_offset);
+  auto event_offset = event.Finish();
+
+  builder.Finish(event_offset);
+
+  uint8_t* event_data = builder.GetBufferPointer();
+  size_t event_size = builder.GetSize();
+  auto& event_buffer = event_queue.emplace_back();
+  event_buffer.destination = new_id;
+  event_buffer.data.resize(event_size);
+  memcpy(event_buffer.data.data(), event_data, event_size);
+
+  return new_id;
 }
 
 void NetworkServer::onConnectionStatusChanged(
@@ -140,7 +200,7 @@ void NetworkServer::onConnectionStatusChanged(
 
   switch (event->m_info.m_eState) {
     case k_ESteamNetworkingConnectionState_Connecting: {
-      log_dbg("Connection request");
+      log_dbg("Connection request from %s", description.c_str());
 
       if (sockets->AcceptConnection(event->m_hConn) != k_EResultOK) {
         sockets->CloseConnection(event->m_hConn, 0, nullptr, false);
@@ -152,10 +212,10 @@ void NetworkServer::onConnectionStatusChanged(
     }
 
     case k_ESteamNetworkingConnectionState_Connected: {
-      log_dbg("Connected");
-      connections.emplace(event->m_hConn);
-      sendAnnouncement("Hello client!");
-      sendAnnouncement("Welcome to Mondradiko :)");
+      ClientId new_id = createNewConnection(event->m_hConn);
+      log_dbg("Client #%d connected", new_id);
+      std::string connect_message = "Welcome client #" + std::to_string(new_id);
+      sendAnnouncement(connect_message);
       break;
     }
 
@@ -168,7 +228,19 @@ void NetworkServer::onConnectionStatusChanged(
         log_dbg("Connection closed: Peer closed connection");
       }
 
-      connections.erase(event->m_hConn);
+      ClientId client_id = 0;
+
+      for (auto& it : connections) {
+        if (it.second == event->m_hConn) {
+          client_id = it.first;
+        }
+      }
+
+      if (client_id != 0) {
+        log_dbg("Client #%d disconnected", client_id);
+        connections.erase(client_id);
+      }
+
       sockets->CloseConnection(event->m_hConn, 0, nullptr, false);
 
       break;

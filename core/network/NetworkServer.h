@@ -14,8 +14,9 @@
 
 #include <deque>
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
 
+#include "core/network/NetworkShared.h"
 #include "flatbuffers/flatbuffers.h"
 #include "steam/isteamnetworkingsockets.h"
 
@@ -36,9 +37,10 @@ class NetworkServer {
 
   ISteamNetworkingSockets* sockets;
 
-  std::unordered_set<HSteamNetConnection> connections;
+  std::unordered_map<ClientId, HSteamNetConnection> connections;
 
   void sendAnnouncement(std::string);
+  ClientId createNewConnection(HSteamNetConnection);
 
   void onConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t*);
 
@@ -47,7 +49,11 @@ class NetworkServer {
 
   HSteamListenSocket listen_socket;
 
-  using QueuedEvent = std::vector<uint8_t>;
+  struct QueuedEvent {
+    ClientId destination;
+    std::vector<uint8_t> data;
+  };
+
   std::deque<QueuedEvent> event_queue;
 };
 
