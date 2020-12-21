@@ -21,7 +21,7 @@
 
 namespace mondradiko {
 
-MeshAsset::MeshAsset(assets::ImmutableAsset& asset, GpuInstance* gpu) {
+MeshAsset::MeshAsset(assets::ImmutableAsset& asset, AssetPool*, GpuInstance* gpu) {
   assets::MeshHeader header;
   asset >> header;
 

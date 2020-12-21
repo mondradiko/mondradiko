@@ -18,7 +18,8 @@
 
 namespace mondradiko {
 
-TextureAsset::TextureAsset(assets::ImmutableAsset& asset, GpuInstance* gpu)
+TextureAsset::TextureAsset(assets::ImmutableAsset& asset, AssetPool*,
+                           GpuInstance* gpu)
     : gpu(gpu) {
   assets::TextureHeader header;
   asset >> header;

@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "core/assets/Asset.h"
+#include "core/assets/AssetPool.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
@@ -22,7 +22,7 @@ class GpuInstance;
 
 class TextureAsset : public Asset {
  public:
-  TextureAsset(assets::ImmutableAsset&, GpuInstance*);
+  TextureAsset(assets::ImmutableAsset&, AssetPool*, GpuInstance*);
   ~TextureAsset();
 
   GpuImage* getImage() const { return image; }

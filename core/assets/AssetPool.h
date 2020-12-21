@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <string>
 #include <type_traits>
 #include <unordered_map>
 
@@ -22,22 +23,36 @@
 
 namespace mondradiko {
 
+struct DummyAsset {
+  std::string type;
+  std::string binding;
+};
+
 class AssetPool {
  public:
   explicit AssetPool(Filesystem* fs) : fs(fs) {}
 
-  template <typename AssetType, typename... Args>
-  [[nodiscard]] AssetId loadAsset(AssetId id, Args&&... args) {
+  template <typename AssetType, typename Binding>
+  [[nodiscard]] AssetId loadAsset(AssetId id, Binding* binding) {
     if (isAssetLoaded<AssetType>(id)) return id;
 
-    assets::ImmutableAsset asset_data;
-    fs->loadAsset(&asset_data, id);
-
-    AssetType* asset_component = new AssetType(asset_data, args...);
-    asset_component->loaded = true;
-
     AssetId asset_entity = asset_registry.create(id);
-    asset_registry.emplace<AssetType*>(asset_entity, asset_component);
+
+    if (binding == nullptr) {
+      DummyAsset asset_component;
+      asset_component.type = typeid(AssetType).name();
+      asset_component.binding = typeid(Binding).name();
+
+      asset_registry.emplace<DummyAsset>(asset_entity, asset_component);
+    } else {
+      assets::ImmutableAsset asset_data;
+      fs->loadAsset(&asset_data, id);
+
+      AssetType* asset_component = new AssetType(asset_data, this, binding);
+      asset_component->loaded = true;
+
+      asset_registry.emplace<AssetType*>(asset_entity, asset_component);
+    }
 
     return asset_entity;
   }
@@ -45,6 +60,8 @@ class AssetPool {
   template <typename AssetType>
   bool isAssetLoaded(AssetId id) const {
     if (!asset_registry.valid(id)) return false;
+
+    if (asset_registry.has<DummyAsset>(id)) return false;
 
     AssetType* const* asset_ptr = asset_registry.try_get<AssetType*>(id);
 

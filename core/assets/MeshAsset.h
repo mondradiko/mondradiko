@@ -14,7 +14,7 @@
 #include <array>
 #include <cstddef>
 
-#include "core/assets/Asset.h"
+#include "core/assets/AssetPool.h"
 #include "core/common/api_headers.h"
 
 namespace mondradiko {
@@ -72,7 +72,7 @@ using MeshIndex = uint32_t;
 
 class MeshAsset : public Asset {
  public:
-  MeshAsset(assets::ImmutableAsset&, GpuInstance*);
+  MeshAsset(assets::ImmutableAsset&, AssetPool*, GpuInstance*);
   ~MeshAsset();
 
   GpuBuffer* vertex_buffer = nullptr;
