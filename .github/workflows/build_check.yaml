@@ -23,7 +23,8 @@ jobs:
                            mesa-common-dev \
                            pkg-config libvulkan-dev libglm-dev libphysfs-dev \
                            libassimp-dev ninja-build libsdl2-dev glslang-tools \
-                           libxxhash-dev liblz4-dev
+                           libxxhash-dev liblz4-dev \
+                           flatbuffers-compiler
 
       - name: Install OpenXR SDK
         shell: bash
