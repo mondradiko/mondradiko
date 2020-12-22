@@ -70,11 +70,6 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
     }
 
     client.update();
-
-    ClientEvent event;
-    while (client.readEvent(&event)) {
-      log_dbg("Received client event.");
-    }
   }
 
   display->destroySession();

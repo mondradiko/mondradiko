@@ -16,6 +16,7 @@
 
 #include "core/scene/Scene.h"
 #include "log/log.h"
+#include "protocol/ClientEvent_generated.h"
 #include "protocol/ServerEvent_generated.h"
 #include "steam/isteamnetworkingutils.h"
 #include "steam/steamnetworkingsockets.h"
@@ -61,6 +62,12 @@ NetworkServer::NetworkServer(Scene* scene, const char* server_address,
   if (listen_socket == k_HSteamListenSocket_Invalid) {
     log_ftl("Failed to listen at port %d", server_port);
   }
+
+  poll_group = sockets->CreatePollGroup();
+
+  if (poll_group == k_HSteamNetPollGroup_Invalid) {
+    log_ftl("Failed to create poll group");
+  }
 }
 
 NetworkServer::~NetworkServer() {
@@ -68,6 +75,10 @@ NetworkServer::~NetworkServer() {
 
   for (auto connection : connections) {
     sockets->CloseConnection(connection.second, 0, "Server shutdown", true);
+  }
+
+  if (poll_group != k_HSteamNetPollGroup_Invalid) {
+    sockets->DestroyPollGroup(poll_group);
   }
 
   if (listen_socket != k_HSteamListenSocket_Invalid) {
@@ -79,6 +90,43 @@ void NetworkServer::update() {
   log_zone;
 
   sockets->RunCallbacks();
+
+  while (true) {
+    ISteamNetworkingMessage* incoming_msg = nullptr;
+    int msg_num =
+        sockets->ReceiveMessagesOnPollGroup(poll_group, &incoming_msg, 1);
+
+    if (msg_num == 0) break;
+
+    if (msg_num < 0) {
+      log_err("Error receiving messages");
+      break;
+    }
+
+    auto event = protocol::GetClientEvent(incoming_msg->GetData());
+
+    log_dbg("Received client event");
+
+    switch (event->type()) {
+      case protocol::ClientEventType::NoMessage: {
+        log_dbg("Received empty client event");
+        break;
+      }
+
+      case protocol::ClientEventType::JoinRequest: {
+        auto join_request = event->join_request();
+        log_dbg("Client joined: %s", join_request->username()->c_str());
+        break;
+      }
+
+      default: {
+        log_err("Unhandled client event %d", event->type());
+        break;
+      }
+    }  // switch (event->type())
+
+    incoming_msg->Release();
+  }
 
   if (event_queue.size() == 0) return;
 
@@ -212,6 +260,7 @@ void NetworkServer::onConnectionStatusChanged(
     }
 
     case k_ESteamNetworkingConnectionState_Connected: {
+      sockets->SetConnectionPollGroup(event->m_hConn, poll_group);
       ClientId new_id = createNewConnection(event->m_hConn);
       log_dbg("Client #%d connected", new_id);
       std::string connect_message = "Welcome client #" + std::to_string(new_id);

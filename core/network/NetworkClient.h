@@ -22,12 +22,6 @@ namespace mondradiko {
 // Forward declarations
 class Scene;
 
-enum class ClientEventType { Ping };
-
-struct ClientEvent {
-  ClientEventType type;
-};
-
 enum class ClientState { Disconnected, Connecting, Authenticating, Connected };
 
 class NetworkClient {
@@ -36,7 +30,6 @@ class NetworkClient {
   ~NetworkClient();
 
   void update();
-  bool readEvent(ClientEvent*);
   void disconnect();
 
   ClientState state = ClientState::Disconnected;
@@ -48,17 +41,20 @@ class NetworkClient {
 
   HSteamNetConnection connection = k_HSteamNetConnection_Invalid;
 
-  bool connect(const char*, int);
-  bool authenticate();
+  void requestJoin();
 
   void onConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t*);
 
   static void callback_ConnectionStatusChanged(
       SteamNetConnectionStatusChangedCallback_t*);
 
-  std::queue<ClientEvent> event_queue;
-
   ClientId client_id;
+
+  struct QueuedEvent {
+    std::vector<uint8_t> data;
+  };
+
+  std::deque<QueuedEvent> event_queue;
 };
 
 }  // namespace mondradiko

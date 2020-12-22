@@ -16,6 +16,7 @@ spirv_shaders(SHADER_HEADERS
 
 add_subdirectory(protocol)
 flatc_schemas(PROTOCOL_HEADERS
+  protocol/ClientEvent.fbs
   protocol/ServerEvent.fbs
   protocol/types.fbs
 )

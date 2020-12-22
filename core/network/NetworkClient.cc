@@ -17,6 +17,7 @@
 
 #include "core/scene/Scene.h"
 #include "log/log.h"
+#include "protocol/ClientEvent_generated.h"
 #include "protocol/ServerEvent_generated.h"
 #include "steam/isteamnetworkingutils.h"
 #include "steam/steamnetworkingsockets.h"
@@ -128,16 +129,31 @@ void NetworkClient::update() {
 
     incoming_msg->Release();
   }
-}
 
-bool NetworkClient::readEvent(ClientEvent* event) {
-  if (!event_queue.empty()) {
-    *event = event_queue.front();
-    event_queue.pop();
-    return true;
+  if (event_queue.size() == 0) return;
+
+  std::vector<SteamNetworkingMessage_t*> outgoing_messages;
+  outgoing_messages.reserve(event_queue.size());
+
+  for (uint32_t i = 0; i < event_queue.size(); i++) {
+    auto& event = event_queue[i];
+
+    // TODO(marceline-cramer) Avoid copies
+    size_t message_size = event.data.size();
+    SteamNetworkingMessage_t* message =
+        SteamNetworkingUtils()->AllocateMessage(message_size);
+    memcpy(message->m_pData, event.data.data(), message_size);
+
+    message->m_conn = connection;
+    message->m_nFlags = k_nSteamNetworkingSend_Reliable;
+
+    outgoing_messages.push_back(message);
   }
 
-  return false;
+  sockets->SendMessages(outgoing_messages.size(), outgoing_messages.data(),
+                        nullptr);
+
+  event_queue.clear();
 }
 
 void NetworkClient::disconnect() {
@@ -149,6 +165,30 @@ void NetworkClient::disconnect() {
   }
 
   state = ClientState::Disconnected;
+}
+
+void NetworkClient::requestJoin() {
+  flatbuffers::FlatBufferBuilder builder;
+  builder.Clear();
+
+  auto username_offset = builder.CreateString("TestClient");
+
+  protocol::JoinRequestBuilder join_request(builder);
+  join_request.add_username(username_offset);
+  auto join_request_offset = join_request.Finish();
+
+  protocol::ClientEventBuilder event(builder);
+  event.add_type(protocol::ClientEventType::JoinRequest);
+  event.add_join_request(join_request_offset);
+  auto event_offset = event.Finish();
+
+  builder.Finish(event_offset);
+
+  uint8_t* event_data = builder.GetBufferPointer();
+  size_t event_size = builder.GetSize();
+  auto& event_buffer = event_queue.emplace_back();
+  event_buffer.data.resize(event_size);
+  memcpy(event_buffer.data.data(), event_data, event_size);
 }
 
 void NetworkClient::onConnectionStatusChanged(
@@ -165,6 +205,7 @@ void NetworkClient::onConnectionStatusChanged(
 
     case k_ESteamNetworkingConnectionState_Connected: {
       log_dbg("Connected");
+      requestJoin();
       break;
     }
 
