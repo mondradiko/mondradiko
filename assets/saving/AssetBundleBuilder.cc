@@ -94,7 +94,7 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
 
   {
     AssetRegistryHeader header;
-    strncpy(header.magic, ASSET_REGISTRY_MAGIC, ASSET_REGISTRY_MAGIC_LENGTH);
+    memcpy(header.magic, ASSET_REGISTRY_MAGIC, ASSET_REGISTRY_MAGIC_LENGTH);
     header.version = MONDRADIKO_ASSET_VERSION;
     header.lump_count = lumps.size();
     registry_file.write(reinterpret_cast<char*>(&header), sizeof(header));
