@@ -28,7 +28,7 @@ class Scene;
 
 namespace protocol {
 struct JoinRequest;
-};
+}  // namespace protocol
 
 class NetworkServer {
  public:
@@ -47,7 +47,6 @@ class NetworkServer {
   //
   // Client event receive methods
   //
-  void receiveEvents();
   void onJoinRequest(const protocol::JoinRequest*);
 
   //
@@ -55,8 +54,6 @@ class NetworkServer {
   //
   void sendAnnouncement(std::string);
   ClientId createNewConnection(HSteamNetConnection);
-  void sendEvent(flatbuffers::FlatBufferBuilder&, ClientId);
-  void sendQueuedEvents();
 
   //
   // Connection status change callbacks
@@ -66,6 +63,13 @@ class NetworkServer {
   void onProblemDetected(std::string, HSteamNetConnection);
   void onClosedByPeer(std::string, HSteamNetConnection);
   void onDisconnect(std::string, HSteamNetConnection);
+
+  //
+  // Helper methods
+  //
+  void receiveEvents();
+  void sendEvent(flatbuffers::FlatBufferBuilder&, ClientId);
+  void sendQueuedEvents();
   static void callback_ConnectionStatusChanged(
       SteamNetConnectionStatusChangedCallback_t*);
 

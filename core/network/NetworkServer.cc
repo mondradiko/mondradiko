@@ -98,47 +98,17 @@ void NetworkServer::update() {
   }
 }
 
-void NetworkServer::receiveEvents() {
-  while (true) {
-    ISteamNetworkingMessage* incoming_msg = nullptr;
-    int msg_num =
-        sockets->ReceiveMessagesOnPollGroup(poll_group, &incoming_msg, 1);
-
-    if (msg_num == 0) break;
-
-    if (msg_num < 0) {
-      log_err("Error receiving messages");
-      break;
-    }
-
-    auto event = protocol::GetClientEvent(incoming_msg->GetData());
-
-    log_dbg("Received client event");
-
-    switch (event->type()) {
-      case protocol::ClientEventType::NoMessage: {
-        log_dbg("Received empty client event");
-        break;
-      }
-
-      case protocol::ClientEventType::JoinRequest: {
-        onJoinRequest(event->join_request());
-        break;
-      }
-
-      default: {
-        log_err("Unhandled client event %d", event->type());
-        break;
-      }
-    }  // switch (event->type())
-
-    incoming_msg->Release();
-  }
-}
+///////////////////////////////////////////////////////////////////////////////
+// Client event receive callbacks
+///////////////////////////////////////////////////////////////////////////////
 
 void NetworkServer::onJoinRequest(const protocol::JoinRequest* join_request) {
   log_dbg("Client joined: %s", join_request->username()->c_str());
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Server event send methods
+///////////////////////////////////////////////////////////////////////////////
 
 void NetworkServer::sendAnnouncement(std::string message) {
   flatbuffers::FlatBufferBuilder builder;
@@ -187,6 +157,99 @@ ClientId NetworkServer::createNewConnection(HSteamNetConnection connection) {
   sendEvent(builder, new_id);
 
   return new_id;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Connection status change callbacks
+///////////////////////////////////////////////////////////////////////////////
+
+void NetworkServer::onConnecting(std::string description,
+                                 HSteamNetConnection connection) {
+  log_dbg("Connection request from %s", description.c_str());
+
+  if (sockets->AcceptConnection(connection) != k_EResultOK) {
+    sockets->CloseConnection(connection, 0, nullptr, false);
+    log_err("Failed to accept connection from %s", description.c_str());
+  }
+}
+
+void NetworkServer::onConnected(std::string description,
+                                HSteamNetConnection connection) {
+  sockets->SetConnectionPollGroup(connection, poll_group);
+  ClientId new_id = createNewConnection(connection);
+  log_dbg("Client #%d connected", new_id);
+  std::string connect_message = "Welcome client #" + std::to_string(new_id);
+  sendAnnouncement(connect_message);
+}
+
+void NetworkServer::onProblemDetected(std::string description,
+                                      HSteamNetConnection connection) {
+  log_dbg("Connection closed: Problem detected locally");
+}
+
+void NetworkServer::onClosedByPeer(std::string description,
+                                   HSteamNetConnection connection) {
+  log_dbg("Connection closed: Peer closed connection");
+}
+
+void NetworkServer::onDisconnect(std::string description,
+                                 HSteamNetConnection connection) {
+  ClientId client_id = 0;
+
+  for (auto& it : connections) {
+    if (it.second == connection) {
+      client_id = it.first;
+    }
+  }
+
+  if (client_id != 0) {
+    log_dbg("Client #%d disconnected", client_id);
+    connections.erase(client_id);
+  }
+
+  sockets->CloseConnection(connection, 0, nullptr, false);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Helper methods
+///////////////////////////////////////////////////////////////////////////////
+
+void NetworkServer::receiveEvents() {
+  while (true) {
+    ISteamNetworkingMessage* incoming_msg = nullptr;
+    int msg_num =
+        sockets->ReceiveMessagesOnPollGroup(poll_group, &incoming_msg, 1);
+
+    if (msg_num == 0) break;
+
+    if (msg_num < 0) {
+      log_err("Error receiving messages");
+      break;
+    }
+
+    auto event = protocol::GetClientEvent(incoming_msg->GetData());
+
+    log_dbg("Received client event");
+
+    switch (event->type()) {
+      case protocol::ClientEventType::NoMessage: {
+        log_dbg("Received empty client event");
+        break;
+      }
+
+      case protocol::ClientEventType::JoinRequest: {
+        onJoinRequest(event->join_request());
+        break;
+      }
+
+      default: {
+        log_err("Unhandled client event %d", event->type());
+        break;
+      }
+    }  // switch (event->type())
+
+    incoming_msg->Release();
+  }
 }
 
 void NetworkServer::sendEvent(flatbuffers::FlatBufferBuilder& builder,
@@ -246,53 +309,6 @@ void NetworkServer::sendQueuedEvents() {
 
   sockets->SendMessages(outgoing_messages.size(), outgoing_messages.data(),
                         nullptr);
-}
-
-void NetworkServer::onConnecting(std::string description,
-                                 HSteamNetConnection connection) {
-  log_dbg("Connection request from %s", description.c_str());
-
-  if (sockets->AcceptConnection(connection) != k_EResultOK) {
-    sockets->CloseConnection(connection, 0, nullptr, false);
-    log_err("Failed to accept connection from %s", description.c_str());
-  }
-}
-
-void NetworkServer::onConnected(std::string description,
-                                HSteamNetConnection connection) {
-  sockets->SetConnectionPollGroup(connection, poll_group);
-  ClientId new_id = createNewConnection(connection);
-  log_dbg("Client #%d connected", new_id);
-  std::string connect_message = "Welcome client #" + std::to_string(new_id);
-  sendAnnouncement(connect_message);
-}
-
-void NetworkServer::onProblemDetected(std::string description,
-                                      HSteamNetConnection connection) {
-  log_dbg("Connection closed: Problem detected locally");
-}
-
-void NetworkServer::onClosedByPeer(std::string description,
-                                   HSteamNetConnection connection) {
-  log_dbg("Connection closed: Peer closed connection");
-}
-
-void NetworkServer::onDisconnect(std::string description,
-                                 HSteamNetConnection connection) {
-  ClientId client_id = 0;
-
-  for (auto& it : connections) {
-    if (it.second == connection) {
-      client_id = it.first;
-    }
-  }
-
-  if (client_id != 0) {
-    log_dbg("Client #%d disconnected", client_id);
-    connections.erase(client_id);
-  }
-
-  sockets->CloseConnection(connection, 0, nullptr, false);
 }
 
 void NetworkServer::callback_ConnectionStatusChanged(
