@@ -60,7 +60,7 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
       DisplayBeginFrameInfo frame_info;
       display->beginFrame(&frame_info);
 
-      if(!scene.update()) break;
+      if (!scene.update()) break;
 
       if (frame_info.should_render) {
         renderer.renderFrame(scene.registry, &scene.asset_pool);

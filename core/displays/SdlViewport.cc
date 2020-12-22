@@ -89,8 +89,8 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
       log_ftl("Failed to create swapchain image view.");
     }
 
-    std::array<VkImageView, 2> framebuffer_attachments = {
-        images[i].image_view, depth_image->view};
+    std::array<VkImageView, 2> framebuffer_attachments = {images[i].image_view,
+                                                          depth_image->view};
 
     VkFramebufferCreateInfo framebufferCreateInfo{
         .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -198,7 +198,8 @@ void SdlViewport::writeUniform(ViewportUniform* uniform) {
   log_zone;
 
   glm::quat camera_orientation =
-      glm::angleAxis((float)M_PI - camera_tilt, glm::vec3(1.0, 0.0, 0.0)) *
+      glm::angleAxis(static_cast<float>(M_PI) - camera_tilt,
+                     glm::vec3(1.0, 0.0, 0.0)) *
       glm::angleAxis(camera_pan, glm::vec3(0.0, 1.0, 0.0));
 
   uniform->view =

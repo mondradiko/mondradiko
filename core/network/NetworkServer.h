@@ -15,6 +15,7 @@
 #include <deque>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "core/network/NetworkShared.h"
 #include "flatbuffers/flatbuffers.h"

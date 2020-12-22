@@ -11,17 +11,16 @@
 
 #include "converter/assimp_converter.h"
 
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
-#include <assimp/texture.h>
-
-#include <assimp/Importer.hpp>
 #include <iostream>
 #include <sstream>
 #include <vector>
 
 #include "assets/format/MaterialAsset.h"
 #include "assets/format/MeshAsset.h"
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
+#include "assimp/scene.h"
+#include "assimp/texture.h"
 #include "converter/stb_converter.h"
 #include "log/log.h"
 

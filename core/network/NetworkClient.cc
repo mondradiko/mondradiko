@@ -13,6 +13,7 @@
 #include "core/network/NetworkClient.h"
 
 #include <sstream>
+#include <string>
 
 #include "core/scene/Scene.h"
 #include "log/log.h"

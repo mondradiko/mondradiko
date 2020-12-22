@@ -11,6 +11,8 @@
 
 #include "core/renderer/OverlayPass.h"
 
+#include <vector>
+
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"

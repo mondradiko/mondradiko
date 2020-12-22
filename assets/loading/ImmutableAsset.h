@@ -17,11 +17,11 @@ namespace assets {
 
 class ImmutableAsset {
  public:
-  template<class T>
+  template <class T>
   ImmutableAsset& operator>>(T&);
 
   inline const char* getData(size_t* remaining_size) {
-    if(remaining_size) {
+    if (remaining_size) {
       *remaining_size = data_size + (data - cursor);
     }
 

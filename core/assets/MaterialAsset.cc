@@ -14,8 +14,8 @@
 #include "assets/format/MaterialAsset.h"
 #include "core/assets/Asset.h"
 #include "core/assets/TextureAsset.h"
-#include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuDescriptorSet.h"
+#include "core/gpu/GpuInstance.h"
 
 namespace mondradiko {
 
@@ -25,7 +25,8 @@ MaterialAsset::MaterialAsset(assets::ImmutableAsset& asset,
   assets::MaterialHeader header;
   asset >> header;
 
-  albedo_texture = asset_pool->loadAsset<TextureAsset>(header.albedo_texture, gpu);
+  albedo_texture =
+      asset_pool->loadAsset<TextureAsset>(header.albedo_texture, gpu);
 
   uniform.albedo_factor = header.albedo_factor;
 }

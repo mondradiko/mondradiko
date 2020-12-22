@@ -157,7 +157,7 @@ void GpuImage::transitionLayout(VkImageLayout targetLayout) {
 void GpuImage::createView() {
   VkImageAspectFlags aspect_mask;
 
-  switch(format) {
+  switch (format) {
     case VK_FORMAT_D32_SFLOAT:
     case VK_FORMAT_D32_SFLOAT_S8_UINT:
     case VK_FORMAT_D24_UNORM_S8_UINT: {
@@ -170,7 +170,6 @@ void GpuImage::createView() {
       break;
     }
   }
-
 
   VkImageViewCreateInfo viewInfo{
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,

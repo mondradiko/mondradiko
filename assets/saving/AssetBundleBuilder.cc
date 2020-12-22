@@ -38,10 +38,12 @@ AssetResult AssetBundleBuilder::addAsset(AssetId* id, MutableAsset* asset) {
   size_t asset_size = asset->data.size();
 
   // Generate ID by hashing asset data
-  *id = static_cast<AssetId>(XXH3_64bits(asset->data.data(), asset->data.size()));
+  *id =
+      static_cast<AssetId>(XXH3_64bits(asset->data.data(), asset->data.size()));
 
-  if(used_ids.find(*id) != used_ids.end()) {
-    log_wrn("Attempting to build asset with duplicated ID 0x%08x; skipping", *id);
+  if (used_ids.find(*id) != used_ids.end()) {
+    log_wrn("Attempting to build asset with duplicated ID 0x%08x; skipping",
+            *id);
     return AssetResult::DuplicateAsset;
   }
 

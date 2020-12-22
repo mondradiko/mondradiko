@@ -53,7 +53,7 @@ struct MeshVertex {
                        .binding = 0,
                        .format = VK_FORMAT_R32G32B32_SFLOAT,
                        .offset = offsetof(MeshVertex, normal)};
-    
+
     descriptions[2] = {.location = 2,
                        .binding = 0,
                        .format = VK_FORMAT_R32G32B32_SFLOAT,

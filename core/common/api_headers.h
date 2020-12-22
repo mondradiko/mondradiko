@@ -31,4 +31,4 @@
 
 #include "lib/entt.hpp"
 
-#include "ktxvulkan.h"
+#include "ktxvulkan.h"  // NOLINT
