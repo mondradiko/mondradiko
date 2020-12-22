@@ -25,7 +25,7 @@ jobs:
                            libassimp-dev ninja-build libsdl2-dev glslang-tools \
                            libxxhash-dev liblz4-dev \
                            flatbuffers-compiler \
-                           libprotobuf-dev
+                           libprotobuf-dev libzstd-dev
 
       - name: Install OpenXR SDK
         shell: bash
