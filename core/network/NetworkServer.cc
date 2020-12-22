@@ -102,8 +102,11 @@ void NetworkServer::update() {
 // Client event receive callbacks
 ///////////////////////////////////////////////////////////////////////////////
 
-void NetworkServer::onJoinRequest(const protocol::JoinRequest* join_request) {
+void NetworkServer::onJoinRequest(ClientId client_id,
+                                  const protocol::JoinRequest* join_request) {
   log_dbg("Client joined: %s", join_request->username()->c_str());
+  std::string connect_message = "Welcome client #" + std::to_string(client_id);
+  sendAnnouncement(connect_message);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -129,17 +132,7 @@ void NetworkServer::sendAnnouncement(std::string message) {
   sendEvent(builder, static_cast<ClientId>(protocol::ClientId::AllClients));
 }
 
-ClientId NetworkServer::createNewConnection(HSteamNetConnection connection) {
-  ClientId new_id = static_cast<ClientId>(protocol::ClientId::FirstClient);
-
-  while (true) {
-    auto it = connections.find(new_id);
-    if (it == connections.end()) break;
-    new_id++;
-  }
-
-  connections.emplace(new_id, connection);
-
+void NetworkServer::setClientId(ClientId new_id) {
   flatbuffers::FlatBufferBuilder builder;
   builder.Clear();
 
@@ -155,8 +148,6 @@ ClientId NetworkServer::createNewConnection(HSteamNetConnection connection) {
 
   builder.Finish(event_offset);
   sendEvent(builder, new_id);
-
-  return new_id;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -176,10 +167,18 @@ void NetworkServer::onConnecting(std::string description,
 void NetworkServer::onConnected(std::string description,
                                 HSteamNetConnection connection) {
   sockets->SetConnectionPollGroup(connection, poll_group);
-  ClientId new_id = createNewConnection(connection);
+
+  ClientId new_id = static_cast<ClientId>(protocol::ClientId::FirstClient);
+
+  while (true) {
+    auto it = connections.find(new_id);
+    if (it == connections.end()) break;
+    new_id++;
+  }
+
+  connections.emplace(new_id, connection);
+
   log_dbg("Client #%d connected", new_id);
-  std::string connect_message = "Welcome client #" + std::to_string(new_id);
-  sendAnnouncement(connect_message);
 }
 
 void NetworkServer::onProblemDetected(std::string description,
@@ -199,6 +198,7 @@ void NetworkServer::onDisconnect(std::string description,
   for (auto& it : connections) {
     if (it.second == connection) {
       client_id = it.first;
+      break;
     }
   }
 
@@ -227,6 +227,17 @@ void NetworkServer::receiveEvents() {
       break;
     }
 
+    ClientId client_id = 0;
+
+    for (auto& it : connections) {
+      if (it.second == incoming_msg->m_conn) {
+        client_id = it.first;
+        break;
+      }
+    }
+
+    if (client_id == 0) continue;
+
     auto event = protocol::GetClientEvent(incoming_msg->GetData());
 
     log_dbg("Received client event");
@@ -238,7 +249,7 @@ void NetworkServer::receiveEvents() {
       }
 
       case protocol::ClientEventType::JoinRequest: {
-        onJoinRequest(event->join_request());
+        onJoinRequest(client_id, event->join_request());
         break;
       }
 

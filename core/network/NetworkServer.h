@@ -47,13 +47,13 @@ class NetworkServer {
   //
   // Client event receive methods
   //
-  void onJoinRequest(const protocol::JoinRequest*);
+  void onJoinRequest(ClientId, const protocol::JoinRequest*);
 
   //
   // Server event send methods
   //
   void sendAnnouncement(std::string);
-  ClientId createNewConnection(HSteamNetConnection);
+  void setClientId(ClientId);
 
   //
   // Connection status change callbacks
