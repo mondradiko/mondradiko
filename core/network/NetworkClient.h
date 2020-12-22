@@ -15,6 +15,7 @@
 #include <queue>
 
 #include "core/network/NetworkShared.h"
+#include "flatbuffers/flatbuffers.h"
 #include "steam/isteamnetworkingsockets.h"
 
 namespace mondradiko {
@@ -22,7 +23,12 @@ namespace mondradiko {
 // Forward declarations
 class Scene;
 
-enum class ClientState { Disconnected, Connecting, Authenticating, Connected };
+namespace protocol {
+struct Announcement;
+struct AssignClientId;
+}  // namespace protocol
+
+enum class ClientState { Disconnected, Connecting, Joining, Joined };
 
 class NetworkClient {
  public:
@@ -41,10 +47,32 @@ class NetworkClient {
 
   HSteamNetConnection connection = k_HSteamNetConnection_Invalid;
 
+  //
+  // Server event receive callbacks
+  //
+  void onAnnouncement(const protocol::Announcement*);
+  void onAssignClientId(const protocol::AssignClientId*);
+
+  //
+  // Client event send methods
+  //
   void requestJoin();
 
-  void onConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t*);
+  //
+  // Connection status change callbacks
+  //
+  void onConnecting(HSteamNetConnection);
+  void onConnected(HSteamNetConnection);
+  void onProblemDetected(HSteamNetConnection);
+  void onClosedByPeer(HSteamNetConnection);
+  void onDisconnect(HSteamNetConnection);
 
+  //
+  // Helper methods
+  //
+  void receiveEvents();
+  void sendEvent(flatbuffers::FlatBufferBuilder&);
+  void sendQueuedEvents();
   static void callback_ConnectionStatusChanged(
       SteamNetConnectionStatusChangedCallback_t*);
 

@@ -85,6 +85,96 @@ void NetworkClient::update() {
 
   if (connection == k_HSteamNetConnection_Invalid) return;
 
+  receiveEvents();
+
+  if (event_queue.size() > 0) {
+    sendQueuedEvents();
+  }
+}
+
+void NetworkClient::disconnect() {
+  log_zone;
+
+  if (connection != k_HSteamNetConnection_Invalid) {
+    sockets->CloseConnection(connection, 0, "Client disconnect", true);
+    connection = k_HSteamNetConnection_Invalid;
+  }
+
+  state = ClientState::Disconnected;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Server event receive callbacks
+///////////////////////////////////////////////////////////////////////////////
+
+void NetworkClient::onAnnouncement(const protocol::Announcement* announcement) {
+  log_dbg("Server announcement: %s", announcement->message()->c_str());
+}
+
+void NetworkClient::onAssignClientId(
+    const protocol::AssignClientId* assign_client_id) {
+  client_id = static_cast<ClientId>(assign_client_id->new_id());
+  log_dbg("Assigned new ID #%d", client_id);
+  state = ClientState::Joined;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Client event send methods
+///////////////////////////////////////////////////////////////////////////////
+
+void NetworkClient::requestJoin() {
+  flatbuffers::FlatBufferBuilder builder;
+  builder.Clear();
+
+  auto username_offset = builder.CreateString("TestClient");
+
+  protocol::JoinRequestBuilder join_request(builder);
+  join_request.add_username(username_offset);
+  auto join_request_offset = join_request.Finish();
+
+  protocol::ClientEventBuilder event(builder);
+  event.add_type(protocol::ClientEventType::JoinRequest);
+  event.add_join_request(join_request_offset);
+  auto event_offset = event.Finish();
+
+  builder.Finish(event_offset);
+  sendEvent(builder);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Connection status change callbacks
+///////////////////////////////////////////////////////////////////////////////
+
+void NetworkClient::onConnecting(HSteamNetConnection) {
+  log_dbg("Connecting");
+  state = ClientState::Connecting;
+}
+
+void NetworkClient::onConnected(HSteamNetConnection) {
+  log_dbg("Connected");
+  requestJoin();
+}
+
+void NetworkClient::onProblemDetected(HSteamNetConnection) {
+  log_err("Failed to reach remote host");
+}
+
+void NetworkClient::onClosedByPeer(HSteamNetConnection) {
+  log_err("Problem detected locally");
+}
+
+void NetworkClient::onDisconnect(HSteamNetConnection connection) {
+  log_err("Forcefully disconnected");
+  sockets->CloseConnection(connection, 0, nullptr, false);
+  connection = k_HSteamNetConnection_Invalid;
+  state = ClientState::Disconnected;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Helper methods
+///////////////////////////////////////////////////////////////////////////////
+
+void NetworkClient::receiveEvents() {
   while (true) {
     ISteamNetworkingMessage* incoming_msg = nullptr;
     int msg_num =
@@ -108,16 +198,12 @@ void NetworkClient::update() {
       }
 
       case protocol::ServerEventType::Announcement: {
-        auto announcement = event->announcement();
-
-        log_dbg("Server announcement: %s", announcement->message()->c_str());
+        onAnnouncement(event->announcement());
         break;
       }
 
       case protocol::ServerEventType::AssignClientId: {
-        auto assign_client_id = event->assign_client_id();
-        client_id = static_cast<ClientId>(assign_client_id->new_id());
-        log_dbg("Assigned new ID #%d", client_id);
+        onAssignClientId(event->assign_client_id());
         break;
       }
 
@@ -129,9 +215,17 @@ void NetworkClient::update() {
 
     incoming_msg->Release();
   }
+}
 
-  if (event_queue.size() == 0) return;
+void NetworkClient::sendEvent(flatbuffers::FlatBufferBuilder& builder) {
+  uint8_t* event_data = builder.GetBufferPointer();
+  size_t event_size = builder.GetSize();
+  auto& event_buffer = event_queue.emplace_back();
+  event_buffer.data.resize(event_size);
+  memcpy(event_buffer.data.data(), event_data, event_size);
+}
 
+void NetworkClient::sendQueuedEvents() {
   std::vector<SteamNetworkingMessage_t*> outgoing_messages;
   outgoing_messages.reserve(event_queue.size());
 
@@ -156,42 +250,7 @@ void NetworkClient::update() {
   event_queue.clear();
 }
 
-void NetworkClient::disconnect() {
-  log_zone;
-
-  if (connection != k_HSteamNetConnection_Invalid) {
-    sockets->CloseConnection(connection, 0, "Client disconnect", true);
-    connection = k_HSteamNetConnection_Invalid;
-  }
-
-  state = ClientState::Disconnected;
-}
-
-void NetworkClient::requestJoin() {
-  flatbuffers::FlatBufferBuilder builder;
-  builder.Clear();
-
-  auto username_offset = builder.CreateString("TestClient");
-
-  protocol::JoinRequestBuilder join_request(builder);
-  join_request.add_username(username_offset);
-  auto join_request_offset = join_request.Finish();
-
-  protocol::ClientEventBuilder event(builder);
-  event.add_type(protocol::ClientEventType::JoinRequest);
-  event.add_join_request(join_request_offset);
-  auto event_offset = event.Finish();
-
-  builder.Finish(event_offset);
-
-  uint8_t* event_data = builder.GetBufferPointer();
-  size_t event_size = builder.GetSize();
-  auto& event_buffer = event_queue.emplace_back();
-  event_buffer.data.resize(event_size);
-  memcpy(event_buffer.data.data(), event_data, event_size);
-}
-
-void NetworkClient::onConnectionStatusChanged(
+void NetworkClient::callback_ConnectionStatusChanged(
     SteamNetConnectionStatusChangedCallback_t* event) {
   log_zone;
 
@@ -199,31 +258,24 @@ void NetworkClient::onConnectionStatusChanged(
 
   switch (event->m_info.m_eState) {
     case k_ESteamNetworkingConnectionState_Connecting: {
-      log_dbg("Connecting");
+      g_client->onConnecting(event->m_hConn);
       break;
     }
 
     case k_ESteamNetworkingConnectionState_Connected: {
-      log_dbg("Connected");
-      requestJoin();
+      g_client->onConnected(event->m_hConn);
       break;
     }
 
     case k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
     case k_ESteamNetworkingConnectionState_ClosedByPeer: {
-      log_err("Connection closed: %s", description.c_str());
-
-      if (event->m_eOldState == k_ESteamNetworkingConnectionState_Connecting) {
-        log_err("Failed to reach remote host");
+      if (event->m_eOldState ==
+          k_ESteamNetworkingConnectionState_ProblemDetectedLocally) {
+        g_client->onProblemDetected(event->m_hConn);
       } else if (event->m_eOldState ==
-                 k_ESteamNetworkingConnectionState_ProblemDetectedLocally) {
-        log_err("Problem detected locally");
-      } else {
-        log_err("Connection closed by server");
+                 k_ESteamNetworkingConnectionState_Connecting) {
+        g_client->onClosedByPeer(event->m_hConn);
       }
-
-      sockets->CloseConnection(event->m_hConn, 0, nullptr, false);
-      connection = k_HSteamNetConnection_Invalid;
 
       break;
     }
@@ -238,11 +290,6 @@ void NetworkClient::onConnectionStatusChanged(
       break;
     }
   }
-}
-
-void NetworkClient::callback_ConnectionStatusChanged(
-    SteamNetConnectionStatusChangedCallback_t* event) {
-  g_client->onConnectionStatusChanged(event);
 }
 
 }  // namespace mondradiko
