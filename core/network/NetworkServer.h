@@ -26,6 +26,10 @@ namespace mondradiko {
 // Forward declarations
 class Scene;
 
+namespace protocol {
+struct JoinRequest;
+};
+
 class NetworkServer {
  public:
   NetworkServer(Scene*, const char*, int);
@@ -40,11 +44,28 @@ class NetworkServer {
 
   std::unordered_map<ClientId, HSteamNetConnection> connections;
 
+  //
+  // Client event receive methods
+  //
+  void receiveEvents();
+  void onJoinRequest(const protocol::JoinRequest*);
+
+  //
+  // Server event send methods
+  //
   void sendAnnouncement(std::string);
   ClientId createNewConnection(HSteamNetConnection);
+  void sendEvent(flatbuffers::FlatBufferBuilder&, ClientId);
+  void sendQueuedEvents();
 
-  void onConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t*);
-
+  //
+  // Connection status change callbacks
+  //
+  void onConnecting(std::string, HSteamNetConnection);
+  void onConnected(std::string, HSteamNetConnection);
+  void onProblemDetected(std::string, HSteamNetConnection);
+  void onClosedByPeer(std::string, HSteamNetConnection);
+  void onDisconnect(std::string, HSteamNetConnection);
   static void callback_ConnectionStatusChanged(
       SteamNetConnectionStatusChangedCallback_t*);
 

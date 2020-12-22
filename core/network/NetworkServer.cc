@@ -91,6 +91,14 @@ void NetworkServer::update() {
 
   sockets->RunCallbacks();
 
+  receiveEvents();
+
+  if (event_queue.size() > 0) {
+    sendQueuedEvents();
+  }
+}
+
+void NetworkServer::receiveEvents() {
   while (true) {
     ISteamNetworkingMessage* incoming_msg = nullptr;
     int msg_num =
@@ -114,8 +122,7 @@ void NetworkServer::update() {
       }
 
       case protocol::ClientEventType::JoinRequest: {
-        auto join_request = event->join_request();
-        log_dbg("Client joined: %s", join_request->username()->c_str());
+        onJoinRequest(event->join_request());
         break;
       }
 
@@ -127,9 +134,72 @@ void NetworkServer::update() {
 
     incoming_msg->Release();
   }
+}
 
-  if (event_queue.size() == 0) return;
+void NetworkServer::onJoinRequest(const protocol::JoinRequest* join_request) {
+  log_dbg("Client joined: %s", join_request->username()->c_str());
+}
 
+void NetworkServer::sendAnnouncement(std::string message) {
+  flatbuffers::FlatBufferBuilder builder;
+  builder.Clear();
+
+  auto message_offset = builder.CreateString(message);
+
+  protocol::AnnouncementBuilder announcement(builder);
+  announcement.add_message(message_offset);
+  auto announcement_offset = announcement.Finish();
+
+  protocol::ServerEventBuilder event(builder);
+  event.add_type(protocol::ServerEventType::Announcement);
+  event.add_announcement(announcement_offset);
+  auto event_offset = event.Finish();
+
+  builder.Finish(event_offset);
+  sendEvent(builder, static_cast<ClientId>(protocol::ClientId::AllClients));
+}
+
+ClientId NetworkServer::createNewConnection(HSteamNetConnection connection) {
+  ClientId new_id = static_cast<ClientId>(protocol::ClientId::FirstClient);
+
+  while (true) {
+    auto it = connections.find(new_id);
+    if (it == connections.end()) break;
+    new_id++;
+  }
+
+  connections.emplace(new_id, connection);
+
+  flatbuffers::FlatBufferBuilder builder;
+  builder.Clear();
+
+  protocol::AssignClientIdBuilder assign_client_id(builder);
+  assign_client_id.add_new_id(
+      static_cast<mondradiko::protocol::ClientId>(new_id));
+  auto assign_client_id_offset = assign_client_id.Finish();
+
+  protocol::ServerEventBuilder event(builder);
+  event.add_type(protocol::ServerEventType::AssignClientId);
+  event.add_assign_client_id(assign_client_id_offset);
+  auto event_offset = event.Finish();
+
+  builder.Finish(event_offset);
+  sendEvent(builder, new_id);
+
+  return new_id;
+}
+
+void NetworkServer::sendEvent(flatbuffers::FlatBufferBuilder& builder,
+                              ClientId destination) {
+  uint8_t* event_data = builder.GetBufferPointer();
+  size_t event_size = builder.GetSize();
+  auto& event_buffer = event_queue.emplace_back();
+  event_buffer.destination = destination;
+  event_buffer.data.resize(event_size);
+  memcpy(event_buffer.data.data(), event_data, event_size);
+}
+
+void NetworkServer::sendQueuedEvents() {
   std::vector<QueuedEvent> baked_queue;
   baked_queue.reserve(event_queue.size());
 
@@ -178,69 +248,54 @@ void NetworkServer::update() {
                         nullptr);
 }
 
-void NetworkServer::sendAnnouncement(std::string message) {
-  flatbuffers::FlatBufferBuilder builder;
-  builder.Clear();
+void NetworkServer::onConnecting(std::string description,
+                                 HSteamNetConnection connection) {
+  log_dbg("Connection request from %s", description.c_str());
 
-  auto message_offset = builder.CreateString(message);
-
-  protocol::AnnouncementBuilder announcement(builder);
-  announcement.add_message(message_offset);
-  auto announcement_offset = announcement.Finish();
-
-  protocol::ServerEventBuilder event(builder);
-  event.add_type(protocol::ServerEventType::Announcement);
-  event.add_announcement(announcement_offset);
-  auto event_offset = event.Finish();
-
-  builder.Finish(event_offset);
-
-  uint8_t* event_data = builder.GetBufferPointer();
-  size_t event_size = builder.GetSize();
-  auto& event_buffer = event_queue.emplace_back();
-  event_buffer.destination =
-      static_cast<ClientId>(protocol::ClientId::AllClients);
-  event_buffer.data.resize(event_size);
-  memcpy(event_buffer.data.data(), event_data, event_size);
+  if (sockets->AcceptConnection(connection) != k_EResultOK) {
+    sockets->CloseConnection(connection, 0, nullptr, false);
+    log_err("Failed to accept connection from %s", description.c_str());
+  }
 }
 
-ClientId NetworkServer::createNewConnection(HSteamNetConnection connection) {
-  ClientId new_id = static_cast<ClientId>(protocol::ClientId::FirstClient);
+void NetworkServer::onConnected(std::string description,
+                                HSteamNetConnection connection) {
+  sockets->SetConnectionPollGroup(connection, poll_group);
+  ClientId new_id = createNewConnection(connection);
+  log_dbg("Client #%d connected", new_id);
+  std::string connect_message = "Welcome client #" + std::to_string(new_id);
+  sendAnnouncement(connect_message);
+}
 
-  while (true) {
-    auto it = connections.find(new_id);
-    if (it == connections.end()) break;
-    new_id++;
+void NetworkServer::onProblemDetected(std::string description,
+                                      HSteamNetConnection connection) {
+  log_dbg("Connection closed: Problem detected locally");
+}
+
+void NetworkServer::onClosedByPeer(std::string description,
+                                   HSteamNetConnection connection) {
+  log_dbg("Connection closed: Peer closed connection");
+}
+
+void NetworkServer::onDisconnect(std::string description,
+                                 HSteamNetConnection connection) {
+  ClientId client_id = 0;
+
+  for (auto& it : connections) {
+    if (it.second == connection) {
+      client_id = it.first;
+    }
   }
 
-  connections.emplace(new_id, connection);
+  if (client_id != 0) {
+    log_dbg("Client #%d disconnected", client_id);
+    connections.erase(client_id);
+  }
 
-  flatbuffers::FlatBufferBuilder builder;
-  builder.Clear();
-
-  protocol::AssignClientIdBuilder assign_client_id(builder);
-  assign_client_id.add_new_id(
-      static_cast<mondradiko::protocol::ClientId>(new_id));
-  auto assign_client_id_offset = assign_client_id.Finish();
-
-  protocol::ServerEventBuilder event(builder);
-  event.add_type(protocol::ServerEventType::AssignClientId);
-  event.add_assign_client_id(assign_client_id_offset);
-  auto event_offset = event.Finish();
-
-  builder.Finish(event_offset);
-
-  uint8_t* event_data = builder.GetBufferPointer();
-  size_t event_size = builder.GetSize();
-  auto& event_buffer = event_queue.emplace_back();
-  event_buffer.destination = new_id;
-  event_buffer.data.resize(event_size);
-  memcpy(event_buffer.data.data(), event_data, event_size);
-
-  return new_id;
+  sockets->CloseConnection(connection, 0, nullptr, false);
 }
 
-void NetworkServer::onConnectionStatusChanged(
+void NetworkServer::callback_ConnectionStatusChanged(
     SteamNetConnectionStatusChangedCallback_t* event) {
   log_zone;
 
@@ -248,23 +303,12 @@ void NetworkServer::onConnectionStatusChanged(
 
   switch (event->m_info.m_eState) {
     case k_ESteamNetworkingConnectionState_Connecting: {
-      log_dbg("Connection request from %s", description.c_str());
-
-      if (sockets->AcceptConnection(event->m_hConn) != k_EResultOK) {
-        sockets->CloseConnection(event->m_hConn, 0, nullptr, false);
-        log_err("Failed to accept connection from %s", description.c_str());
-        break;
-      }
-
+      g_server->onConnecting(description, event->m_hConn);
       break;
     }
 
     case k_ESteamNetworkingConnectionState_Connected: {
-      sockets->SetConnectionPollGroup(event->m_hConn, poll_group);
-      ClientId new_id = createNewConnection(event->m_hConn);
-      log_dbg("Client #%d connected", new_id);
-      std::string connect_message = "Welcome client #" + std::to_string(new_id);
-      sendAnnouncement(connect_message);
+      g_server->onConnected(description, event->m_hConn);
       break;
     }
 
@@ -272,25 +316,12 @@ void NetworkServer::onConnectionStatusChanged(
     case k_ESteamNetworkingConnectionState_ClosedByPeer: {
       if (event->m_eOldState ==
           k_ESteamNetworkingConnectionState_ProblemDetectedLocally) {
-        log_dbg("Connection closed: Problem detected locally");
+        g_server->onProblemDetected(description, event->m_hConn);
       } else {
-        log_dbg("Connection closed: Peer closed connection");
+        g_server->onClosedByPeer(description, event->m_hConn);
       }
 
-      ClientId client_id = 0;
-
-      for (auto& it : connections) {
-        if (it.second == event->m_hConn) {
-          client_id = it.first;
-        }
-      }
-
-      if (client_id != 0) {
-        log_dbg("Client #%d disconnected", client_id);
-        connections.erase(client_id);
-      }
-
-      sockets->CloseConnection(event->m_hConn, 0, nullptr, false);
+      g_server->onDisconnect(description, event->m_hConn);
 
       break;
     }
@@ -305,11 +336,6 @@ void NetworkServer::onConnectionStatusChanged(
       break;
     }
   }
-}
-
-void NetworkServer::callback_ConnectionStatusChanged(
-    SteamNetConnectionStatusChangedCallback_t* event) {
-  g_server->onConnectionStatusChanged(event);
 }
 
 }  // namespace mondradiko
