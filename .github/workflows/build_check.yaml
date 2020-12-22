@@ -39,11 +39,11 @@ jobs:
           popd
           popd
 
-      - name: Install PhysicsFS
+      - name: Install libktx
         shell: bash
         run: |
-          hg clone https://hg.icculus.org/icculus/physfs
-          pushd physfs
+          git clone https://github.com/KhronosGroup/KTX-Software
+          pushd KTX-Software
           mkdir build
           pushd build
           cmake -GNinja ..
