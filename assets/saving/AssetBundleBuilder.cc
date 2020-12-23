@@ -103,9 +103,15 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
   for (uint32_t lump_index = 0; lump_index < lumps.size(); lump_index++) {
     auto& lump = lumps[lump_index];
 
+    log_dbg("Writing lump %d", lump_index);
+    log_dbg("Lump size: %lu", lump.total_size);
+
     {
+      LumpHash checksum = XXH3_64bits(lump.data, lump.total_size);
+      log_dbg("Lump has checksum 0x%016lx", checksum);
+
       AssetRegistryLumpEntry lump_entry;
-      lump_entry.checksum = XXH3_64bits(lump.data, lump.total_size);
+      lump_entry.checksum = checksum;
       lump_entry.hash_method = LumpHashMethod::xxHash;
       lump_entry.compression_method = LumpCompressionMethod::None;
       lump_entry.asset_count = lump.assets.size();
