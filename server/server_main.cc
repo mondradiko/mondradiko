@@ -51,7 +51,7 @@ int main(int argc, const char* argv[]) {
     Filesystem fs("../test-folder/");
 
     Scene scene(&fs, nullptr);
-    NetworkServer server(&scene, "127.0.0.1", 10555);
+    NetworkServer server(&fs, &scene, "127.0.0.1", 10555);
 
     while (!g_interrupted) {
       if (!scene.update()) break;

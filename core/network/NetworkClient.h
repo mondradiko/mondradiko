@@ -21,6 +21,7 @@
 namespace mondradiko {
 
 // Forward declarations
+class Filesystem;
 class Scene;
 
 namespace protocol {
@@ -32,7 +33,7 @@ enum class ClientState { Disconnected, Connecting, Joining, Joined };
 
 class NetworkClient {
  public:
-  NetworkClient(Scene*, const char*, int);
+  NetworkClient(Filesystem*, Scene*, const char*, int);
   ~NetworkClient();
 
   void update();
@@ -41,6 +42,7 @@ class NetworkClient {
   ClientState state = ClientState::Disconnected;
 
  private:
+  Filesystem* fs;
   Scene* scene;
 
   ISteamNetworkingSockets* sockets;

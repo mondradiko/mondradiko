@@ -15,6 +15,7 @@
 #include <sstream>
 #include <string>
 
+#include "core/filesystem/Filesystem.h"
 #include "core/scene/Scene.h"
 #include "log/log.h"
 #include "protocol/ClientEvent_generated.h"
@@ -28,9 +29,9 @@ namespace mondradiko {
 // GameNetworkingSockets doesn't give us a choice here
 NetworkClient* g_client = nullptr;
 
-NetworkClient::NetworkClient(Scene* scene, const char* server_ip,
-                             int server_port)
-    : scene(scene) {
+NetworkClient::NetworkClient(Filesystem* fs, Scene* scene,
+                             const char* server_ip, int server_port)
+    : fs(fs), scene(scene) {
   log_zone;
 
   if (g_client) {
