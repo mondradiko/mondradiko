@@ -22,13 +22,27 @@ namespace mondradiko {
 class Filesystem;
 class GpuInstance;
 
+namespace protocol {
+struct WorldEvent;
+
+struct SpawnEntity;
+}
+
 class World {
  public:
   World(Filesystem*, GpuInstance*);
   ~World();
 
-  void testInitialize();
+  //
+  // World event callbacks
+  //
+  void onSpawnEntity(const protocol::SpawnEntity*);
+
+  //
+  // Helper methods
+  //
   bool update();
+  void processEvent(const protocol::WorldEvent*);
 
   Filesystem* fs;
   GpuInstance* gpu;

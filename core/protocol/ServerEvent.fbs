@@ -16,7 +16,7 @@ table AssignClientId {
 
 enum ServerEventType : ushort {
   NoMessage = 0,
-  WorldEvent,
+  WorldUpdate,
   Announcement,
   AssignClientId
 }
@@ -24,7 +24,7 @@ enum ServerEventType : ushort {
 table ServerEvent {
   type:ServerEventType;
 
-  world_event:WorldEvent;
+  world_update:[WorldEvent];
   announcement:Announcement;
   assign_client_id:AssignClientId;
 }

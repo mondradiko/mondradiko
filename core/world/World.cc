@@ -20,6 +20,7 @@
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
+#include "protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 
@@ -36,43 +37,15 @@ World::~World() {
   asset_pool.unloadAll<TextureAsset>();
 }
 
-void World::testInitialize() {
-  EntityId parent_entity;
+///////////////////////////////////////////////////////////////////////////////
+// World event callbacks
+///////////////////////////////////////////////////////////////////////////////
 
-  {
-    MeshRendererComponent mesh_renderer{
-        .mesh_asset = asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
-        .material_asset =
-            asset_pool.loadAsset<MaterialAsset>(0xd316e038, gpu)};
+void World::onSpawnEntity(const protocol::SpawnEntity* event) {}
 
-    TransformComponent transform;
-    transform.parent = NullEntity;
-    transform.local_transform = glm::mat4(1.0);
-
-    parent_entity = registry.create();
-    registry.emplace<MeshRendererComponent>(parent_entity, mesh_renderer);
-    registry.emplace<TransformComponent>(parent_entity, transform);
-  }
-
-  for (uint32_t i = 0; i < 10; i++) {
-    MeshRendererComponent mesh_renderer{
-        .mesh_asset = asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
-        .material_asset =
-            asset_pool.loadAsset<MaterialAsset>(0xd316e038, gpu)};
-
-    TransformComponent transform;
-    transform.parent = parent_entity;
-    transform.local_transform = glm::mat4(1.0);
-    transform.local_transform =
-        glm::translate(transform.local_transform, glm::vec3(0.0, -2.0, 0.0));
-
-    auto test_entity = registry.create();
-    registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer);
-    registry.emplace<TransformComponent>(test_entity, transform);
-
-    parent_entity = test_entity;
-  }
-}
+///////////////////////////////////////////////////////////////////////////////
+// Helper methods
+///////////////////////////////////////////////////////////////////////////////
 
 bool World::update() {
   log_zone;
@@ -119,6 +92,25 @@ bool World::update() {
 
   FrameMark;
   return true;
+}
+
+void World::processEvent(const protocol::WorldEvent* event) {
+  switch (event->type()) {
+    case protocol::WorldEventType::NoEvent: {
+      log_dbg("Received empty world event");
+      break;
+    }
+
+    case protocol::WorldEventType::SpawnEntity: {
+      onSpawnEntity(event->spawn_entity());
+      break;
+    }
+
+    default: {
+      log_err("Unrecognized world event %d", event->type());
+      break;
+    }
+  }
 }
 
 }  // namespace mondradiko

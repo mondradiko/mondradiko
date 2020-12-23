@@ -20,6 +20,7 @@
 #include "log/log.h"
 #include "protocol/ClientEvent_generated.h"
 #include "protocol/ServerEvent_generated.h"
+#include "protocol/WorldEvent_generated.h"
 #include "steam/isteamnetworkingutils.h"
 #include "steam/steamnetworkingsockets.h"
 
@@ -200,6 +201,15 @@ void NetworkClient::receiveEvents() {
     switch (event->type()) {
       case protocol::ServerEventType::NoMessage: {
         log_dbg("Received empty server event");
+        break;
+      }
+
+      case protocol::ServerEventType::WorldUpdate: {
+        auto world_update = event->world_update();
+        for (uint32_t i = 0; i < world_update->size(); i++) {
+          world->processEvent(world_update->Get(i));
+        }
+
         break;
       }
 
