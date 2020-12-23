@@ -80,14 +80,6 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
         return AssetResult::BadSize;
       }
 
-      auto lump_file = generateLumpName(lump_index);
-      auto lump_path = bundle_root / lump_file;
-
-      if (!std::filesystem::exists(lump_path)) {
-        registry_file.close();
-        return AssetResult::FileNotFound;
-      }
-
       uint32_t asset_offset = 0;
 
       for (uint32_t asset_index = 0; asset_index < lump_entry.asset_count;
@@ -137,6 +129,27 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
   }
 
   registry_file.close();
+
+  for (uint32_t i = 0; i < lump_cache.size(); i++) {
+    auto lump_file = generateLumpName(i);
+    auto lump_path = bundle_root / lump_file;
+
+    if (!std::filesystem::exists(lump_path)) {
+      registry_file.close();
+      return AssetResult::FileNotFound;
+    }
+
+    AssetLump lump(lump_path);
+
+    if (!lump.assertLength(lump_cache[i].expected_length)) {
+      return AssetResult::BadSize;
+    }
+
+    if (!lump.assertHash(lump_cache[i].hash_method, lump_cache[i].checksum)) {
+      return AssetResult::InvalidChecksum;
+    }
+  }
+
   return AssetResult::Success;
 }
 
