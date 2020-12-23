@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 include "types.fbs";
+include "WorldEvent.fbs";
 
 namespace mondradiko.protocol;
 
@@ -15,6 +16,7 @@ table AssignClientId {
 
 enum ServerEventType : ushort {
   NoMessage = 0,
+  WorldEvent,
   Announcement,
   AssignClientId
 }
@@ -22,6 +24,7 @@ enum ServerEventType : ushort {
 table ServerEvent {
   type:ServerEventType;
 
+  world_event:WorldEvent;
   announcement:Announcement;
   assign_client_id:AssignClientId;
 }

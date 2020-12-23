@@ -25,7 +25,7 @@ namespace mondradiko {
 
 // Forward declarations
 class Filesystem;
-class Scene;
+class World;
 
 namespace protocol {
 struct JoinRequest;
@@ -33,14 +33,14 @@ struct JoinRequest;
 
 class NetworkServer {
  public:
-  NetworkServer(Filesystem*, Scene*, const char*, int);
+  NetworkServer(Filesystem*, World*, const char*, int);
   ~NetworkServer();
 
   void update();
 
  private:
   Filesystem* fs;
-  Scene* scene;
+  World* world;
 
   ISteamNetworkingSockets* sockets;
 

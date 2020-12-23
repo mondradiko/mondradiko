@@ -1,7 +1,7 @@
 /**
- * @file Scene.cc
+ * @file World.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Contains Scene configuration, updates and stores Entities, loads
+ * @brief Contains World configuration, updates and stores Entities, loads
  * models, and receives Events from scripts/network/etc.
  * @date 2020-10-24
  *
@@ -10,7 +10,7 @@
  *
  */
 
-#include "core/scene/Scene.h"
+#include "core/world/World.h"
 
 #include <iostream>
 
@@ -23,12 +23,12 @@
 
 namespace mondradiko {
 
-Scene::Scene(Filesystem* fs, GpuInstance* gpu)
+World::World(Filesystem* fs, GpuInstance* gpu)
     : fs(fs), gpu(gpu), asset_pool(fs) {
   log_zone;
 }
 
-Scene::~Scene() {
+World::~World() {
   log_zone;
 
   asset_pool.unloadAll<MeshAsset>();
@@ -36,7 +36,7 @@ Scene::~Scene() {
   asset_pool.unloadAll<TextureAsset>();
 }
 
-void Scene::testInitialize() {
+void World::testInitialize() {
   EntityId parent_entity;
 
   {
@@ -74,7 +74,7 @@ void Scene::testInitialize() {
   }
 }
 
-bool Scene::update() {
+bool World::update() {
   log_zone;
 
   {

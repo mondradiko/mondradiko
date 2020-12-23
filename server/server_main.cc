@@ -20,7 +20,7 @@
 #include "log/log.h"
 #include "core/network/NetworkServer.h"
 #include "core/renderer/Renderer.h"
-#include "core/scene/Scene.h"
+#include "core/world/World.h"
 
 // The using statement is fine because
 // this is the main entrypoint
@@ -50,11 +50,11 @@ int main(int argc, const char* argv[]) {
   try {
     Filesystem fs("../test-folder/");
 
-    Scene scene(&fs, nullptr);
-    NetworkServer server(&fs, &scene, "127.0.0.1", 10555);
+    World world(&fs, nullptr);
+    NetworkServer server(&fs, &world, "127.0.0.1", 10555);
 
     while (!g_interrupted) {
-      if (!scene.update()) break;
+      if (!world.update()) break;
       server.update();
     }
   } catch (const std::exception& e) {

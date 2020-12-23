@@ -1,7 +1,7 @@
 /**
- * @file Scene.h
+ * @file World.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Contains Scene configuration, updates and stores Entities, loads
+ * @brief Contains world configuration, updates and stores Entities, loads
  * models, and receives Events from scripts/network/etc.
  * @date 2020-10-24
  *
@@ -22,10 +22,10 @@ namespace mondradiko {
 class Filesystem;
 class GpuInstance;
 
-class Scene {
+class World {
  public:
-  Scene(Filesystem*, GpuInstance*);
-  ~Scene();
+  World(Filesystem*, GpuInstance*);
+  ~World();
 
   void testInitialize();
   bool update();

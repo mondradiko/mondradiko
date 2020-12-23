@@ -1,7 +1,7 @@
 /**
  * @file NetworkServer.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Hosts a port and communicates to connecting clients with scene events
+ * @brief Hosts a port and communicates to connecting clients with world events
  * and server metadata.
  * @date 2020-12-06
  *
@@ -15,10 +15,11 @@
 #include <string>
 
 #include "core/filesystem/Filesystem.h"
-#include "core/scene/Scene.h"
+#include "core/world/World.h"
 #include "log/log.h"
 #include "protocol/ClientEvent_generated.h"
 #include "protocol/ServerEvent_generated.h"
+#include "protocol/WorldEvent_generated.h"
 #include "steam/isteamnetworkingutils.h"
 #include "steam/steamnetworkingsockets.h"
 
@@ -28,9 +29,9 @@ namespace mondradiko {
 // GameNetworkingSockets doesn't give us a choice here
 NetworkServer* g_server = nullptr;
 
-NetworkServer::NetworkServer(Filesystem* fs, Scene* scene,
+NetworkServer::NetworkServer(Filesystem* fs, World* world,
                              const char* server_address, int server_port)
-    : fs(fs), scene(scene) {
+    : fs(fs), world(world) {
   log_zone;
 
   if (g_server) {

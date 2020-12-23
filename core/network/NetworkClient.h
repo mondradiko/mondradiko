@@ -22,7 +22,7 @@ namespace mondradiko {
 
 // Forward declarations
 class Filesystem;
-class Scene;
+class World;
 
 namespace protocol {
 struct Announcement;
@@ -33,7 +33,7 @@ enum class ClientState { Disconnected, Connecting, Joining, Joined };
 
 class NetworkClient {
  public:
-  NetworkClient(Filesystem*, Scene*, const char*, int);
+  NetworkClient(Filesystem*, World*, const char*, int);
   ~NetworkClient();
 
   void update();
@@ -43,7 +43,7 @@ class NetworkClient {
 
  private:
   Filesystem* fs;
-  Scene* scene;
+  World* world;
 
   ISteamNetworkingSockets* sockets;
 

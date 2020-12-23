@@ -7,3 +7,11 @@ enum ClientId : uint32 {
   AllClients = 0,
   FirstClient
 }
+
+enum EntityId : uint32 {
+  NullEntity = 0
+}
+
+enum AssetId : uint32 {
+  NullAsset = 0
+}

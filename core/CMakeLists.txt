@@ -18,6 +18,7 @@ add_subdirectory(protocol)
 flatc_schemas(PROTOCOL_HEADERS
   protocol/ClientEvent.fbs
   protocol/ServerEvent.fbs
+  protocol/WorldEvent.fbs
   protocol/types.fbs
 )
 
@@ -47,7 +48,7 @@ set(MONDRADIKO_CORE_SRC
   renderer/Renderer.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
-  scene/Scene.cc
+  world/World.cc
 )
 
 add_library(mondradiko-core STATIC ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})

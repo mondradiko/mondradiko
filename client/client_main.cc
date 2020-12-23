@@ -21,7 +21,7 @@
 #include "core/gpu/GpuInstance.h"
 #include "core/network/NetworkClient.h"
 #include "core/renderer/Renderer.h"
-#include "core/scene/Scene.h"
+#include "core/world/World.h"
 #include "log/log.h"
 
 // The using statement is fine because
@@ -44,10 +44,10 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   }
 
   Renderer renderer(display, gpu);
-  Scene scene(fs, gpu);
-  NetworkClient client(fs, &scene, "127.0.0.1", 10555);
+  World world(fs, gpu);
+  NetworkClient client(fs, &world, "127.0.0.1", 10555);
 
-  scene.testInitialize();
+  world.testInitialize();
 
   while (!g_interrupted) {
     DisplayPollEventsInfo poll_info;
@@ -60,10 +60,10 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
       DisplayBeginFrameInfo frame_info;
       display->beginFrame(&frame_info);
 
-      if (!scene.update()) break;
+      if (!world.update()) break;
 
       if (frame_info.should_render) {
-        renderer.renderFrame(scene.registry, &scene.asset_pool);
+        renderer.renderFrame(world.registry, &world.asset_pool);
       }
 
       display->endFrame(&frame_info);
