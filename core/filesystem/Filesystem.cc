@@ -30,9 +30,14 @@ Filesystem::Filesystem(const std::filesystem::path& asset_bundle_root)
 
 Filesystem::~Filesystem() {}
 
+void Filesystem::getChecksums(std::vector<assets::LumpHash>& checksums) {
+  asset_bundle.getChecksums(checksums);
+}
+
 bool Filesystem::loadAsset(assets::ImmutableAsset* asset, AssetId id) {
   if (!asset_bundle.isAssetRegistered(id)) {
-    log_ftl("Asset 0x%08x does not exist", id);
+    log_err("Asset 0x%08x does not exist", id);
+    return false;
   }
 
   return asset_bundle.loadAsset(asset, id);

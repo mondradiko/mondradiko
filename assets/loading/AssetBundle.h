@@ -30,6 +30,7 @@ class AssetBundle {
 
   AssetResult loadRegistry(const char*);
 
+  void getChecksums(std::vector<LumpHash>&);
   bool isAssetRegistered(AssetId);
   bool loadAsset(ImmutableAsset*, AssetId);
 

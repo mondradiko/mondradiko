@@ -140,6 +140,14 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
   return AssetResult::Success;
 }
 
+void AssetBundle::getChecksums(std::vector<LumpHash>& checksums) {
+  checksums.resize(lump_cache.size());
+
+  for (uint32_t i = 0; i < lump_cache.size(); i++) {
+    checksums[i] = lump_cache[i].checksum;
+  }
+}
+
 bool AssetBundle::isAssetRegistered(AssetId id) {
   return asset_lookup.find(id) != asset_lookup.end();
 }

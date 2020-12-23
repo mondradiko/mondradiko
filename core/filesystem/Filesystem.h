@@ -24,6 +24,7 @@ class Filesystem {
   explicit Filesystem(const std::filesystem::path&);
   ~Filesystem();
 
+  void getChecksums(std::vector<assets::LumpHash>&);
   bool loadAsset(assets::ImmutableAsset*, AssetId);
 
  private:
