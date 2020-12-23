@@ -46,7 +46,15 @@ class AssetPool {
       asset_registry.emplace<DummyAsset>(asset_entity, asset_component);
     } else {
       assets::ImmutableAsset asset_data;
-      fs->loadAsset(&asset_data, id);
+
+      if (!fs->loadAsset(&asset_data, id)) {
+        DummyAsset asset_component;
+        asset_component.type = typeid(AssetType).name();
+        asset_component.binding = typeid(Binding).name();
+
+        asset_registry.emplace<DummyAsset>(asset_entity, asset_component);
+        return asset_entity;
+      }
 
       AssetType* asset_component = new AssetType(asset_data, this, binding);
       asset_component->loaded = true;
