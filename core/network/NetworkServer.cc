@@ -105,9 +105,36 @@ void NetworkServer::update() {
 
 void NetworkServer::onJoinRequest(ClientId client_id,
                                   const protocol::JoinRequest* join_request) {
-  log_dbg("Client joined: %s", join_request->username()->c_str());
-  std::string connect_message = "Welcome client #" + std::to_string(client_id);
-  sendAnnouncement(connect_message);
+  std::vector<assets::LumpHash> our_checksums;
+  fs->getChecksums(our_checksums);
+
+  log_dbg("Checking client lump checksums");
+
+  bool check_passed = true;
+
+  if (join_request->lump_checksums()->size() != our_checksums.size()) {
+    log_dbg("Checksum count mismatch (we have %d, they have %d",
+            our_checksums.size(), join_request->lump_checksums()->size());
+    check_passed = false;
+  } else {
+    for (uint32_t i = 0; i < our_checksums.size(); i++) {
+      log_dbg("Checking checksum %d: 0x%016lx", i, our_checksums[i]);
+      auto their_checksum = join_request->lump_checksums()->Get(i);
+      if (our_checksums[i] != their_checksum) {
+        log_dbg("Checksum mismatch (client has 0x%016lx)", their_checksum);
+        check_passed = false;
+        break;
+      }
+    }
+  }
+
+  if (check_passed) {
+    log_dbg("Client joined: %s", join_request->username()->c_str());
+    std::string connect_message = "Welcome client #" + std::to_string(client_id);
+    sendAnnouncement(connect_message);
+  } else {
+    log_dbg("Client join request denied: %d", client_id);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

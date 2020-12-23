@@ -84,7 +84,7 @@ void NetworkClient::update() {
 
   sockets->RunCallbacks();
 
-  if (connection == k_HSteamNetConnection_Invalid) return;
+  if (state == ClientState::Disconnected) return;
 
   receiveEvents();
 
@@ -129,8 +129,13 @@ void NetworkClient::requestJoin() {
 
   auto username_offset = builder.CreateString("TestClient");
 
+  std::vector<assets::LumpHash> lump_checksums;
+  fs->getChecksums(lump_checksums);
+  auto lump_checksums_offset = builder.CreateVector(lump_checksums);
+
   protocol::JoinRequestBuilder join_request(builder);
   join_request.add_username(username_offset);
+  join_request.add_lump_checksums(lump_checksums_offset);
   auto join_request_offset = join_request.Finish();
 
   protocol::ClientEventBuilder event(builder);
@@ -275,8 +280,12 @@ void NetworkClient::callback_ConnectionStatusChanged(
         g_client->onProblemDetected(event->m_hConn);
       } else if (event->m_eOldState ==
                  k_ESteamNetworkingConnectionState_Connecting) {
+        g_client->onProblemDetected(event->m_hConn);
+      } else {
         g_client->onClosedByPeer(event->m_hConn);
       }
+
+      g_client->onDisconnect(event->m_hConn);
 
       break;
     }
