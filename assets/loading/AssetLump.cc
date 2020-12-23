@@ -92,11 +92,11 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
   lump_file.close();
 
   if (computed_hash == checksum) {
-    log_inf("Checksum passed with value 0x%08x", checksum);
+    log_inf("Checksum passed with value 0x%016x", checksum);
     return true;
   } else {
     log_err(
-        "Calculated checksum 0x%08x does not match expected checksum 0x%08x",
+        "Calculated checksum 0x%016x does not match expected checksum 0x%016x",
         computed_hash, checksum);
     return false;
   }

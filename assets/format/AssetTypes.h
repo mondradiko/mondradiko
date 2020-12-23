@@ -38,7 +38,7 @@ enum class AssetResult {
   DuplicateAsset
 };
 
-using LumpHash = uint32_t;
+using LumpHash = uint64_t;
 
 enum class LumpHashMethod : uint8_t { None = 0, xxHash = 1 };
 
