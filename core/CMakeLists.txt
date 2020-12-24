@@ -49,6 +49,7 @@ set(MONDRADIKO_CORE_SRC
   network/NetworkClient.cc
   network/NetworkServer.cc
   world/World.cc
+  world/WorldEventSorter.cc
 )
 
 add_library(mondradiko-core STATIC ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})

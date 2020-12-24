@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core/components/Component.h"
 #include "core/network/NetworkShared.h"
 #include "flatbuffers/flatbuffers.h"
 #include "steam/isteamnetworkingsockets.h"
@@ -25,7 +26,7 @@ namespace mondradiko {
 
 // Forward declarations
 class Filesystem;
-class World;
+class WorldEventSorter;
 
 namespace protocol {
 struct JoinRequest;
@@ -33,14 +34,16 @@ struct JoinRequest;
 
 class NetworkServer {
  public:
-  NetworkServer(Filesystem*, World*, const char*, int);
+  NetworkServer(Filesystem*, WorldEventSorter*, const char*, int);
   ~NetworkServer();
+
+  void sendTestEvent(EntityId);
 
   void update();
 
  private:
   Filesystem* fs;
-  World* world;
+  WorldEventSorter* world_event_sorter;
 
   ISteamNetworkingSockets* sockets;
 
@@ -70,6 +73,7 @@ class NetworkServer {
   // Helper methods
   //
   void receiveEvents();
+  void sendWorldUpdates();
   void sendEvent(flatbuffers::FlatBufferBuilder&, ClientId);
   void sendQueuedEvents();
   static void callback_ConnectionStatusChanged(

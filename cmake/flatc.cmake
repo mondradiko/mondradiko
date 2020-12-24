@@ -18,7 +18,7 @@ function(flatc_schema ret FBS)
 
   add_custom_command(
 		OUTPUT ${HEADER}
-		COMMAND ${FLATC_COMMAND} --scoped-enums -c -o ${OUTPUTDIR} ${FBS} 
+		COMMAND ${FLATC_COMMAND} --gen-object-api --scoped-enums -c -o ${OUTPUTDIR} ${FBS} 
 		DEPENDS ${FBS})
 
 	set(${ret} "${HEADER}" PARENT_SCOPE)

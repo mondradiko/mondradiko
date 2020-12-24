@@ -205,6 +205,7 @@ void NetworkClient::receiveEvents() {
       }
 
       case protocol::ServerEventType::WorldUpdate: {
+        log_dbg("Received world update event");
         auto world_update = event->world_update();
         for (uint32_t i = 0; i < world_update->size(); i++) {
           world->processEvent(world_update->Get(i));

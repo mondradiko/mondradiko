@@ -11,16 +11,18 @@
 
 #include <csignal>
 #include <iostream>
+#include <memory>
 
 #include "core/assets/AssetPool.h"
 #include "core/common/api_headers.h"
 #include "core/displays/SdlDisplay.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
-#include "log/log.h"
 #include "core/network/NetworkServer.h"
 #include "core/renderer/Renderer.h"
 #include "core/world/World.h"
+#include "core/world/WorldEventSorter.h"
+#include "log/log.h"
 
 // The using statement is fine because
 // this is the main entrypoint
@@ -51,9 +53,13 @@ int main(int argc, const char* argv[]) {
     Filesystem fs("../test-folder/");
 
     World world(&fs, nullptr);
-    NetworkServer server(&fs, &world, "127.0.0.1", 10555);
+    WorldEventSorter world_event_sorter(&world);
+    NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
 
     while (!g_interrupted) {
+      auto test_entity = world.registry.create();
+      server.sendTestEvent(test_entity);
+      
       if (!world.update()) break;
       server.update();
     }

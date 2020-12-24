@@ -16,6 +16,7 @@
 
 #include "core/filesystem/Filesystem.h"
 #include "core/world/World.h"
+#include "core/world/WorldEventSorter.h"
 #include "log/log.h"
 #include "protocol/ClientEvent_generated.h"
 #include "protocol/ServerEvent_generated.h"
@@ -29,9 +30,10 @@ namespace mondradiko {
 // GameNetworkingSockets doesn't give us a choice here
 NetworkServer* g_server = nullptr;
 
-NetworkServer::NetworkServer(Filesystem* fs, World* world,
+NetworkServer::NetworkServer(Filesystem* fs,
+                             WorldEventSorter* world_event_sorter,
                              const char* server_address, int server_port)
-    : fs(fs), world(world) {
+    : fs(fs), world_event_sorter(world_event_sorter) {
   log_zone;
 
   if (g_server) {
@@ -88,12 +90,25 @@ NetworkServer::~NetworkServer() {
   }
 }
 
+void NetworkServer::sendTestEvent(EntityId test_entity) {
+  auto test_event = std::make_unique<protocol::WorldEventT>();
+  test_event->type = protocol::WorldEventType::SpawnEntity;
+  test_event->spawn_entity =
+      std::make_unique<protocol::SpawnEntity>(static_cast<protocol::EntityId>(test_entity));
+  world_event_sorter->processEvent(test_event);
+}
+
 void NetworkServer::update() {
   log_zone;
 
   sockets->RunCallbacks();
 
   receiveEvents();
+
+  if (world_event_sorter->isOutOfDate()) {
+    sendWorldUpdates();
+    world_event_sorter->clearQueue();
+  }
 
   if (event_queue.size() > 0) {
     sendQueuedEvents();
@@ -290,6 +305,20 @@ void NetworkServer::receiveEvents() {
 
     incoming_msg->Release();
   }
+}
+
+void NetworkServer::sendWorldUpdates() {
+  flatbuffers::FlatBufferBuilder builder;
+  
+  auto update_offset = world_event_sorter->broadcastGlobalEvents(builder);
+
+  protocol::ServerEventBuilder event_builder(builder);
+  event_builder.add_type(protocol::ServerEventType::WorldUpdate);
+  event_builder.add_world_update(update_offset);
+  auto event_offset = event_builder.Finish();
+
+  builder.Finish(event_offset);
+  sendEvent(builder, static_cast<ClientId>(protocol::ClientId::AllClients));
 }
 
 void NetworkServer::sendEvent(flatbuffers::FlatBufferBuilder& builder,
