@@ -240,7 +240,7 @@ void MeshPass::destroyFrameData(MeshPassFrameData& frame) {
   if (frame.mesh_buffer != nullptr) delete frame.mesh_buffer;
 }
 
-void MeshPass::allocateDescriptors(entt::registry& registry,
+void MeshPass::allocateDescriptors(EntityRegistry& registry,
                                    MeshPassFrameData& frame,
                                    const AssetPool* asset_pool,
                                    GpuDescriptorPool* descriptor_pool) {
@@ -304,7 +304,7 @@ void MeshPass::allocateDescriptors(entt::registry& registry,
   }
 }
 
-void MeshPass::render(entt::registry& registry, MeshPassFrameData& frame,
+void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
                       const AssetPool* asset_pool,
                       VkCommandBuffer commandBuffer,
                       GpuDescriptorSet* viewport_descriptor,

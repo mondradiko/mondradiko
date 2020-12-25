@@ -175,7 +175,7 @@ Renderer::~Renderer() {
     vkDestroyRenderPass(gpu->device, composite_pass, nullptr);
 }
 
-void Renderer::renderFrame(entt::registry& registry,
+void Renderer::renderFrame(EntityRegistry& registry,
                            const AssetPool* asset_pool) {
   log_zone;
 

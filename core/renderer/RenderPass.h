@@ -3,10 +3,10 @@
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Common render pass structures.
  * @date 2020-12-19
- * 
+ *
  * @copyright Copyright (c) 2020 Marceline Cramer
  * SPDX-License-Identifier: LGPL-3.0-or-later
- * 
+ *
  */
 
 #pragma once
@@ -14,8 +14,8 @@
 #include <unordered_map>
 
 #include "core/assets/AssetPool.h"
-#include "core/components/Component.h"
 #include "core/common/vulkan_headers.h"
+#include "core/world/World.h"
 
 namespace mondradiko {
 

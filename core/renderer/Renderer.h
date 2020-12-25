@@ -38,7 +38,7 @@ class Renderer {
   Renderer(DisplayInterface*, GpuInstance*);
   ~Renderer();
 
-  void renderFrame(entt::registry&, const AssetPool*);
+  void renderFrame(EntityRegistry&, const AssetPool*);
 
   VkRenderPass composite_pass = VK_NULL_HANDLE;
 

@@ -15,7 +15,4 @@
 
 namespace mondradiko {
 
-using EntityId = entt::entity;
-static const EntityId NullEntity = entt::null;
-
 }  // namespace mondradiko

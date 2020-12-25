@@ -64,9 +64,9 @@ class OverlayPass {
 
   void createFrameData(OverlayPassFrameData&);
   void destroyFrameData(OverlayPassFrameData&);
-  void allocateDescriptors(entt::registry&, OverlayPassFrameData&,
+  void allocateDescriptors(EntityRegistry&, OverlayPassFrameData&,
                            const AssetPool*, GpuDescriptorPool*);
-  void render(entt::registry&, OverlayPassFrameData&, const AssetPool*,
+  void render(EntityRegistry&, OverlayPassFrameData&, const AssetPool*,
               VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 
   VkPipelineLayout debug_pipeline_layout = VK_NULL_HANDLE;

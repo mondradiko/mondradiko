@@ -191,7 +191,7 @@ void OverlayPass::destroyFrameData(OverlayPassFrameData& frame) {
   if (frame.debug_indices != nullptr) delete frame.debug_indices;
 }
 
-void OverlayPass::allocateDescriptors(entt::registry& registry,
+void OverlayPass::allocateDescriptors(EntityRegistry& registry,
                                       OverlayPassFrameData& frame,
                                       const AssetPool* asset_pool,
                                       GpuDescriptorPool* descriptor_pool) {
@@ -200,7 +200,7 @@ void OverlayPass::allocateDescriptors(entt::registry& registry,
   frame.index_count = 0;
 }
 
-void OverlayPass::render(entt::registry& registry, OverlayPassFrameData& frame,
+void OverlayPass::render(EntityRegistry& registry, OverlayPassFrameData& frame,
                          const AssetPool* asset_pool,
                          VkCommandBuffer command_buffer,
                          GpuDescriptorSet* viewport_descriptor,

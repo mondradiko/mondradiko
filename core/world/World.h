@@ -26,7 +26,12 @@ namespace protocol {
 struct WorldEvent;
 
 struct SpawnEntity;
-}
+}  // namespace protocol
+
+// TODO(marceline-cramer) Reflect types from protocol
+using EntityId = uint32_t;
+static const EntityId NullEntity = 0;
+using EntityRegistry = entt::basic_registry<EntityId>;
 
 class World {
  public:
@@ -48,7 +53,7 @@ class World {
   GpuInstance* gpu;
 
   // private:
-  entt::registry registry;
+  EntityRegistry registry;
   AssetPool asset_pool;
 };
 

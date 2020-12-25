@@ -18,7 +18,6 @@
 
 #include "core/assets/AssetPool.h"
 #include "core/common/glm_headers.h"
-#include "core/components/Component.h"
 #include "core/renderer/RenderPass.h"
 
 namespace mondradiko {
@@ -43,9 +42,9 @@ class MeshPass {
 
   void createFrameData(MeshPassFrameData&);
   void destroyFrameData(MeshPassFrameData&);
-  void allocateDescriptors(entt::registry&, MeshPassFrameData&,
-                           const AssetPool*, GpuDescriptorPool*);
-  void render(entt::registry&, MeshPassFrameData&, const AssetPool*,
+  void allocateDescriptors(EntityRegistry&, MeshPassFrameData&, const AssetPool*,
+                           GpuDescriptorPool*);
+  void render(EntityRegistry&, MeshPassFrameData&, const AssetPool*,
               VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 
   GpuDescriptorSetLayout* material_layout;

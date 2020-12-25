@@ -17,8 +17,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/components/Component.h"
 #include "core/network/NetworkShared.h"
+#include "core/world/World.h"
 #include "flatbuffers/flatbuffers.h"
 #include "steam/isteamnetworkingsockets.h"
 
