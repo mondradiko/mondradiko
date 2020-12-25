@@ -26,6 +26,8 @@ set(MONDRADIKO_LIB_SRC
 
 add_library(mondradiko-lib STATIC ${MONDRADIKO_LIB_SRC})
 
+target_link_libraries(mondradiko-lib PUBLIC wasmtime)
+
 target_link_libraries(mondradiko-lib PUBLIC GameNetworkingSockets)
 target_include_directories(mondradiko-lib PUBLIC GameNetworkingSockets/include)
 
