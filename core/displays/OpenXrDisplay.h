@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "core/common/openxr_headers.h"
 #include "core/displays/DisplayInterface.h"
 
 namespace mondradiko {
@@ -39,8 +40,8 @@ class OpenXrDisplay : public DisplayInterface {
     return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   }
   VkFormat getDepthFormat() final {
-      // TODO(marceline-cramer) OxrDisplay depth image
-      return VK_FORMAT_D32_SFLOAT;
+    // TODO(marceline-cramer) OxrDisplay depth image
+    return VK_FORMAT_D32_SFLOAT;
   }
 
   void pollEvents(DisplayPollEventsInfo*) final;
@@ -67,7 +68,7 @@ class OpenXrDisplay : public DisplayInterface {
 
   XrDebugUtilsMessengerCreateInfoEXT debug_messenger_info;
 
-      VkFormat swapchain_format;
+  VkFormat swapchain_format;
 
   std::vector<OpenXrViewport*> viewports;
 

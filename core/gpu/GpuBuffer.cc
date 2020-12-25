@@ -11,6 +11,8 @@
 
 #include "core/gpu/GpuBuffer.h"
 
+#include <cstring>
+
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 

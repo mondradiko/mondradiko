@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "core/common/glm_headers.h"
 #include "core/components/Component.h"
 
 namespace mondradiko {

@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "core/assets/AssetPool.h"
-#include "core/common/api_headers.h"
 #include "core/renderer/RenderPass.h"
 
 namespace mondradiko {

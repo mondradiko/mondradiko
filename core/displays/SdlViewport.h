@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include "core/common/sdl2_headers.h"
 #include "core/displays/ViewportInterface.h"
 
 namespace mondradiko {

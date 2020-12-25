@@ -11,8 +11,7 @@
 
 #pragma once
 
-#include "lib/entt.hpp"
-#include "glm/glm.hpp"
+#include "core/common/api_headers.h"
 
 namespace mondradiko {
 

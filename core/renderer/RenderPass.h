@@ -15,7 +15,7 @@
 
 #include "core/assets/AssetPool.h"
 #include "core/components/Component.h"
-#include "core/common/api_headers.h"
+#include "core/common/vulkan_headers.h"
 
 namespace mondradiko {
 

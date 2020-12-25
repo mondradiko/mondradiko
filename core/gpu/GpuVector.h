@@ -11,9 +11,10 @@
 
 #pragma once
 
+#include <cstring>
 #include <typeinfo>
 
-#include "core/common/api_headers.h"
+#include "core/common/vulkan_headers.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"

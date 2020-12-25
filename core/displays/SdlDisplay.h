@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include "core/common/api_headers.h"
+#include "core/common/sdl2_headers.h"
 #include "core/displays/DisplayInterface.h"
 
 namespace mondradiko {
