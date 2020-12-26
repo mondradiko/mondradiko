@@ -317,11 +317,12 @@ void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
   viewport_descriptor->updateDynamicOffset(0, viewport_offset);
   viewport_descriptor->cmdBind(commandBuffer, pipeline_layout, 0);
 
-  auto mesh_renderers = registry.view<MeshRendererComponent>();
+  auto mesh_renderers =
+      registry.view<MeshRendererComponent, TransformComponent>();
   for (EntityId e : mesh_renderers) {
     log_zone_named("Render mesh");
 
-    auto mesh_renderer = mesh_renderers.get(e);
+    auto mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
     frame.material_descriptor->updateDynamicOffset(
