@@ -1,6 +1,3 @@
 [submodule "tracy"]
 	path = lib/tracy
 	url = https://github.com/wolfpld/tracy
-[submodule "GameNetworkingSockets"]
-	path = lib/GameNetworkingSockets
-	url = https://github.com/ValveSoftware/GameNetworkingSockets
