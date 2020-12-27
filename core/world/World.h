@@ -15,12 +15,14 @@
 #include <map>
 
 #include "core/assets/AssetPool.h"
+#include "core/world/Entity.h"
 
 namespace mondradiko {
 
 // Forward declarations
 class Filesystem;
 class GpuInstance;
+class ScriptEnvironment;
 
 namespace protocol {
 struct WorldEvent;
@@ -28,15 +30,12 @@ struct WorldEvent;
 struct SpawnEntity;
 }  // namespace protocol
 
-// TODO(marceline-cramer) Reflect types from protocol
-using EntityId = uint32_t;
-static const EntityId NullEntity = 0;
-using EntityRegistry = entt::basic_registry<EntityId>;
-
 class World {
  public:
-  World(Filesystem*, GpuInstance*);
+  World(Filesystem*, GpuInstance*, ScriptEnvironment*);
   ~World();
+
+  void testInitialize();
 
   //
   // World event callbacks
@@ -51,6 +50,7 @@ class World {
 
   Filesystem* fs;
   GpuInstance* gpu;
+  ScriptEnvironment* scripts;
 
   // private:
   EntityRegistry registry;

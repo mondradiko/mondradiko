@@ -30,6 +30,7 @@ configure_file(build_config.h.in build_config.h)
 set(MONDRADIKO_CORE_SRC
   assets/MaterialAsset.cc
   assets/MeshAsset.cc
+  assets/ScriptAsset.cc
   assets/TextureAsset.cc
   displays/OpenXrDisplay.cc
   displays/OpenXrViewport.cc
@@ -46,6 +47,7 @@ set(MONDRADIKO_CORE_SRC
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
   renderer/Renderer.cc
+  scripting/ScriptEnvironment.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
   world/World.cc
@@ -53,6 +55,7 @@ set(MONDRADIKO_CORE_SRC
 )
 
 add_library(mondradiko-core STATIC ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
+
 target_link_libraries(mondradiko-core mondradiko-assets)
 target_link_libraries(mondradiko-core mondradiko-log)
 target_link_libraries(mondradiko-core mondradiko-lib)

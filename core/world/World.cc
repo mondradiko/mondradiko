@@ -14,27 +14,51 @@
 
 #include <iostream>
 
+#include "core/assets/ScriptAsset.h"
 #include "core/assets/TextureAsset.h"
 #include "core/components/MeshRendererComponent.h"
+#include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
+#include "core/scripting/ScriptEnvironment.h"
 #include "log/log.h"
 #include "protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 
-World::World(Filesystem* fs, GpuInstance* gpu)
-    : fs(fs), gpu(gpu), asset_pool(fs) {
+World::World(Filesystem* fs, GpuInstance* gpu, ScriptEnvironment* scripts)
+    : fs(fs), gpu(gpu), scripts(scripts), asset_pool(fs) {
   log_zone;
 }
 
 World::~World() {
   log_zone;
 
-  asset_pool.unloadAll<MeshAsset>();
   asset_pool.unloadAll<MaterialAsset>();
+  asset_pool.unloadAll<MeshAsset>();
+  asset_pool.unloadAll<ScriptAsset>();
   asset_pool.unloadAll<TextureAsset>();
+}
+
+void World::testInitialize() {
+  auto test_entity = registry.create();
+
+  MeshRendererComponent mesh_renderer_component{
+      .mesh_asset = asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
+      .material_asset = asset_pool.loadAsset<MaterialAsset>(0xf643d4dc, gpu)};
+
+  ScriptComponent script_component{
+      .script_asset = asset_pool.loadAsset<ScriptAsset>(0x31069ecf, scripts)};
+
+  TransformComponent transform_component{
+    .parent = NullEntity,
+    .local_transform = glm::mat4(1.0)
+  };
+
+  registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer_component);
+  registry.emplace<ScriptComponent>(test_entity, script_component);
+  registry.emplace<TransformComponent>(test_entity, transform_component);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
