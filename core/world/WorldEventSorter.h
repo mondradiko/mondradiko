@@ -24,22 +24,25 @@ struct World;
 namespace protocol {
 struct WorldEvent;
 struct WorldEventT;
-}
+}  // namespace protocol
 
 class WorldEventSorter {
  public:
-  WorldEventSorter(World*);
+  explicit WorldEventSorter(World*);
   ~WorldEventSorter();
 
   void processEvent(std::unique_ptr<protocol::WorldEventT>&);
 
-  using WorldUpdate = flatbuffers::Vector<flatbuffers::Offset<mondradiko::protocol::WorldEvent>>;
+  using WorldUpdate = flatbuffers::Vector<
+      flatbuffers::Offset<mondradiko::protocol::WorldEvent>>;
   using WorldUpdateOffset = flatbuffers::Offset<WorldUpdate>;
 
-  WorldUpdateOffset broadcastGlobalEvents(flatbuffers::FlatBufferBuilder&) const;
+  WorldUpdateOffset broadcastGlobalEvents(
+      flatbuffers::FlatBufferBuilder&) const;
 
   bool isOutOfDate();
   void clearQueue();
+
  private:
   World* world;
 

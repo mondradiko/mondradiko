@@ -12,7 +12,9 @@
 
 #pragma once
 
+#include <deque>
 #include <queue>
+#include <vector>
 
 #include "core/network/NetworkShared.h"
 #include "flatbuffers/flatbuffers.h"

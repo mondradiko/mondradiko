@@ -12,6 +12,7 @@
 
 #include "core/network/NetworkServer.h"
 
+#include <memory>
 #include <string>
 
 #include "core/filesystem/Filesystem.h"
@@ -93,8 +94,8 @@ NetworkServer::~NetworkServer() {
 void NetworkServer::sendTestEvent(EntityId test_entity) {
   auto test_event = std::make_unique<protocol::WorldEventT>();
   test_event->type = protocol::WorldEventType::SpawnEntity;
-  test_event->spawn_entity =
-      std::make_unique<protocol::SpawnEntity>(static_cast<protocol::EntityId>(test_entity));
+  test_event->spawn_entity = std::make_unique<protocol::SpawnEntity>(
+      static_cast<protocol::EntityId>(test_entity));
   world_event_sorter->processEvent(test_event);
 }
 
@@ -146,7 +147,8 @@ void NetworkServer::onJoinRequest(ClientId client_id,
 
   if (check_passed) {
     log_dbg("Client joined: %s", join_request->username()->c_str());
-    std::string connect_message = "Welcome client #" + std::to_string(client_id);
+    std::string connect_message =
+        "Welcome client #" + std::to_string(client_id);
     sendAnnouncement(connect_message);
   } else {
     log_dbg("Client join request denied: %d", client_id);
@@ -309,7 +311,7 @@ void NetworkServer::receiveEvents() {
 
 void NetworkServer::sendWorldUpdates() {
   flatbuffers::FlatBufferBuilder builder;
-  
+
   auto update_offset = world_event_sorter->broadcastGlobalEvents(builder);
 
   protocol::ServerEventBuilder event_builder(builder);

@@ -14,6 +14,7 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "core/filesystem/Filesystem.h"
 #include "core/world/World.h"
