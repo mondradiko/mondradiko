@@ -15,6 +15,8 @@
 
 #include "assets/saving/AssetBundleBuilder.h"
 #include "converter/assimp_converter.h"
+#include "converter/wasm_converter.h"
+#include "log/log.h"
 
 using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 
@@ -27,6 +29,9 @@ int main(int argc, const char* argv[]) {
     std::cerr << "whoops" << std::endl;
     return 1;
   }
+
+  auto script_id = wat_convert(&bundle_builder, "../test-folder/helloworld.wat");
+  log_dbg("Added ScriptAsset: 0x%0lx", script_id);
 
   bundle_builder.buildBundle("registry.bin");
 
