@@ -7,49 +7,11 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
-
-      - name: Install Dependencies
-        shell: bash
-        run: |
-          sudo apt update
-          sudo apt install cmake libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
-                           libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
-                           libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
-                           mesa-common-dev \
-                           pkg-config libvulkan-dev libglm-dev libphysfs-dev \
-                           libassimp-dev ninja-build libsdl2-dev glslang-tools \
-                           libxxhash-dev liblz4-dev \
-                           flatbuffers-compiler \
-                           libprotobuf-dev libzstd-dev
-
-      - name: Install OpenXR SDK
-        shell: bash
-        run: |
-          git clone https://github.com/KhronosGroup/OpenXR-SDK
-          pushd OpenXR-SDK
-          mkdir build
-          pushd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=Off -DPRESENTATION_BACKEND=xlib -DDYNAMIC_LOADER=ON -DOpenGL_GL_PREFERENCE=GLVND -GNinja ..
-          sudo ninja install
-          popd
-          popd
-
-      - name: Install libktx
-        shell: bash
-        run: |
-          git clone https://github.com/KhronosGroup/KTX-Software
-          pushd KTX-Software
-          mkdir build
-          pushd build
-          cmake -GNinja ..
-          sudo ninja install
-          popd
-          popd
 
       - name: Compile
         shell: bash
