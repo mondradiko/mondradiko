@@ -6,7 +6,6 @@ add_subdirectory(GameNetworkingSockets)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(ASSIMP REQUIRED assimp)
-pkg_check_modules(PHYSFS REQUIRED physfs)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(OPENXR REQUIRED openxr)
 pkg_check_modules(XXHASH REQUIRED libxxhash)
@@ -25,6 +24,9 @@ set(MONDRADIKO_LIB_SRC
 )
 
 add_library(mondradiko-lib STATIC ${MONDRADIKO_LIB_SRC})
+
+# Add C++ std::filesystem
+target_link_libraries(mondradiko-lib PUBLIC stdc++fs)
 
 target_link_libraries(mondradiko-lib PUBLIC wasmtime)
 
