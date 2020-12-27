@@ -59,9 +59,6 @@ int main(int argc, const char* argv[]) {
     NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
 
     while (!g_interrupted) {
-      auto test_entity = world.registry.create();
-      server.sendTestEvent(test_entity);
-      
       if (!world.update()) break;
       server.update();
     }
