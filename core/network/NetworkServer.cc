@@ -91,14 +91,6 @@ NetworkServer::~NetworkServer() {
   }
 }
 
-void NetworkServer::sendTestEvent(EntityId test_entity) {
-  auto test_event = std::make_unique<protocol::WorldEventT>();
-  test_event->type = protocol::WorldEventType::SpawnEntity;
-  test_event->spawn_entity = std::make_unique<protocol::SpawnEntity>(
-      static_cast<protocol::EntityId>(test_entity));
-  world_event_sorter->processEvent(test_event);
-}
-
 void NetworkServer::update() {
   log_zone;
 
