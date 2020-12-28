@@ -59,29 +59,44 @@ int main(int argc, const char* argv[]) {
     WorldEventSorter world_event_sorter(&world);
     NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
 
+    world.testInitialize();
+
     // TODO(marceline-cramer) CVARs
-    const double MAX_FPS = 20.0;
+    const double MAX_FPS = 30.0;
+    const double MAX_UPDATES_PER_SECOND = 10.0;
 
     const double min_frame_time = 1.0 / MAX_FPS;
+    const double min_update_time = 1.0 / MAX_UPDATES_PER_SECOND;
 
     using clock = std::chrono::high_resolution_clock;
+    std::chrono::time_point last_frame = clock::now();
     std::chrono::time_point last_update = clock::now();
 
     while (!g_interrupted) {
       if (!world.update()) break;
+
+      auto current_time = clock::now();
+
+      if (std::chrono::duration<double, std::chrono::seconds::period>(
+              current_time - last_update)
+              .count() > min_update_time) {
+        server.updateWorld();
+        last_update = current_time;
+      }
+
       server.update();
 
       while (true) {
-        auto current_time = clock::now();
+        current_time = clock::now();
         auto time_elapsed =
             std::chrono::duration<double, std::chrono::seconds::period>(
-                current_time - last_update)
+                current_time - last_frame)
                 .count();
 
         if (time_elapsed >= min_frame_time) break;
       }
 
-      last_update = clock::now();
+      last_frame = current_time;
     }
   } catch (const std::exception& e) {
     log_err("Mondradiko server failed with message:");

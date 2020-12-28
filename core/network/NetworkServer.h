@@ -39,6 +39,7 @@ class NetworkServer {
 
   void sendTestEvent(EntityId);
 
+  void updateWorld();
   void update();
 
  private:
