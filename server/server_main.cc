@@ -9,6 +9,7 @@
  *
  */
 
+#include <chrono>
 #include <csignal>
 #include <iostream>
 #include <memory>
@@ -58,9 +59,29 @@ int main(int argc, const char* argv[]) {
     WorldEventSorter world_event_sorter(&world);
     NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
 
+    // TODO(marceline-cramer) CVARs
+    const double MAX_FPS = 20.0;
+
+    const double min_frame_time = 1.0 / MAX_FPS;
+
+    using clock = std::chrono::high_resolution_clock;
+    std::chrono::time_point last_update = clock::now();
+
     while (!g_interrupted) {
       if (!world.update()) break;
       server.update();
+
+      while (true) {
+        auto current_time = clock::now();
+        auto time_elapsed =
+            std::chrono::duration<double, std::chrono::seconds::period>(
+                current_time - last_update)
+                .count();
+
+        if (time_elapsed >= min_frame_time) break;
+      }
+
+      last_update = clock::now();
     }
   } catch (const std::exception& e) {
     log_err("Mondradiko server failed with message:");
