@@ -1,4 +1,4 @@
-The following users have contributed source code to Mondradiko:
+The following GitHub users have contributed source code to Mondradiko:
 
-- Marceline Cramer (GitHub: @marceline-cramer)
-- Turtle1331 (GitHub: @Turtle1331)
+- @marceline-cramer
+- @Turtle1331
