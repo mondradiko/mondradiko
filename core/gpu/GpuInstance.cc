@@ -5,7 +5,7 @@
  * VMA allocator, etc.
  * @date 2020-10-24
  *
- * @copyright Copyright (c) 2020 Marceline Cramer
+ * @copyright Copyright (c) 2020 the Mondradiko contributors.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  *
  */
@@ -16,35 +16,11 @@
 #include <set>
 
 #include "./build_config.h"
+#include "core/common/vulkan_validation.h"
 #include "core/displays/DisplayInterface.h"
 #include "log/log.h"
 
 namespace mondradiko {
-
-static VKAPI_ATTR VkBool32 VKAPI_CALL
-debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-              VkDebugUtilsMessageTypeFlagsEXT messageType,
-              const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-              void* pUserData) {
-  LogLevel severity;
-
-  switch (messageSeverity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-      severity = LOG_LEVEL_INFO;
-      break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-      severity = LOG_LEVEL_WARNING;
-      break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-    default:
-      severity = LOG_LEVEL_ERROR;
-      break;
-  }
-
-  // Add "../src/" so that it's clipped off in logging
-  log("../src/VulkanValidation", 0, severity, pCallbackData->pMessage);
-  return VK_FALSE;
-}
 
 GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
   log_zone;
@@ -210,7 +186,7 @@ void GpuInstance::populateDebugMessengerCreateInfo(
       .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                      VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                      VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-      .pfnUserCallback = debugCallback};
+      .pfnUserCallback = debugCallbackVulkan};
 }
 
 void GpuInstance::createInstance(VulkanRequirements* requirements) {
