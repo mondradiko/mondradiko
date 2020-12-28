@@ -37,8 +37,6 @@ class TransformComponent {
   void update();
 
   // Serialization methods
-  static constexpr protocol::ComponentType COMPONENT_TYPE =
-      protocol::ComponentType::TransformComponent;
   const protocol::TransformComponent& getData() { return data; }
   void writeData(const protocol::TransformComponent& _data) { data = _data; }
 

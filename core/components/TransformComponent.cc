@@ -1,17 +1,19 @@
 /**
  * @file TransformComponent.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief 
+ * @brief
  * @date 2020-12-27
- * 
+ *
  * @copyright Copyright (c) 2020 Marceline Cramer
  * SPDX-License-Identifier: LGPL-3.0-or-later
- * 
+ *
  */
 
 #include "core/components/TransformComponent.h"
 
 #include <chrono>
+
+#include "protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 
@@ -19,7 +21,8 @@ glm::mat4 TransformComponent::getLocalTransform() {
   auto orientation = data.orientation();
   auto position = data.position();
 
-  glm::quat converted_orientation(orientation.w(), orientation.x(), orientation.y(), orientation.z());
+  glm::quat converted_orientation(orientation.w(), orientation.x(),
+                                  orientation.y(), orientation.z());
   glm::vec3 converted_position(position.x(), position.y(), position.z());
 
   glm::mat4 transform =
@@ -34,8 +37,18 @@ void TransformComponent::update() {
   float time = std::chrono::duration<float, std::chrono::seconds::period>(
                    current_time - start_time)
                    .count();
-  
+
   data.mutable_position().mutate_x(sin(time));
+}
+
+// Template specialization to build UpdateComponents event
+template <>
+void buildUpdateComponents<protocol::TransformComponent>(
+    protocol::UpdateComponentsBuilder& update_components,
+    flatbuffers::Offset<
+        flatbuffers::Vector<const protocol::TransformComponent*>>& components) {
+  update_components.add_type(protocol::ComponentType::TransformComponent);
+  update_components.add_transform(components);
 }
 
 }  // namespace mondradiko
