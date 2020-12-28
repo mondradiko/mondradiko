@@ -4,7 +4,7 @@
  * @brief Base class for a core asset and its ID.
  * @date 2020-12-12
  *
- * @copyright Copyright (c) 2020 Marceline Cramer
+ * @copyright Copyright (c) 2020 the Mondradiko contributors.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  *
  */

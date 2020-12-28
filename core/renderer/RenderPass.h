@@ -4,7 +4,7 @@
  * @brief Common render pass structures.
  * @date 2020-12-19
  *
- * @copyright Copyright (c) 2020 Marceline Cramer
+ * @copyright Copyright (c) 2020 the Mondradiko contributors.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  *
  */
