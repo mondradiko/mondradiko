@@ -4,7 +4,7 @@
  * @brief Structs and constants for asset file manipulation.
  * @date 2020-12-10
  *
- * @copyright Copyright (c) 2020 Marceline Cramer
+ * @copyright Copyright (c) 2020 the Mondradiko contributors.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  *
  */
