@@ -4,7 +4,7 @@
  * @brief Implements an OpenXR VR display interface.
  * @date 2020-11-08
  *
- * @copyright Copyright (c) 2020 Marceline Cramer
+ * @copyright Copyright (c) 2020 the Mondradiko contributors.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  *
  */
@@ -12,6 +12,7 @@
 #include "core/displays/OpenXrDisplay.h"
 
 #include "./build_config.h"
+#include "core/common/openxr_validation.h"
 #include "core/displays/OpenXrViewport.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
@@ -21,30 +22,6 @@
                         reinterpret_cast<PFN_xrVoidFunction*>(&fnPtr))
 
 namespace mondradiko {
-
-static XRAPI_ATTR XrBool32 XRAPI_CALL
-debugCallback(XrDebugUtilsMessageSeverityFlagsEXT message_severity,
-              XrDebugUtilsMessageTypeFlagsEXT message_type,
-              const XrDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-              void* pUserData) {
-  LogLevel severity;
-
-  switch (message_severity) {
-    case XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-      severity = LOG_LEVEL_INFO;
-      break;
-    case XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-      severity = LOG_LEVEL_WARNING;
-      break;
-    case XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-    default:
-      severity = LOG_LEVEL_ERROR;
-      break;
-  }
-
-  log("OpenXRValidation", 0, severity, pCallbackData->message);
-  return VK_FALSE;
-}
 
 void splitString(std::vector<std::string>* split, const std::string& source) {
   split->clear();
@@ -75,7 +52,7 @@ OpenXrDisplay::OpenXrDisplay() {
                         XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                         XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
                         XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT,
-        .userCallback = debugCallback};
+        .userCallback = debugCallbackOpenXR};
   }
 
   {
