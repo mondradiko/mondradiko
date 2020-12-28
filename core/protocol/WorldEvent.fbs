@@ -3,21 +3,31 @@
 
 include "types.fbs";
 
+include "TransformComponent.fbs";
+
 namespace mondradiko.protocol;
 
 struct SpawnEntity {
   new_id:EntityId;
 }
 
+table UpdateComponents {
+  type:ComponentType;
+  entities:[EntityId];
+  transform:[TransformComponent];
+}
+
 enum WorldEventType : ushort {
   NoEvent = 0,
-  SpawnEntity
+  SpawnEntity,
+  UpdateComponents
 }
 
 table WorldEvent {
   type:WorldEventType;
 
   spawn_entity:SpawnEntity;
+  update_components:UpdateComponents;
 }
 
 root_type WorldEvent;

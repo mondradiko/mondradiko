@@ -12,6 +12,24 @@ enum EntityId : uint32 {
   NullEntity = 0
 }
 
+enum ComponentType : ushort {
+  NoComponent = 0,
+  TransformComponent
+}
+
 enum AssetId : uint32 {
   NullAsset = 0
+}
+
+struct Vec3 {
+  x:float;
+  y:float;
+  z:float;
+}
+
+struct Quaternion {
+  w:float;
+  x:float;
+  y:float;
+  z:float;
 }
