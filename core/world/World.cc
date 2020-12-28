@@ -44,20 +44,18 @@ World::~World() {
 void World::testInitialize() {
   auto test_entity = registry.create();
 
-  MeshRendererComponent mesh_renderer_component{
+  /*MeshRendererComponent mesh_renderer_component{
       .mesh_asset = asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
       .material_asset = asset_pool.loadAsset<MaterialAsset>(0xf643d4dc, gpu)};
 
   ScriptComponent script_component{
-      .script_asset = asset_pool.loadAsset<ScriptAsset>(0x31069ecf, scripts)};
+      .script_asset = asset_pool.loadAsset<ScriptAsset>(0x31069ecf, scripts)};*/
 
-  TransformComponent transform_component{
-    .parent = NullEntity,
-    .local_transform = glm::mat4(1.0)
-  };
+  TransformComponent transform_component;
 
-  registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer_component);
-  registry.emplace<ScriptComponent>(test_entity, script_component);
+  // registry.emplace<MeshRendererComponent>(test_entity,
+  // mesh_renderer_component); registry.emplace<ScriptComponent>(test_entity,
+  // script_component);
   registry.emplace<TransformComponent>(test_entity, transform_component);
 }
 
@@ -65,7 +63,39 @@ void World::testInitialize() {
 // World event callbacks
 ///////////////////////////////////////////////////////////////////////////////
 
-void World::onSpawnEntity(const protocol::SpawnEntity* event) {}
+void World::onSpawnEntity(const protocol::SpawnEntity* event) {
+  EntityId server_id = static_cast<EntityId>(event->new_id());
+
+  if (server_ids.find(server_id) != server_ids.end()) {
+    return;
+  }
+
+  EntityId new_id = registry.create(server_id);
+  server_ids.emplace(server_id, new_id);
+}
+
+void World::onUpdateComponents(
+    const protocol::UpdateComponents* update_components) {
+  auto entities = update_components->entities();
+
+  switch (update_components->type()) {
+    case protocol::ComponentType::NoComponent: {
+      log_dbg("Received empty component update");
+      break;
+    }
+
+    case protocol::ComponentType::TransformComponent: {
+      updateComponents<TransformComponent>(entities,
+                                           update_components->transform());
+      break;
+    }
+
+    default: {
+      log_err("Unrecognized component type %d", update_components->type());
+      break;
+    }
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper methods
@@ -80,7 +110,13 @@ bool World::update() {
     auto transform_view = registry.view<TransformComponent>();
 
     for (EntityId e : transform_view) {
-      transform_view.get(e).this_entity = e;
+      TransformComponent& transform = transform_view.get(e);
+
+      //transform.update();
+
+      // TODO(marceline-cramer) Networked transform hierarchies
+      transform.local_parent = NullEntity;
+      transform.this_entity = e;
     }
   }
 
@@ -90,7 +126,7 @@ bool World::update() {
     registry.sort<TransformComponent>(
         [](const auto& parent, const auto& child) {
           // Sort children after parents
-          return parent.this_entity >= child.parent;
+          return parent.this_entity >= child.local_parent;
         });
   }
 
@@ -103,14 +139,17 @@ bool World::update() {
       TransformComponent& transform = transform_view.get(e);
 
       glm::mat4 parent_transform;
-      if (transform.parent == NullEntity) {
+      if (transform.local_parent == NullEntity) {
         parent_transform = glm::mat4(1.0);
       } else {
         parent_transform =
-            registry.get<TransformComponent>(transform.parent).world_transform;
+            registry.get<TransformComponent>(transform.local_parent)
+                .world_transform;
       }
 
-      transform.world_transform = parent_transform * transform.local_transform;
+      glm::mat4 local_transform = transform.getLocalTransform();
+
+      transform.world_transform = parent_transform * local_transform;
     }
   }
 
@@ -130,9 +169,45 @@ void World::processEvent(const protocol::WorldEvent* event) {
       break;
     }
 
+    case protocol::WorldEventType::UpdateComponents: {
+      onUpdateComponents(event->update_components());
+      break;
+    }
+
     default: {
       log_err("Unrecognized world event %d", event->type());
       break;
+    }
+  }
+}
+
+template <class ComponentType, class ProtocolComponentType>
+void World::updateComponents(
+    const flatbuffers::Vector<EntityId>* entities,
+    const flatbuffers::Vector<const ProtocolComponentType*>* components) {
+  if (entities->size() != components->size()) {
+    log_err("Size mismatch between entities and components");
+    return;
+  }
+
+  for (uint32_t i = 0; i < entities->size(); i++) {
+    EntityId server_entity = entities->Get(i);
+
+    auto it = server_ids.find(server_entity);
+    EntityId client_entity;
+    if (it == server_ids.end()) {
+      client_entity = registry.create();
+      server_ids.emplace(server_entity, client_entity);
+    } else {
+      client_entity = it->second;
+    }
+
+    const ProtocolComponentType& component = *components->Get(i);
+
+    if (registry.has<ComponentType>(client_entity)) {
+      registry.get<ComponentType>(client_entity).writeData(component);
+    } else {
+      registry.emplace<ComponentType>(client_entity, component);
     }
   }
 }

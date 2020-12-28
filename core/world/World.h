@@ -12,10 +12,11 @@
 
 #pragma once
 
-#include <map>
+#include <unordered_map>
 
 #include "core/assets/AssetPool.h"
 #include "core/world/Entity.h"
+#include "flatbuffers/flatbuffers.h"
 
 namespace mondradiko {
 
@@ -28,6 +29,7 @@ namespace protocol {
 struct WorldEvent;
 
 struct SpawnEntity;
+struct UpdateComponents;
 }  // namespace protocol
 
 class World {
@@ -41,12 +43,18 @@ class World {
   // World event callbacks
   //
   void onSpawnEntity(const protocol::SpawnEntity*);
+  void onUpdateComponents(const protocol::UpdateComponents*);
 
   //
   // Helper methods
   //
   bool update();
   void processEvent(const protocol::WorldEvent*);
+
+  template <class ComponentType, class ProtocolComponentType>
+  void updateComponents(
+      const flatbuffers::Vector<EntityId>*,
+      const flatbuffers::Vector<const ProtocolComponentType*>*);
 
   Filesystem* fs;
   GpuInstance* gpu;
@@ -55,6 +63,8 @@ class World {
   // private:
   EntityRegistry registry;
   AssetPool asset_pool;
+
+  std::unordered_map<EntityId, EntityId> server_ids;
 };
 
 }  // namespace mondradiko
