@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include "core/components/TransformComponent.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
@@ -198,6 +199,79 @@ void OverlayPass::allocateDescriptors(EntityRegistry& registry,
   log_zone;
 
   frame.index_count = 0;
+  DebugDrawIndex vertex_count = 0;
+
+  auto transform_view = registry.view<TransformComponent>();
+
+  for (auto& e : transform_view) {
+    auto& transform = transform_view.get(e).world_transform;
+
+    {
+      // Draw X line
+
+      DebugDrawVertex vertex1{
+          .position = transform * glm::vec4(1.0, 0.0, 0.0, 1.0),
+          .color = glm::vec3(1.0, 0.0, 0.0)};
+
+      frame.debug_vertices->writeElement(vertex_count, vertex1);
+      frame.debug_indices->writeElement(frame.index_count, vertex_count);
+      vertex_count++;
+      frame.index_count++;
+
+      DebugDrawVertex vertex2{
+          .position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0),
+          .color = glm::vec3(1.0, 0.0, 0.0)};
+
+      frame.debug_vertices->writeElement(vertex_count, vertex2);
+      frame.debug_indices->writeElement(frame.index_count, vertex_count);
+      vertex_count++;
+      frame.index_count++;
+    }
+
+    {
+      // Draw Y line
+
+      DebugDrawVertex vertex1{
+          .position = transform * glm::vec4(0.0, 1.0, 0.0, 1.0),
+          .color = glm::vec3(0.0, 1.0, 0.0)};
+
+      frame.debug_vertices->writeElement(vertex_count, vertex1);
+      frame.debug_indices->writeElement(frame.index_count, vertex_count);
+      vertex_count++;
+      frame.index_count++;
+
+      DebugDrawVertex vertex2{
+          .position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0),
+          .color = glm::vec3(0.0, 1.0, 0.0)};
+
+      frame.debug_vertices->writeElement(vertex_count, vertex2);
+      frame.debug_indices->writeElement(frame.index_count, vertex_count);
+      vertex_count++;
+      frame.index_count++;
+    }
+
+    {
+      // Draw Z line
+
+      DebugDrawVertex vertex1{
+          .position = transform * glm::vec4(0.0, 0.0, 1.0, 1.0),
+          .color = glm::vec3(0.0, 0.0, 1.0)};
+
+      frame.debug_vertices->writeElement(vertex_count, vertex1);
+      frame.debug_indices->writeElement(frame.index_count, vertex_count);
+      vertex_count++;
+      frame.index_count++;
+
+      DebugDrawVertex vertex2{
+          .position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0),
+          .color = glm::vec3(0.0, 0.0, 1.0)};
+
+      frame.debug_vertices->writeElement(vertex_count, vertex2);
+      frame.debug_indices->writeElement(frame.index_count, vertex_count);
+      vertex_count++;
+      frame.index_count++;
+    }
+  }
 }
 
 void OverlayPass::render(EntityRegistry& registry, OverlayPassFrameData& frame,
