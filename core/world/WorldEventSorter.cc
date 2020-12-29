@@ -32,13 +32,13 @@ void WorldEventSorter::processEvent(
 // Helper function to generate component update events
 template <class ComponentType>
 flatbuffers::Offset<protocol::WorldEvent> updateComponents(
-    flatbuffers::FlatBufferBuilder& builder, EntityRegistry& registry) {
+    flatbuffers::FlatBufferBuilder* builder, EntityRegistry* registry) {
   static_assert(std::is_base_of<Component, ComponentType>(),
                 "ComponentType must inherit from Component");
 
   using ProtocolComponentType = typename ComponentType::SerializedType;
 
-  auto component_view = registry.view<ComponentType>();
+  auto component_view = registry->view<ComponentType>();
 
   // Prepass to find dirty components
   std::vector<EntityId> entities_data;
@@ -54,7 +54,7 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
 
   // Allocate and copy dirty component data
   ProtocolComponentType* components_data;
-  auto components_offset = builder.CreateUninitializedVectorOfStructs(
+  auto components_offset = builder->CreateUninitializedVectorOfStructs(
       entities_data.size(), &components_data);
 
   for (uint32_t i = 0; i < entities_data.size(); i++) {
@@ -65,14 +65,14 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
   }
 
   // Assemble outgoing event
-  auto entities_offset = builder.CreateVector(entities_data);
+  auto entities_offset = builder->CreateVector(entities_data);
 
-  protocol::UpdateComponentsBuilder update_components(builder);
+  protocol::UpdateComponentsBuilder update_components(*builder);
   update_components.add_entities(entities_offset);
   buildUpdateComponents(update_components, components_offset);
   auto update_components_offset = update_components.Finish();
 
-  protocol::WorldEventBuilder world_event(builder);
+  protocol::WorldEventBuilder world_event(*builder);
   world_event.add_type(protocol::WorldEventType::UpdateComponents);
   world_event.add_update_components(update_components_offset);
   auto world_event_offset = world_event.Finish();
@@ -90,7 +90,7 @@ WorldEventSorter::WorldUpdateOffset WorldEventSorter::broadcastGlobalEvents(
   }
 
   std::vector<flatbuffers::Offset<protocol::WorldEvent>> component_updates = {
-      updateComponents<TransformComponent>(builder, world->registry)};
+      updateComponents<TransformComponent>(&builder, &world->registry)};
 
   update_offsets.insert(update_offsets.end(), component_updates.begin(),
                         component_updates.end());

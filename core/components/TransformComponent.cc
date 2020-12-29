@@ -11,8 +11,6 @@
 
 #include "core/components/TransformComponent.h"
 
-#include <chrono>
-
 #include "protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
@@ -28,17 +26,6 @@ glm::mat4 TransformComponent::getLocalTransform() {
   glm::mat4 transform =
       glm::translate(glm::mat4(converted_orientation), converted_position);
   return transform;
-}
-
-void TransformComponent::update() {
-  static auto start_time = std::chrono::high_resolution_clock::now();
-
-  auto current_time = std::chrono::high_resolution_clock::now();
-  float time = std::chrono::duration<float, std::chrono::seconds::period>(
-                   current_time - start_time)
-                   .count();
-
-  data.mutable_position().mutate_x(sin(time));
 }
 
 // Template specialization to build UpdateComponents event

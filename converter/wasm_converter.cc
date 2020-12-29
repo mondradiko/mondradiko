@@ -13,6 +13,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "assets/format/ScriptAsset.h"
 #include "log/log.h"

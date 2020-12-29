@@ -30,7 +30,8 @@ int main(int argc, const char* argv[]) {
     return 1;
   }
 
-  auto script_id = wat_convert(&bundle_builder, "../test-folder/helloworld.wat");
+  auto script_id =
+      wat_convert(&bundle_builder, "../test-folder/helloworld.wat");
   log_dbg("Added ScriptAsset: 0x%0lx", script_id);
 
   bundle_builder.buildBundle("registry.bin");

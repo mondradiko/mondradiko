@@ -112,8 +112,6 @@ bool World::update() {
     for (EntityId e : transform_view) {
       TransformComponent& transform = transform_view.get(e);
 
-      //transform.update();
-
       // TODO(marceline-cramer) Networked transform hierarchies
       transform.local_parent = NullEntity;
       transform.this_entity = e;

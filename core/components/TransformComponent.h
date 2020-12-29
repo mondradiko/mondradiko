@@ -34,8 +34,6 @@ class TransformComponent : public Component {
   // Used by World to calculate transforms
   glm::mat4 getLocalTransform();
 
-  void update();
-
   // Serialization methods
   using SerializedType = protocol::TransformComponent;
   const SerializedType& getData() { return data; }
