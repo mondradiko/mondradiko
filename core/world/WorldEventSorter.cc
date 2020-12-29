@@ -39,20 +39,33 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
   using ProtocolComponentType = typename ComponentType::SerializedType;
 
   auto component_view = registry.view<ComponentType>();
-  std::vector<EntityId> entities_data(component_view.size());
-  std::vector<ProtocolComponentType> components_data(component_view.size());
 
-  uint32_t component_index = 0;
+  // Prepass to find dirty components
+  std::vector<EntityId> entities_data;
+  entities_data.reserve(component_view.size());
 
   for (auto& entity : component_view) {
-    entities_data[component_index] = entity;
-    // TODO(marceline-cramer) Write only dirty component data
-    components_data[component_index] = component_view.get(entity).getData();
-    component_index++;
+    auto& component = component_view.get(entity);
+
+    if (component.isDirty()) {
+      entities_data.push_back(entity);
+    }
   }
 
+  // Allocate and copy dirty component data
+  ProtocolComponentType* components_data;
+  auto components_offset = builder.CreateUninitializedVectorOfStructs(
+      entities_data.size(), &components_data);
+
+  for (uint32_t i = 0; i < entities_data.size(); i++) {
+    auto& component = component_view.get(entities_data[i]);
+    components_data[i] = component.getData();
+    // TODO(marceline-cramer) Keep track of client-relative dirtiness
+    // component.markClean();
+  }
+
+  // Assemble outgoing event
   auto entities_offset = builder.CreateVector(entities_data);
-  auto components_offset = builder.CreateVectorOfStructs(components_data);
 
   protocol::UpdateComponentsBuilder update_components(builder);
   update_components.add_entities(entities_offset);
