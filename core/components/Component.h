@@ -27,4 +27,27 @@ void buildUpdateComponents(
     protocol::UpdateComponentsBuilder&,
     flatbuffers::Offset<flatbuffers::Vector<const ProtocolComponentType*>>&);
 
+class Component {
+ public:
+  void markDirty() { dirty = true; }
+  bool isDirty() { return dirty; }
+  void markClean() { dirty = false; }
+
+  /**
+   * Inherited component types should implement serialization something like
+   * this:
+   * 
+   * // Serialization methods
+   * using SerializedType = protocol::<Component schema type>;
+   * const SerializedType& getData() { return data; }
+   * void writeData(const SerializedType& _data) { data = _data; }
+   *
+   * private:
+   *  SerializedType data;
+   *
+   */
+ private:
+  bool dirty = true;
+};
+
 }  // namespace mondradiko

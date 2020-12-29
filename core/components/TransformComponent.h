@@ -18,7 +18,7 @@
 
 namespace mondradiko {
 
-class TransformComponent {
+class TransformComponent : public Component {
  public:
   TransformComponent() {}
   explicit TransformComponent(const protocol::TransformComponent& _data)
@@ -37,11 +37,12 @@ class TransformComponent {
   void update();
 
   // Serialization methods
-  const protocol::TransformComponent& getData() { return data; }
-  void writeData(const protocol::TransformComponent& _data) { data = _data; }
+  using SerializedType = protocol::TransformComponent;
+  const SerializedType& getData() { return data; }
+  void writeData(const SerializedType& _data) { data = _data; }
 
  private:
-  protocol::TransformComponent data;
+  SerializedType data;
 };
 
 }  // namespace mondradiko

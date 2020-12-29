@@ -30,10 +30,13 @@ void WorldEventSorter::processEvent(
 }
 
 // Helper function to generate component update events
-template <class ComponentType, class ProtocolComponentType>
+template <class ComponentType>
 flatbuffers::Offset<protocol::WorldEvent> updateComponents(
     flatbuffers::FlatBufferBuilder& builder, EntityRegistry& registry) {
-  // TODO(marceline-cramer) static_assert ComponentType for methods
+  static_assert(std::is_base_of<Component, ComponentType>(),
+                "ComponentType must inherit from Component");
+
+  using ProtocolComponentType = typename ComponentType::SerializedType;
 
   auto component_view = registry.view<ComponentType>();
   std::vector<EntityId> entities_data(component_view.size());
@@ -43,7 +46,7 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
 
   for (auto& entity : component_view) {
     entities_data[component_index] = entity;
-    // TODO(marceline-cramer) Write component data directly to flatbuffer
+    // TODO(marceline-cramer) Write only dirty component data
     components_data[component_index] = component_view.get(entity).getData();
     component_index++;
   }
@@ -73,9 +76,11 @@ WorldEventSorter::WorldUpdateOffset WorldEventSorter::broadcastGlobalEvents(
     update_offsets.push_back(event_offset);
   }
 
-  update_offsets.push_back(
-      updateComponents<TransformComponent, protocol::TransformComponent>(
-          builder, world->registry));
+  std::vector<flatbuffers::Offset<protocol::WorldEvent>> component_updates = {
+      updateComponents<TransformComponent>(builder, world->registry)};
+
+  update_offsets.insert(update_offsets.end(), component_updates.begin(),
+                        component_updates.end());
 
   return builder.CreateVector(update_offsets);
 }
