@@ -198,7 +198,7 @@ void OpenXrViewport::writeUniform(ViewportUniform* uniform) {
 
   // HACK(marceline-cramer) Move objects at the origin into the center of
   // Monado's dummy HMD view
-  viewPosition += glm::vec3(0.0, -2.0, 2.0);
+  viewPosition += glm::vec3(0.0, 2.0, 2.0);
 
   uniform->view = glm::translate(glm::mat4(viewOrientation), -viewPosition);
   uniform->projection = createProjectionFromFOV(view.fov, 0.001, 1000.0);
