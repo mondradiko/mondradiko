@@ -12,6 +12,7 @@
 #include "core/displays/OpenXrViewport.h"
 
 #include "core/displays/OpenXrDisplay.h"
+#include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/renderer/Renderer.h"
 #include "log/log.h"
@@ -69,6 +70,10 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
     log_ftl("Failed to create OpenXR swapchain.");
   }
 
+  depth_image = new GpuImage(
+      gpu, display->getDepthFormat(), image_width, image_height,
+      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+
   uint32_t image_count;
   xrEnumerateSwapchainImages(swapchain, 0, &image_count, nullptr);
   std::vector<XrSwapchainImageVulkanKHR> vulkan_images(image_count);
@@ -100,11 +105,14 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
       log_ftl("Failed to create OpenXR viewport image view.");
     }
 
+    std::array<VkImageView, 2> framebuffer_attachments = {images[i].image_view,
+                                                          depth_image->view};
+
     VkFramebufferCreateInfo framebufferCreateInfo{
         .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
         .renderPass = renderer->composite_pass,
-        .attachmentCount = 1,
-        .pAttachments = &images[i].image_view,
+        .attachmentCount = framebuffer_attachments.size(),
+        .pAttachments = framebuffer_attachments.data(),
         .width = image_width,
         .height = image_height,
         .layers = 1};
@@ -123,6 +131,8 @@ OpenXrViewport::~OpenXrViewport() {
     vkDestroyImageView(gpu->device, image.image_view, nullptr);
     vkDestroyFramebuffer(gpu->device, image.framebuffer, nullptr);
   }
+
+  if (depth_image != nullptr) delete depth_image;
 
   if (swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
 }
@@ -147,9 +157,10 @@ void OpenXrViewport::beginRenderPass(VkCommandBuffer command_buffer,
                                      VkRenderPass render_pass) {
   log_zone;
 
-  std::array<VkClearValue, 1> clear_values;
+  std::array<VkClearValue, 2> clear_values;
 
   clear_values[0].color = {0.2, 0.0, 0.0, 1.0};
+  clear_values[1].depthStencil = {1.0f};
 
   VkRenderPassBeginInfo renderPassInfo{
       .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,

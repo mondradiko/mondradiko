@@ -19,6 +19,7 @@
 namespace mondradiko {
 
 // Forward declaration
+class GpuImage;
 class GpuInstance;
 class OpenXrDisplay;
 class Renderer;
@@ -29,10 +30,12 @@ class OpenXrViewport : public ViewportInterface {
                  XrViewConfigurationView*);
   ~OpenXrViewport();
 
-  VkSemaphore acquire();
+  VkSemaphore acquire() final;
   void beginRenderPass(VkCommandBuffer, VkRenderPass) final;
   void writeUniform(ViewportUniform*) final;
   void release(VkSemaphore) final;
+
+  bool requiresSignal() final { return false; }
 
   void updateView(const XrView&);
   void writeCompositionLayers(XrCompositionLayerProjectionView*);
@@ -47,6 +50,7 @@ class OpenXrViewport : public ViewportInterface {
   XrView view;
 
   std::vector<ViewportImage> images;
+  GpuImage* depth_image = nullptr;
   uint32_t current_image_index;
   uint32_t image_width;
   uint32_t image_height;

@@ -35,6 +35,8 @@ class ViewportInterface {
   virtual void beginRenderPass(VkCommandBuffer, VkRenderPass) = 0;
   virtual void writeUniform(ViewportUniform*) = 0;
   virtual void release(VkSemaphore) = 0;
+
+  virtual bool requiresSignal() = 0;
 };
 
 }  // namespace mondradiko

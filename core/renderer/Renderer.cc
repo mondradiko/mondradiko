@@ -200,6 +200,7 @@ void Renderer::renderFrame(EntityRegistry& registry,
 
   std::vector<ViewportInterface*> viewports;
   std::vector<VkSemaphore> on_viewport_acquire(0);
+  bool viewports_require_signal = false;
 
   {
     log_zone_named("Acquire viewports");
@@ -211,6 +212,10 @@ void Renderer::renderFrame(EntityRegistry& registry,
       VkSemaphore on_image_acquire = viewports[viewport_index]->acquire();
       if (on_image_acquire != VK_NULL_HANDLE) {
         on_viewport_acquire.push_back(on_image_acquire);
+      }
+
+      if (viewports[viewport_index]->requiresSignal()) {
+        viewports_require_signal = true;
       }
     }
   }
@@ -281,8 +286,13 @@ void Renderer::renderFrame(EntityRegistry& registry,
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &frame->command_buffer;
 
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &frame->on_render_finished;
+    if (viewports_require_signal) {
+      submitInfo.signalSemaphoreCount = 1;
+      submitInfo.pSignalSemaphores = &frame->on_render_finished;
+    } else {
+      submitInfo.signalSemaphoreCount = 0;
+      submitInfo.pSignalSemaphores = nullptr;
+    }
 
     vkResetFences(gpu->device, 1, &frame->is_in_use);
 

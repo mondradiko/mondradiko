@@ -34,6 +34,8 @@ class SdlViewport : public ViewportInterface {
   void writeUniform(ViewportUniform*) final;
   void release(VkSemaphore) final;
 
+  bool requiresSignal() final { return true; }
+
   void moveCamera(float, float, float, float, float);
 
  private:
