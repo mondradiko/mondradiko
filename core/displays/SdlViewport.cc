@@ -244,7 +244,8 @@ void SdlViewport::moveCamera(float pan, float tilt, float truck, float dolly,
       horizontal_component.x * vertical_component.x, vertical_component.y,
       horizontal_component.y * vertical_component.x);
 
-  glm::vec3 dolly_direction = glm::vec3(-cos(camera_pan), 0.0, -sin(camera_pan));
+  glm::vec3 dolly_direction =
+      glm::vec3(-cos(camera_pan), 0.0, -sin(camera_pan));
 
   camera_position += truck_direction * truck;
   camera_position += dolly_direction * dolly;
