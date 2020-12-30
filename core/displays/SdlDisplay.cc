@@ -295,17 +295,17 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
       float dolly = 0.0;
 
       if (key_state[SDL_SCANCODE_D]) {
-        dolly = camera_speed;
-      } else if (key_state[SDL_SCANCODE_A]) {
         dolly = -camera_speed;
+      } else if (key_state[SDL_SCANCODE_A]) {
+        dolly = camera_speed;
       }
 
       float boom = 0.0;
 
       if (key_state[SDL_SCANCODE_LSHIFT]) {
-        boom = camera_speed;
-      } else if (key_state[SDL_SCANCODE_SPACE]) {
         boom = -camera_speed;
+      } else if (key_state[SDL_SCANCODE_SPACE]) {
+        boom = camera_speed;
       }
 
       main_viewport->moveCamera(mouse_x * 0.003, mouse_y * 0.003, truck, dolly,

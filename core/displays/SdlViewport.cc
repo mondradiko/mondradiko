@@ -198,8 +198,7 @@ void SdlViewport::writeUniform(ViewportUniform* uniform) {
   log_zone;
 
   glm::quat camera_orientation =
-      glm::angleAxis(static_cast<float>(M_PI) - camera_tilt,
-                     glm::vec3(1.0, 0.0, 0.0)) *
+      glm::angleAxis(camera_tilt, glm::vec3(1.0, 0.0, 0.0)) *
       glm::angleAxis(camera_pan, glm::vec3(0.0, 1.0, 0.0));
 
   uniform->view =
@@ -230,23 +229,25 @@ void SdlViewport::release(VkSemaphore on_render_finished) {
 
 void SdlViewport::moveCamera(float pan, float tilt, float truck, float dolly,
                              float boom) {
-  camera_pan += -pan;
-  camera_tilt += -tilt;
+  camera_pan += pan;
+  camera_tilt += tilt;
 
   if (camera_tilt <= -M_PI_2) camera_tilt = -M_PI_2;
   if (camera_tilt >= M_PI_2) camera_tilt = M_PI_2;
 
-  auto dollyDirection =
-      glm::vec3(glm::cos(camera_pan), 0.0, glm::sin(camera_pan));
-  auto forwardDirection =
-      glm::vec2(-glm::sin(camera_pan), glm::cos(camera_pan));
-  auto upDirection = glm::vec2(-glm::sin(camera_tilt), glm::cos(camera_tilt));
-  auto truckDirection =
-      glm::vec3(forwardDirection.x * upDirection.y, upDirection.x,
-                forwardDirection.y * upDirection.y);
+  // Truck direction from straight down
+  glm::vec2 horizontal_component = glm::vec2(sin(camera_pan), -cos(camera_pan));
+  // Truck direction from the side
+  glm::vec2 vertical_component = glm::vec2(cos(camera_tilt), -sin(camera_tilt));
+  // Composite to get forward direction
+  glm::vec3 truck_direction = glm::vec3(
+      horizontal_component.x * vertical_component.x, vertical_component.y,
+      horizontal_component.y * vertical_component.x);
 
-  camera_position += truckDirection * truck;
-  camera_position += dollyDirection * dolly;
+  glm::vec3 dolly_direction = glm::vec3(-cos(camera_pan), 0.0, -sin(camera_pan));
+
+  camera_position += truck_direction * truck;
+  camera_position += dolly_direction * dolly;
   camera_position.y += boom;
 }
 
