@@ -190,10 +190,10 @@ void OpenXrViewport::writeUniform(ViewportUniform* uniform) {
   log_zone;
 
   glm::quat viewOrientation =
-      glm::quat(view.pose.orientation.x, view.pose.orientation.y,
-                view.pose.orientation.z, view.pose.orientation.w);
+      glm::quat(-view.pose.orientation.w, view.pose.orientation.x,
+                view.pose.orientation.y, view.pose.orientation.z);
 
-  glm::vec3 viewPosition = glm::vec3(view.pose.position.x, view.pose.position.y,
+  glm::vec3 viewPosition = glm::vec3(view.pose.position.x, -view.pose.position.y,
                                      view.pose.position.z);
 
   // HACK(marceline-cramer) Move objects at the origin into the center of
