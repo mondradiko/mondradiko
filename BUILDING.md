@@ -33,8 +33,8 @@ ninja
 
 ## Building Dependencies From Source
 
-Because not all dependencies are available for all packages,
-some dependencies will need to be built from source.
+Because not all dependencies are available prebuilt for all operating systems
+or Linux distributions, some dependencies will need to be built from source.
 
 ### xxHash (Linux)
 

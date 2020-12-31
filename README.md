@@ -23,7 +23,7 @@ Please see the [GitHub Pages](https://mondradiko.github.io/contributing) for inf
 
 # Building
 
-Please see the [GitHub Pages](https://mondradiko.github.io/building) for information on how to build.
+Please see [BUILDING.md](/BUILDING.md) for building instructions.
 
 # Licenses
 Mondradiko's source code is licensed under [LGPL-v3](https://www.gnu.org/licenses/).
