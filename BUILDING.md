@@ -9,17 +9,25 @@ Unfortunately, Mondradiko has not been built for Windows or Oculus Quest yet, bu
 Install dependencies from packages:
 
 ```bash
-sudo apt install libsdl2-dev liblz4-dev libopenxr-dev libasimp-dev \
-                 libvulkan-dev libprotobuf-dev protobuf-compiler \
-                 golang libflatbuffers-dev flatbuffers-compiler \
-                 libzstd-dev
+sudo apt install libsdl2-dev liblz4-dev libassimp-dev libvulkan-dev \
+                 cmake ninja-build build-essential glslang-tools \
+                 libzstd-dev \
+                 libprotobuf-dev protobuf-compiler golang libssl-dev \
+                 libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
+                 libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
+                 libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
+                 mesa-common-dev
 ```
 
 The following dependencies must be built from source:
 
 - [xxHash](#xxhash-linux)
-- [KTX-Software](#ktx-software-linux)
 - [GameNetworkingSockets]((#gamenetworkingsockets-linux))
+- [OpenXR SDK](#openxr-sdk-linux)
+- [Flatbuffers](#flatbuffers-linux)
+
+Download and install the `.deb` package
+from the [latest KTX-Software release](https://github.com/KhronosGroup/KTX-Software/releases).
 
 ### Compiling
 
@@ -66,7 +74,31 @@ sudo ninja install
 # Once inside the repo...
 mkdir build
 cd build
-cmake -GNinja ..
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
+ninja
+sudo ninja install
+```
+
+### OpenXR SDK (Linux)
+
+```bash
+git clone https://github.com/KhronosGroup/OpenXR-SDK
+cd OpenXR-SDK
+mkdir build
+cd build
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
+ninja
+sudo ninja install
+```
+
+### Flatbuffers (Linux)
+
+```bash
+git clone https://github.com/google/flatbuffers
+cd flatbuffers
+mkdir build
+cd build
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
 ninja
 sudo ninja install
 ```
