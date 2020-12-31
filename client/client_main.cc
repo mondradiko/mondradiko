@@ -49,6 +49,10 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   World world(fs, gpu, &scripts);
   NetworkClient client(fs, &world, "127.0.0.1", 10555);
 
+#ifdef TEST_INITIALIZE
+  world.testInitialize();
+#endif
+
   while (!g_interrupted) {
     DisplayPollEventsInfo poll_info;
     poll_info.renderer = &renderer;

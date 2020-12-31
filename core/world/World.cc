@@ -44,18 +44,22 @@ World::~World() {
 void World::testInitialize() {
   auto test_entity = registry.create();
 
-  /*MeshRendererComponent mesh_renderer_component{
+#ifdef TEST_INITIALIZE
+  MeshRendererComponent mesh_renderer_component{
       .mesh_asset = asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
       .material_asset = asset_pool.loadAsset<MaterialAsset>(0xf643d4dc, gpu)};
 
   ScriptComponent script_component{
-      .script_asset = asset_pool.loadAsset<ScriptAsset>(0x31069ecf, scripts)};*/
+      .script_asset = asset_pool.loadAsset<ScriptAsset>(0x31069ecf, scripts)};
+#endif
 
   TransformComponent transform_component;
 
-  // registry.emplace<MeshRendererComponent>(test_entity,
-  // mesh_renderer_component); registry.emplace<ScriptComponent>(test_entity,
-  // script_component);
+#ifdef TEST_INITIALIZE
+  registry.emplace<MeshRendererComponent>(test_entity,
+  mesh_renderer_component); registry.emplace<ScriptComponent>(test_entity,
+  script_component);
+#endif
   registry.emplace<TransformComponent>(test_entity, transform_component);
 }
 

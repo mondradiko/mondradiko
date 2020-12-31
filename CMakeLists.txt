@@ -14,6 +14,11 @@ include(flatc)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
+option(TEST_INITIALIZE "Create a mesh with testInitialize()" OFF)
+if (TEST_INITIALIZE)
+    add_definitions(-DTEST_INITIALIZE)
+endif()
+
 add_subdirectory(lib)
 
 add_compile_options(-Wall)
