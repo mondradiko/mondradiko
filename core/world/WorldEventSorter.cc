@@ -34,10 +34,11 @@ void WorldEventSorter::processEvent(
 template <class ComponentType>
 flatbuffers::Offset<protocol::WorldEvent> updateComponents(
     flatbuffers::FlatBufferBuilder* builder, EntityRegistry* registry) {
-  static_assert(std::is_base_of<Component, ComponentType>(),
-                "ComponentType must inherit from Component");
-
   using ProtocolComponentType = typename ComponentType::SerializedType;
+
+  static_assert(
+      std::is_base_of<Component<ProtocolComponentType>, ComponentType>(),
+      "ComponentType must inherit from Component");
 
   auto component_view = registry->view<ComponentType>();
 

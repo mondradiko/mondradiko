@@ -19,14 +19,16 @@
 
 namespace mondradiko {
 
-class MeshRendererComponent : public Component {
+class MeshRendererComponent
+    : public Component<protocol::MeshRendererComponent> {
  public:
-  explicit MeshRendererComponent(const protocol::MeshRendererComponent& _data)
-      : data(_data) {}
+  explicit MeshRendererComponent(const protocol::MeshRendererComponent& data)
+      : Component(data) {}
 
   MeshRendererComponent(AssetId mesh_asset, AssetId material_asset)
-      : data(static_cast<protocol::AssetId>(mesh_asset),
-             static_cast<protocol::AssetId>(material_asset)) {}
+      : Component(protocol::MeshRendererComponent(
+            static_cast<protocol::AssetId>(mesh_asset),
+            static_cast<protocol::AssetId>(material_asset))) {}
 
   bool isLoaded(const AssetPool* asset_pool) const {
     return asset_pool->isAssetLoaded<MeshAsset>(getMeshAsset()) &&
@@ -34,20 +36,12 @@ class MeshRendererComponent : public Component {
   }
 
   AssetId getMeshAsset() const {
-    return static_cast<AssetId>(data.mesh_asset());
+    return static_cast<AssetId>(_data.mesh_asset());
   }
 
   AssetId getMaterialAsset() const {
-    return static_cast<AssetId>(data.material_asset());
+    return static_cast<AssetId>(_data.material_asset());
   }
-
-  // Serialization methods
-  using SerializedType = protocol::MeshRendererComponent;
-  const SerializedType& getData() { return data; }
-  void writeData(const SerializedType& _data) { data = _data; }
-
- private:
-  SerializedType data;
 };
 
 }  // namespace mondradiko

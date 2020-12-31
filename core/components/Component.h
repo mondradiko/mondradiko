@@ -27,25 +27,25 @@ void buildUpdateComponents(
     protocol::UpdateComponentsBuilder*,
     flatbuffers::Offset<flatbuffers::Vector<const ProtocolComponentType*>>);
 
+template <typename DataType>
 class Component {
  public:
+  // Make data type public so other classes can use it
+  using SerializedType = DataType;
+
+  Component() {}
+  explicit Component(const SerializedType& data) : _data(data) {}
+
   void markDirty() { dirty = true; }
   bool isDirty() { return dirty; }
   void markClean() { dirty = false; }
 
-  /**
-   * Inherited component types should implement serialization something like
-   * this:
-   * 
-   * // Serialization methods
-   * using SerializedType = protocol::<Component schema type>;
-   * const SerializedType& getData() { return data; }
-   * void writeData(const SerializedType& _data) { data = _data; }
-   *
-   * private:
-   *  SerializedType data;
-   *
-   */
+  const SerializedType& getData() const { return _data; }
+  void writeData(const SerializedType& data) { _data = data; }
+
+ protected:
+  SerializedType _data;
+
  private:
   bool dirty = true;
 };

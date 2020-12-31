@@ -16,8 +16,8 @@
 namespace mondradiko {
 
 glm::mat4 TransformComponent::getLocalTransform() {
-  auto orientation = data.orientation();
-  auto position = data.position();
+  auto orientation = _data.orientation();
+  auto position = _data.position();
 
   glm::quat converted_orientation(orientation.w(), orientation.x(),
                                   orientation.y(), orientation.z());

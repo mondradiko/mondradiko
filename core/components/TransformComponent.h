@@ -18,11 +18,11 @@
 
 namespace mondradiko {
 
-class TransformComponent : public Component {
+class TransformComponent : public Component<protocol::TransformComponent> {
  public:
-  TransformComponent() {}
-  explicit TransformComponent(const protocol::TransformComponent& _data)
-      : data(_data) {}
+  TransformComponent() : Component() {}
+  explicit TransformComponent(const protocol::TransformComponent& data)
+      : Component(data) {}
 
   // Local parent ID
   EntityId local_parent;
@@ -33,14 +33,6 @@ class TransformComponent : public Component {
 
   // Used by World to calculate transforms
   glm::mat4 getLocalTransform();
-
-  // Serialization methods
-  using SerializedType = protocol::TransformComponent;
-  const SerializedType& getData() { return data; }
-  void writeData(const SerializedType& _data) { data = _data; }
-
- private:
-  SerializedType data;
 };
 
 }  // namespace mondradiko
