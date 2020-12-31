@@ -18,6 +18,8 @@ namespace mondradiko {
 
 // Forward declarations
 class ScriptEnvironment;
+static wasm_trap_t* hello_wasm(const wasm_val_t args[], wasm_val_t results[]);
+static void exit_with_error(const char* message, wasmtime_error_t* error, wasm_trap_t* trap);
 
 class ScriptAsset : public Asset {
  public:

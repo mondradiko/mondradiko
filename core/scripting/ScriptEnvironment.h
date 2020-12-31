@@ -24,6 +24,7 @@ class ScriptEnvironment {
   void update(EntityRegistry&);
 
   wasm_store_t* getStore() { return store; }
+  wasm_engine_t* getEngine() { return engine; }
 
  private:
   wasm_engine_t* engine = nullptr;
