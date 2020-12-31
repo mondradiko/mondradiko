@@ -17,6 +17,7 @@ spirv_shaders(SHADER_HEADERS
 add_subdirectory(protocol)
 flatc_schemas(PROTOCOL_HEADERS
   protocol/ClientEvent.fbs
+  protocol/MeshRendererComponent.fbs
   protocol/ServerEvent.fbs
   protocol/TransformComponent.fbs
   protocol/WorldEvent.fbs
@@ -33,6 +34,7 @@ set(MONDRADIKO_CORE_SRC
   assets/MeshAsset.cc
   assets/ScriptAsset.cc
   assets/TextureAsset.cc
+  components/MeshRendererComponent.cc
   components/TransformComponent.cc
   displays/OpenXrDisplay.cc
   displays/OpenXrViewport.cc

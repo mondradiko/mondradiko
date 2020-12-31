@@ -260,20 +260,19 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
 
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
-    auto iter = frame.textures.find(mesh_renderer.material_asset);
+    AssetId material_asset = mesh_renderer.getMaterialAsset();
+    auto iter = frame.textures.find(material_asset);
 
     if (iter == frame.textures.end()) {
-      auto mesh_material =
-          asset_pool->getAsset<MaterialAsset>(mesh_renderer.material_asset);
+      auto mesh_material = asset_pool->getAsset<MaterialAsset>(material_asset);
 
-      frame.materials.emplace(mesh_renderer.material_asset,
-                              material_uniforms.size());
+      frame.materials.emplace(material_asset, material_uniforms.size());
       material_uniforms.push_back(mesh_material->getUniform());
 
       GpuDescriptorSet* texture_descriptor =
           descriptor_pool->allocate(texture_layout);
       mesh_material->updateTextureDescriptor(texture_descriptor);
-      frame.textures.emplace(mesh_renderer.material_asset, texture_descriptor);
+      frame.textures.emplace(material_asset, texture_descriptor);
     }
 
     auto transform = mesh_renderers.get<TransformComponent>(e);
@@ -325,17 +324,20 @@ void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
     auto mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
+    AssetId material_asset = mesh_renderer.getMaterialAsset();
+
     frame.material_descriptor->updateDynamicOffset(
-        0, frame.materials.find(mesh_renderer.material_asset)->second);
+        0, frame.materials.find(material_asset)->second);
     frame.material_descriptor->cmdBind(commandBuffer, pipeline_layout, 1);
 
-    frame.textures.find(mesh_renderer.material_asset)
+    frame.textures.find(material_asset)
         ->second->cmdBind(commandBuffer, pipeline_layout, 2);
 
     frame.mesh_descriptor->updateDynamicOffset(0, frame.meshes.find(e)->second);
     frame.mesh_descriptor->cmdBind(commandBuffer, pipeline_layout, 3);
 
-    auto mesh_asset = asset_pool->getAsset<MeshAsset>(mesh_renderer.mesh_asset);
+    auto mesh_asset =
+        asset_pool->getAsset<MeshAsset>(mesh_renderer.getMeshAsset());
 
     VkBuffer vertex_buffers[] = {mesh_asset->vertex_buffer->getBuffer()};
     VkDeviceSize offsets[] = {0};

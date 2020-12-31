@@ -30,6 +30,11 @@ namespace mondradiko {
 World::World(Filesystem* fs, GpuInstance* gpu, ScriptEnvironment* scripts)
     : fs(fs), gpu(gpu), scripts(scripts), asset_pool(fs) {
   log_zone;
+
+  // HACK(marceline-cramer) Manually load MeshRenderer assets
+  // Remove this when AssetPool::getAsset() can load assets itself
+  asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu);
+  asset_pool.loadAsset<MaterialAsset>(0xf643d4dc, gpu);
 }
 
 World::~World() {
@@ -45,9 +50,9 @@ void World::testInitialize() {
   auto test_entity = registry.create();
 
 #ifdef TEST_INITIALIZE
-  MeshRendererComponent mesh_renderer_component{
-      .mesh_asset = asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
-      .material_asset = asset_pool.loadAsset<MaterialAsset>(0xf643d4dc, gpu)};
+  MeshRendererComponent mesh_renderer_component(
+      asset_pool.loadAsset <MeshAsset>(0x84b42359, gpu),
+      asset_pool.loadAsset <MaterialAsset>(0xf643d4dc, gpu));
 
   ScriptComponent script_component{
       .script_asset = asset_pool.loadAsset<ScriptAsset>(0x31069ecf, scripts)};
@@ -85,6 +90,12 @@ void World::onUpdateComponents(
   switch (update_components->type()) {
     case protocol::ComponentType::NoComponent: {
       log_dbg("Received empty component update");
+      break;
+    }
+
+    case protocol::ComponentType::MeshRendererComponent: {
+      updateComponents<MeshRendererComponent>(
+          entities, update_components->mesh_renderer());
       break;
     }
 

@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/components/MeshRendererComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/world/World.h"
 #include "protocol/WorldEvent_generated.h"
@@ -69,7 +70,7 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
 
   protocol::UpdateComponentsBuilder update_components(*builder);
   update_components.add_entities(entities_offset);
-  buildUpdateComponents(update_components, components_offset);
+  buildUpdateComponents(&update_components, components_offset);
   auto update_components_offset = update_components.Finish();
 
   protocol::WorldEventBuilder world_event(*builder);
@@ -90,6 +91,7 @@ WorldEventSorter::WorldUpdateOffset WorldEventSorter::broadcastGlobalEvents(
   }
 
   std::vector<flatbuffers::Offset<protocol::WorldEvent>> component_updates = {
+      updateComponents<MeshRendererComponent>(&builder, &world->registry),
       updateComponents<TransformComponent>(&builder, &world->registry)};
 
   update_offsets.insert(update_offsets.end(), component_updates.begin(),

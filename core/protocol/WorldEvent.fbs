@@ -3,6 +3,7 @@
 
 include "types.fbs";
 
+include "MeshRendererComponent.fbs";
 include "TransformComponent.fbs";
 
 namespace mondradiko.protocol;
@@ -14,6 +15,7 @@ struct SpawnEntity {
 table UpdateComponents {
   type:ComponentType;
   entities:[EntityId];
+  mesh_renderer:[MeshRendererComponent];
   transform:[TransformComponent];
 }
 

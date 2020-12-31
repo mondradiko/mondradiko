@@ -31,11 +31,11 @@ glm::mat4 TransformComponent::getLocalTransform() {
 // Template specialization to build UpdateComponents event
 template <>
 void buildUpdateComponents<protocol::TransformComponent>(
-    protocol::UpdateComponentsBuilder& update_components,
+    protocol::UpdateComponentsBuilder* update_components,
     flatbuffers::Offset<
-        flatbuffers::Vector<const protocol::TransformComponent*>>& components) {
-  update_components.add_type(protocol::ComponentType::TransformComponent);
-  update_components.add_transform(components);
+        flatbuffers::Vector<const protocol::TransformComponent*>> components) {
+  update_components->add_type(protocol::ComponentType::TransformComponent);
+  update_components->add_transform(components);
 }
 
 }  // namespace mondradiko

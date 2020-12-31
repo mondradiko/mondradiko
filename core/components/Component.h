@@ -24,8 +24,8 @@ struct UpdateComponentsBuilder;
 // Forward declare template for UpdateComponents building
 template <class ProtocolComponentType>
 void buildUpdateComponents(
-    protocol::UpdateComponentsBuilder&,
-    flatbuffers::Offset<flatbuffers::Vector<const ProtocolComponentType*>>&);
+    protocol::UpdateComponentsBuilder*,
+    flatbuffers::Offset<flatbuffers::Vector<const ProtocolComponentType*>>);
 
 class Component {
  public:
