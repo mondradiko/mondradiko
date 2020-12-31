@@ -18,10 +18,10 @@
 
 namespace mondradiko {
 
-// Forward declaration
+// Forward declarations
 class GpuInstance;
 class Renderer;
-class ViewportInterface;
+class Viewport;
 
 struct VulkanRequirements {
   uint32_t min_api_version;
@@ -57,7 +57,7 @@ class DisplayInterface {
 
   virtual void pollEvents(DisplayPollEventsInfo*) = 0;
   virtual void beginFrame(DisplayBeginFrameInfo*) = 0;
-  virtual void acquireViewports(std::vector<ViewportInterface*>*) = 0;
+  virtual void acquireViewports(std::vector<Viewport*>*) = 0;
   virtual void endFrame(DisplayBeginFrameInfo*) = 0;
 
  private:

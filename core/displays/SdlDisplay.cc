@@ -318,7 +318,7 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
   }
 }
 
-void SdlDisplay::acquireViewports(std::vector<ViewportInterface*>* viewports) {
+void SdlDisplay::acquireViewports(std::vector<Viewport*>* viewports) {
   log_zone;
 
   viewports->resize(1);

@@ -38,6 +38,7 @@ set(MONDRADIKO_CORE_SRC
   displays/OpenXrViewport.cc
   displays/SdlDisplay.cc
   displays/SdlViewport.cc
+  displays/Viewport.cc
   filesystem/Filesystem.cc
   gpu/GpuBuffer.cc
   gpu/GpuDescriptorPool.cc

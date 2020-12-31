@@ -12,7 +12,7 @@
 #include "core/renderer/Renderer.h"
 
 #include "core/displays/DisplayInterface.h"
-#include "core/displays/ViewportInterface.h"
+#include "core/displays/Viewport.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
@@ -198,7 +198,7 @@ void Renderer::renderFrame(EntityRegistry& registry,
     frame->descriptor_pool->reset();
   }
 
-  std::vector<ViewportInterface*> viewports;
+  std::vector<Viewport*> viewports;
   std::vector<VkSemaphore> on_viewport_acquire(0);
   bool viewports_require_signal = false;
 
@@ -214,7 +214,7 @@ void Renderer::renderFrame(EntityRegistry& registry,
         on_viewport_acquire.push_back(on_image_acquire);
       }
 
-      if (viewports[viewport_index]->requiresSignal()) {
+      if (viewports[viewport_index]->isSignalRequired()) {
         viewports_require_signal = true;
       }
     }

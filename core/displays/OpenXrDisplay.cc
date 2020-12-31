@@ -371,7 +371,7 @@ void OpenXrDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 }
 
 void OpenXrDisplay::acquireViewports(
-    std::vector<ViewportInterface*>* acquired) {
+    std::vector<Viewport*>* acquired) {
   log_zone;
 
   acquired->resize(viewports.size());

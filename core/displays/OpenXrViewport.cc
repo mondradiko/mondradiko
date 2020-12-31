@@ -48,19 +48,22 @@ static glm::mat4 createProjectionFromFOV(const XrFovf fov, const float near_z,
 OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
                                Renderer* renderer,
                                XrViewConfigurationView* view_config)
-    : gpu(gpu), display(display), renderer(renderer) {
+    : Viewport(display, gpu, renderer),
+      gpu(gpu),
+      display(display),
+      renderer(renderer) {
   log_zone;
 
-  image_width = view_config->recommendedImageRectWidth;
-  image_height = view_config->recommendedImageRectHeight;
+  _image_width = view_config->recommendedImageRectWidth;
+  _image_height = view_config->recommendedImageRectHeight;
 
   XrSwapchainCreateInfo swapchainCreateInfo{
       .type = XR_TYPE_SWAPCHAIN_CREATE_INFO,
       .usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
       .format = static_cast<int64_t>(display->getSwapchainFormat()),
       .sampleCount = 1,
-      .width = image_width,
-      .height = image_height,
+      .width = _image_width,
+      .height = _image_height,
       .faceCount = 1,
       .arraySize = 1,
       .mipCount = 1};
@@ -70,10 +73,6 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
     log_ftl("Failed to create OpenXR swapchain.");
   }
 
-  depth_image = new GpuImage(
-      gpu, display->getDepthFormat(), image_width, image_height,
-      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-
   uint32_t image_count;
   xrEnumerateSwapchainImages(swapchain, 0, &image_count, nullptr);
   std::vector<XrSwapchainImageVulkanKHR> vulkan_images(image_count);
@@ -81,109 +80,20 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
       swapchain, image_count, &image_count,
       reinterpret_cast<XrSwapchainImageBaseHeader*>(vulkan_images.data()));
 
-  images.resize(image_count);
+  _images.resize(image_count);
   for (uint32_t i = 0; i < image_count; i++) {
-    images[i].image = vulkan_images[i].image;
-
-    VkImageViewCreateInfo viewCreateInfo{
-        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .image = images[i].image,
-        .viewType = VK_IMAGE_VIEW_TYPE_2D,
-        .format = display->getSwapchainFormat(),
-        .components = {.r = VK_COMPONENT_SWIZZLE_IDENTITY,
-                       .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-                       .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-                       .a = VK_COMPONENT_SWIZZLE_IDENTITY},
-        .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                             .baseMipLevel = 0,
-                             .levelCount = 1,
-                             .baseArrayLayer = 0,
-                             .layerCount = 1}};
-
-    if (vkCreateImageView(gpu->device, &viewCreateInfo, nullptr,
-                          &images[i].image_view) != VK_SUCCESS) {
-      log_ftl("Failed to create OpenXR viewport image view.");
-    }
-
-    std::array<VkImageView, 2> framebuffer_attachments = {images[i].image_view,
-                                                          depth_image->view};
-
-    VkFramebufferCreateInfo framebufferCreateInfo{
-        .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-        .renderPass = renderer->composite_pass,
-        .attachmentCount = framebuffer_attachments.size(),
-        .pAttachments = framebuffer_attachments.data(),
-        .width = image_width,
-        .height = image_height,
-        .layers = 1};
-
-    if (vkCreateFramebuffer(gpu->device, &framebufferCreateInfo, nullptr,
-                            &images[i].framebuffer) != VK_SUCCESS) {
-      log_ftl("Failed to create OpenXR viewport framebuffer.");
-    }
+    _images[i].image = vulkan_images[i].image;
   }
+
+  _createImages();
 }
 
 OpenXrViewport::~OpenXrViewport() {
   log_zone;
 
-  for (ViewportImage& image : images) {
-    vkDestroyImageView(gpu->device, image.image_view, nullptr);
-    vkDestroyFramebuffer(gpu->device, image.framebuffer, nullptr);
-  }
-
-  if (depth_image != nullptr) delete depth_image;
+  _destroyImages();
 
   if (swapchain != XR_NULL_HANDLE) xrDestroySwapchain(swapchain);
-}
-
-VkSemaphore OpenXrViewport::acquire() {
-  log_zone;
-
-  XrSwapchainImageAcquireInfo acquireInfo{
-      .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, .next = nullptr};
-
-  xrAcquireSwapchainImage(swapchain, &acquireInfo, &current_image_index);
-
-  XrSwapchainImageWaitInfo waitInfo{.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
-                                    .timeout = XR_INFINITE_DURATION};
-
-  xrWaitSwapchainImage(swapchain, &waitInfo);
-
-  return VK_NULL_HANDLE;
-}
-
-void OpenXrViewport::beginRenderPass(VkCommandBuffer command_buffer,
-                                     VkRenderPass render_pass) {
-  log_zone;
-
-  std::array<VkClearValue, 2> clear_values;
-
-  clear_values[0].color = {0.2, 0.0, 0.0, 1.0};
-  clear_values[1].depthStencil = {1.0f};
-
-  VkRenderPassBeginInfo renderPassInfo{
-      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-      .renderPass = render_pass,
-      .framebuffer = images[current_image_index].framebuffer,
-      .renderArea = {.offset = {0, 0}, .extent = {image_width, image_height}},
-      .clearValueCount = static_cast<uint32_t>(clear_values.size()),
-      .pClearValues = clear_values.data()};
-
-  vkCmdBeginRenderPass(command_buffer, &renderPassInfo,
-                       VK_SUBPASS_CONTENTS_INLINE);
-
-  VkViewport viewport{.x = 0,
-                      .y = 0,
-                      .width = static_cast<float>(image_width),
-                      .height = static_cast<float>(image_height),
-                      .minDepth = 0.0f,
-                      .maxDepth = 1.0f};
-
-  VkRect2D scissor{.offset = {0, 0}, .extent = {image_width, image_height}};
-
-  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 }
 
 void OpenXrViewport::writeUniform(ViewportUniform* uniform) {
@@ -203,15 +113,6 @@ void OpenXrViewport::writeUniform(ViewportUniform* uniform) {
   uniform->projection = createProjectionFromFOV(view.fov, 0.001, 1000.0);
 }
 
-void OpenXrViewport::release(VkSemaphore) {
-  log_zone;
-
-  XrSwapchainImageReleaseInfo release_info{
-      .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
-
-  xrReleaseSwapchainImage(swapchain, &release_info);
-}
-
 void OpenXrViewport::updateView(const XrView& new_view) { view = new_view; }
 
 void OpenXrViewport::writeCompositionLayers(
@@ -222,8 +123,33 @@ void OpenXrViewport::writeCompositionLayers(
   projection_view->subImage = {.swapchain = swapchain};
   projection_view->subImage.imageRect = {
       .offset = {0, 0},
-      .extent = {static_cast<int32_t>(image_width),
-                 static_cast<int32_t>(image_height)}};
+      .extent = {static_cast<int32_t>(_image_width),
+                 static_cast<int32_t>(_image_height)}};
+}
+
+VkSemaphore OpenXrViewport::_acquireImage(uint32_t* image_index) {
+  log_zone;
+
+  XrSwapchainImageAcquireInfo acquireInfo{
+      .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, .next = nullptr};
+
+  xrAcquireSwapchainImage(swapchain, &acquireInfo, image_index);
+
+  XrSwapchainImageWaitInfo waitInfo{.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
+                                    .timeout = XR_INFINITE_DURATION};
+
+  xrWaitSwapchainImage(swapchain, &waitInfo);
+
+  return VK_NULL_HANDLE;
+}
+
+void OpenXrViewport::_releaseImage(uint32_t, VkSemaphore) {
+  log_zone;
+
+  XrSwapchainImageReleaseInfo release_info{
+      .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
+
+  xrReleaseSwapchainImage(swapchain, &release_info);
 }
 
 }  // namespace mondradiko

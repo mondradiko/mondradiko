@@ -46,7 +46,7 @@ class OpenXrDisplay : public DisplayInterface {
 
   void pollEvents(DisplayPollEventsInfo*) final;
   void beginFrame(DisplayBeginFrameInfo*) final;
-  void acquireViewports(std::vector<ViewportInterface*>*) final;
+  void acquireViewports(std::vector<Viewport*>*) final;
   void endFrame(DisplayBeginFrameInfo*) final;
 
   bool enable_validation_layers = true;
