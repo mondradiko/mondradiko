@@ -33,17 +33,18 @@ class AssetPool {
   explicit AssetPool(Filesystem* fs) : fs(fs) {}
 
   template <typename AssetType, typename Binding>
-  [[nodiscard]] AssetId loadAsset(AssetId id, Binding* binding) {
+  AssetId loadAsset(AssetId id, Binding* binding) {
     if (isAssetLoaded<AssetType>(id)) return id;
 
-    AssetId asset_entity = asset_registry.create(id);
+    AssetId local_id = asset_registry.create(id);
+    local_ids.emplace(id, local_id);
 
     if (binding == nullptr) {
       DummyAsset asset_component;
       asset_component.type = typeid(AssetType).name();
       asset_component.binding = typeid(Binding).name();
 
-      asset_registry.emplace<DummyAsset>(asset_entity, asset_component);
+      asset_registry.emplace<DummyAsset>(local_id, asset_component);
     } else {
       assets::ImmutableAsset asset_data;
 
@@ -52,26 +53,30 @@ class AssetPool {
         asset_component.type = typeid(AssetType).name();
         asset_component.binding = typeid(Binding).name();
 
-        asset_registry.emplace<DummyAsset>(asset_entity, asset_component);
-        return asset_entity;
+        asset_registry.emplace<DummyAsset>(local_id, asset_component);
+        return id;
       }
 
       AssetType* asset_component = new AssetType(asset_data, this, binding);
       asset_component->loaded = true;
 
-      asset_registry.emplace<AssetType*>(asset_entity, asset_component);
+      asset_registry.emplace<AssetType*>(local_id, asset_component);
     }
 
-    return asset_entity;
+    return id;
   }
 
   template <typename AssetType>
   bool isAssetLoaded(AssetId id) const {
-    if (!asset_registry.valid(id)) return false;
+    auto iter = local_ids.find(id);
+    if (iter == local_ids.end()) return false;
+    AssetId local_id = iter->second;
 
-    if (asset_registry.has<DummyAsset>(id)) return false;
+    if (!asset_registry.valid(local_id)) return false;
 
-    AssetType* const* asset_ptr = asset_registry.try_get<AssetType*>(id);
+    if (asset_registry.has<DummyAsset>(local_id)) return false;
+
+    AssetType* const* asset_ptr = asset_registry.try_get<AssetType*>(local_id);
 
     if (!asset_ptr) return false;
 
@@ -86,6 +91,12 @@ class AssetPool {
 
   template <typename AssetType>
   const AssetType* getAsset(AssetId id) const {
+    // TODO(marceline-cramer) Load here if asset is invalid
+    if (!isAssetLoaded<AssetType>(id)) {
+      log_ftl("Tried to get asset 0x%0lx of type %s, which was invalid.", id,
+              typeid(AssetType).name());
+    }
+
     return asset_registry.get<AssetType*>(id);
   }
 
@@ -101,6 +112,7 @@ class AssetPool {
  private:
   Filesystem* fs;
 
+  std::unordered_map<AssetId, AssetId> local_ids;
   entt::basic_registry<AssetId> asset_registry;
 };
 
