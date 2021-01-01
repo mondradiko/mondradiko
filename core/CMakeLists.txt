@@ -18,6 +18,7 @@ add_subdirectory(protocol)
 flatc_schemas(PROTOCOL_HEADERS
   protocol/ClientEvent.fbs
   protocol/MeshRendererComponent.fbs
+  protocol/ScriptComponent.fbs
   protocol/ServerEvent.fbs
   protocol/TransformComponent.fbs
   protocol/WorldEvent.fbs
