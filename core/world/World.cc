@@ -27,14 +27,15 @@
 
 namespace mondradiko {
 
-World::World(Filesystem* fs, GpuInstance* gpu, ScriptEnvironment* scripts)
-    : fs(fs), gpu(gpu), scripts(scripts), asset_pool(fs) {
+World::World(Filesystem* fs, GpuInstance* gpu)
+    : fs(fs), gpu(gpu), asset_pool(fs) {
   log_zone;
 
-  // HACK(marceline-cramer) Manually load MeshRenderer assets
+  // HACK(marceline-cramer) Manually load server-side assets
   // Remove this when AssetPool::getAsset() can load assets itself
   asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu);
   asset_pool.loadAsset<MaterialAsset>(0xf643d4dc, gpu);
+  asset_pool.loadAsset<ScriptAsset>(0x31069ecf, &scripts);
 }
 
 World::~World() {
@@ -51,19 +52,18 @@ void World::testInitialize() {
 
 #ifdef TEST_INITIALIZE
   MeshRendererComponent mesh_renderer_component(
-      asset_pool.loadAsset <MeshAsset>(0x84b42359, gpu),
-      asset_pool.loadAsset <MaterialAsset>(0xf643d4dc, gpu));
+      asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
+      asset_pool.loadAsset<MaterialAsset>(0xf643d4dc, gpu));
 
-  ScriptComponent script_component{
-      .script_asset = asset_pool.loadAsset<ScriptAsset>(0x31069ecf, scripts)};
+  ScriptComponent script_component(
+      asset_pool.loadAsset<ScriptAsset>(0x31069ecf, &scripts));
 #endif
 
   TransformComponent transform_component;
 
 #ifdef TEST_INITIALIZE
-  registry.emplace<MeshRendererComponent>(test_entity,
-  mesh_renderer_component); registry.emplace<ScriptComponent>(test_entity,
-  script_component);
+  registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer_component);
+  registry.emplace<ScriptComponent>(test_entity, script_component);
 #endif
   registry.emplace<TransformComponent>(test_entity, transform_component);
 }
@@ -165,6 +165,8 @@ bool World::update() {
       transform.world_transform = parent_transform * local_transform;
     }
   }
+
+  scripts.update(registry, &asset_pool);
 
   FrameMark;
   return true;

@@ -15,6 +15,7 @@
 #include <unordered_map>
 
 #include "core/assets/AssetPool.h"
+#include "core/scripting/ScriptEnvironment.h"
 #include "core/world/Entity.h"
 #include "flatbuffers/flatbuffers.h"
 
@@ -23,7 +24,6 @@ namespace mondradiko {
 // Forward declarations
 class Filesystem;
 class GpuInstance;
-class ScriptEnvironment;
 
 namespace protocol {
 struct WorldEvent;
@@ -34,7 +34,7 @@ struct UpdateComponents;
 
 class World {
  public:
-  World(Filesystem*, GpuInstance*, ScriptEnvironment*);
+  World(Filesystem*, GpuInstance*);
   ~World();
 
   void testInitialize();
@@ -58,11 +58,11 @@ class World {
 
   Filesystem* fs;
   GpuInstance* gpu;
-  ScriptEnvironment* scripts;
 
   // private:
   EntityRegistry registry;
   AssetPool asset_pool;
+  ScriptEnvironment scripts;
 
   std::unordered_map<EntityId, EntityId> server_ids;
 };

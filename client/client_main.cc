@@ -21,7 +21,6 @@
 #include "core/gpu/GpuInstance.h"
 #include "core/network/NetworkClient.h"
 #include "core/renderer/Renderer.h"
-#include "core/scripting/ScriptEnvironment.h"
 #include "core/world/World.h"
 #include "log/log.h"
 
@@ -45,8 +44,7 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   }
 
   Renderer renderer(display, gpu);
-  ScriptEnvironment scripts;
-  World world(fs, gpu, &scripts);
+  World world(fs, gpu);
   NetworkClient client(fs, &world, "127.0.0.1", 10555);
 
   while (!g_interrupted) {
@@ -61,8 +59,6 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
       display->beginFrame(&frame_info);
 
       if (!world.update()) break;
-
-      scripts.update(world.registry);
 
       if (frame_info.should_render) {
         renderer.renderFrame(world.registry, &world.asset_pool);
