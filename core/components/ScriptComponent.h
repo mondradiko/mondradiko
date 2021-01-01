@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "core/assets/Asset.h"
+#include "core/assets/ScriptAsset.h"
 #include "core/components/Component.h"
 #include "core/protocol/ScriptComponent_generated.h"
 

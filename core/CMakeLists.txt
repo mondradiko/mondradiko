@@ -41,6 +41,7 @@ set(MONDRADIKO_CORE_SRC
   assets/ScriptAsset.cc
   assets/TextureAsset.cc
   components/MeshRendererComponent.cc
+  components/ScriptComponent.cc
   components/TransformComponent.cc
   displays/OpenXrDisplay.cc
   displays/OpenXrViewport.cc

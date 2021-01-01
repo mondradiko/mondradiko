@@ -4,6 +4,7 @@
 include "types.fbs";
 
 include "MeshRendererComponent.fbs";
+include "ScriptComponent.fbs";
 include "TransformComponent.fbs";
 
 namespace mondradiko.protocol;
@@ -16,6 +17,7 @@ table UpdateComponents {
   type:ComponentType;
   entities:[EntityId];
   mesh_renderer:[MeshRendererComponent];
+  script:[ScriptComponent];
   transform:[TransformComponent];
 }
 

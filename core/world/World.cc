@@ -99,6 +99,11 @@ void World::onUpdateComponents(
       break;
     }
 
+    case protocol::ComponentType::ScriptComponent: {
+      updateComponents<ScriptComponent>(entities, update_components->script());
+      break;
+    }
+
     case protocol::ComponentType::TransformComponent: {
       updateComponents<TransformComponent>(entities,
                                            update_components->transform());
