@@ -19,25 +19,12 @@
 
 namespace mondradiko {
 
-/**
- * Find the number of characters required to trim out
- * the relative __FILE__ paths.
- *
- * First, take this file. (src/log/log.cc)
- * Take the parent directory. (src/log/)
- * Take the next parent directory. (src/)
- *
- * This string represents the filler directories that
- * are generated in the build system and passed to
- * __FILE__, so we save the length of it and use it
- * to trim out directories in log().
- *
- */
-const size_t file_trim = std::filesystem::path(__FILE__)
-                             .parent_path()
-                             .parent_path()
-                             .string()
-                             .length();
+const std::filesystem::path g_root_path =
+    std::filesystem::path(__FILE__).parent_path().parent_path();
+
+std::string formatPath(const std::filesystem::path& file_path) {
+  return file_path.lexically_relative(g_root_path);
+}
 
 const char* getLogPrefix(LogLevel level) {
   switch (level) {
@@ -59,10 +46,7 @@ const char* getLogPrefix(LogLevel level) {
 void log(const char* file_path, int line, LogLevel level, const char* message) {
   const char* prefix = getLogPrefix(level);
   std::ostringstream header;
-  std::string filename(file_path);
-
-  // Trim out relative source path
-  header << prefix << filename.substr(file_trim) << ":" << line << "]";
+  header << prefix << formatPath(file_path) << ":" << line << "]";
 
   std::cerr << std::left << std::setw(55) << header.str();
   std::cerr << message << "\e[0m" << std::endl;
