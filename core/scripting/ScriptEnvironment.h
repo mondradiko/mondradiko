@@ -54,13 +54,22 @@ class ScriptEnvironment {
    */
   wasm_func_t* getBinding(const std::string&);
 
+  /**
+   * @brief Gets a Wasm function that interrupts the store when called.
+   * Used by ScriptAsset to replace missing binding imports.
+   * 
+   * @return A Wasm host-defined function that interrupts the store
+   * when called.
+   */
+  wasm_func_t* getInterruptFunc() { return interrupt_func; }
+
  private:
-  static wasm_config_t* config;
   wasm_engine_t* engine = nullptr;
   wasm_store_t* store = nullptr;
   wasmtime_interrupt_handle_t* interrupt_handle = nullptr;
 
   std::unordered_map<std::string, wasm_func_t*> bindings;
+  wasm_func_t* interrupt_func = nullptr;
 };
 
 }  // namespace mondradiko

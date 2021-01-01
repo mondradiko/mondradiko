@@ -13,31 +13,60 @@
 
 #include "core/bindings/script_linker.h"
 #include "log/log.h"
-#include <wasm.h>
 
 namespace mondradiko {
 
-wasm_config_t* ScriptEnvironment::config = nullptr;
+static wasm_trap_t* interruptCallback(const wasmtime_caller_t* caller,
+                                      void* env, const wasm_val_t args[],
+                                      wasm_val_t results[]) {
+  ScriptEnvironment* scripts = reinterpret_cast<ScriptEnvironment*>(env);
+  log_err("Store interrupted");
+  wasmtime_interrupt_handle_interrupt(scripts->getInterruptHandle());
+  return nullptr;
+}
+
+// Dummy finalizer needed for wasmtime_func_new_with_env()
+static void interruptCallbackFinalizer(void*) {}
 
 ScriptEnvironment::ScriptEnvironment() {
   log_zone;
 
-  // Create a config to allow interrupts, if one doesn't exist already
-  if (config == NULL) {
-    config = wasm_config_new();
-    assert(config != NULL);
-    wasmtime_config_interruptable_set(config, true);
+  // Create a config to allow interrupts
+  wasm_config_t* config = wasm_config_new();
+  if (config == nullptr) {
+    log_ftl("Failed to create Wasm config");
   }
 
-  // Create the engine and store
+  wasmtime_config_interruptable_set(config, true);
+
+  // Create the engine
+  // Frees the config
   engine = wasm_engine_new_with_config(config);
-  assert(engine != NULL);
+  if (engine == nullptr) {
+    log_ftl("Failed to create Wasm engine");
+  }
+
+  // Create the store
   store = wasm_store_new(engine);
-  assert(store != NULL);
+  if (store == nullptr) {
+    log_ftl("Failed to create Wasm store");
+  }
 
   // Create an interrupt handle
-  wasmtime_interrupt_handle_t *interrupt_handle = wasmtime_interrupt_handle_new(store);
-  assert(interrupt_handle != NULL);
+  interrupt_handle = wasmtime_interrupt_handle_new(store);
+  if (interrupt_handle == nullptr) {
+    log_ftl("Failed to create interrupt handler");
+  }
+
+  {
+    // Create a function to interrupt the store
+
+    wasm_functype_t* interrupt_func_type = wasm_functype_new_0_0();
+    interrupt_func = wasmtime_func_new_with_env(store, interrupt_func_type,
+                                                interruptCallback, this,
+                                                interruptCallbackFinalizer);
+    wasm_functype_delete(interrupt_func_type);
+  }
 
   if (!bindings::linkScriptingApi(this)) {
     log_ftl("Failed to link scripting API.");
@@ -51,9 +80,11 @@ ScriptEnvironment::~ScriptEnvironment() {
     wasm_func_delete(iter.second);
   }
 
+  if (interrupt_func) wasm_func_delete(interrupt_func);
+  if (interrupt_handle) wasmtime_interrupt_handle_delete(interrupt_handle);
+
   if (store) wasm_store_delete(store);
   if (engine) wasm_engine_delete(engine);
-  if (interrupt_handle) wasmtime_interrupt_handle_delete(interrupt_handle);
 }
 
 void ScriptEnvironment::update(EntityRegistry& registry) {}

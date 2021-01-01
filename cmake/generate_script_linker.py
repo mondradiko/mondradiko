@@ -79,7 +79,7 @@ bool linkScriptingApi(ScriptEnvironment* scripts) {
   ''')
 
   # Link all components' methods as defined in the configuration files
-  src.write("  linkComponentMethod<TransformComponent, static_cast<BoundComponentMethod<TransformComponent>>(&TransformComponent::update)>(scripts, \"hello\");\n")
+  src.write("  linkComponentMethod<TransformComponent, static_cast<BoundComponentMethod<TransformComponent>>(&TransformComponent::update)>(scripts, \"update\");\n")
 
   # End of linkScriptingApi()
   src.write('''

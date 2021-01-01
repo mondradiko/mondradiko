@@ -93,13 +93,12 @@ ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
     std::string binding_name(import_name->data, import_name->size);
     wasm_func_t* binding_func = scripts->getBinding(binding_name);
 
-    if (binding_func) {
-      module_imports.push_back(wasm_func_as_extern(binding_func));
-    } else {
+    if (binding_func == nullptr) {
       log_err("Script binding \"%s\" is missing", binding_name.c_str());
-      // HACK(marceline-cramer) This will segfault until we can fail safely
-      module_imports.push_back(nullptr);
+      binding_func = scripts->getInterruptFunc();
     }
+
+    module_imports.push_back(wasm_func_as_extern(binding_func));
   }
 
   log_inf("Instantiating module");
