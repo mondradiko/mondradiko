@@ -22,7 +22,7 @@ struct ScriptComponent : public Component<protocol::ScriptComponent> {
   explicit ScriptComponent(const protocol::ScriptComponent& data)
       : Component(data) {}
 
-  ScriptComponent(AssetId script_asset)
+  explicit ScriptComponent(AssetId script_asset)
       : Component(protocol::ScriptComponent(
             static_cast<protocol::AssetId>(script_asset))) {}
 

@@ -107,7 +107,8 @@ ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
         scripts->getStore(), script_module, module_imports.data(),
         module_imports.size(), &module_instance, &module_trap);
     if (module_instance == nullptr) {
-      exit_with_error("Failed to instantiate module", module_error, module_trap);
+      exit_with_error("Failed to instantiate module", module_error,
+                      module_trap);
     }
   }
 
@@ -124,7 +125,7 @@ ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
     // TODO(marceline-cramer) Register callbacks under their exported names
     wasm_func_t* update_func = wasm_extern_as_func(instance_externs.data[0]);
     event_callbacks.emplace("update", update_func);
-  }  
+  }
 }
 
 ScriptAsset::~ScriptAsset() {
@@ -143,10 +144,11 @@ void ScriptAsset::callEvent(const char* event) {
   wasmtime_error_t* module_error = nullptr;
   wasm_trap_t* module_trap = nullptr;
 
-  module_error = wasmtime_func_call(iter->second, nullptr, 0, nullptr, 0, &module_trap);
+  module_error =
+      wasmtime_func_call(iter->second, nullptr, 0, nullptr, 0, &module_trap);
   if (module_error != nullptr || module_trap != nullptr) {
     exit_with_error("Error while running module", module_error, module_trap);
   }
-} 
+}
 
 }  // namespace mondradiko

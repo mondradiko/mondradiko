@@ -21,7 +21,6 @@
 #include "core/gpu/GpuInstance.h"
 #include "core/network/NetworkServer.h"
 #include "core/renderer/Renderer.h"
-#include "core/scripting/ScriptEnvironment.h"
 #include "core/world/World.h"
 #include "core/world/WorldEventSorter.h"
 #include "log/log.h"
@@ -54,8 +53,7 @@ int main(int argc, const char* argv[]) {
   try {
     Filesystem fs("../test-folder/");
 
-    ScriptEnvironment scripts;
-    World world(&fs, nullptr, &scripts);
+    World world(&fs, nullptr);
     WorldEventSorter world_event_sorter(&world);
     NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
 

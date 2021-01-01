@@ -100,7 +100,7 @@ void ScriptEnvironment::update(EntityRegistry& registry,
 
     ScriptAsset* script_asset =
         asset_pool->getAsset<ScriptAsset>(script.getScriptAsset());
-    
+
     script_asset->callEvent("update");
   }
 }

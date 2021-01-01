@@ -40,7 +40,7 @@ class ScriptEnvironment {
 
   /**
    * @brief Adds a binding symbol's callback to the ScriptEnvironment.
-   * 
+   *
    * @param symbol The name to link.
    * @param func The function linked to the symbol.
    *
@@ -50,7 +50,7 @@ class ScriptEnvironment {
   /**
    * @brief Attempts to look up a stored binding.
    * @param symbol The binding to search for.
-   * 
+   *
    * @return The binding's Wasm function, or nullptr if it's not found.
    */
   wasm_func_t* getBinding(const std::string&);
@@ -58,7 +58,7 @@ class ScriptEnvironment {
   /**
    * @brief Gets a Wasm function that interrupts the store when called.
    * Used by ScriptAsset to replace missing binding imports.
-   * 
+   *
    * @return A Wasm host-defined function that interrupts the store
    * when called.
    */

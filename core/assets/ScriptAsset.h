@@ -29,8 +29,8 @@ class ScriptAsset : public Asset {
 
   // TODO(marceline-cramer) Make observers in ScriptEnvironment for events
   // TODO(marceline-cramer) Pass EntityIds to scripts
-  // TODO(marceline-cramer) Make ScriptImplementation class to wrap callbacks for each
-  // implementation defined in a single ScriptAsset
+  // TODO(marceline-cramer) Make ScriptImplementation class to wrap callbacks
+  // for each implementation defined in a single ScriptAsset
   void callEvent(const char*);
 
  private:
