@@ -4,7 +4,7 @@
  * @brief Binds a ScriptAsset and its events to an entity.
  * @date 2020-12-25
  *
- * @copyright Copyright (c) 2020 Marceline Cramer
+ * @copyright Copyright (c) 2020 the Mondradiko contributors.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  *
  */
