@@ -11,7 +11,9 @@
 
 #include "core/scripting/ScriptEnvironment.h"
 
+#include "core/assets/ScriptAsset.h"
 #include "core/bindings/script_linker.h"
+#include "core/components/ScriptComponent.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -87,7 +89,21 @@ ScriptEnvironment::~ScriptEnvironment() {
   if (engine) wasm_engine_delete(engine);
 }
 
-void ScriptEnvironment::update(EntityRegistry& registry) {}
+void ScriptEnvironment::update(EntityRegistry& registry,
+                               AssetPool* asset_pool) {
+  auto script_view = registry.view<ScriptComponent>();
+
+  for (auto& e : script_view) {
+    auto& script = script_view.get(e);
+
+    if (!script.isLoaded(asset_pool)) continue;
+
+    ScriptAsset* script_asset =
+        asset_pool->getAsset<ScriptAsset>(script.getScriptAsset());
+    
+    script_asset->callEvent("update");
+  }
+}
 
 void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {
   bindings.emplace(std::string(symbol), func);

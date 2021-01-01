@@ -14,6 +14,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "core/assets/AssetPool.h"
 #include "core/common/wasm_headers.h"
 #include "core/world/Entity.h"
 
@@ -24,7 +25,7 @@ class ScriptEnvironment {
   ScriptEnvironment();
   ~ScriptEnvironment();
 
-  void update(EntityRegistry&);
+  void update(EntityRegistry&, AssetPool*);
 
   wasm_engine_t* getEngine() { return engine; }
   wasm_store_t* getStore() { return store; }
