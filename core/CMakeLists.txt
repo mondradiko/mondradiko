@@ -64,3 +64,4 @@ add_library(mondradiko-core STATIC ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDR
 target_link_libraries(mondradiko-core mondradiko-assets)
 target_link_libraries(mondradiko-core mondradiko-log)
 target_link_libraries(mondradiko-core mondradiko-lib)
+target_link_libraries(mondradiko-core mondradiko-bindings)

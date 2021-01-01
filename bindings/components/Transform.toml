@@ -1,0 +1,21 @@
+# Copyright (c) 2020 the Mondradiko contributors.
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+name = "Transform"
+
+[methods]
+
+  [methods.getLocation]
+  return = "Vector3"
+
+    [methods.getLocation.properties]
+    brief = "Retrieves the location of this Transform."
+
+  [methods.setLocation]
+  brief = "Sets the location of this Transform."
+
+    [methods.setLocation.overloads.with_scalars]
+    params = ["double", "double", "double"]
+
+    [methods.setLocation.overloads.with_vector3]
+    params = ["Vector3"]
