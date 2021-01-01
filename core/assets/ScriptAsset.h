@@ -11,6 +11,9 @@
 
 #pragma once
 
+#include <string>
+#include <unordered_map>
+
 #include "core/assets/AssetPool.h"
 #include "core/common/wasm_headers.h"
 
@@ -24,10 +27,19 @@ class ScriptAsset : public Asset {
   ScriptAsset(assets::ImmutableAsset&, AssetPool*, ScriptEnvironment*);
   ~ScriptAsset();
 
+  // TODO(marceline-cramer) Make observers in ScriptEnvironment for events
+  // TODO(marceline-cramer) Pass EntityIds to scripts
+  // TODO(marceline-cramer) Make ScriptImplementation class to wrap callbacks for each
+  // implementation defined in a single ScriptAsset
+  void callEvent(const char*);
+
  private:
   ScriptEnvironment* scripts;
 
   wasm_module_t* script_module = nullptr;
+  wasm_instance_t* module_instance = nullptr;
+
+  std::unordered_map<std::string, wasm_func_t*> event_callbacks;
 };
 
 }  // namespace mondradiko

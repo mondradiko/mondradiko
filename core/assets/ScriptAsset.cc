@@ -23,7 +23,7 @@ namespace mondradiko {
 void exit_with_error(const char* message, wasmtime_error_t* error,
                      wasm_trap_t* trap) {
   wasm_byte_vec_t error_message;
-  if (error != NULL) {
+  if (error != nullptr) {
     wasmtime_error_message(error, &error_message);
     wasmtime_error_delete(error);
   } else {
@@ -32,7 +32,7 @@ void exit_with_error(const char* message, wasmtime_error_t* error,
   }
   std::string error_string(error_message.data, error_message.size);
   wasm_byte_vec_delete(&error_message);
-  log_err("%s: %s", message, error_string);
+  log_ftl("%s: %s", message, error_string);
 }
 
 ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
@@ -47,10 +47,9 @@ ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
   }
 
   // TODO(Turtle1331) free wasmtime memory as early as possible
-  // TODO(Turtle1331) debug segfault on missing import
 
-  wasmtime_error_t* module_error = NULL;
-  wasm_trap_t* module_trap = NULL;
+  wasmtime_error_t* module_error = nullptr;
+  wasm_trap_t* module_trap = nullptr;
 
   log_inf("Loading module into memory");
   size_t script_size;
@@ -101,33 +100,53 @@ ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
     module_imports.push_back(wasm_func_as_extern(binding_func));
   }
 
-  log_inf("Instantiating module");
-  wasm_instance_t* module_instance = NULL;
-  module_error = wasmtime_instance_new(
-      scripts->getStore(), script_module, module_imports.data(),
-      module_imports.size(), &module_instance, &module_trap);
-  if (module_instance == NULL) {
-    exit_with_error("Failed to instantiate module", module_error, module_trap);
+  {
+    log_zone_named("Instantiate script module");
+
+    module_error = wasmtime_instance_new(
+        scripts->getStore(), script_module, module_imports.data(),
+        module_imports.size(), &module_instance, &module_trap);
+    if (module_instance == nullptr) {
+      exit_with_error("Failed to instantiate module", module_error, module_trap);
+    }
   }
 
-  log_inf("Extracting exported functions");
-  wasm_extern_vec_t instance_externs;
-  wasm_instance_exports(module_instance, &instance_externs);
-  assert(instance_externs.size == 1);
-  wasm_func_t* run_f = wasm_extern_as_func(instance_externs.data[0]);
-  assert(run_f != NULL);
+  {
+    log_zone_named("Get module exports");
 
-  log_inf("Calling exported function");
-  module_error = wasmtime_func_call(run_f, NULL, 0, NULL, 0, &module_trap);
-  wasm_extern_vec_delete(&instance_externs);
-  wasm_instance_delete(module_instance);
-  if (module_error != NULL || module_trap != NULL) {
-    exit_with_error("Error while running module", module_error, module_trap);
-  }
+    wasm_extern_vec_t instance_externs;
+    wasm_instance_exports(module_instance, &instance_externs);
+
+    if (instance_externs.size < 1) {
+      log_ftl("Script module has no exports");
+    }
+
+    // TODO(marceline-cramer) Register callbacks under their exported names
+    wasm_func_t* update_func = wasm_extern_as_func(instance_externs.data[0]);
+    event_callbacks.emplace("update", update_func);
+  }  
 }
 
 ScriptAsset::~ScriptAsset() {
+  if (module_instance) wasm_instance_delete(module_instance);
   if (script_module) wasm_module_delete(script_module);
 }
+
+void ScriptAsset::callEvent(const char* event) {
+  auto iter = event_callbacks.find(event);
+
+  if (iter == event_callbacks.end()) {
+    log_err("Attempted to call non-existent callback %s", event);
+    return;
+  }
+
+  wasmtime_error_t* module_error = nullptr;
+  wasm_trap_t* module_trap = nullptr;
+
+  module_error = wasmtime_func_call(iter->second, nullptr, 0, nullptr, 0, &module_trap);
+  if (module_error != nullptr || module_trap != nullptr) {
+    exit_with_error("Error while running module", module_error, module_trap);
+  }
+} 
 
 }  // namespace mondradiko
