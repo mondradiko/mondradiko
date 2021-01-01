@@ -11,6 +11,9 @@
 
 #include "core/assets/ScriptAsset.h"
 
+#include <string>
+#include <vector>
+
 #include "assets/format/ScriptAsset.h"
 #include "core/scripting/ScriptEnvironment.h"
 
@@ -30,12 +33,6 @@ void exit_with_error(const char* message, wasmtime_error_t* error,
   std::string error_string(error_message.data, error_message.size);
   wasm_byte_vec_delete(&error_message);
   log_err("%s: %s", message, error_string);
-}
-
-// Example host-defined callback
-static wasm_trap_t* hello_wasm(const wasm_val_t args[], wasm_val_t results[]) {
-  log_inf("Hello from Wasm module!");
-  return NULL;
 }
 
 ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
@@ -81,12 +78,29 @@ ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
   }
 
   log_inf("Creating module callbacks");
+
+  wasm_importtype_vec_t required_imports;
+  wasm_module_imports(script_module, &required_imports);
+
   std::vector<wasm_extern_t*> module_imports;
 
-  wasm_functype_t* hello_wasm_ft = wasm_functype_new_0_0();
-  wasm_func_t* hello_wasm_f =
-      wasm_func_new(scripts->getStore(), hello_wasm_ft, hello_wasm);
-  module_imports.push_back(wasm_func_as_extern(hello_wasm_f));
+  for (uint32_t i = 0; i < required_imports.size; i++) {
+    const wasm_name_t* import_name =
+        wasm_importtype_name(required_imports.data[i]);
+
+    // TODO(marceline-cramer) Import other kinds?
+
+    std::string binding_name(import_name->data, import_name->size);
+    wasm_func_t* binding_func = scripts->getBinding(binding_name);
+
+    if (binding_func) {
+      module_imports.push_back(wasm_func_as_extern(binding_func));
+    } else {
+      log_err("Script binding \"%s\" is missing", binding_name.c_str());
+      // HACK(marceline-cramer) This will segfault until we can fail safely
+      module_imports.push_back(nullptr);
+    }
+  }
 
   log_inf("Instantiating module");
   wasm_instance_t* module_instance = NULL;
