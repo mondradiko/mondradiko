@@ -242,7 +242,7 @@ void MeshPass::destroyFrameData(MeshPassFrameData& frame) {
 
 void MeshPass::allocateDescriptors(EntityRegistry& registry,
                                    MeshPassFrameData& frame,
-                                   const AssetPool* asset_pool,
+                                   AssetPool* asset_pool,
                                    GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
@@ -304,8 +304,7 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
 }
 
 void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
-                      const AssetPool* asset_pool,
-                      VkCommandBuffer commandBuffer,
+                      AssetPool* asset_pool, VkCommandBuffer commandBuffer,
                       GpuDescriptorSet* viewport_descriptor,
                       uint32_t viewport_offset) {
   log_zone;

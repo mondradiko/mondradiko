@@ -90,7 +90,7 @@ class AssetPool {
   }
 
   template <typename AssetType>
-  const AssetType* getAsset(AssetId id) const {
+  AssetType* getAsset(AssetId id) {
     // TODO(marceline-cramer) Load here if asset is invalid
     if (!isAssetLoaded<AssetType>(id)) {
       log_ftl("Tried to get asset 0x%0lx of type %s, which was invalid.", id,

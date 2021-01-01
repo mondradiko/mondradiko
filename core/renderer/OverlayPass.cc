@@ -194,7 +194,7 @@ void OverlayPass::destroyFrameData(OverlayPassFrameData& frame) {
 
 void OverlayPass::allocateDescriptors(EntityRegistry& registry,
                                       OverlayPassFrameData& frame,
-                                      const AssetPool* asset_pool,
+                                      AssetPool* asset_pool,
                                       GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
@@ -275,8 +275,7 @@ void OverlayPass::allocateDescriptors(EntityRegistry& registry,
 }
 
 void OverlayPass::render(EntityRegistry& registry, OverlayPassFrameData& frame,
-                         const AssetPool* asset_pool,
-                         VkCommandBuffer command_buffer,
+                         AssetPool* asset_pool, VkCommandBuffer command_buffer,
                          GpuDescriptorSet* viewport_descriptor,
                          uint32_t viewport_offset) {
   log_zone;
