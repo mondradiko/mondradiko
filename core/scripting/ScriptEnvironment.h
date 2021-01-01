@@ -26,8 +26,9 @@ class ScriptEnvironment {
 
   void update(EntityRegistry&);
 
-  wasm_store_t* getStore() { return store; }
   wasm_engine_t* getEngine() { return engine; }
+  wasm_store_t* getStore() { return store; }
+  wasmtime_interrupt_handle_t* getInterruptHandle() { return interrupt_handle; }
 
   template <class ComponentType>
   ComponentType* getComponent() {
@@ -54,8 +55,10 @@ class ScriptEnvironment {
   wasm_func_t* getBinding(const std::string&);
 
  private:
+  static wasm_config_t* config;
   wasm_engine_t* engine = nullptr;
   wasm_store_t* store = nullptr;
+  wasmtime_interrupt_handle_t* interrupt_handle = nullptr;
 
   std::unordered_map<std::string, wasm_func_t*> bindings;
 };
