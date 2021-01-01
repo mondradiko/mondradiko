@@ -11,6 +11,7 @@
 
 #include "core/scripting/ScriptEnvironment.h"
 
+#include "bindings/script_linker.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -20,6 +21,10 @@ ScriptEnvironment::ScriptEnvironment() {
 
   engine = wasm_engine_new();
   store = wasm_store_new(engine);
+
+  if(!bindings::linkScriptingApi(this)) {
+    log_ftl("Failed to link scripting API.");
+  }
 }
 
 ScriptEnvironment::~ScriptEnvironment() {

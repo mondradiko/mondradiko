@@ -6,7 +6,7 @@ add_subdirectory(components)
 
 find_package(Python3 REQUIRED)
 set(GENERATE_BINDING_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_binding.py")
-set(GENERATE_LINK_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_link_headers.py")
+set(GENERATE_LINK_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_script_linker.py")
 
 set(BINDING_SRC
   components/Transform.toml
@@ -36,11 +36,12 @@ foreach(BINDING ${BINDING_SRC})
 endforeach()
 
 # Generate source file to link Wasm imported functions
-set(LINK_BINDINGS_SRC "${CMAKE_CURRENT_BINARY_DIR}/link_headers.cc")
+set(SCRIPT_LINKER_SRC "${CMAKE_CURRENT_BINARY_DIR}/script_linker.cc")
 add_custom_command(
-  OUTPUT ${LINK_BINDINGS_SRC}
-  COMMAND ${Python3_EXECUTABLE} ${GENERATE_LINK_SCRIPT} ${LINK_BINDINGS_SRC} ${BINDING_SRC}
+  OUTPUT ${SCRIPT_LINKER_SRC}
+  COMMAND ${Python3_EXECUTABLE} ${GENERATE_LINK_SCRIPT} ${SCRIPT_LINKER_SRC} ${BINDING_SRC}
   DEPENDS ${BINDING_SRC} ${GENERATE_LINK_SCRIPT}
 )
 
-add_library(mondradiko-bindings STATIC ${LINK_BINDINGS_SRC} ${BINDING_HEADERS})
+add_library(mondradiko-bindings STATIC ${SCRIPT_LINKER_SRC} ${BINDING_HEADERS})
+target_link_libraries(mondradiko-bindings mondradiko-lib)
