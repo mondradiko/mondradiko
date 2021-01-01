@@ -14,6 +14,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(bindings)
 include(SPIR-V)
 include(flatc)
 
@@ -28,7 +29,6 @@ add_compile_options(-Wall)
 
 add_subdirectory(log)
 add_subdirectory(assets)
-add_subdirectory(bindings)
 add_subdirectory(core)
 add_subdirectory(client)
 add_subdirectory(launcher)
