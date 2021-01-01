@@ -11,7 +11,7 @@
 
 #include "core/scripting/ScriptEnvironment.h"
 
-#include "bindings/script_linker.h"
+#include "core/bindings/script_linker.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -22,7 +22,7 @@ ScriptEnvironment::ScriptEnvironment() {
   engine = wasm_engine_new();
   store = wasm_store_new(engine);
 
-  if(!bindings::linkScriptingApi(this)) {
+  if (!bindings::linkScriptingApi(this)) {
     log_ftl("Failed to link scripting API.");
   }
 }
@@ -30,10 +30,24 @@ ScriptEnvironment::ScriptEnvironment() {
 ScriptEnvironment::~ScriptEnvironment() {
   log_zone;
 
+  for (auto iter : bindings) {
+    wasm_func_delete(iter.second);
+  }
+
   if (store) wasm_store_delete(store);
   if (engine) wasm_engine_delete(engine);
 }
 
 void ScriptEnvironment::update(EntityRegistry& registry) {}
+
+void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {
+  bindings.emplace(std::string(symbol), func);
+}
+
+wasm_func_t* ScriptEnvironment::getBinding(const std::string& symbol) {
+  auto iter = bindings.find(symbol);
+  if (iter == bindings.end()) return nullptr;
+  return iter->second;
+}
 
 }  // namespace mondradiko
