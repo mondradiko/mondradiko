@@ -21,8 +21,9 @@
 
 namespace mondradiko {
 
-MeshAsset::MeshAsset(assets::ImmutableAsset& asset, AssetPool*,
-                     GpuInstance* gpu) {
+MeshAsset::MeshAsset(AssetPool*, GpuInstance* gpu) : gpu(gpu) {}
+
+void MeshAsset::load(assets::ImmutableAsset& asset) {
   assets::MeshHeader header;
   asset >> header;
 
@@ -59,9 +60,12 @@ MeshAsset::MeshAsset(assets::ImmutableAsset& asset, AssetPool*,
   index_count = header.index_count;
 }
 
-MeshAsset::~MeshAsset() {
+void MeshAsset::unload() {
   if (vertex_buffer != nullptr) delete vertex_buffer;
   if (index_buffer != nullptr) delete index_buffer;
+
+  vertex_buffer = nullptr;
+  index_buffer = nullptr;
 }
 
 }  // namespace mondradiko

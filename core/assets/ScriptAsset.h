@@ -24,13 +24,16 @@ class ScriptEnvironment;
 
 class ScriptAsset : public Asset {
  public:
-  ScriptAsset(assets::ImmutableAsset&, AssetPool*, ScriptEnvironment*);
-  ~ScriptAsset();
+  ScriptAsset(AssetPool*, ScriptEnvironment*);
+
+  // AssetPool implementation
+  void load(assets::ImmutableAsset&);
+  void unload();
 
   // TODO(marceline-cramer) Make observers in ScriptEnvironment for events
   // TODO(marceline-cramer) Pass EntityIds to scripts
-  // TODO(marceline-cramer) Make ScriptImplementation class to wrap callbacks
-  // for each implementation defined in a single ScriptAsset
+  // TODO(marceline-cramer) Make ScriptImplementation class to wrap
+  // callbacks for each implementation defined in a single ScriptAsset
   void callEvent(const char*);
 
  private:

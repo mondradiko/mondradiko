@@ -18,9 +18,9 @@
 
 namespace mondradiko {
 
-TextureAsset::TextureAsset(assets::ImmutableAsset& asset, AssetPool*,
-                           GpuInstance* gpu)
-    : gpu(gpu) {
+TextureAsset::TextureAsset(AssetPool*, GpuInstance* gpu) : gpu(gpu) {}
+
+void TextureAsset::load(assets::ImmutableAsset& asset) {
   assets::TextureHeader header;
   asset >> header;
 
@@ -62,8 +62,10 @@ TextureAsset::TextureAsset(assets::ImmutableAsset& asset, AssetPool*,
   }  // switch (header.format)
 }
 
-TextureAsset::~TextureAsset() {
-  if (image != nullptr) delete image;
+void TextureAsset::unload() {
+  if (image) delete image;
+
+  image = nullptr;
 }
 
 }  // namespace mondradiko

@@ -31,11 +31,17 @@ World::World(Filesystem* fs, GpuInstance* gpu)
     : fs(fs), gpu(gpu), asset_pool(fs) {
   log_zone;
 
-  // HACK(marceline-cramer) Manually load server-side assets
-  // Remove this when AssetPool::getAsset() can load assets itself
-  asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu);
-  asset_pool.loadAsset<MaterialAsset>(0xf643d4dc, gpu);
-  asset_pool.loadAsset<ScriptAsset>(0x31069ecf, &scripts);
+  if (gpu) {
+    asset_pool.initializeAssetType<MaterialAsset>(gpu);
+    asset_pool.initializeAssetType<MeshAsset>(gpu);
+    asset_pool.initializeAssetType<TextureAsset>(gpu);
+  } else {
+    asset_pool.initializeDummyAssetType<MaterialAsset>(gpu);
+    asset_pool.initializeDummyAssetType<MeshAsset>(gpu);
+    asset_pool.initializeDummyAssetType<TextureAsset>(gpu);
+  }
+
+  asset_pool.initializeAssetType<ScriptAsset>(&scripts);
 }
 
 World::~World() {
@@ -51,12 +57,8 @@ void World::testInitialize() {
   auto test_entity = registry.create();
 
 #ifdef TEST_INITIALIZE
-  MeshRendererComponent mesh_renderer_component(
-      asset_pool.loadAsset<MeshAsset>(0x84b42359, gpu),
-      asset_pool.loadAsset<MaterialAsset>(0xf643d4dc, gpu));
-
-  ScriptComponent script_component(
-      asset_pool.loadAsset<ScriptAsset>(0x31069ecf, &scripts));
+  MeshRendererComponent mesh_renderer_component(0x84b42359, 0xf643d4dc);
+  ScriptComponent script_component(0x31069ecf);
 #endif
 
   TransformComponent transform_component;

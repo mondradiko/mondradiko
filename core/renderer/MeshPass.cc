@@ -264,14 +264,14 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
     auto iter = frame.textures.find(material_asset);
 
     if (iter == frame.textures.end()) {
-      auto mesh_material = asset_pool->getAsset<MaterialAsset>(material_asset);
+      auto& mesh_material = asset_pool->getAsset<MaterialAsset>(material_asset);
 
       frame.materials.emplace(material_asset, material_uniforms.size());
-      material_uniforms.push_back(mesh_material->getUniform());
+      material_uniforms.push_back(mesh_material.getUniform());
 
       GpuDescriptorSet* texture_descriptor =
           descriptor_pool->allocate(texture_layout);
-      mesh_material->updateTextureDescriptor(texture_descriptor);
+      mesh_material.updateTextureDescriptor(texture_descriptor);
       frame.textures.emplace(material_asset, texture_descriptor);
     }
 
@@ -320,30 +320,33 @@ void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
   for (EntityId e : mesh_renderers) {
     log_zone_named("Render mesh");
 
-    auto mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
+    auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
-    AssetId material_asset = mesh_renderer.getMaterialAsset();
+    // TODO(marceline-cramer) Iterate over mesh renderers by their cached
+    // descriptors
+
+    AssetId material_id = mesh_renderer.getMaterialAsset();
 
     frame.material_descriptor->updateDynamicOffset(
-        0, frame.materials.find(material_asset)->second);
+        0, frame.materials.find(material_id)->second);
     frame.material_descriptor->cmdBind(commandBuffer, pipeline_layout, 1);
 
-    frame.textures.find(material_asset)
+    frame.textures.find(material_id)
         ->second->cmdBind(commandBuffer, pipeline_layout, 2);
 
     frame.mesh_descriptor->updateDynamicOffset(0, frame.meshes.find(e)->second);
     frame.mesh_descriptor->cmdBind(commandBuffer, pipeline_layout, 3);
 
-    auto mesh_asset =
+    MeshAsset& mesh_asset =
         asset_pool->getAsset<MeshAsset>(mesh_renderer.getMeshAsset());
 
-    VkBuffer vertex_buffers[] = {mesh_asset->vertex_buffer->getBuffer()};
+    VkBuffer vertex_buffers[] = {mesh_asset.vertex_buffer->getBuffer()};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, mesh_asset->index_buffer->getBuffer(),
-                         0, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(commandBuffer, mesh_asset->index_count, 1, 0, 0, 0);
+    vkCmdBindIndexBuffer(commandBuffer, mesh_asset.index_buffer->getBuffer(), 0,
+                         VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(commandBuffer, mesh_asset.index_count, 1, 0, 0, 0);
   }
 }
 

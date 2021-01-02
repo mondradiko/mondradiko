@@ -35,9 +35,11 @@ void exit_with_error(const char* message, wasmtime_error_t* error,
   log_ftl("%s: %s", message, error_string);
 }
 
-ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
+ScriptAsset::ScriptAsset(AssetPool*,
                          ScriptEnvironment* scripts)
-    : scripts(scripts) {
+    : scripts(scripts) {}
+
+void ScriptAsset::load(assets::ImmutableAsset& asset) {
   assets::ScriptHeader header;
   asset >> header;
 
@@ -128,9 +130,12 @@ ScriptAsset::ScriptAsset(assets::ImmutableAsset& asset, AssetPool*,
   }
 }
 
-ScriptAsset::~ScriptAsset() {
+void ScriptAsset::unload() {
   if (module_instance) wasm_instance_delete(module_instance);
   if (script_module) wasm_module_delete(script_module);
+
+  module_instance = nullptr;
+  script_module = nullptr;
 }
 
 void ScriptAsset::callEvent(const char* event) {

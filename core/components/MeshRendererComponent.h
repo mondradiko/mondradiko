@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include "core/assets/AssetPool.h"
 #include "core/assets/MaterialAsset.h"
 #include "core/assets/MeshAsset.h"
 #include "core/components/Component.h"
@@ -30,9 +29,9 @@ class MeshRendererComponent
             static_cast<protocol::AssetId>(mesh_asset),
             static_cast<protocol::AssetId>(material_asset))) {}
 
-  bool isLoaded(const AssetPool* asset_pool) const {
-    return asset_pool->isAssetLoaded<MeshAsset>(getMeshAsset()) &&
-           asset_pool->isAssetLoaded<MaterialAsset>(getMaterialAsset());
+  bool isLoaded(AssetPool* asset_pool) const {
+    return asset_pool->getAsset<MeshAsset>(getMeshAsset()).isLoaded() &&
+           asset_pool->getAsset<MaterialAsset>(getMaterialAsset()).isLoaded();
   }
 
   AssetId getMeshAsset() const {

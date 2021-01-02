@@ -27,7 +27,7 @@ struct ScriptComponent : public Component<protocol::ScriptComponent> {
             static_cast<protocol::AssetId>(script_asset))) {}
 
   bool isLoaded(AssetPool* asset_pool) {
-    return asset_pool->isAssetLoaded<ScriptAsset>(getScriptAsset());
+    return asset_pool->getAsset<ScriptAsset>(getScriptAsset()).isLoaded();
   }
 
   AssetId getScriptAsset() {

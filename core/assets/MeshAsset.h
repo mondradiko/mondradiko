@@ -15,9 +15,9 @@
 #include <cstddef>
 
 #include "core/assets/AssetPool.h"
-#include "core/common/vulkan_headers.h"
 #include "core/common/api_headers.h"
 #include "core/common/glm_headers.h"
+#include "core/common/vulkan_headers.h"
 
 namespace mondradiko {
 
@@ -74,12 +74,18 @@ using MeshIndex = uint32_t;
 
 class MeshAsset : public Asset {
  public:
-  MeshAsset(assets::ImmutableAsset&, AssetPool*, GpuInstance*);
-  ~MeshAsset();
+  MeshAsset(AssetPool*, GpuInstance*);
+
+  // AssetPool implementation
+  void load(assets::ImmutableAsset&);
+  void unload();
 
   GpuBuffer* vertex_buffer = nullptr;
   GpuBuffer* index_buffer = nullptr;
   size_t index_count = 0;
+
+ private:
+  GpuInstance* gpu;
 };
 
 }  // namespace mondradiko

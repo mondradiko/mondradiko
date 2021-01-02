@@ -22,8 +22,11 @@ class GpuInstance;
 
 class TextureAsset : public Asset {
  public:
-  TextureAsset(assets::ImmutableAsset&, AssetPool*, GpuInstance*);
-  ~TextureAsset();
+  TextureAsset(AssetPool*, GpuInstance*);
+
+  // AssetPool implementation
+  void load(assets::ImmutableAsset&);
+  void unload();
 
   GpuImage* getImage() const { return image; }
 

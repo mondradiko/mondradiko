@@ -33,7 +33,6 @@ SdlDisplay::SdlDisplay() {
     log_ftl("Failed to create SDL window.");
   }
 
-  SDL_SetRelativeMouseMode(SDL_TRUE);
   key_state = SDL_GetKeyboardState(nullptr);
 }
 
