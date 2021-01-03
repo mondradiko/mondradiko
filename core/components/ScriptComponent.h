@@ -7,32 +7,36 @@
  * @copyright Copyright (c) 2020 the Mondradiko contributors.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  *
+ * ScriptComponents do not inherit from the Component base class,
+ * because they are network-synchronized totally differently. For
+ * more info, see ScriptEnvironment.h.
+ *
  */
 
 #pragma once
 
 #include "core/assets/ScriptAsset.h"
 #include "core/components/Component.h"
-#include "core/protocol/ScriptComponent_generated.h"
 
 namespace mondradiko {
 
-struct ScriptComponent : public Component<protocol::ScriptComponent> {
+// Forward declarations
+class ScriptInstance;
+
+class ScriptComponent {
  public:
-  explicit ScriptComponent(const protocol::ScriptComponent& data)
-      : Component(data) {}
-
-  explicit ScriptComponent(AssetId script_asset)
-      : Component(protocol::ScriptComponent(
-            static_cast<protocol::AssetId>(script_asset))) {}
-
   bool isLoaded(AssetPool* asset_pool) {
     return asset_pool->getAsset<ScriptAsset>(getScriptAsset()).isLoaded();
   }
 
-  AssetId getScriptAsset() {
-    return static_cast<AssetId>(_data.script_asset());
-  }
+  AssetId getScriptAsset() { return script_asset; }
+
+ private:
+  // Systems allowed to access private members directly
+  friend class ScriptEnvironment;
+
+  AssetId script_asset;
+  ScriptInstance* script_instance;
 };
 
 }  // namespace mondradiko

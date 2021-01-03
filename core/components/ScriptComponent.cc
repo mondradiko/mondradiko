@@ -15,14 +15,4 @@
 
 namespace mondradiko {
 
-// Template specialization to build UpdateComponents event
-template <>
-void buildUpdateComponents<protocol::ScriptComponent>(
-    protocol::UpdateComponentsBuilder* update_components,
-    flatbuffers::Offset<flatbuffers::Vector<const protocol::ScriptComponent*>>
-        components) {
-  update_components->add_type(protocol::ComponentType::ScriptComponent);
-  update_components->add_script(components);
-}
-
 }  // namespace mondradiko

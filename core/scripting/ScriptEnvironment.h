@@ -31,12 +31,28 @@ class ScriptEnvironment {
   wasm_store_t* getStore() { return store; }
   wasmtime_interrupt_handle_t* getInterruptHandle() { return interrupt_handle; }
 
+  //
+  // Script bindings
+  //
   template <class ComponentType>
   ComponentType* getComponent() {
     // TODO(marceline-cramer) Add ComponentId
     // TODO(marceline-cramer) Implement this
     return nullptr;
   }
+
+  /**
+   * @brief Updates a local script. Overwrites existing script data, or
+   * instantiates a new script if necessary.
+   * @param registry The World's registry.
+   * @param asset_pool The World's asset pool.
+   * @param entity The EntityId of the ScriptComponent to update.
+   * @param script_asset The AssetId of the data's ScriptAsset.
+   * @param data A pointer to the script data, or nullptr.
+   * @param data_size The length in bytes of the data.
+   *
+   */
+  void updateScript(EntityRegistry&, AssetPool*, EntityId, AssetId, const uint8_t*, size_t);
 
   /**
    * @brief Adds a binding symbol's callback to the ScriptEnvironment.
@@ -63,6 +79,15 @@ class ScriptEnvironment {
    * when called.
    */
   wasm_func_t* getInterruptFunc() { return interrupt_func; }
+
+  /**
+   * @brief Tests if Wasmtime errors were thrown, and logs them if they were.
+   * @param error Wasmtime error to log, or nullptr if none was thrown.
+   * @param trap Wasmtime trap to log, or nullptr if none was thrown.
+   *
+   * @return True if an error occurred, false if it didn't.
+   */
+  bool handleError(wasmtime_error_t*, wasm_trap_t*);
 
  private:
   wasm_engine_t* engine = nullptr;

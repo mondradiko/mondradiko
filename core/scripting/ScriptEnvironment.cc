@@ -14,6 +14,7 @@
 #include "core/assets/ScriptAsset.h"
 #include "core/bindings/script_linker.h"
 #include "core/components/ScriptComponent.h"
+#include "core/scripting/ScriptInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -98,11 +99,45 @@ void ScriptEnvironment::update(EntityRegistry& registry,
 
     if (!script.isLoaded(asset_pool)) continue;
 
-    ScriptAsset& script_asset =
-        asset_pool->getAsset<ScriptAsset>(script.getScriptAsset());
-
-    script_asset.callEvent("update");
+    ScriptInstance* script_instance = script.script_instance;
+    script_instance->runCallback("update");
   }
+}
+
+void ScriptEnvironment::updateScript(EntityRegistry& registry,
+                                     AssetPool* asset_pool, EntityId entity,
+                                     AssetId script_asset, const uint8_t* data,
+                                     size_t data_size) {
+  // Ensure the entity exists
+  if (!registry.valid(entity)) {
+    entity = registry.create(entity);
+  }
+
+  bool needs_initialization = false;
+
+  // Destroy the old ScriptInstance if necessary
+  if (registry.has<ScriptComponent>(entity)) {
+    ScriptComponent& old_script = registry.get<ScriptComponent>(entity);
+    if (old_script.script_asset != script_asset) {
+      delete old_script.script_instance;
+      needs_initialization = true;
+    }
+  } else {
+    needs_initialization = true;
+  }
+
+  ScriptComponent& script_component =
+      registry.get_or_emplace<ScriptComponent>(entity);
+
+  if (needs_initialization) {
+    // TODO(marceline-cramer) Clean up ScriptInstances when World is destroyed
+    // TODO(marceline-cramer) AssetPool refcounts?
+    script_component.script_instance =
+        asset_pool->getAsset<ScriptAsset>(script_asset).createInstance();
+  }
+
+  script_component.script_asset = script_asset;
+  script_component.script_instance->updateData(data, data_size);
 }
 
 void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {
@@ -113,6 +148,26 @@ wasm_func_t* ScriptEnvironment::getBinding(const std::string& symbol) {
   auto iter = bindings.find(symbol);
   if (iter == bindings.end()) return nullptr;
   return iter->second;
+}
+
+bool ScriptEnvironment::handleError(wasmtime_error_t* error,
+                                    wasm_trap_t* trap) {
+  wasm_byte_vec_t error_message;
+  if (error != nullptr) {
+    wasmtime_error_message(error, &error_message);
+    wasmtime_error_delete(error);
+  } else if (trap != nullptr) {
+    wasm_trap_message(trap, &error_message);
+    wasm_trap_delete(trap);
+  } else {
+    // Return false if no error was thrown
+    return false;
+  }
+
+  std::string error_string(error_message.data, error_message.size);
+  wasm_byte_vec_delete(&error_message);
+  log_err("Wasmtime error thrown: %s", error_string);
+  return true;
 }
 
 }  // namespace mondradiko
