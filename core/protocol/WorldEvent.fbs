@@ -4,7 +4,7 @@
 include "types.fbs";
 
 include "MeshRendererComponent.fbs";
-include "ScriptComponent.fbs";
+include "ScriptData.fbs";
 include "TransformComponent.fbs";
 
 namespace mondradiko.protocol;
@@ -17,14 +17,18 @@ table UpdateComponents {
   type:ComponentType;
   entities:[EntityId];
   mesh_renderer:[MeshRendererComponent];
-  script:[ScriptComponent];
   transform:[TransformComponent];
+}
+
+table UpdateScripts {
+  script_data:[ScriptData];
 }
 
 enum WorldEventType : ushort {
   NoEvent = 0,
   SpawnEntity,
-  UpdateComponents
+  UpdateComponents,
+  UpdateScripts
 }
 
 table WorldEvent {
@@ -32,6 +36,7 @@ table WorldEvent {
 
   spawn_entity:SpawnEntity;
   update_components:UpdateComponents;
+  update_scripts:UpdateScripts;
 }
 
 root_type WorldEvent;

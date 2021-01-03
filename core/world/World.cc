@@ -56,18 +56,15 @@ World::~World() {
 void World::testInitialize() {
   auto test_entity = registry.create();
 
-#ifdef TEST_INITIALIZE
   MeshRendererComponent mesh_renderer_component(0x84b42359, 0xf643d4dc);
-  ScriptComponent script_component(0x31069ecf);
-#endif
-
   TransformComponent transform_component;
 
-#ifdef TEST_INITIALIZE
   registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer_component);
-  registry.emplace<ScriptComponent>(test_entity, script_component);
-#endif
   registry.emplace<TransformComponent>(test_entity, transform_component);
+
+  // Update an entity's script to initialize the ScriptComponent
+  scripts.updateScript(registry, &asset_pool, test_entity, 0x31069ecf, nullptr,
+                       static_cast<size_t>(0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,11 +98,6 @@ void World::onUpdateComponents(
       break;
     }
 
-    case protocol::ComponentType::ScriptComponent: {
-      updateComponents<ScriptComponent>(entities, update_components->script());
-      break;
-    }
-
     case protocol::ComponentType::TransformComponent: {
       updateComponents<TransformComponent>(entities,
                                            update_components->transform());
@@ -118,6 +110,8 @@ void World::onUpdateComponents(
     }
   }
 }
+
+void World::onUpdateScripts(const protocol::UpdateScripts* update_scripts) {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper methods
@@ -193,6 +187,11 @@ void World::processEvent(const protocol::WorldEvent* event) {
 
     case protocol::WorldEventType::UpdateComponents: {
       onUpdateComponents(event->update_components());
+      break;
+    }
+
+    case protocol::WorldEventType::UpdateScripts: {
+      onUpdateScripts(event->update_scripts());
       break;
     }
 

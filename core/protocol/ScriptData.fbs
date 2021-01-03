@@ -5,6 +5,9 @@ include "types.fbs";
 
 namespace mondradiko.protocol;
 
-struct ScriptComponent {
+table ScriptData {
+  entity:EntityId;
   script_asset:AssetId;
+  // TODO(marceline-cramer) Synchronize local script data here
+  // instance_data:[ubyte]
 }

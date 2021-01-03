@@ -94,11 +94,12 @@ WorldEventSorter::WorldUpdateOffset WorldEventSorter::broadcastGlobalEvents(
 
   std::vector<flatbuffers::Offset<protocol::WorldEvent>> component_updates = {
       updateComponents<MeshRendererComponent>(&builder, &world->registry),
-      updateComponents<ScriptComponent>(&builder, &world->registry),
       updateComponents<TransformComponent>(&builder, &world->registry)};
 
   update_offsets.insert(update_offsets.end(), component_updates.begin(),
                         component_updates.end());
+
+  // TODO(marceline-cramer) Synchronize script data
 
   return builder.CreateVector(update_offsets);
 }

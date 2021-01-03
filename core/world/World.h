@@ -30,6 +30,7 @@ struct WorldEvent;
 
 struct SpawnEntity;
 struct UpdateComponents;
+struct UpdateScripts;
 }  // namespace protocol
 
 class World {
@@ -44,6 +45,7 @@ class World {
   //
   void onSpawnEntity(const protocol::SpawnEntity*);
   void onUpdateComponents(const protocol::UpdateComponents*);
+  void onUpdateScripts(const protocol::UpdateScripts*);
 
   //
   // Helper methods
@@ -64,6 +66,8 @@ class World {
   AssetPool asset_pool;
   ScriptEnvironment scripts;
 
+  // TODO(marceline-cramer) Remove this "local ID" business, it's kinda
+  // pointless
   std::unordered_map<EntityId, EntityId> server_ids;
 };
 
