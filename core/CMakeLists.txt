@@ -20,6 +20,7 @@ flatc_schemas(PROTOCOL_HEADERS
   protocol/MeshRendererComponent.fbs
   protocol/ServerEvent.fbs
   protocol/TransformComponent.fbs
+  protocol/ScriptData.fbs
   protocol/WorldEvent.fbs
   protocol/types.fbs
 )
