@@ -275,10 +275,10 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
       frame.textures.emplace(material_asset, texture_descriptor);
     }
 
-    auto transform = mesh_renderers.get<TransformComponent>(e);
+    auto& transform = mesh_renderers.get<TransformComponent>(e);
 
     MeshUniform mesh_uniform;
-    mesh_uniform.model = transform.world_transform;
+    mesh_uniform.model = transform.getWorldTransform();
 
     frame.meshes.emplace(e, mesh_uniforms.size());
     mesh_uniforms.push_back(mesh_uniform);

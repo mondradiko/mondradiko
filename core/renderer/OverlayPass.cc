@@ -204,7 +204,7 @@ void OverlayPass::allocateDescriptors(EntityRegistry& registry,
   auto transform_view = registry.view<TransformComponent>();
 
   for (auto& e : transform_view) {
-    auto& transform = transform_view.get(e).world_transform;
+    glm::mat4 transform = transform_view.get(e).getWorldTransform();
 
     {
       // Draw X line

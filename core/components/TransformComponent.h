@@ -24,15 +24,22 @@ class TransformComponent : public Component<protocol::TransformComponent> {
   explicit TransformComponent(const protocol::TransformComponent& data)
       : Component(data) {}
 
+  glm::mat4 getWorldTransform() { return world_transform; }
+
+ private:
+  // Systems allowed to access private members directly
+  friend class World;
+
+  // System helpers
+  // Used by World to calculate transforms
+  glm::mat4 getLocalTransform();
+
   // Local parent ID
   EntityId local_parent;
   // Used to sort by parent
   EntityId this_entity;
   // Final transform result used in math
   glm::mat4 world_transform;
-
-  // Used by World to calculate transforms
-  glm::mat4 getLocalTransform();
 };
 
 }  // namespace mondradiko
