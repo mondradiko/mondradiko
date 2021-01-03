@@ -20,26 +20,20 @@
 
 namespace mondradiko {
 
+// Forward declarations
+class World;
+
 class ScriptEnvironment {
  public:
   ScriptEnvironment();
   ~ScriptEnvironment();
 
+  void linkComponentApis(World*);
   void update(EntityRegistry&, AssetPool*);
 
   wasm_engine_t* getEngine() { return engine; }
   wasm_store_t* getStore() { return store; }
   wasmtime_interrupt_handle_t* getInterruptHandle() { return interrupt_handle; }
-
-  //
-  // Script bindings
-  //
-  template <class ComponentType>
-  ComponentType* getComponent() {
-    // TODO(marceline-cramer) Add ComponentId
-    // TODO(marceline-cramer) Implement this
-    return nullptr;
-  }
 
   /**
    * @brief Updates a local script. Overwrites existing script data, or

@@ -14,6 +14,7 @@
 #include "core/assets/ScriptAsset.h"
 #include "core/bindings/script_linker.h"
 #include "core/components/ScriptComponent.h"
+#include "core/components/TransformComponent.h"
 #include "core/scripting/ScriptInstance.h"
 #include "log/log.h"
 
@@ -70,10 +71,6 @@ ScriptEnvironment::ScriptEnvironment() {
                                                 interruptCallbackFinalizer);
     wasm_functype_delete(interrupt_func_type);
   }
-
-  if (!bindings::linkScriptingApi(this)) {
-    log_ftl("Failed to link scripting API.");
-  }
 }
 
 ScriptEnvironment::~ScriptEnvironment() {
@@ -88,6 +85,16 @@ ScriptEnvironment::~ScriptEnvironment() {
 
   if (store) wasm_store_delete(store);
   if (engine) wasm_engine_delete(engine);
+}
+
+// Helper function to link a component type's API
+template <class ComponentType>
+void linkComponentApi(ScriptEnvironment* scripts, World* world) {
+  ComponentType::linkScriptApi(scripts, world);
+}
+
+void ScriptEnvironment::linkComponentApis(World* world) {
+  linkComponentApi<TransformComponent>(this, world);
 }
 
 void ScriptEnvironment::update(EntityRegistry& registry,

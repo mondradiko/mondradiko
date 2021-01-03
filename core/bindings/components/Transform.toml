@@ -5,17 +5,11 @@ name = "Transform"
 
 [methods]
 
-  [methods.getLocation]
-  return = "Vector3"
+  [methods.getPosition]
+  brief = "Retrieves the position of this Transform."
+  params = []
+  return = "Vec3"    
 
-    [methods.getLocation.properties]
-    brief = "Retrieves the location of this Transform."
-
-  [methods.setLocation]
-  brief = "Sets the location of this Transform."
-
-    [methods.setLocation.overloads.with_scalars]
-    params = ["double", "double", "double"]
-
-    [methods.setLocation.overloads.with_vector3]
-    params = ["Vector3"]
+  [methods.setPosition]
+  brief = "Sets the position of this Transform."
+  params = ["double", "double", "double"]

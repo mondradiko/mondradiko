@@ -42,6 +42,8 @@ World::World(Filesystem* fs, GpuInstance* gpu)
   }
 
   asset_pool.initializeAssetType<ScriptAsset>(&scripts);
+
+  scripts.linkComponentApis(this);
 }
 
 World::~World() {

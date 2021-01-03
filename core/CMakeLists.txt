@@ -25,7 +25,7 @@ flatc_schemas(PROTOCOL_HEADERS
 )
 
 add_subdirectory(bindings)
-cpp_bindings(SCRIPT_LINKER_SRC
+api_bindings(SCRIPT_LINKERS
   bindings/components/Transform.toml
 )
 
@@ -66,7 +66,7 @@ set(MONDRADIKO_CORE_SRC
   world/WorldEventSorter.cc
 )
 
-add_library(mondradiko-core STATIC ${SCRIPT_LINKER_SRC} ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
+add_library(mondradiko-core STATIC ${SCRIPT_LINKERS} ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
 
 target_link_libraries(mondradiko-core mondradiko-assets)
 target_link_libraries(mondradiko-core mondradiko-log)

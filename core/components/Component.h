@@ -17,6 +17,8 @@
 namespace mondradiko {
 
 // Forward declarations
+class ScriptEnvironment;
+class World;
 namespace protocol {
 struct UpdateComponentsBuilder;
 }
@@ -42,6 +44,10 @@ class Component {
 
   const SerializedType& getData() const { return _data; }
   void writeData(const SerializedType& data) { _data = data; }
+
+  // Overridden by inherited components
+  // Implemented by generated component API linker
+  static void linkScriptApi(ScriptEnvironment*, World*) = delete;
 
  protected:
   SerializedType _data;
