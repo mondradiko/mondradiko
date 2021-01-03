@@ -18,7 +18,6 @@ add_subdirectory(protocol)
 flatc_schemas(PROTOCOL_HEADERS
   protocol/ClientEvent.fbs
   protocol/MeshRendererComponent.fbs
-  protocol/ScriptComponent.fbs
   protocol/ServerEvent.fbs
   protocol/TransformComponent.fbs
   protocol/WorldEvent.fbs
@@ -60,6 +59,7 @@ set(MONDRADIKO_CORE_SRC
   renderer/OverlayPass.cc
   renderer/Renderer.cc
   scripting/ScriptEnvironment.cc
+  scripting/ScriptInstance.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
   world/World.cc
