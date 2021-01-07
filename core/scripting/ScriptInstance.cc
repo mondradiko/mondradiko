@@ -11,6 +11,8 @@
 
 #include "core/scripting/ScriptInstance.h"
 
+#include <vector>
+
 #include "core/scripting/ScriptEnvironment.h"
 #include "log/log.h"
 
