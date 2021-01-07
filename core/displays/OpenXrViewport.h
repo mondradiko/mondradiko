@@ -14,25 +14,25 @@
 #include <vector>
 
 #include "core/common/openxr_headers.h"
-#include "core/displays/ViewportInterface.h"
+#include "core/displays/Viewport.h"
 
 namespace mondradiko {
 
 // Forward declaration
+class GpuImage;
 class GpuInstance;
 class OpenXrDisplay;
 class Renderer;
 
-class OpenXrViewport : public ViewportInterface {
+class OpenXrViewport : public Viewport {
  public:
   OpenXrViewport(GpuInstance*, OpenXrDisplay*, Renderer*,
                  XrViewConfigurationView*);
   ~OpenXrViewport();
 
-  VkSemaphore acquire();
-  void beginRenderPass(VkCommandBuffer, VkRenderPass) final;
+  // Viewport implementation
   void writeUniform(ViewportUniform*) final;
-  void release(VkSemaphore) final;
+  bool isSignalRequired() final { return false; }
 
   void updateView(const XrView&);
   void writeCompositionLayers(XrCompositionLayerProjectionView*);
@@ -42,14 +42,12 @@ class OpenXrViewport : public ViewportInterface {
   OpenXrDisplay* display;
   Renderer* renderer;
 
+  // Viewport implementation
+  VkSemaphore _acquireImage(uint32_t*) final;
+  void _releaseImage(uint32_t, VkSemaphore) final;
+
   XrSwapchain swapchain = XR_NULL_HANDLE;
-
   XrView view;
-
-  std::vector<ViewportImage> images;
-  uint32_t current_image_index;
-  uint32_t image_width;
-  uint32_t image_height;
 };
 
 }  // namespace mondradiko

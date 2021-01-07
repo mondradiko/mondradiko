@@ -29,7 +29,11 @@ struct MaterialUniform {
 
 class MaterialAsset : public Asset {
  public:
-  MaterialAsset(assets::ImmutableAsset&, AssetPool*, GpuInstance*);
+  MaterialAsset(AssetPool*, GpuInstance*);
+
+  // Asset implementation
+  void load(assets::ImmutableAsset&);
+  void unload() {}
 
   const MaterialUniform& getUniform() const { return uniform; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;

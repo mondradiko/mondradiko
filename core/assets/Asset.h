@@ -19,6 +19,9 @@ namespace mondradiko {
 using AssetId = assets::AssetId;
 
 class Asset {
+ public:
+  bool isLoaded() { return loaded; }
+
  private:
   AssetId id_;
   bool loaded;

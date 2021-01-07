@@ -11,4 +11,7 @@
 
 #pragma once
 
+#include <filesystem>
+
+#include "assets/format/AssetTypes.h"
 #include "assets/saving/AssetBundleBuilder.h"

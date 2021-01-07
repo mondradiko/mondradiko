@@ -43,8 +43,8 @@ class MeshPass {
   void createFrameData(MeshPassFrameData&);
   void destroyFrameData(MeshPassFrameData&);
   void allocateDescriptors(EntityRegistry&, MeshPassFrameData&,
-                           const AssetPool*, GpuDescriptorPool*);
-  void render(EntityRegistry&, MeshPassFrameData&, const AssetPool*,
+                           AssetPool*, GpuDescriptorPool*);
+  void render(EntityRegistry&, MeshPassFrameData&, AssetPool*,
               VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 
   GpuDescriptorSetLayout* material_layout;

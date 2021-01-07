@@ -29,10 +29,10 @@
 #define log_ftl(...) log_at(mondradiko::LOG_LEVEL_FATAL, __VA_ARGS__)
 #define log_zone \
   ZoneScoped;    \
-//  mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
+  // mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
 #define log_zone_named(name) \
   ZoneScopedN(name);         \
-  //  mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
+  // mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
 
 namespace mondradiko {
 

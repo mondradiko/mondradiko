@@ -12,7 +12,7 @@
 #include "core/renderer/Renderer.h"
 
 #include "core/displays/DisplayInterface.h"
-#include "core/displays/ViewportInterface.h"
+#include "core/displays/Viewport.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
@@ -175,8 +175,7 @@ Renderer::~Renderer() {
     vkDestroyRenderPass(gpu->device, composite_pass, nullptr);
 }
 
-void Renderer::renderFrame(EntityRegistry& registry,
-                           const AssetPool* asset_pool) {
+void Renderer::renderFrame(EntityRegistry& registry, AssetPool* asset_pool) {
   log_zone;
 
   current_frame++;
@@ -198,8 +197,9 @@ void Renderer::renderFrame(EntityRegistry& registry,
     frame->descriptor_pool->reset();
   }
 
-  std::vector<ViewportInterface*> viewports;
+  std::vector<Viewport*> viewports;
   std::vector<VkSemaphore> on_viewport_acquire(0);
+  bool viewports_require_signal = false;
 
   {
     log_zone_named("Acquire viewports");
@@ -211,6 +211,10 @@ void Renderer::renderFrame(EntityRegistry& registry,
       VkSemaphore on_image_acquire = viewports[viewport_index]->acquire();
       if (on_image_acquire != VK_NULL_HANDLE) {
         on_viewport_acquire.push_back(on_image_acquire);
+      }
+
+      if (viewports[viewport_index]->isSignalRequired()) {
+        viewports_require_signal = true;
       }
     }
   }
@@ -281,8 +285,13 @@ void Renderer::renderFrame(EntityRegistry& registry,
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &frame->command_buffer;
 
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &frame->on_render_finished;
+    if (viewports_require_signal) {
+      submitInfo.signalSemaphoreCount = 1;
+      submitInfo.pSignalSemaphores = &frame->on_render_finished;
+    } else {
+      submitInfo.signalSemaphoreCount = 0;
+      submitInfo.pSignalSemaphores = nullptr;
+    }
 
     vkResetFences(gpu->device, 1, &frame->is_in_use);
 

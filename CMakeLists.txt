@@ -5,14 +5,23 @@ cmake_minimum_required(VERSION 3.13)
 
 project(Mondradiko VERSION 0.0.0)
 
+option(TEST_INITIALIZE "Create a mesh with testInitialize()" OFF)
+if (TEST_INITIALIZE)
+    add_definitions(-DTEST_INITIALIZE)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(api_bindings)
 include(SPIR-V)
 include(flatc)
 
+# Let all parts of the source base access each other's headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+# Let all parts of the source base access each other's generated files
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 add_subdirectory(lib)
 

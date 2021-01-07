@@ -23,84 +23,106 @@
 
 namespace mondradiko {
 
+template <typename BaseAssetType>
 struct DummyAsset {
-  std::string type;
-  std::string binding;
+  BaseAssetType* dummy = nullptr;
 };
 
 class AssetPool {
  public:
-  explicit AssetPool(Filesystem* fs) : fs(fs) {}
+  explicit AssetPool(Filesystem* fs) : fs(fs) {
+    template_asset = asset_registry.create();
+  }
 
-  template <typename AssetType, typename Binding>
-  [[nodiscard]] AssetId loadAsset(AssetId id, Binding* binding) {
-    if (isAssetLoaded<AssetType>(id)) return id;
+  template <typename AssetType, typename... Args>
+  void initializeAssetType(Args&&... args) {
+    asset_registry.emplace<AssetType>(template_asset, this, args...);
+  }
 
-    AssetId asset_entity = asset_registry.create(id);
-
-    if (binding == nullptr) {
-      DummyAsset asset_component;
-      asset_component.type = typeid(AssetType).name();
-      asset_component.binding = typeid(Binding).name();
-
-      asset_registry.emplace<DummyAsset>(asset_entity, asset_component);
-    } else {
-      assets::ImmutableAsset asset_data;
-
-      if (!fs->loadAsset(&asset_data, id)) {
-        DummyAsset asset_component;
-        asset_component.type = typeid(AssetType).name();
-        asset_component.binding = typeid(Binding).name();
-
-        asset_registry.emplace<DummyAsset>(asset_entity, asset_component);
-        return asset_entity;
-      }
-
-      AssetType* asset_component = new AssetType(asset_data, this, binding);
-      asset_component->loaded = true;
-
-      asset_registry.emplace<AssetType*>(asset_entity, asset_component);
-    }
-
-    return asset_entity;
+  template <typename AssetType, typename... Args>
+  void initializeDummyAssetType(Args&&... args) {
+    initializeAssetType<AssetType>(args...);
+    asset_registry.emplace<DummyAsset<AssetType>>(template_asset);
   }
 
   template <typename AssetType>
-  bool isAssetLoaded(AssetId id) const {
-    if (!asset_registry.valid(id)) return false;
+  AssetId loadAsset(AssetId id) {
+    if (!isAssetTypeInitialized<AssetType>()) {
+      log_ftl("Attempted to load asset with uninitialized type %s",
+              typeid(AssetType).name());
+    }
 
-    if (asset_registry.has<DummyAsset>(id)) return false;
+    auto iter = local_ids.find(id);
+    if (iter != local_ids.end()) return id;
 
-    AssetType* const* asset_ptr = asset_registry.try_get<AssetType*>(id);
+    AssetId local_id = asset_registry.create(id);
+    local_ids.emplace(id, local_id);
 
+    assets::ImmutableAsset asset_data;
+    bool loaded_successfully = fs->loadAsset(&asset_data, id);
+
+    if (!loaded_successfully) {
+      log_err("Failed to load asset 0x%0lx", id);
+    }
+
+    AssetType& initial_asset = asset_registry.get<AssetType>(template_asset);
+    AssetType& new_asset =
+        asset_registry.emplace<AssetType>(local_id, initial_asset);
+
+    // Dummy assets are never loaded, but are initialized
+    if (loaded_successfully && !isAssetTypeDummy<AssetType>()) {
+      new_asset.load(asset_data);
+      new_asset.loaded = true;
+    }
+
+    return id;
+  }
+
+  template <typename AssetType>
+  bool isAssetTypeInitialized() const {
+    return asset_registry.has<AssetType>(template_asset);
+  }
+
+  template <typename AssetType>
+  bool isAssetTypeDummy() const {
+    const DummyAsset<AssetType>* asset_ptr =
+        asset_registry.try_get<DummyAsset<AssetType>>(template_asset);
     if (!asset_ptr) return false;
-
-    AssetType* asset = *asset_ptr;
-
-    if (asset) {
-      return asset->loaded;
-    } else {
-      return false;
-    }
+    return true;
   }
 
   template <typename AssetType>
-  const AssetType* getAsset(AssetId id) const {
-    return asset_registry.get<AssetType*>(id);
+  AssetType& getAsset(AssetId id) {
+    auto iter = local_ids.find(id);
+
+    AssetId local_id;
+    if (iter == local_ids.end()) {
+      loadAsset<AssetType>(id);
+      local_id = local_ids.find(id)->second;
+    } else {
+      local_id = iter->second;
+    }
+
+    return asset_registry.get<AssetType>(local_id);
   }
 
   template <typename AssetType>
   void unloadAll() {
-    auto assets_view = asset_registry.view<AssetType*>();
-    for (auto asset : assets_view) {
-      delete assets_view.get(asset);
+    auto assets_view = asset_registry.view<AssetType>();
+    for (auto local_id : assets_view) {
+      auto& asset = assets_view.get(local_id);
+      if (asset.isLoaded()) {
+        asset.unload();
+        asset.loaded = false;
+      }
     }
-    asset_registry.destroy(assets_view.begin(), assets_view.end());
   }
 
  private:
   Filesystem* fs;
 
+  AssetId template_asset;
+  std::unordered_map<AssetId, AssetId> local_ids;
   entt::basic_registry<AssetId> asset_registry;
 };
 

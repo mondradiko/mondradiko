@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "core/common/sdl2_headers.h"
-#include "core/displays/ViewportInterface.h"
+#include "core/displays/Viewport.h"
 
 namespace mondradiko {
 
@@ -24,15 +24,14 @@ class GpuInstance;
 class Renderer;
 class SdlDisplay;
 
-class SdlViewport : public ViewportInterface {
+class SdlViewport : public Viewport {
  public:
   SdlViewport(GpuInstance*, SdlDisplay*, Renderer*);
   ~SdlViewport();
 
-  VkSemaphore acquire() final;
-  void beginRenderPass(VkCommandBuffer, VkRenderPass) final;
+  // Viewport implementation
   void writeUniform(ViewportUniform*) final;
-  void release(VkSemaphore) final;
+  bool isSignalRequired() final { return true; }
 
   void moveCamera(float, float, float, float, float);
 
@@ -41,15 +40,13 @@ class SdlViewport : public ViewportInterface {
   SdlDisplay* display;
   Renderer* renderer;
 
-  uint32_t acquire_image_index;
-  std::vector<VkSemaphore> on_image_acquire;
+  // Viewport implementation
+  VkSemaphore _acquireImage(uint32_t*) final;
+  void _releaseImage(uint32_t, VkSemaphore) final;
 
   VkSwapchainKHR swapchain = VK_NULL_HANDLE;
-  GpuImage* depth_image = nullptr;
-  std::vector<ViewportImage> images;
-  uint32_t current_image_index;
-  uint32_t image_width;
-  uint32_t image_height;
+  uint32_t acquire_image_index = 0;
+  std::vector<VkSemaphore> on_image_acquire;
 
   glm::vec3 camera_position;
   float camera_pan;

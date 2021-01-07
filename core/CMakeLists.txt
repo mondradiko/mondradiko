@@ -17,9 +17,17 @@ spirv_shaders(SHADER_HEADERS
 add_subdirectory(protocol)
 flatc_schemas(PROTOCOL_HEADERS
   protocol/ClientEvent.fbs
+  protocol/MeshRendererComponent.fbs
   protocol/ServerEvent.fbs
+  protocol/TransformComponent.fbs
+  protocol/ScriptData.fbs
   protocol/WorldEvent.fbs
   protocol/types.fbs
+)
+
+add_subdirectory(bindings)
+api_bindings(SCRIPT_LINKERS
+  bindings/components/Transform.toml
 )
 
 configure_file(build_config.h.in build_config.h)
@@ -30,11 +38,16 @@ configure_file(build_config.h.in build_config.h)
 set(MONDRADIKO_CORE_SRC
   assets/MaterialAsset.cc
   assets/MeshAsset.cc
+  assets/ScriptAsset.cc
   assets/TextureAsset.cc
+  components/MeshRendererComponent.cc
+  components/ScriptComponent.cc
+  components/TransformComponent.cc
   displays/OpenXrDisplay.cc
   displays/OpenXrViewport.cc
   displays/SdlDisplay.cc
   displays/SdlViewport.cc
+  displays/Viewport.cc
   filesystem/Filesystem.cc
   gpu/GpuBuffer.cc
   gpu/GpuDescriptorPool.cc
@@ -46,13 +59,16 @@ set(MONDRADIKO_CORE_SRC
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
   renderer/Renderer.cc
+  scripting/ScriptEnvironment.cc
+  scripting/ScriptInstance.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
   world/World.cc
   world/WorldEventSorter.cc
 )
 
-add_library(mondradiko-core STATIC ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
+add_library(mondradiko-core STATIC ${SCRIPT_LINKERS} ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
+
 target_link_libraries(mondradiko-core mondradiko-assets)
 target_link_libraries(mondradiko-core mondradiko-log)
 target_link_libraries(mondradiko-core mondradiko-lib)

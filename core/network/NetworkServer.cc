@@ -91,6 +91,11 @@ NetworkServer::~NetworkServer() {
   }
 }
 
+void NetworkServer::updateWorld() {
+  sendWorldUpdates();
+  world_event_sorter->clearQueue();
+}
+
 void NetworkServer::update() {
   log_zone;
 
