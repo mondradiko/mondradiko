@@ -46,7 +46,8 @@ class ScriptEnvironment {
    * @param data_size The length in bytes of the data.
    *
    */
-  void updateScript(EntityRegistry&, AssetPool*, EntityId, AssetId, const uint8_t*, size_t);
+  void updateScript(EntityRegistry&, AssetPool*, EntityId, AssetId, 
+                    const uint8_t*, size_t);
 
   /**
    * @brief Adds a binding symbol's callback to the ScriptEnvironment.
