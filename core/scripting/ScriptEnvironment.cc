@@ -11,6 +11,8 @@
 
 #include "core/scripting/ScriptEnvironment.h"
 
+#include <vector>
+
 #include "core/assets/ScriptAsset.h"
 #include "core/bindings/script_linker.h"
 #include "core/components/ScriptComponent.h"
@@ -112,8 +114,10 @@ void ScriptEnvironment::update(EntityRegistry& registry,
 }
 
 void ScriptEnvironment::updateScript(EntityRegistry& registry,
-                                     AssetPool* asset_pool, EntityId entity,
-                                     AssetId script_asset, const uint8_t* data,
+                                     AssetPool* asset_pool,
+                                     EntityId entity,
+                                     AssetId script_asset,
+                                     const uint8_t* data,
                                      size_t data_size) {
   // Ensure the entity exists
   if (!registry.valid(entity)) {
