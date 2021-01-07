@@ -7,12 +7,9 @@ name = "Transform"
 
   [methods.getPosition]
   brief = "Retrieves the position of this Transform."
-  params = ["int32_t"]
-  params_wasm = ["i32"]
-  return = "Vec3"
-  return_wasm = ["f64", "f64", "f64"]
+  params = []
+  return = "Vec3"    
 
   [methods.setPosition]
   brief = "Sets the position of this Transform."
-  params = ["int32_t", "double", "double", "double"]
-  params_wasm = ["i32", "f64", "f64", "f64"]
+  params = ["double", "double", "double"]

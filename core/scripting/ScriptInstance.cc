@@ -87,49 +87,31 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
     {
       log_zone_named("Get module exports");
 
-      wasm_exporttype_vec_t module_externs;
-      wasm_module_exports(script_module, &module_externs);
-
       wasm_extern_vec_t instance_externs;
       wasm_instance_exports(module_instance, &instance_externs);
 
-      assert(module_externs.size == instance_externs.size);
+      /*for (uint32_t i = 0; i < instance_externs.size; i++) {
+        const wasm_extern_t* exported = instance_externs.data[i];
 
-      for (uint32_t i = 0; i < instance_externs.size; i++) {
-        const wasm_exporttype_t* export_declaration = module_externs.data[i];
-        wasm_extern_t* exported = instance_externs.data[i];
+        wasm_externkind_t exported_kind = wasm_extern_kind(exported);
 
-        const wasm_name_t* export_name = wasm_exporttype_name(export_declaration);
-        // const wasm_externtype_t* export_type = wasm_extern_type(exported);
-        wasm_externkind_t export_kind = wasm_extern_kind(exported);
+        wasm_name_t export_name;
+        wasm_exporttype_t* export_type =
+            wasm_exporttype_new(&export_name, exported);
 
         // TODO(marceline-cramer) Handle other kinds of exports
-        switch (export_kind) {
-          case WASM_EXTERN_FUNC:
-            {
-              wasm_func_t* export_func = wasm_extern_as_func(exported);
-              std::string export_name_str(export_name->data, export_name->size);
-              addCallback(export_name_str, export_func);
-              break;
-            }
-          // case WASM_EXTERN_GLOBAL:
-          //   export_global = wasm_extern_as_global(exported)
-          //   break;
-          // case WASM_EXTERN_TABLE:
-          //   export_table = wasm_extern_as_global(exported)
-          //   break;
-          // case WASM_EXTERN_MEMORY:
-          //   export_memory = wasm_extern_as_global(exported)
-          //   break;
-          default:
-            break;
+        if (exported_kind == WASM_EXTERN_FUNC) {
         }
-      }
-        // TODO(Turtle1331) delete Wasm memory if needed
+        const wasm_name_t* callback_name = wasm_exporttype_name(exported_type);
+      }*/
 
       if (instance_externs.size < 1) {
         log_ftl("Script module has no exports");
       }
+
+      // TODO(marceline-cramer) Register callbacks under their exported names
+      wasm_func_t* update_func = wasm_extern_as_func(instance_externs.data[0]);
+      addCallback("update", update_func);
     }
   }
 }
