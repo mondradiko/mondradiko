@@ -12,7 +12,7 @@ Install dependencies from packages:
 sudo apt install libsdl2-dev liblz4-dev libassimp-dev libvulkan-dev \
                  cmake ninja-build build-essential glslang-tools \
                  libzstd-dev \
-                 libprotobuf-dev protobuf-compiler golang libssl-dev \
+                 libprotobuf-dev protobuf-compiler libssl-dev \
                  libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
                  libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
                  libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
@@ -74,7 +74,7 @@ sudo ninja install
 # Once inside the repo...
 mkdir build
 cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
+cmake -GNinja -DGAMENETWORKINGSOCKETS_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release ..
 ninja
 sudo ninja install
 ```
