@@ -17,10 +17,6 @@
 
 #include "assets/format/MaterialAsset.h"
 #include "assets/format/MeshAsset.h"
-#include "assimp/Importer.hpp"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
-#include "assimp/texture.h"
 #include "converter/stb_converter.h"
 #include "log/log.h"
 
