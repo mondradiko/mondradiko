@@ -14,7 +14,7 @@
 #include <iostream>
 
 #include "assets/saving/AssetBundleBuilder.h"
-#include "converter/assimp_converter.h"
+#include "converter/convert_gltf.h"
 #include "converter/wasm_converter.h"
 #include "log/log.h"
 
@@ -23,9 +23,9 @@ using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 int main(int argc, const char* argv[]) {
   assets::AssetBundleBuilder bundle_builder("../test-folder/");
 
-  const char* assimp_test = "../test-folder/DamagedHelmet.gltf";
+  const char* gltf_test = "../test-folder/DamagedHelmet.gltf";
 
-  if (!convert_assimp(&bundle_builder, assimp_test)) {
+  if (!convert_gltf(&bundle_builder, gltf_test)) {
     std::cerr << "whoops" << std::endl;
     return 1;
   }

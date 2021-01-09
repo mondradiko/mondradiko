@@ -17,4 +17,4 @@ namespace mondradiko {
 
 assets::AssetId stb_convert(assets::AssetBundleBuilder*, std::filesystem::path);
 
-}
+}  // namespace mondradiko
