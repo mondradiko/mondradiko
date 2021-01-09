@@ -5,3 +5,5 @@ test-folder/
 docs/Gemfile.lock
 docs/_site/
 
+.cache/
+**.h.gch
