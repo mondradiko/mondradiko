@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 set(MONDRADIKO_CONVERTER_SRC
-  assimp_converter.cc
+  convert_gltf.cc
   stb_converter.cc
   wasm_converter.cc
 )
