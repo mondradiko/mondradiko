@@ -134,7 +134,7 @@ void NetworkServer::onJoinRequest(ClientId client_id,
     for (uint32_t i = 0; i < our_checksums.size(); i++) {
       log_dbg("Checking checksum %d: 0x%016lx", i, our_checksums[i]);
       auto their_checksum = join_request->lump_checksums()->Get(i);
-      if (our_checksums[i] != their_checksum) {
+      if (our_checksums[i] != static_cast<assets::LumpHash>(their_checksum)) {
         log_dbg("Checksum mismatch (client has 0x%016lx)", their_checksum);
         check_passed = false;
         break;
