@@ -25,7 +25,7 @@ class Filesystem {
   ~Filesystem();
 
   void getChecksums(std::vector<assets::LumpHash>&);
-  bool loadAsset(assets::ImmutableAsset*, AssetId);
+  bool loadAsset(const assets::SerializedAsset**, AssetId);
 
  private:
   assets::AssetBundle asset_bundle;

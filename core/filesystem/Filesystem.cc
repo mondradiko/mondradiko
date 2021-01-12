@@ -34,7 +34,7 @@ void Filesystem::getChecksums(std::vector<assets::LumpHash>& checksums) {
   asset_bundle.getChecksums(checksums);
 }
 
-bool Filesystem::loadAsset(assets::ImmutableAsset* asset, AssetId id) {
+bool Filesystem::loadAsset(const assets::SerializedAsset** asset, AssetId id) {
   if (!asset_bundle.isAssetRegistered(id)) {
     log_err("Asset 0x%08x does not exist", id);
     return false;
