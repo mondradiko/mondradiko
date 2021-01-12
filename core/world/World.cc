@@ -58,15 +58,16 @@ World::~World() {
 void World::testInitialize() {
   auto test_entity = registry.create();
 
-  MeshRendererComponent mesh_renderer_component(0x84b42359, 0xf643d4dc);
+  MeshRendererComponent mesh_renderer_component(
+      static_cast<AssetId>(0x4c8d6924), static_cast<AssetId>(0x95414060));
   TransformComponent transform_component;
 
   registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer_component);
   registry.emplace<TransformComponent>(test_entity, transform_component);
 
   // Update an entity's script to initialize the ScriptComponent
-  scripts.updateScript(registry, &asset_pool, test_entity, 0x31069ecf, nullptr,
-                       static_cast<size_t>(0));
+  /*scripts.updateScript(registry, &asset_pool, test_entity, 0x55715294,
+     nullptr, static_cast<size_t>(0));*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
