@@ -1,0 +1,46 @@
+// Copyright (c) 2020 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
+namespace mondradiko.assets;
+
+enum AssetId : uint32 {
+  NullAsset = 0
+}
+
+enum AssetType : uint16 {
+  None = 0,
+  MaterialAsset,
+  MeshAsset,
+  ScriptAsset,
+  TextureAsset
+}
+
+enum LumpHash : uint64 {}
+
+enum LumpHashMethod : uint8 {
+  None = 0,
+  xxHash
+}
+
+enum LumpCompressionMethod : uint8 {
+  None = 0,
+  LZ4
+}
+
+struct Vec2 {
+  x:double;
+  y:double;
+}
+
+struct Vec3 {
+  x:double;
+  y:double;
+  z:double;
+}
+
+struct Quaternion {
+  w:double;
+  x:double;
+  y:double;
+  z:double;
+}

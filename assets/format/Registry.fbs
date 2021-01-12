@@ -1,0 +1,25 @@
+// Copyright (c) 2020 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
+include "types.fbs";
+
+namespace mondradiko.assets;
+
+struct AssetEntry {
+  id:AssetId;
+  size:uint32;
+}
+
+table LumpEntry {
+  checksum:LumpHash;
+  hash_method:LumpHashMethod;
+  compression_method:LumpCompressionMethod;
+  assets:[AssetEntry];
+}
+
+table Registry {
+  version:uint32;
+  lumps:[LumpEntry];
+}
+
+root_type Registry;
