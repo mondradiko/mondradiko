@@ -23,16 +23,25 @@ using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 int main(int argc, const char* argv[]) {
   assets::AssetBundleBuilder bundle_builder("../test-folder/");
 
-  const char* gltf_test = "../test-folder/DamagedHelmet.gltf";
+  const char* test_gltf = "../test-folder/DamagedHelmet.gltf";
+  assets::AssetId gltf_asset = convert_gltf(&bundle_builder, test_gltf);
 
-  if (!convert_gltf(&bundle_builder, gltf_test)) {
-    std::cerr << "whoops" << std::endl;
+  if (gltf_asset == assets::AssetId::NullAsset) {
+    log_err("Failed to load test GLTF");
     return 1;
   }
 
-  auto script_id =
-      wat_convert(&bundle_builder, "../test-folder/helloworld.wat");
-  log_dbg("Added ScriptAsset: 0x%0lx", script_id);
+  const char* test_script = "../test-folder/helloworld.wat";
+
+  assets::AssetId script_asset = wat_convert(&bundle_builder, test_script);
+
+  if (script_asset == assets::AssetId::NullAsset) {
+    log_err("Failed to load test script");
+    return 1;
+  }
+
+  log_dbg("Added GLTF asset: 0x%0lx", gltf_asset);
+  log_dbg("Added ScriptAsset: 0x%0lx", script_asset);
 
   bundle_builder.buildBundle("registry.bin");
 
