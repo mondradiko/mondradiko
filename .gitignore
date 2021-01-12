@@ -6,4 +6,5 @@ docs/Gemfile.lock
 docs/_site/
 
 .cache/
+.ccls-cache/
 **.h.gch
