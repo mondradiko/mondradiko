@@ -11,7 +11,7 @@
 
 #include "core/assets/TextureAsset.h"
 
-#include "assets/format/TextureAsset.h"
+#include "assets/format/TextureAsset_generated.h"
 #include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
@@ -20,14 +20,10 @@ namespace mondradiko {
 
 TextureAsset::TextureAsset(AssetPool*, GpuInstance* gpu) : gpu(gpu) {}
 
-void TextureAsset::load(assets::ImmutableAsset& asset) {
-  assets::TextureHeader header;
-  asset >> header;
+void TextureAsset::load(const assets::SerializedAsset* asset) {
+  const assets::TextureAsset* texture = asset->texture();
 
-  size_t texture_size;
-  const char* texture_data = asset.getData(&texture_size);
-
-  switch (header.format) {
+  switch (texture->format()) {
     case assets::TextureFormat::KTX: {
       ktxTexture* k_texture;
       KTX_error_code k_result;
@@ -42,8 +38,8 @@ void TextureAsset::load(assets::ImmutableAsset& asset) {
       }
 
       k_result = ktxTexture_CreateFromMemory(
-          reinterpret_cast<const ktx_uint8_t*>(texture_data), texture_size,
-          KTX_TEXTURE_CREATE_NO_FLAGS, &k_texture);
+          reinterpret_cast<const ktx_uint8_t*>(texture->data()->data()),
+          texture->data()->size(), KTX_TEXTURE_CREATE_NO_FLAGS, &k_texture);
 
       if (k_result != KTX_SUCCESS) {
         log_ftl("Failed to create KTX texture");

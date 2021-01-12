@@ -28,7 +28,7 @@ class ScriptAsset : public Asset {
   ScriptAsset(AssetPool*, ScriptEnvironment*);
 
   // AssetPool implementation
-  void load(assets::ImmutableAsset&);
+  void load(const assets::SerializedAsset*);
   void unload();
 
   ScriptInstance* createInstance();

@@ -25,7 +25,7 @@ class TextureAsset : public Asset {
   TextureAsset(AssetPool*, GpuInstance*);
 
   // AssetPool implementation
-  void load(assets::ImmutableAsset&);
+  void load(const assets::SerializedAsset*);
   void unload();
 
   GpuImage* getImage() const { return image; }

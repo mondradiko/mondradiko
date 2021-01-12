@@ -77,7 +77,7 @@ class MeshAsset : public Asset {
   MeshAsset(AssetPool*, GpuInstance*);
 
   // AssetPool implementation
-  void load(assets::ImmutableAsset&);
+  void load(const assets::SerializedAsset*);
   void unload();
 
   GpuBuffer* vertex_buffer = nullptr;

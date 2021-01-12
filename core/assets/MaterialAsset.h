@@ -32,7 +32,7 @@ class MaterialAsset : public Asset {
   MaterialAsset(AssetPool*, GpuInstance*);
 
   // Asset implementation
-  void load(assets::ImmutableAsset&);
+  void load(const assets::SerializedAsset*);
   void unload() {}
 
   const MaterialUniform& getUniform() const { return uniform; }
