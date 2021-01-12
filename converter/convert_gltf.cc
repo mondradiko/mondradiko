@@ -11,14 +11,14 @@
 
 #include "converter/convert_gltf.h"
 
-#include <string>
-#include <vector>
-
 #define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_MSC_SECURE_CRT
 #include <lib/tiny_gltf.h>
+
+#include <string>
+#include <vector>
 
 #include "assets/format/MaterialAsset_generated.h"
 #include "assets/format/MeshAsset_generated.h"
