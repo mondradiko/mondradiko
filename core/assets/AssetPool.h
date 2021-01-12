@@ -15,7 +15,6 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "assets/loading/ImmutableAsset.h"
 #include "core/assets/Asset.h"
 #include "core/common/api_headers.h"
 #include "core/filesystem/Filesystem.h"
@@ -36,7 +35,9 @@ class AssetPool {
 
   template <typename AssetType, typename... Args>
   void initializeAssetType(Args&&... args) {
-    asset_registry.emplace<AssetType>(template_asset, this, args...);
+    auto& asset =
+        asset_registry.emplace<AssetType>(template_asset, this, args...);
+    asset.loaded = false;
   }
 
   template <typename AssetType, typename... Args>
@@ -58,7 +59,7 @@ class AssetPool {
     AssetId local_id = asset_registry.create(id);
     local_ids.emplace(id, local_id);
 
-    assets::ImmutableAsset asset_data;
+    const assets::SerializedAsset* asset_data;
     bool loaded_successfully = fs->loadAsset(&asset_data, id);
 
     if (!loaded_successfully) {
