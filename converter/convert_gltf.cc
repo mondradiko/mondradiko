@@ -20,8 +20,8 @@
 #define STBI_MSC_SECURE_CRT
 #include <lib/tiny_gltf.h>
 
-#include "assets/format/MaterialAsset.h"
-#include "assets/format/MeshAsset.h"
+#include "assets/format/MaterialAsset_generated.h"
+#include "assets/format/MeshAsset_generated.h"
 #include "converter/stb_converter.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "log/log.h"
@@ -37,15 +37,21 @@ assets::AssetId load_dummy_texture(assets::AssetBundleBuilder *builder) {
 }
 
 void load_dummy_material(assets::AssetBundleBuilder *builder) {
-  assets::MutableAsset asset;
+  flatbuffers::FlatBufferBuilder fbb;
 
-  assets::MaterialHeader header;
-  header.albedo_factor = glm::vec4(1.0);
-  header.albedo_texture = load_dummy_texture(builder);
-  asset << header;
+  assets::MaterialAssetBuilder material_builder(fbb);
+  assets::Vec3 albedo_factor(1.0, 1.0, 1.0);
+  material_builder.add_albedo_factor(&albedo_factor);
+  material_builder.add_albedo_texture(load_dummy_texture(builder));
+  auto material_offset = material_builder.Finish();
+
+  assets::SerializedAssetBuilder asset_builder(fbb);
+  asset_builder.add_type(assets::AssetType::MaterialAsset);
+  asset_builder.add_material(material_offset);
+  auto asset_offset = asset_builder.Finish();
 
   assets::AssetId asset_id;
-  builder->addAsset(&asset_id, &asset);
+  builder->addAsset(&asset_id, &fbb, asset_offset);
   log_dbg("Added material asset: 0x%0lx", asset_id);
 }
 
@@ -88,14 +94,12 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
                           const tinygltf::Model &model,
                           const tinygltf::Scene &scene,
                           const tinygltf::Node &node) {
-  assets::MutableAsset mesh_asset;
-
   // TODO(marceline-cramer) Load subnodes
 
   const tinygltf::Mesh &mesh = model.meshes[node.mesh];
 
   std::vector<assets::MeshVertex> vertices;
-  std::vector<assets::MeshIndex> indices;
+  std::vector<uint32_t> indices;
 
   // TODO(marceline-cramer) Load all mesh primitives
   uint32_t primitive_index = 0;
@@ -127,13 +131,22 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
     GltfAccessor tex_accessor(model, attributes.find("TEXCOORD_0")->second);
 
     for (size_t v = 0; v < pos_accessor.size(); v++) {
-      assets::MeshVertex vertex;
-      vertex.position = glm::make_vec3(pos_accessor.get<float>(v));
-      vertex.normal =
-          glm::normalize(glm::make_vec3(norm_accessor.get<float>(v)));
-      vertex.color = glm::vec3(1.0);
-      vertex.tex_coord = glm::make_vec3(tex_accessor.get<float>(v));
+      const float *position = pos_accessor.get<float>(v);
+      const float *normal_raw = norm_accessor.get<float>(v);
+      const float *tex_coord = tex_accessor.get<float>(v);
 
+      // Normalize the normal
+      glm::vec3 normal = glm::normalize(
+          glm::vec3(normal_raw[0], normal_raw[1], normal_raw[2]));
+
+      assets::Vec3 position_vec(position[0], position[1], position[2]);
+      assets::Vec3 normal_vec(normal.x, normal.y, normal.z);
+      // TODO(marceline-cramer) Read mesh vertex colors
+      assets::Vec3 color_vec(1.0, 1.0, 1.0);
+      assets::Vec2 tex_coord_vec(tex_coord[0], tex_coord[1]);
+
+      assets::MeshVertex vertex(position_vec, normal_vec, color_vec,
+                                tex_coord_vec);
       vertices.push_back(vertex);
     }
   }
@@ -179,20 +192,29 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
     }
   }
 
-  assets::MeshHeader header;
-  header.vertex_count = vertices.size();
-  header.index_count = indices.size();
-  mesh_asset << header;
+  {
+    log_inf("Writing asset data");
 
-  mesh_asset.writeData(reinterpret_cast<const char *>(vertices.data()),
-                       vertices.size() * sizeof(assets::MeshVertex));
-  mesh_asset.writeData(reinterpret_cast<const char *>(indices.data()),
-                       indices.size() * sizeof(assets::MeshIndex));
+    flatbuffers::FlatBufferBuilder fbb;
 
-  assets::AssetId asset_id;
-  builder->addAsset(&asset_id, &mesh_asset);
-  log_dbg("Added mesh asset 0x%0lx", asset_id);
-  return asset_id;
+    auto vertices_offset = fbb.CreateVectorOfStructs(vertices);
+    auto indices_offset = fbb.CreateVector(indices);
+
+    assets::MeshAssetBuilder mesh_asset(fbb);
+    mesh_asset.add_vertices(vertices_offset);
+    mesh_asset.add_indices(indices_offset);
+    auto mesh_offset = mesh_asset.Finish();
+
+    assets::SerializedAssetBuilder asset(fbb);
+    asset.add_type(assets::AssetType::MeshAsset);
+    asset.add_mesh(mesh_offset);
+    auto asset_offset = asset.Finish();
+
+    assets::AssetId asset_id;
+    builder->addAsset(&asset_id, &fbb, asset_offset);
+    log_dbg("Added mesh asset 0x%0lx", asset_id);
+    return asset_id;
+  }
 }
 
 assets::AssetId convert_gltf(assets::AssetBundleBuilder *builder,
@@ -244,7 +266,8 @@ assets::AssetId convert_gltf(assets::AssetBundleBuilder *builder,
   }
 
   // TODO(marceline-cramer) Load everything
-  log_ftl("Couldn't find any mesh nodes");
+  log_err("Couldn't find any mesh nodes");
+  return assets::AssetId::NullAsset;
 }
 
 }  // namespace mondradiko

@@ -14,7 +14,7 @@
 #include <ktx.h>
 #include <vulkan/vulkan.h>
 
-#include "assets/format/TextureAsset.h"
+#include "assets/format/TextureAsset_generated.h"
 #include "lib/stb_image.h"
 #include "log/log.h"
 
@@ -65,22 +65,26 @@ assets::AssetId stb_convert(assets::AssetBundleBuilder* builder,
   ktx_size_t texture_size;
   ktxTexture_WriteToMemory(ktxTexture(texture), &texture_data, &texture_size);
 
-  assets::MutableAsset texture_asset;
+  flatbuffers::FlatBufferBuilder fbb;
 
-  assets::TextureHeader header;
-  header.format = assets::TextureFormat::KTX;
-  header.data_length = texture_size;
-  texture_asset << header;
-
-  texture_asset.writeData(reinterpret_cast<const char*>(texture_data),
-                          texture_size);
+  auto data_offset = fbb.CreateVector(texture_data, texture_size);
 
   free(texture_data);
   ktxTexture_Destroy(ktxTexture(texture));
   stbi_image_free(texture_src);
 
+  assets::TextureAssetBuilder texture_asset(fbb);
+  texture_asset.add_format(assets::TextureFormat::KTX);
+  texture_asset.add_data(data_offset);
+  auto texture_offset = texture_asset.Finish();
+
+  assets::SerializedAssetBuilder asset(fbb);
+  asset.add_type(assets::AssetType::TextureAsset);
+  asset.add_texture(texture_offset);
+  auto asset_offset = asset.Finish();
+
   assets::AssetId texture_id;
-  builder->addAsset(&texture_id, &texture_asset);
+  builder->addAsset(&texture_id, &fbb, asset_offset);
   return texture_id;
 }
 

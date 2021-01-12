@@ -15,7 +15,7 @@
 #include <iostream>
 #include <vector>
 
-#include "assets/format/ScriptAsset.h"
+#include "assets/format/ScriptAsset_generated.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -32,21 +32,26 @@ assets::AssetId wat_convert(assets::AssetBundleBuilder* builder,
   std::streampos length = script_file.tellg();
   script_file.seekg(0, std::ios::beg);
 
-  std::vector<char> script_data(length);
-  script_file.read(script_data.data(), length);
+  std::vector<uint8_t> script_data(length);
+  script_file.read(reinterpret_cast<char*>(script_data.data()), length);
   script_file.close();
 
-  assets::MutableAsset asset;
+  flatbuffers::FlatBufferBuilder fbb;
 
-  assets::ScriptHeader header;
-  header.type = assets::ScriptType::Text;
-  header.module_size = script_data.size();
-  asset << header;
+  auto data_offset = fbb.CreateVector(script_data);
 
-  asset.writeData(script_data.data(), script_data.size());
+  assets::ScriptAssetBuilder script_asset(fbb);
+  script_asset.add_type(assets::ScriptType::WasmText);
+  script_asset.add_data(data_offset);
+  auto script_offset = script_asset.Finish();
+
+  assets::SerializedAssetBuilder asset(fbb);
+  asset.add_type(assets::AssetType::ScriptAsset);
+  asset.add_script(script_offset);
+  auto asset_offset = asset.Finish();
 
   assets::AssetId asset_id;
-  builder->addAsset(&asset_id, &asset);
+  builder->addAsset(&asset_id, &fbb, asset_offset);
   return asset_id;
 }
 
