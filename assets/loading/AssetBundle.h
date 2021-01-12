@@ -16,9 +16,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "assets/format/AssetTypes.h"
+#include "assets/common/AssetTypes.h"
 #include "assets/loading/AssetLump.h"
-#include "assets/loading/ImmutableAsset.h"
 
 namespace mondradiko {
 namespace assets {
@@ -32,7 +31,7 @@ class AssetBundle {
 
   void getChecksums(std::vector<LumpHash>&);
   bool isAssetRegistered(AssetId);
-  bool loadAsset(ImmutableAsset*, AssetId);
+  bool loadAsset(const SerializedAsset**, AssetId);
 
  private:
   std::filesystem::path bundle_root;

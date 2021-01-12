@@ -15,7 +15,7 @@
 #include <cstring>
 #include <fstream>
 
-#include "assets/format/AssetFile.h"
+#include "assets/format/Registry_generated.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -31,50 +31,67 @@ AssetBundle::~AssetBundle() {
 }
 
 AssetResult AssetBundle::loadRegistry(const char* registry_name) {
-  auto registry_path = bundle_root / registry_name;
+  std::vector<char> registry_data;
+  const Registry* registry = nullptr;
 
-  log_dbg("Opening asset bundle at %s", registry_path.c_str());
+  {
+    log_zone_named("Load and validate registry file");
 
-  if (!std::filesystem::exists(registry_path)) {
-    return AssetResult::FileNotFound;
-  }
+    auto registry_path = bundle_root / registry_name;
 
-  std::ifstream registry_file(registry_path.c_str(),
-                              std::ifstream::in | std::ifstream::binary);
-  registry_file.exceptions(std::ifstream::badbit | std::ifstream::eofbit);
+    log_dbg("Opening asset bundle at %s", registry_path.c_str());
 
-  try {
-    AssetRegistryHeader header;
-    registry_file.read(reinterpret_cast<char*>(&header), sizeof(header));
+    if (!std::filesystem::exists(registry_path)) {
+      return AssetResult::FileNotFound;
+    }
 
-    if (strncmp(header.magic, ASSET_REGISTRY_MAGIC,
-                ASSET_REGISTRY_MAGIC_LENGTH) != 0) {
-      registry_file.close();
+    std::ifstream registry_file(registry_path.c_str(), std::ifstream::binary);
+
+    registry_file.seekg(0, std::ios::end);
+    std::streampos length = registry_file.tellg();
+    registry_file.seekg(0, std::ios::beg);
+
+    registry_data.resize(length);
+    registry_file.read(registry_data.data(), length);
+    registry_file.close();
+
+    flatbuffers::Verifier verifier(
+        reinterpret_cast<const uint8_t*>(registry_data.data()),
+        registry_data.size());
+    if (!VerifyRegistryBuffer(verifier)) {
+      log_err("Asset validation failed");
+      // TODO(marceline-cramer) Rename this enum "InvalidBuffer"
       return AssetResult::WrongMagic;
     }
 
-    if (header.version != MONDRADIKO_ASSET_VERSION) {
-      registry_file.close();
+    registry = GetRegistry(registry_data.data());
+  }
+
+  {
+    log_zone_named("Check registry metadata");
+
+    if (registry->version() != MONDRADIKO_ASSET_VERSION) {
       return AssetResult::WrongVersion;
     }
 
-    if (header.lump_count > ASSET_REGISTRY_MAX_LUMPS) {
-      registry_file.close();
-      log_err("Asset registry lump count exceeds limit of %d",
-              ASSET_REGISTRY_MAX_LUMPS);
+    if (registry->lumps()->size() > ASSET_REGISTRY_MAX_LUMPS) {
+      log_err("Registry lump count exceeds limit of %d", ASSET_LUMP_MAX_ASSETS);
       return AssetResult::BadSize;
     }
+  }
 
-    lump_cache.resize(header.lump_count, {.lump = nullptr});
+  {
+    log_zone_named("Load lumps");
 
-    for (uint32_t lump_index = 0; lump_index < header.lump_count;
-         lump_index++) {
-      AssetRegistryLumpEntry lump_entry;
-      registry_file.read(reinterpret_cast<char*>(&lump_entry),
-                         sizeof(lump_entry));
+    uint32_t lump_count = registry->lumps()->size();
+    lump_cache.resize(lump_count, {.lump = nullptr});
 
-      if (lump_entry.asset_count > ASSET_LUMP_MAX_ASSETS) {
-        registry_file.close();
+    for (uint32_t lump_index = 0; lump_index < lump_count; lump_index++) {
+      const LumpEntry* lump_entry = registry->lumps()->Get(lump_index);
+
+      uint32_t asset_count = lump_entry->assets()->size();
+
+      if (asset_count > ASSET_LUMP_MAX_ASSETS) {
         log_err("Asset lump asset count exceeds limit of %d",
                 ASSET_LUMP_MAX_ASSETS);
         return AssetResult::BadSize;
@@ -82,71 +99,59 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
 
       uint32_t asset_offset = 0;
 
-      for (uint32_t asset_index = 0; asset_index < lump_entry.asset_count;
-           asset_index++) {
-        AssetRegistryEntry asset_entry;
-        registry_file.read(reinterpret_cast<char*>(&asset_entry),
-                           sizeof(asset_entry));
+      for (uint32_t asset_index = 0; asset_index < asset_count; asset_index++) {
+        const AssetEntry* asset_entry = lump_entry->assets()->Get(asset_index);
 
-        auto lookup_iter = asset_lookup.find(asset_entry.id);
+        auto lookup_iter = asset_lookup.find(asset_entry->id());
 
         if (lookup_iter != asset_lookup.end()) {
-          registry_file.close();
           return AssetResult::DuplicateAsset;
         }
 
         AssetLookupEntry lookup_entry{.lump_index = lump_index,
                                       .offset = asset_offset,
-                                      .size = asset_entry.size};
+                                      .size = asset_entry->size()};
 
-        asset_lookup.emplace(asset_entry.id, lookup_entry);
+        asset_lookup.emplace(asset_entry->id(), lookup_entry);
 
-        asset_offset += asset_entry.size;
+        asset_offset += asset_entry->size();
       }
 
       // asset_offset now represents the size of the whole lump
       if (asset_offset > ASSET_LUMP_MAX_SIZE) {
-        registry_file.close();
         return AssetResult::BadSize;
       }
 
       lump_cache[lump_index].lump = nullptr;
       lump_cache[lump_index].expected_length = asset_offset;
-      lump_cache[lump_index].hash_method = lump_entry.hash_method;
-      lump_cache[lump_index].checksum = lump_entry.checksum;
-      lump_cache[lump_index].compression_method = lump_entry.compression_method;
+      lump_cache[lump_index].hash_method = lump_entry->hash_method();
+      lump_cache[lump_index].checksum = lump_entry->checksum();
+      lump_cache[lump_index].compression_method =
+          lump_entry->compression_method();
     }
-  } catch (std::ifstream::failure& e) {
-    AssetResult result;
-    if (registry_file.eof()) {
-      result = AssetResult::UnexpectedEof;
-    } else {
-      result = AssetResult::BadFile;
-    }
-
-    registry_file.close();
-    return result;
   }
 
-  registry_file.close();
+  {
+    log_zone_named("Build and validate lump cache");
 
-  for (uint32_t i = 0; i < lump_cache.size(); i++) {
-    auto lump_file = generateLumpName(i);
-    auto lump_path = bundle_root / lump_file;
+    for (uint32_t i = 0; i < lump_cache.size(); i++) {
+      auto lump_file = generateLumpName(i);
+      auto lump_path = bundle_root / lump_file;
 
-    if (!std::filesystem::exists(lump_path)) {
-      registry_file.close();
-      return AssetResult::FileNotFound;
-    }
+      if (!std::filesystem::exists(lump_path)) {
+        return AssetResult::FileNotFound;
+      }
 
-    AssetLump lump(lump_path);
+      auto& cached_lump = lump_cache[i];
+      AssetLump lump(lump_path);
 
-    if (!lump.assertLength(lump_cache[i].expected_length)) {
-      return AssetResult::BadSize;
-    }
+      if (!lump.assertLength(cached_lump.expected_length)) {
+        return AssetResult::BadSize;
+      }
 
-    if (!lump.assertHash(lump_cache[i].hash_method, lump_cache[i].checksum)) {
-      return AssetResult::InvalidChecksum;
+      if (!lump.assertHash(cached_lump.hash_method, cached_lump.checksum)) {
+        return AssetResult::InvalidChecksum;
+      }
     }
   }
 
@@ -165,7 +170,7 @@ bool AssetBundle::isAssetRegistered(AssetId id) {
   return asset_lookup.find(id) != asset_lookup.end();
 }
 
-bool AssetBundle::loadAsset(ImmutableAsset* asset, AssetId id) {
+bool AssetBundle::loadAsset(const SerializedAsset** asset, AssetId id) {
   // TODO(marceline-cramer) Better error checking and logging
   // TODO(marceline-cramer) Check lump checksums when loading into cache
   auto stored_asset = asset_lookup.find(id)->second;
