@@ -15,6 +15,7 @@
 #include <cstring>
 #include <fstream>
 
+#include "assets/format/Registry_generated.h"
 #include "log/log.h"
 #include "xxhash.h"  // NOLINT
 
@@ -34,12 +35,14 @@ AssetBundleBuilder::~AssetBundleBuilder() {
   }
 }
 
-AssetResult AssetBundleBuilder::addAsset(AssetId* id, MutableAsset* asset) {
-  size_t asset_size = asset->data.size();
+AssetResult AssetBundleBuilder::addAsset(
+    AssetId* id, flatbuffers::FlatBufferBuilder* fbb,
+    flatbuffers::Offset<SerializedAsset> asset_offset) {
+  fbb->Finish(asset_offset);
+  size_t asset_size = fbb->GetSize();
 
   // Generate ID by hashing asset data
-  *id =
-      static_cast<AssetId>(XXH3_64bits(asset->data.data(), asset->data.size()));
+  *id = static_cast<AssetId>(XXH3_64bits(fbb->GetBufferPointer(), asset_size));
 
   if (used_ids.find(*id) != used_ids.end()) {
     log_wrn("Attempting to build asset with duplicated ID 0x%08x; skipping",
@@ -67,7 +70,7 @@ AssetResult AssetBundleBuilder::addAsset(AssetId* id, MutableAsset* asset) {
   lumps[lump_index].assets.push_back(new_asset);
 
   memcpy(lumps[lump_index].data + lumps[lump_index].total_size,
-         asset->data.data(), asset_size);
+         fbb->GetBufferPointer(), asset_size);
 
   lumps[lump_index].total_size += asset_size;
   used_ids.emplace(*id);
@@ -89,16 +92,9 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
     lump_file.close();
   }
 
-  auto registry_path = bundle_root / registry_name;
-  std::ofstream registry_file(registry_path.c_str());
+  flatbuffers::FlatBufferBuilder fbb;
 
-  {
-    AssetRegistryHeader header;
-    memcpy(header.magic, ASSET_REGISTRY_MAGIC, ASSET_REGISTRY_MAGIC_LENGTH);
-    header.version = MONDRADIKO_ASSET_VERSION;
-    header.lump_count = lumps.size();
-    registry_file.write(reinterpret_cast<char*>(&header), sizeof(header));
-  }
+  std::vector<flatbuffers::Offset<LumpEntry>> lump_offsets;
 
   for (uint32_t lump_index = 0; lump_index < lumps.size(); lump_index++) {
     auto& lump = lumps[lump_index];
@@ -106,27 +102,44 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
     log_dbg("Writing lump %d", lump_index);
     log_dbg("Lump size: %lu", lump.total_size);
 
-    {
-      LumpHash checksum = XXH3_64bits(lump.data, lump.total_size);
-      log_dbg("Lump has checksum 0x%016lx", checksum);
+    AssetEntry* asset_entries;
+    auto assets_offset = fbb.CreateUninitializedVectorOfStructs(
+        lump.assets.size(), &asset_entries);
 
-      AssetRegistryLumpEntry lump_entry;
-      lump_entry.checksum = checksum;
-      lump_entry.hash_method = LumpHashMethod::xxHash;
-      lump_entry.compression_method = LumpCompressionMethod::None;
-      lump_entry.asset_count = lump.assets.size();
-      registry_file.write(reinterpret_cast<char*>(&lump_entry),
-                          sizeof(lump_entry));
+    for (uint32_t i = 0; i < lump.assets.size(); i++) {
+      auto& asset = lump.assets[i];
+      asset_entries[i].mutate_id(asset.id);
+      asset_entries[i].mutate_size(asset.size);
     }
 
-    for (auto& asset : lump.assets) {
-      AssetRegistryEntry entry;
-      entry.id = asset.id;
-      entry.size = asset.size;
-      registry_file.write(reinterpret_cast<char*>(&entry), sizeof(entry));
+    LumpEntryBuilder lump_entry(fbb);
+
+    {
+      LumpHash checksum =
+          static_cast<LumpHash>(XXH3_64bits(lump.data, lump.total_size));
+      log_dbg("Lump has checksum 0x%016lx", checksum);
+
+      lump_entry.add_checksum(checksum);
+      lump_entry.add_hash_method(LumpHashMethod::xxHash);
+      lump_entry.add_compression_method(LumpCompressionMethod::None);
+      lump_entry.add_assets(assets_offset);
+
+      lump_offsets.push_back(lump_entry.Finish());
     }
   }
 
+  auto lumps_offset = fbb.CreateVector(lump_offsets);
+
+  RegistryBuilder registry_builder(fbb);
+  registry_builder.add_version(MONDRADIKO_ASSET_VERSION);
+  registry_builder.add_lumps(lumps_offset);
+
+  fbb.Finish(registry_builder.Finish());
+
+  auto registry_path = bundle_root / registry_name;
+  std::ofstream registry_file(registry_path.c_str());
+  registry_file.write(reinterpret_cast<char*>(fbb.GetBufferPointer()),
+                      fbb.GetSize());
   registry_file.close();
 
   return AssetResult::Success;

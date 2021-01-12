@@ -16,8 +16,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include "assets/format/AssetFile.h"
-#include "assets/saving/MutableAsset.h"
+#include "assets/common/AssetTypes.h"
+#include "assets/format/Registry_generated.h"
+#include "assets/format/SerializedAsset_generated.h"
+#include "flatbuffers/flatbuffers.h"
 
 namespace mondradiko {
 namespace assets {
@@ -27,7 +29,8 @@ class AssetBundleBuilder {
   explicit AssetBundleBuilder(const std::filesystem::path&);
   ~AssetBundleBuilder();
 
-  AssetResult addAsset(AssetId*, MutableAsset*);
+  AssetResult addAsset(AssetId*, flatbuffers::FlatBufferBuilder*,
+                       flatbuffers::Offset<SerializedAsset>);
   AssetResult buildBundle(const char*);
 
  private:
