@@ -75,14 +75,15 @@ void World::testInitialize() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void World::onSpawnEntity(const protocol::SpawnEntity* event) {
-  EntityId server_id = static_cast<EntityId>(event->new_id());
+  EntityId id = static_cast<EntityId>(event->new_id());
 
-  if (server_ids.find(server_id) != server_ids.end()) {
+  if (registry.valid(id)) {
+    log_wrn("Spawned entity's ID is taken: 0x%0lx", id);
     return;
   }
 
-  EntityId new_id = registry.create(server_id);
-  server_ids.emplace(server_id, new_id);
+  // Discard returned ID, since we just ensured that the hint will be used
+  static_cast<void>(registry.create(id));
 }
 
 void World::onUpdateComponents(
@@ -215,23 +216,20 @@ void World::updateComponents(
   }
 
   for (uint32_t i = 0; i < entities->size(); i++) {
-    EntityId server_entity = entities->Get(i);
+    EntityId id = entities->Get(i);
 
-    auto it = server_ids.find(server_entity);
-    EntityId client_entity;
-    if (it == server_ids.end()) {
-      client_entity = registry.create();
-      server_ids.emplace(server_entity, client_entity);
-    } else {
-      client_entity = it->second;
+    if (!registry.valid(id)) {
+      log_wrn("Entity hasn't been initialized client-side: 0x%0lx", id);
+      // Discard returned ID, since we just ensured that the hint will be used
+      static_cast<void>(registry.create(id));
     }
 
     const ProtocolComponentType& component = *components->Get(i);
 
-    if (registry.has<ComponentType>(client_entity)) {
-      registry.get<ComponentType>(client_entity).writeData(component);
+    if (registry.has<ComponentType>(id)) {
+      registry.get<ComponentType>(id).writeData(component);
     } else {
-      registry.emplace<ComponentType>(client_entity, component);
+      registry.emplace<ComponentType>(id, component);
     }
   }
 }

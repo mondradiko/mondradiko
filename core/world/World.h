@@ -65,10 +65,6 @@ class World {
   EntityRegistry registry;
   AssetPool asset_pool;
   ScriptEnvironment scripts;
-
-  // TODO(marceline-cramer) Remove this "local ID" business, it's kinda
-  // pointless
-  std::unordered_map<EntityId, EntityId> server_ids;
 };
 
 }  // namespace mondradiko
