@@ -15,6 +15,10 @@
 
 namespace mondradiko {
 
+EntityId TransformComponent::getParent() const {
+  return static_cast<EntityId>(_data.parent());
+}
+
 glm::mat4 TransformComponent::getLocalTransform() {
   auto orientation = _data.orientation();
   auto position = _data.position();
@@ -49,7 +53,8 @@ template <>
 void buildUpdateComponents<protocol::TransformComponent>(
     protocol::UpdateComponentsBuilder* update_components,
     flatbuffers::Offset<
-        flatbuffers::Vector<const protocol::TransformComponent*>> components) {
+        flatbuffers::Vector<const protocol::TransformComponent*>>
+        components) {
   update_components->add_type(protocol::ComponentType::TransformComponent);
   update_components->add_transform(components);
 }

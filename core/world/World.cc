@@ -132,8 +132,6 @@ bool World::update() {
     for (EntityId e : transform_view) {
       TransformComponent& transform = transform_view.get(e);
 
-      // TODO(marceline-cramer) Networked transform hierarchies
-      transform.local_parent = NullEntity;
       transform.this_entity = e;
     }
   }
@@ -144,7 +142,7 @@ bool World::update() {
     registry.sort<TransformComponent>(
         [](const auto& parent, const auto& child) {
           // Sort children after parents
-          return parent.this_entity >= child.local_parent;
+          return parent.this_entity >= child.getParent();
         });
   }
 
@@ -156,13 +154,13 @@ bool World::update() {
     for (EntityId e : transform_view) {
       TransformComponent& transform = transform_view.get(e);
 
+      auto parent = transform.getParent();
       glm::mat4 parent_transform;
-      if (transform.local_parent == NullEntity) {
+      if (parent == NullEntity) {
         parent_transform = glm::mat4(1.0);
       } else {
         parent_transform =
-            registry.get<TransformComponent>(transform.local_parent)
-                .world_transform;
+            registry.get<TransformComponent>(parent).world_transform;
       }
 
       glm::mat4 local_transform = transform.getLocalTransform();

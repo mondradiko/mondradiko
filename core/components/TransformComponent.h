@@ -37,10 +37,9 @@ class TransformComponent : public Component<protocol::TransformComponent> {
 
   // System helpers
   // Used by World to calculate transforms
+  EntityId getParent() const;
   glm::mat4 getLocalTransform();
 
-  // Local parent ID
-  EntityId local_parent;
   // Used to sort by parent
   EntityId this_entity;
   // Final transform result used in math
