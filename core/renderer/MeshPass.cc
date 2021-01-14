@@ -256,8 +256,7 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
       registry.view<MeshRendererComponent, TransformComponent>();
 
   for (EntityId e : mesh_renderers) {
-    auto mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
-
+    auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
     if (!mesh_renderer.isLoaded(asset_pool)) continue;
 
     AssetId material_asset = mesh_renderer.getMaterialAsset();

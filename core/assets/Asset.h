@@ -14,6 +14,9 @@
 #include "assets/common/AssetTypes.h"
 #include "assets/format/SerializedAsset_generated.h"
 
+#define DECL_ASSET_TYPE(type) \
+  static constexpr assets::AssetType ASSET_TYPE = type;
+
 namespace mondradiko {
 
 using AssetId = assets::AssetId;

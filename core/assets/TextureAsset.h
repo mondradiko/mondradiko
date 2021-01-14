@@ -22,6 +22,8 @@ class GpuInstance;
 
 class TextureAsset : public Asset {
  public:
+  DECL_ASSET_TYPE(assets::AssetType::TextureAsset);
+
   TextureAsset(AssetPool*, GpuInstance*);
 
   // AssetPool implementation

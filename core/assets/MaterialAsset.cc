@@ -33,6 +33,10 @@ void MaterialAsset::load(const assets::SerializedAsset* asset) {
                                     albedo_factor->z(), 1.0);
 }
 
+bool MaterialAsset::isTextureLoaded(AssetPool* asset_pool) const {
+  return asset_pool->getAsset<TextureAsset>(albedo_texture).isLoaded();
+}
+
 void MaterialAsset::updateTextureDescriptor(
     GpuDescriptorSet* descriptor) const {
   descriptor->updateImage(

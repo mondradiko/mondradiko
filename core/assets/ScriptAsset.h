@@ -25,6 +25,8 @@ class ScriptInstance;
 
 class ScriptAsset : public Asset {
  public:
+  DECL_ASSET_TYPE(assets::AssetType::ScriptAsset);
+
   ScriptAsset(AssetPool*, ScriptEnvironment*);
 
   // AssetPool implementation

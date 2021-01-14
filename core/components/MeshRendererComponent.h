@@ -30,8 +30,10 @@ class MeshRendererComponent
             static_cast<protocol::AssetId>(material_asset))) {}
 
   bool isLoaded(AssetPool* asset_pool) const {
+    MaterialAsset& material =
+        asset_pool->getAsset<MaterialAsset>(getMaterialAsset());
     return asset_pool->getAsset<MeshAsset>(getMeshAsset()).isLoaded() &&
-           asset_pool->getAsset<MaterialAsset>(getMaterialAsset()).isLoaded();
+           material.isLoaded() && material.isTextureLoaded(asset_pool);
   }
 
   AssetId getMeshAsset() const {

@@ -29,12 +29,15 @@ struct MaterialUniform {
 
 class MaterialAsset : public Asset {
  public:
+  DECL_ASSET_TYPE(assets::AssetType::MaterialAsset);
+
   MaterialAsset(AssetPool*, GpuInstance*);
 
   // Asset implementation
   void load(const assets::SerializedAsset*);
   void unload() {}
 
+  bool isTextureLoaded(AssetPool*) const;
   const MaterialUniform& getUniform() const { return uniform; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;
 

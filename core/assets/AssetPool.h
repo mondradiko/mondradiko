@@ -62,6 +62,14 @@ class AssetPool {
     const assets::SerializedAsset* asset_data;
     bool loaded_successfully = fs->loadAsset(&asset_data, id);
 
+    if (loaded_successfully) {
+      if (asset_data->type() != AssetType::ASSET_TYPE) {
+        loaded_successfully = false;
+        log_err("SerializedAsset does not have type %s as expected",
+                assets::EnumNameAssetType(AssetType::ASSET_TYPE));
+      }
+    }
+
     if (!loaded_successfully) {
       log_err("Failed to load asset 0x%0lx", id);
     }
@@ -69,6 +77,7 @@ class AssetPool {
     AssetType& initial_asset = asset_registry.get<AssetType>(template_asset);
     AssetType& new_asset =
         asset_registry.emplace<AssetType>(local_id, initial_asset);
+    new_asset.loaded = false;
 
     // Dummy assets are never loaded, but are initialized
     if (loaded_successfully && !isAssetTypeDummy<AssetType>()) {

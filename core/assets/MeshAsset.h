@@ -74,6 +74,8 @@ using MeshIndex = uint32_t;
 
 class MeshAsset : public Asset {
  public:
+  DECL_ASSET_TYPE(assets::AssetType::MeshAsset);
+
   MeshAsset(AssetPool*, GpuInstance*);
 
   // AssetPool implementation
