@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "assets/format/PrefabAsset_generated.h"
 #include "core/assets/MaterialAsset.h"
 #include "core/assets/MeshAsset.h"
 #include "core/components/Component.h"
@@ -23,6 +24,12 @@ class MeshRendererComponent
  public:
   explicit MeshRendererComponent(const protocol::MeshRendererComponent& data)
       : Component(data) {}
+
+  explicit MeshRendererComponent(const assets::MeshRendererPrefabT* prefab) {
+    _data.mutate_mesh_asset(static_cast<protocol::AssetId>(prefab->mesh));
+    _data.mutate_material_asset(
+        static_cast<protocol::AssetId>(prefab->material));
+  }
 
   MeshRendererComponent(AssetId mesh_asset, AssetId material_asset)
       : Component(protocol::MeshRendererComponent(

@@ -38,6 +38,7 @@ configure_file(build_config.h.in build_config.h)
 set(MONDRADIKO_CORE_SRC
   assets/MaterialAsset.cc
   assets/MeshAsset.cc
+  assets/PrefabAsset.cc
   assets/ScriptAsset.cc
   assets/TextureAsset.cc
   components/MeshRendererComponent.cc
