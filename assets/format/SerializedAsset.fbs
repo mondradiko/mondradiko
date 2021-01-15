@@ -5,6 +5,7 @@ include "types.fbs";
 
 include "MaterialAsset.fbs";
 include "MeshAsset.fbs";
+include "PrefabAsset.fbs";
 include "ScriptAsset.fbs";
 include "TextureAsset.fbs";
 
@@ -12,8 +13,10 @@ namespace mondradiko.assets;
 
 table SerializedAsset {
   type:AssetType;
+
   material:MaterialAsset;
   mesh:MeshAsset;
+  prefab:PrefabAsset;
   script:ScriptAsset;
   texture:TextureAsset;
 }

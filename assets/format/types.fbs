@@ -11,6 +11,7 @@ enum AssetType : uint16 {
   None = 0,
   MaterialAsset,
   MeshAsset,
+  PrefabAsset,
   ScriptAsset,
   TextureAsset
 }

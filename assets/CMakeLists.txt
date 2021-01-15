@@ -5,6 +5,7 @@ add_subdirectory(format)
 flatc_schemas(FORMAT_HEADERS
   format/MaterialAsset.fbs
   format/MeshAsset.fbs
+  format/PrefabAsset.fbs
   format/Registry.fbs
   format/ScriptAsset.fbs
   format/SerializedAsset.fbs
