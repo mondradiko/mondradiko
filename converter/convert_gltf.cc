@@ -22,6 +22,7 @@
 
 #include "assets/format/MaterialAsset_generated.h"
 #include "assets/format/MeshAsset_generated.h"
+#include "assets/format/PrefabAsset_generated.h"
 #include "converter/stb_converter.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "log/log.h"
@@ -36,7 +37,7 @@ assets::AssetId load_dummy_texture(assets::AssetBundleBuilder *builder) {
   return stb_convert(builder, albedo_path);
 }
 
-void load_dummy_material(assets::AssetBundleBuilder *builder) {
+assets::AssetId load_dummy_material(assets::AssetBundleBuilder *builder) {
   flatbuffers::FlatBufferBuilder fbb;
 
   assets::MaterialAssetBuilder material_builder(fbb);
@@ -53,6 +54,7 @@ void load_dummy_material(assets::AssetBundleBuilder *builder) {
   assets::AssetId asset_id;
   builder->addAsset(&asset_id, &fbb, asset_offset);
   log_dbg("Added material asset: 0x%0lx", asset_id);
+  return asset_id;
 }
 
 /**
@@ -192,6 +194,8 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
     }
   }
 
+  assets::AssetId mesh_id;
+
   {
     log_inf("Writing asset data");
 
@@ -210,10 +214,37 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
     asset.add_mesh(mesh_offset);
     auto asset_offset = asset.Finish();
 
-    assets::AssetId asset_id;
-    builder->addAsset(&asset_id, &fbb, asset_offset);
-    log_dbg("Added mesh asset 0x%0lx", asset_id);
-    return asset_id;
+    builder->addAsset(&mesh_id, &fbb, asset_offset);
+    log_dbg("Added mesh asset 0x%0lx", mesh_id);
+  }
+
+  {
+    log_inf("Creating prefab");
+
+    // TODO(marceline-cramer) Load correct materials
+    assets::AssetId material_id = load_dummy_material(builder);
+
+    flatbuffers::FlatBufferBuilder fbb;
+
+    assets::MeshRendererPrefabBuilder mesh_renderer(fbb);
+    mesh_renderer.add_mesh(mesh_id);
+    mesh_renderer.add_material(material_id);
+    auto mesh_renderer_offset = mesh_renderer.Finish();
+
+    assets::PrefabAssetBuilder prefab_asset(fbb);
+    prefab_asset.add_mesh_renderer(mesh_renderer_offset);
+    auto prefab_offset = prefab_asset.Finish();
+
+    assets::SerializedAssetBuilder asset(fbb);
+    asset.add_type(assets::AssetType::PrefabAsset);
+    asset.add_prefab(prefab_offset);
+    auto asset_offset = asset.Finish();
+
+    assets::AssetId prefab_id;
+    builder->addAsset(&prefab_id, &fbb, asset_offset);
+    builder->addInitialPrefab(prefab_id);
+    log_dbg("Added initial prefab asset 0x%0lx", prefab_id);
+    return prefab_id;
   }
 }
 
@@ -248,9 +279,6 @@ assets::AssetId convert_gltf(assets::AssetBundleBuilder *builder,
   if (warning.length() > 0) {
     log_wrn("GLTF warning: %s", warning.c_str());
   }
-
-  // TODO(marceline-cramer) Load correct materials
-  { load_dummy_material(builder); }
 
   // TODO(marceline-cramer) Handle all scenes in separate prefabs
   uint32_t scene_index =
