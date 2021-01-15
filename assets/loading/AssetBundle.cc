@@ -81,6 +81,17 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
   }
 
   {
+    log_zone_named("Load initial prefabs");
+
+    initial_prefabs.resize(0);
+
+    for (uint32_t i = 0; i < registry->initial_prefabs()->size(); i++) {
+      initial_prefabs.push_back(
+          static_cast<AssetId>(registry->initial_prefabs()->Get(i)));
+    }
+  }
+
+  {
     log_zone_named("Load lumps");
 
     uint32_t lump_count = registry->lumps()->size();
@@ -164,6 +175,10 @@ void AssetBundle::getChecksums(std::vector<LumpHash>& checksums) {
   for (uint32_t i = 0; i < lump_cache.size(); i++) {
     checksums[i] = lump_cache[i].checksum;
   }
+}
+
+void AssetBundle::getInitialPrefabs(std::vector<AssetId>& prefabs) {
+  prefabs = initial_prefabs;
 }
 
 bool AssetBundle::isAssetRegistered(AssetId id) {

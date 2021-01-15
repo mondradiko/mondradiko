@@ -30,11 +30,14 @@ class AssetBundle {
   AssetResult loadRegistry(const char*);
 
   void getChecksums(std::vector<LumpHash>&);
+  void getInitialPrefabs(std::vector<AssetId>&);
   bool isAssetRegistered(AssetId);
   bool loadAsset(const SerializedAsset**, AssetId);
 
  private:
   std::filesystem::path bundle_root;
+
+  std::vector<AssetId> initial_prefabs;
 
   struct AssetLookupEntry {
     uint32_t lump_index;

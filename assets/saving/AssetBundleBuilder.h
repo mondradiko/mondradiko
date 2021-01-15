@@ -31,6 +31,7 @@ class AssetBundleBuilder {
 
   AssetResult addAsset(AssetId*, flatbuffers::FlatBufferBuilder*,
                        flatbuffers::Offset<SerializedAsset>);
+  AssetResult addInitialPrefab(AssetId);
   AssetResult buildBundle(const char*);
 
  private:
@@ -50,6 +51,7 @@ class AssetBundleBuilder {
 
   std::vector<LumpToSave> lumps;
   std::unordered_set<AssetId> used_ids;
+  std::vector<AssetId> initial_prefabs;
 
   void allocateLump(LumpToSave*);
 };

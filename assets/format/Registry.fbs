@@ -19,6 +19,7 @@ table LumpEntry {
 
 table Registry {
   version:uint32;
+  initial_prefabs:[AssetId];
   lumps:[LumpEntry];
 }
 

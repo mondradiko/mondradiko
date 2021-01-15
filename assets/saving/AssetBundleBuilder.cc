@@ -78,6 +78,11 @@ AssetResult AssetBundleBuilder::addAsset(
   return AssetResult::Success;
 }
 
+AssetResult AssetBundleBuilder::addInitialPrefab(AssetId prefab) {
+  initial_prefabs.push_back(prefab);
+  return AssetResult::Success;
+}
+
 AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
   for (uint32_t lump_index = 0; lump_index < lumps.size(); lump_index++) {
     auto& lump = lumps[lump_index];
@@ -128,10 +133,14 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
     }
   }
 
+  auto initial_prefabs_offset = fbb.CreateVector(
+      reinterpret_cast<const uint32_t*>(initial_prefabs.data()),
+      initial_prefabs.size());
   auto lumps_offset = fbb.CreateVector(lump_offsets);
 
   RegistryBuilder registry_builder(fbb);
   registry_builder.add_version(MONDRADIKO_ASSET_VERSION);
+  registry_builder.add_initial_prefabs(initial_prefabs_offset);
   registry_builder.add_lumps(lumps_offset);
 
   fbb.Finish(registry_builder.Finish());
