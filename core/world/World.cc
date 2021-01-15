@@ -14,6 +14,7 @@
 
 #include <iostream>
 
+#include "core/assets/PrefabAsset.h"
 #include "core/assets/ScriptAsset.h"
 #include "core/assets/TextureAsset.h"
 #include "core/components/MeshRendererComponent.h"
@@ -41,6 +42,7 @@ World::World(Filesystem* fs, GpuInstance* gpu)
     asset_pool.initializeDummyAssetType<TextureAsset>(gpu);
   }
 
+  asset_pool.initializeAssetType<PrefabAsset>();
   asset_pool.initializeAssetType<ScriptAsset>(&scripts);
 
   scripts.linkComponentApis(this);
@@ -51,23 +53,22 @@ World::~World() {
 
   asset_pool.unloadAll<MaterialAsset>();
   asset_pool.unloadAll<MeshAsset>();
+  asset_pool.unloadAll<PrefabAsset>();
   asset_pool.unloadAll<ScriptAsset>();
   asset_pool.unloadAll<TextureAsset>();
 }
 
-void World::testInitialize() {
-  auto test_entity = registry.create();
+void World::initializePrefabs() {
+  std::vector<AssetId> prefabs;
+  fs->getInitialPrefabs(prefabs);
 
-  MeshRendererComponent mesh_renderer_component(
-      static_cast<AssetId>(0x4c8d6924), static_cast<AssetId>(0x95414060));
-  TransformComponent transform_component;
+  TransformComponent transform;
 
-  registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer_component);
-  registry.emplace<TransformComponent>(test_entity, transform_component);
-
-  // Update an entity's script to initialize the ScriptComponent
-  /*scripts.updateScript(registry, &asset_pool, test_entity, 0x55715294,
-     nullptr, static_cast<size_t>(0));*/
+  for (auto prefab_id : prefabs) {
+    asset_pool.loadAsset<PrefabAsset>(prefab_id);
+    auto& prefab = asset_pool.getAsset<PrefabAsset>(prefab_id);
+    prefab.instantiate(&registry, transform);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

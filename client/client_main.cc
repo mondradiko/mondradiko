@@ -74,7 +74,9 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
 }
 
 void player_session_run(const char* server_address, int port) {
-  Filesystem fs("../test-folder/");
+  Filesystem fs;
+  fs.loadAssetBundle("../test-folder/");
+
   OpenXrDisplay display;
   GpuInstance gpu(&display);
 
@@ -82,7 +84,9 @@ void player_session_run(const char* server_address, int port) {
 }
 
 void spectator_session_run(const char* server_address, int port) {
-  Filesystem fs("../test-folder/");
+  Filesystem fs;
+  fs.loadAssetBundle("../test-folder/");
+
   SdlDisplay display;
   GpuInstance gpu(&display);
 

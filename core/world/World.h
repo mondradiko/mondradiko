@@ -38,7 +38,7 @@ class World {
   World(Filesystem*, GpuInstance*);
   ~World();
 
-  void testInitialize();
+  void initializePrefabs();
 
   //
   // World event callbacks
