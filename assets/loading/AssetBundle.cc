@@ -60,8 +60,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
         registry_data.size());
     if (!VerifyRegistryBuffer(verifier)) {
       log_err("Asset validation failed");
-      // TODO(marceline-cramer) Rename this enum "InvalidBuffer"
-      return AssetResult::WrongMagic;
+      return AssetResult::InvalidBuffer;
     }
 
     registry = GetRegistry(registry_data.data());

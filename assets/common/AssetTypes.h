@@ -37,7 +37,7 @@ enum class AssetResult {
   FileNotFound,
   UnexpectedEof,
   BadFile,
-  WrongMagic,
+  InvalidBuffer,
   WrongVersion,
   BadSize,
   BadContents,

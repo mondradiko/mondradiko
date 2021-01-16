@@ -24,8 +24,8 @@ const char* getAssetResultString(AssetResult result) {
       return "UnexpectedEof";
     case AssetResult::BadFile:
       return "BadFile";
-    case AssetResult::WrongMagic:
-      return "WrongMagic";
+    case AssetResult::InvalidBuffer:
+      return "InvalidBuffer";
     case AssetResult::WrongVersion:
       return "WrongVersion";
     case AssetResult::BadSize:
