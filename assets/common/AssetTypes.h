@@ -40,6 +40,7 @@ enum class AssetResult {
   WrongMagic,
   WrongVersion,
   BadSize,
+  BadContents,
   InvalidChecksum,
   DuplicateAsset
 };

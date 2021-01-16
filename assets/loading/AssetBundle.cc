@@ -74,6 +74,11 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       return AssetResult::WrongVersion;
     }
 
+    if (registry->lumps() == nullptr) {
+      log_err("Missing lump reference in registry");
+      return AssetResult::BadContents;
+    }
+
     if (registry->lumps()->size() > ASSET_REGISTRY_MAX_LUMPS) {
       log_err("Registry lump count exceeds limit of %d", ASSET_LUMP_MAX_ASSETS);
       return AssetResult::BadSize;
