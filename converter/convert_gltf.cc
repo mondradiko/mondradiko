@@ -30,7 +30,6 @@
 namespace mondradiko {
 
 assets::AssetId load_dummy_texture(assets::AssetBundleBuilder *builder) {
-  // TODO(marceline-cramer) Replace Assimp
   std::filesystem::path albedo_path = "../test-folder/Default_albedo.jpg";
   log_inf("Loading albedo texture from %s", albedo_path.c_str());
 
