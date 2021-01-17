@@ -36,20 +36,17 @@ class MeshRendererComponent
             static_cast<protocol::AssetId>(mesh_asset),
             static_cast<protocol::AssetId>(material_asset))) {}
 
-  bool isLoaded(AssetPool* asset_pool) const {
-    MaterialAsset& material =
-        asset_pool->getAsset<MaterialAsset>(getMaterialAsset());
-    return asset_pool->getAsset<MeshAsset>(getMeshAsset()).isLoaded() &&
-           material.isLoaded() && material.isTextureLoaded(asset_pool);
+  bool isLoaded() const { return getMeshAsset() && getMaterialAsset(); }
+
+  const AssetHandle<MeshAsset>& getMeshAsset() const { return mesh_asset; }
+
+  const AssetHandle<MaterialAsset>& getMaterialAsset() const {
+    return material_asset;
   }
 
-  AssetId getMeshAsset() const {
-    return static_cast<AssetId>(_data.mesh_asset());
-  }
-
-  AssetId getMaterialAsset() const {
-    return static_cast<AssetId>(_data.material_asset());
-  }
+ private:
+  AssetHandle<MeshAsset> mesh_asset;
+  AssetHandle<MaterialAsset> material_asset;
 };
 
 }  // namespace mondradiko
