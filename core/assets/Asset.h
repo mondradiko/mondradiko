@@ -23,11 +23,18 @@ using AssetId = assets::AssetId;
 
 class Asset {
  public:
-  bool isLoaded() { return loaded; }
+  virtual ~Asset() {}
+
+  virtual void load(const assets::SerializedAsset*) = 0;
+
+  virtual bool isLoaded() const { return loaded; }
 
  private:
-  AssetId id_;
-  bool loaded;
+  bool loaded = false;
+  uint32_t ref_count = 0;
+
+  template <class AssetType>
+  friend class AssetHandle;
 
   friend class AssetPool;
 };
