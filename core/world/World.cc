@@ -210,9 +210,12 @@ void World::updateComponents(
     const ProtocolComponentType& component = *components->Get(i);
 
     if (registry.has<ComponentType>(id)) {
-      registry.get<ComponentType>(id).writeData(component);
+      ComponentType& handle = registry.get<ComponentType>(id);
+      handle.writeData(component);
+      handle.refresh(&asset_pool);
     } else {
-      registry.emplace<ComponentType>(id, component);
+      ComponentType& handle = registry.emplace<ComponentType>(id, component);
+      handle.refresh(&asset_pool);
     }
   }
 }

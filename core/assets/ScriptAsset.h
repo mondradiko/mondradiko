@@ -29,7 +29,7 @@ class ScriptAsset : public Asset {
 
   // Asset lifetime implementation
   ScriptAsset(ScriptEnvironment* scripts) : scripts(scripts) {}
-  void load(const assets::SerializedAsset*);
+  void load(const assets::SerializedAsset*) final;
   ~ScriptAsset();
 
   ScriptInstance* createInstance() const;

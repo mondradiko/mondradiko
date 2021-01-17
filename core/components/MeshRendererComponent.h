@@ -36,6 +36,9 @@ class MeshRendererComponent
             static_cast<protocol::AssetId>(mesh_asset),
             static_cast<protocol::AssetId>(material_asset))) {}
 
+  // Component implementation
+  void refresh(AssetPool*) final;
+
   bool isLoaded() const { return getMeshAsset() && getMaterialAsset(); }
 
   const AssetHandle<MeshAsset>& getMeshAsset() const { return mesh_asset; }

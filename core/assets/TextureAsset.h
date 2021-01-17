@@ -26,7 +26,7 @@ class TextureAsset : public Asset {
 
   // Asset lifetime implementation
   TextureAsset(GpuInstance* gpu) : gpu(gpu) {}
-  void load(const assets::SerializedAsset*);
+  void load(const assets::SerializedAsset*) final;
   ~TextureAsset();
 
   GpuImage* getImage() const { return image; }

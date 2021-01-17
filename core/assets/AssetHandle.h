@@ -21,7 +21,7 @@ class AssetHandle {
  public:
   AssetHandle() : ptr(nullptr) {}
 
-  explicit AssetHandle(std::nullptr_t ptr) : ptr(ptr) {}
+  explicit AssetHandle(std::nullptr_t ptr) : id(AssetId::NullAsset), ptr(ptr) {}
 
   explicit AssetHandle(AssetId id, AssetType* ptr) : id(id), ptr(ptr) {
     ptr->ref_count++;
@@ -35,6 +35,8 @@ class AssetHandle {
   }
 
   AssetHandle<AssetType>& operator=(const AssetHandle<AssetType>& other) {
+    if (ptr) ptr->ref_count--;
+
     id = other.id;
     ptr = other.ptr;
 
