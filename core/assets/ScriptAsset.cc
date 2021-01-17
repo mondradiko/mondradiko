@@ -20,9 +20,6 @@
 
 namespace mondradiko {
 
-ScriptAsset::ScriptAsset(AssetPool*, ScriptEnvironment* scripts)
-    : scripts(scripts) {}
-
 void ScriptAsset::load(const assets::SerializedAsset* asset) {
   const assets::ScriptAsset* script = asset->script();
 
@@ -72,13 +69,11 @@ void ScriptAsset::load(const assets::SerializedAsset* asset) {
   }
 }
 
-void ScriptAsset::unload() {
+ScriptAsset::~ScriptAsset() {
   if (script_module) wasm_module_delete(script_module);
-
-  script_module = nullptr;
 }
 
-ScriptInstance* ScriptAsset::createInstance() {
+ScriptInstance* ScriptAsset::createInstance() const {
   ScriptInstance* instance = new ScriptInstance(scripts, script_module);
   return instance;
 }

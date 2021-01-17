@@ -18,8 +18,6 @@
 
 namespace mondradiko {
 
-TextureAsset::TextureAsset(AssetPool*, GpuInstance* gpu) : gpu(gpu) {}
-
 void TextureAsset::load(const assets::SerializedAsset* asset) {
   const assets::TextureAsset* texture = asset->texture();
 
@@ -58,10 +56,8 @@ void TextureAsset::load(const assets::SerializedAsset* asset) {
   }  // switch (header.format)
 }
 
-void TextureAsset::unload() {
+TextureAsset::~TextureAsset() {
   if (image) delete image;
-
-  image = nullptr;
 }
 
 }  // namespace mondradiko

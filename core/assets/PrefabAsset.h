@@ -25,13 +25,12 @@ class PrefabAsset : public Asset {
  public:
   DECL_ASSET_TYPE(assets::AssetType::PrefabAsset);
 
+  // Asset lifetime implementation
   PrefabAsset(AssetPool* asset_pool) : asset_pool(asset_pool) {}
+  void load(const assets::SerializedAsset*) final;
+  ~PrefabAsset();
 
-  EntityId instantiate(EntityRegistry*, const TransformComponent&);
-
-  // AssetPool implementation
-  void load(const assets::SerializedAsset*);
-  void unload();
+  EntityId instantiate(EntityRegistry*, const TransformComponent&) const;
 
  private:
   AssetPool* asset_pool;

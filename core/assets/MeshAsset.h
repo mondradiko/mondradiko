@@ -76,11 +76,10 @@ class MeshAsset : public Asset {
  public:
   DECL_ASSET_TYPE(assets::AssetType::MeshAsset);
 
-  MeshAsset(AssetPool*, GpuInstance*);
-
-  // AssetPool implementation
-  void load(const assets::SerializedAsset*);
-  void unload();
+  // Asset lifetime implementation
+  MeshAsset(GpuInstance* gpu) : gpu(gpu) {}
+  void load(const assets::SerializedAsset*) final;
+  ~MeshAsset();
 
   GpuBuffer* vertex_buffer = nullptr;
   GpuBuffer* index_buffer = nullptr;

@@ -28,8 +28,17 @@ void initComponent(EntityRegistry* registry, EntityId instance_id,
   }
 }
 
+void PrefabAsset::load(const assets::SerializedAsset* asset) {
+  const assets::PrefabAsset* prefab_asset = asset->prefab();
+
+  prefab = new assets::PrefabAssetT;
+  prefab_asset->UnPackTo(prefab);
+}
+
+PrefabAsset::~PrefabAsset() { delete prefab; }
+
 EntityId PrefabAsset::instantiate(EntityRegistry* registry,
-                                  const TransformComponent& transform) {
+                                  const TransformComponent& transform) const {
   EntityId instance_id = registry->create();
 
   initComponent<MeshRendererComponent>(registry, instance_id,
@@ -44,14 +53,5 @@ EntityId PrefabAsset::instantiate(EntityRegistry* registry,
 
   return instance_id;
 }
-
-void PrefabAsset::load(const assets::SerializedAsset* asset) {
-  const assets::PrefabAsset* prefab_asset = asset->prefab();
-
-  prefab = new assets::PrefabAssetT;
-  prefab_asset->UnPackTo(prefab);
-}
-
-void PrefabAsset::unload() { delete prefab; }
 
 }  // namespace mondradiko

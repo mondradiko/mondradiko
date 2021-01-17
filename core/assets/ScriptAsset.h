@@ -27,13 +27,12 @@ class ScriptAsset : public Asset {
  public:
   DECL_ASSET_TYPE(assets::AssetType::ScriptAsset);
 
-  ScriptAsset(AssetPool*, ScriptEnvironment*);
-
-  // AssetPool implementation
+  // Asset lifetime implementation
+  ScriptAsset(ScriptEnvironment* scripts) : scripts(scripts) {}
   void load(const assets::SerializedAsset*);
-  void unload();
+  ~ScriptAsset();
 
-  ScriptInstance* createInstance();
+  ScriptInstance* createInstance() const;
 
  private:
   ScriptEnvironment* scripts;

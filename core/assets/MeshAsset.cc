@@ -21,8 +21,6 @@
 
 namespace mondradiko {
 
-MeshAsset::MeshAsset(AssetPool*, GpuInstance* gpu) : gpu(gpu) {}
-
 void MeshAsset::load(const assets::SerializedAsset* asset) {
   const assets::MeshAsset* mesh = asset->mesh();
 
@@ -55,12 +53,9 @@ void MeshAsset::load(const assets::SerializedAsset* asset) {
   index_count = indices.size();
 }
 
-void MeshAsset::unload() {
+MeshAsset::~MeshAsset() {
   if (vertex_buffer != nullptr) delete vertex_buffer;
   if (index_buffer != nullptr) delete index_buffer;
-
-  vertex_buffer = nullptr;
-  index_buffer = nullptr;
 }
 
 }  // namespace mondradiko

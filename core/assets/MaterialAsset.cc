@@ -19,28 +19,19 @@
 
 namespace mondradiko {
 
-MaterialAsset::MaterialAsset(AssetPool* asset_pool, GpuInstance* gpu)
-    : asset_pool(asset_pool), gpu(gpu) {}
-
 void MaterialAsset::load(const assets::SerializedAsset* asset) {
   const assets::MaterialAsset* material = asset->material();
 
-  albedo_texture =
-      asset_pool->loadAsset<TextureAsset>(material->albedo_texture());
+  albedo_texture = asset_pool->load<TextureAsset>(material->albedo_texture());
 
   const assets::Vec3* albedo_factor = material->albedo_factor();
   uniform.albedo_factor = glm::vec4(albedo_factor->x(), albedo_factor->y(),
                                     albedo_factor->z(), 1.0);
 }
 
-bool MaterialAsset::isTextureLoaded(AssetPool* asset_pool) const {
-  return asset_pool->getAsset<TextureAsset>(albedo_texture).isLoaded();
-}
-
 void MaterialAsset::updateTextureDescriptor(
     GpuDescriptorSet* descriptor) const {
-  descriptor->updateImage(
-      0, asset_pool->getAsset<TextureAsset>(albedo_texture).getImage());
+  descriptor->updateImage(0, albedo_texture->getImage());
 }
 
 }  // namespace mondradiko
