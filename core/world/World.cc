@@ -32,31 +32,16 @@ World::World(Filesystem* fs, GpuInstance* gpu)
     : fs(fs), gpu(gpu), asset_pool(fs) {
   log_zone;
 
-  if (gpu) {
-    asset_pool.initializeAssetType<MaterialAsset>(gpu);
-    asset_pool.initializeAssetType<MeshAsset>(gpu);
-    asset_pool.initializeAssetType<TextureAsset>(gpu);
-  } else {
-    asset_pool.initializeDummyAssetType<MaterialAsset>(gpu);
-    asset_pool.initializeDummyAssetType<MeshAsset>(gpu);
-    asset_pool.initializeDummyAssetType<TextureAsset>(gpu);
-  }
-
-  asset_pool.initializeAssetType<PrefabAsset>();
+  asset_pool.initializeAssetType<MaterialAsset>(&asset_pool, gpu);
+  asset_pool.initializeAssetType<MeshAsset>(gpu);
+  asset_pool.initializeAssetType<PrefabAsset>(&asset_pool);
   asset_pool.initializeAssetType<ScriptAsset>(&scripts);
+  asset_pool.initializeAssetType<TextureAsset>(gpu);
 
   scripts.linkComponentApis(this);
 }
 
-World::~World() {
-  log_zone;
-
-  asset_pool.unloadAll<MaterialAsset>();
-  asset_pool.unloadAll<MeshAsset>();
-  asset_pool.unloadAll<PrefabAsset>();
-  asset_pool.unloadAll<ScriptAsset>();
-  asset_pool.unloadAll<TextureAsset>();
-}
+World::~World() { log_zone; }
 
 void World::initializePrefabs() {
   std::vector<AssetId> prefabs;
@@ -65,9 +50,8 @@ void World::initializePrefabs() {
   TransformComponent transform;
 
   for (auto prefab_id : prefabs) {
-    asset_pool.loadAsset<PrefabAsset>(prefab_id);
-    auto& prefab = asset_pool.getAsset<PrefabAsset>(prefab_id);
-    prefab.instantiate(&registry, transform);
+    auto prefab = asset_pool.load<PrefabAsset>(prefab_id);
+    prefab->instantiate(&registry, transform);
   }
 }
 
