@@ -37,6 +37,9 @@ class MaterialAsset : public Asset {
       : asset_pool(asset_pool), gpu(gpu) {}
   void load(const assets::SerializedAsset*) final;
 
+  // Override isLoaded() to include the textures
+  bool isLoaded() const final { return albedo_texture.isLoaded(); }
+
   const MaterialUniform& getUniform() const { return uniform; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;
 

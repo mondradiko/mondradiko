@@ -30,7 +30,6 @@ class GpuVector;
 class GpuDescriptorSet {
  public:
   GpuDescriptorSet(GpuInstance*, GpuDescriptorSetLayout*, VkDescriptorSet);
-  ~GpuDescriptorSet();
 
   void updateBuffer(uint32_t, GpuBuffer*);
   void updateDynamicBuffer(uint32_t, GpuVector*);
@@ -42,6 +41,10 @@ class GpuDescriptorSet {
 
  private:
   GpuInstance* gpu;
+
+  // Only GpuDescriptorPools are allowed to destroy sets
+  friend class GpuDescriptorPool;
+  ~GpuDescriptorSet();
 
   GpuDescriptorSetLayout* set_layout;
   VkDescriptorSet descriptor_set;

@@ -28,7 +28,7 @@ class PrefabAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::PrefabAsset);
 
   // Asset lifetime implementation
-  PrefabAsset(AssetPool* asset_pool) : asset_pool(asset_pool) {}
+  explicit PrefabAsset(AssetPool* asset_pool) : asset_pool(asset_pool) {}
   void load(const assets::SerializedAsset*) final;
   ~PrefabAsset();
 

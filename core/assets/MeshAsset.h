@@ -77,7 +77,7 @@ class MeshAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::MeshAsset);
 
   // Asset lifetime implementation
-  MeshAsset(GpuInstance* gpu) : gpu(gpu) {}
+  explicit MeshAsset(GpuInstance* gpu) : gpu(gpu) {}
   void load(const assets::SerializedAsset*) final;
   ~MeshAsset();
 

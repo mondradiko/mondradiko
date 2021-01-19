@@ -25,7 +25,7 @@ class TextureAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::TextureAsset);
 
   // Asset lifetime implementation
-  TextureAsset(GpuInstance* gpu) : gpu(gpu) {}
+  explicit TextureAsset(GpuInstance* gpu) : gpu(gpu) {}
   void load(const assets::SerializedAsset*) final;
   ~TextureAsset();
 

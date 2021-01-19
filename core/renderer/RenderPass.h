@@ -12,6 +12,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
 
 #include "core/assets/AssetPool.h"
 #include "core/assets/MeshAsset.h"

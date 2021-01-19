@@ -28,7 +28,7 @@ class ScriptAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::ScriptAsset);
 
   // Asset lifetime implementation
-  ScriptAsset(ScriptEnvironment* scripts) : scripts(scripts) {}
+  explicit ScriptAsset(ScriptEnvironment* scripts) : scripts(scripts) {}
   void load(const assets::SerializedAsset*) final;
   ~ScriptAsset();
 

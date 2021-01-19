@@ -13,6 +13,7 @@
 #include "core/world/World.h"
 
 #include <iostream>
+#include <vector>
 
 #include "core/assets/PrefabAsset.h"
 #include "core/assets/ScriptAsset.h"

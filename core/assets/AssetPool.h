@@ -33,11 +33,7 @@ class AssetPool {
  public:
   explicit AssetPool(Filesystem* fs) : fs(fs) {}
 
-  ~AssetPool() {
-    for (auto asset : pool) {
-      delete asset.second;
-    }
-  }
+  ~AssetPool() { unloadAll(); }
 
   template <typename AssetType, typename... Args>
   void initializeAssetType(Args&&... args) {
@@ -114,6 +110,14 @@ class AssetPool {
   }
 
   // TODO(marceline-cramer) Add garbage collecting method
+
+  void unloadAll() {
+    for (auto& asset : pool) {
+      delete asset.second;
+    }
+
+    pool.clear();
+  }
 
  private:
   Filesystem* fs;
