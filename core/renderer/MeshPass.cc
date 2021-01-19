@@ -236,6 +236,8 @@ void MeshPass::createFrameData(MeshPassFrameData& frame) {
 }
 
 void MeshPass::destroyFrameData(MeshPassFrameData& frame) {
+  log_zone;
+
   if (frame.material_buffer != nullptr) delete frame.material_buffer;
   if (frame.mesh_buffer != nullptr) delete frame.mesh_buffer;
 }
@@ -246,53 +248,70 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
                                    GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  std::vector<MaterialUniform> material_uniforms;
-  std::vector<MeshUniform> mesh_uniforms;
+  std::unordered_map<AssetId, uint32_t> material_assets;
+  std::vector<MaterialUniform> frame_materials;
+  std::vector<GpuDescriptorSet*> frame_textures;
 
-  frame.textures.clear();
-  frame.meshes.clear();
+  std::vector<MeshUniform> frame_meshes;
+
+  frame.commands.clear();
 
   auto mesh_renderers =
       registry.view<MeshRendererComponent, TransformComponent>();
 
-  for (EntityId e : mesh_renderers) {
+  for (auto e : mesh_renderers) {
     auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
     if (!mesh_renderer.isLoaded()) continue;
 
-    const auto& material_asset = mesh_renderer.getMaterialAsset();
-    auto iter = frame.textures.find(material_asset.getId());
+    MeshRenderCommand cmd;
 
-    if (iter == frame.textures.end()) {
-      frame.materials.emplace(material_asset.getId(), material_uniforms.size());
-      material_uniforms.push_back(material_asset->getUniform());
+    {  // Write material uniform
+      const auto& material_asset = mesh_renderer.getMaterialAsset();
+      const auto iter = material_assets.find(material_asset.getId());
 
-      GpuDescriptorSet* texture_descriptor =
-          descriptor_pool->allocate(texture_layout);
-      material_asset->updateTextureDescriptor(texture_descriptor);
-      frame.textures.emplace(material_asset.getId(), texture_descriptor);
+      if (iter != material_assets.end()) {
+        cmd.material_idx = iter->second;
+        cmd.textures_descriptor = frame_textures[iter->second];
+      } else {
+        cmd.material_idx = frame_materials.size();
+        material_assets.emplace(material_asset.getId(), cmd.material_idx);
+        frame_materials.push_back(material_asset->getUniform());
+
+        cmd.textures_descriptor = descriptor_pool->allocate(texture_layout);
+        material_asset->updateTextureDescriptor(cmd.textures_descriptor);
+        frame_textures.push_back(cmd.textures_descriptor);
+      }
     }
 
-    auto& transform = mesh_renderers.get<TransformComponent>(e);
+    {  // Write mesh uniform
+      auto& transform = mesh_renderers.get<TransformComponent>(e);
 
-    MeshUniform mesh_uniform;
-    mesh_uniform.model = transform.getWorldTransform();
+      MeshUniform mesh_uniform;
+      mesh_uniform.model = transform.getWorldTransform();
 
-    frame.meshes.emplace(e, mesh_uniforms.size());
-    mesh_uniforms.push_back(mesh_uniform);
+      cmd.mesh_idx = frame_meshes.size();
+      frame_meshes.push_back(mesh_uniform);
+    }
+
+    {  // Write mesh asset
+      cmd.mesh_asset = mesh_renderer.getMeshAsset();
+    }
+
+    frame.commands.push_back(cmd);
   }
 
-  if (material_uniforms.size() > 0) {
-    for (uint32_t i = 0; i < material_uniforms.size(); i++) {
-      frame.material_buffer->writeElement(i, material_uniforms[i]);
+  if (frame_materials.size() > 0) {
+    for (uint32_t i = 0; i < frame_materials.size(); i++) {
+      frame.material_buffer->writeElement(i, frame_materials[i]);
     }
 
     frame.material_descriptor = descriptor_pool->allocate(material_layout);
     frame.material_descriptor->updateDynamicBuffer(0, frame.material_buffer);
   }
 
-  if (mesh_uniforms.size() > 0) {
-    for (uint32_t i = 0; i < mesh_uniforms.size(); i++) {
-      frame.mesh_buffer->writeElement(i, mesh_uniforms[i]);
+  if (frame_meshes.size() > 0) {
+    for (uint32_t i = 0; i < frame_meshes.size(); i++) {
+      frame.mesh_buffer->writeElement(i, frame_meshes[i]);
     }
 
     frame.mesh_descriptor = descriptor_pool->allocate(mesh_layout);
@@ -312,30 +331,18 @@ void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
   viewport_descriptor->updateDynamicOffset(0, viewport_offset);
   viewport_descriptor->cmdBind(commandBuffer, pipeline_layout, 0);
 
-  auto mesh_renderers =
-      registry.view<MeshRendererComponent, TransformComponent>();
-  for (EntityId e : mesh_renderers) {
+  for (auto& cmd : frame.commands) {
     log_zone_named("Render mesh");
 
-    auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
-    if (!mesh_renderer.isLoaded()) continue;
-
-    // TODO(marceline-cramer) Iterate over mesh renderers by their cached
-    // descriptors
-
-    const auto& material_asset = mesh_renderer.getMaterialAsset();
-
-    frame.material_descriptor->updateDynamicOffset(
-        0, frame.materials.find(material_asset.getId())->second);
+    frame.material_descriptor->updateDynamicOffset(0, cmd.material_idx);
     frame.material_descriptor->cmdBind(commandBuffer, pipeline_layout, 1);
 
-    frame.textures.find(material_asset.getId())
-        ->second->cmdBind(commandBuffer, pipeline_layout, 2);
+    cmd.textures_descriptor->cmdBind(commandBuffer, pipeline_layout, 2);
 
-    frame.mesh_descriptor->updateDynamicOffset(0, frame.meshes.find(e)->second);
+    frame.mesh_descriptor->updateDynamicOffset(0, cmd.mesh_idx);
     frame.mesh_descriptor->cmdBind(commandBuffer, pipeline_layout, 3);
 
-    const auto& mesh_asset = mesh_renderer.getMeshAsset();
+    const auto& mesh_asset = cmd.mesh_asset;
 
     VkBuffer vertex_buffers[] = {mesh_asset->vertex_buffer->getBuffer()};
     VkDeviceSize offsets[] = {0};

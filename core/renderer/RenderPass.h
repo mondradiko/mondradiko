@@ -14,6 +14,7 @@
 #include <unordered_map>
 
 #include "core/assets/AssetPool.h"
+#include "core/assets/MeshAsset.h"
 #include "core/common/vulkan_headers.h"
 #include "core/world/Entity.h"
 
@@ -24,6 +25,14 @@ class GpuDescriptorPool;
 class GpuDescriptorSet;
 class GpuVector;
 
+struct MeshRenderCommand {
+  uint32_t mesh_idx;
+  uint32_t material_idx;
+  GpuDescriptorSet* textures_descriptor;
+
+  AssetHandle<MeshAsset> mesh_asset;
+};
+
 struct MeshPassFrameData {
   GpuVector* material_buffer = nullptr;
   GpuVector* mesh_buffer = nullptr;
@@ -31,9 +40,7 @@ struct MeshPassFrameData {
   GpuDescriptorSet* material_descriptor;
   GpuDescriptorSet* mesh_descriptor;
 
-  std::unordered_map<AssetId, uint32_t> materials;
-  std::unordered_map<AssetId, GpuDescriptorSet*> textures;
-  std::unordered_map<EntityId, uint32_t> meshes;
+  std::vector<MeshRenderCommand> commands;
 };
 
 struct OverlayPassFrameData {
