@@ -17,6 +17,9 @@
 #define STBI_MSC_SECURE_CRT
 #include <lib/tiny_gltf.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <string>
 #include <vector>
 
@@ -24,8 +27,6 @@
 #include "assets/format/MeshAsset_generated.h"
 #include "assets/format/PrefabAsset_generated.h"
 #include "converter/stb_converter.h"
-#include "glm/gtc/type_ptr.hpp"
-#include "glm/gtx/quaternion.hpp"
 #include "log/log.h"
 
 namespace mondradiko {
