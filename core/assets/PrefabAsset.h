@@ -11,8 +11,10 @@
 
 #pragma once
 
+#include <vector>
+
 #include "assets/format/PrefabAsset_generated.h"
-#include "core/assets/Asset.h"
+#include "core/assets/AssetHandle.h"
 #include "core/world/Entity.h"
 
 namespace mondradiko {
@@ -30,12 +32,13 @@ class PrefabAsset : public Asset {
   void load(const assets::SerializedAsset*) final;
   ~PrefabAsset();
 
-  EntityId instantiate(EntityRegistry*, const TransformComponent&) const;
+  EntityId instantiate(EntityRegistry*) const;
 
  private:
   AssetPool* asset_pool;
 
   assets::PrefabAssetT* prefab;
+  std::vector<AssetHandle<PrefabAsset>> children;
 };
 
 }  // namespace mondradiko
