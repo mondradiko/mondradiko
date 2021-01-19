@@ -41,17 +41,19 @@ World::World(Filesystem* fs, GpuInstance* gpu)
   scripts.linkComponentApis(this);
 }
 
-World::~World() { log_zone; }
+World::~World() {
+  log_zone;
+  registry.clear();
+  asset_pool.unloadAll();
+}
 
 void World::initializePrefabs() {
   std::vector<AssetId> prefabs;
   fs->getInitialPrefabs(prefabs);
 
-  TransformComponent transform;
-
   for (auto prefab_id : prefabs) {
     auto prefab = asset_pool.load<PrefabAsset>(prefab_id);
-    prefab->instantiate(&registry, transform);
+    prefab->instantiate(&registry);
   }
 }
 
@@ -116,7 +118,6 @@ bool World::update() {
 
     for (EntityId e : transform_view) {
       TransformComponent& transform = transform_view.get(e);
-
       transform.this_entity = e;
     }
   }
@@ -144,6 +145,16 @@ bool World::update() {
       if (parent == NullEntity) {
         parent_transform = glm::mat4(1.0);
       } else {
+        if (!registry.valid(parent)) {
+          log_err("Invalid Transform parent ID");
+          continue;
+        }
+
+        if (!registry.has<TransformComponent>(parent)) {
+          log_err("Transform parent has no Transform");
+          continue;
+        }
+
         parent_transform =
             registry.get<TransformComponent>(parent).world_transform;
       }
