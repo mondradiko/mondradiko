@@ -24,35 +24,43 @@ class AssetHandle {
   explicit AssetHandle(std::nullptr_t ptr) : id(AssetId::NullAsset), ptr(ptr) {}
 
   explicit AssetHandle(AssetId id, AssetType* ptr) : id(id), ptr(ptr) {
-    ptr->ref_count++;
+    _ref();
   }
 
   explicit AssetHandle(const AssetHandle<AssetType>& other) {
     id = other.id;
     ptr = other.ptr;
+    _ref();
+  }
 
-    if (ptr) ptr->ref_count++;
+  explicit AssetHandle(AssetHandle<AssetType>&& other) {
+    id = other.id;
+    ptr = other.ptr;
+    _ref();
   }
 
   AssetHandle<AssetType>& operator=(const AssetHandle<AssetType>& other) {
-    if (ptr) ptr->ref_count--;
-
+    _unref();
     id = other.id;
     ptr = other.ptr;
-
-    if (ptr) ptr->ref_count++;
-
+    _ref();
     return *this;
   }
 
-  ~AssetHandle() {
-    if (ptr) ptr->ref_count--;
+  AssetHandle<AssetType>& operator=(AssetHandle<AssetType>&& other) {
+    _unref();
+    id = other.id;
+    ptr = other.ptr;
+    _ref();
+    return *this;
   }
+
+  ~AssetHandle() { _unref(); }
 
   const AssetType* operator->() const {
     if (!isLoaded()) {
       const char* type_name = assets::EnumNameAssetType(AssetType::ASSET_TYPE);
-      log_wrn("Operating on unloaded %s", type_name);
+      log_err("Operating on unloaded %s", type_name);
     }
 
     return ptr;
@@ -65,11 +73,28 @@ class AssetHandle {
     return id;
   }
 
-  bool isLoaded() const { return ptr && ptr->isLoaded(); }
+  bool isLoaded() const {
+    if (ptr != nullptr) return ptr->isLoaded();
+    return false;
+  }
 
  private:
   AssetId id;
   AssetType* ptr;
+
+  void _ref() {
+    return;
+    if (ptr != nullptr) {
+      ptr->ref_count++;
+    }
+  }
+
+  void _unref() {
+    return;
+    if (ptr != nullptr) {
+      ptr->ref_count--;
+    }
+  }
 };
 
 }  // namespace mondradiko
