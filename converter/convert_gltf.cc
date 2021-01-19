@@ -25,6 +25,7 @@
 #include "assets/format/PrefabAsset_generated.h"
 #include "converter/stb_converter.h"
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/quaternion.hpp"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -91,20 +92,12 @@ class GltfAccessor {
   uint32_t stride;
 };
 
-assets::AssetId load_node(assets::AssetBundleBuilder *builder,
-                          const tinygltf::Model &model,
-                          const tinygltf::Scene &scene,
-                          const tinygltf::Node &node) {
-  // TODO(marceline-cramer) Load subnodes
-
-  const tinygltf::Mesh &mesh = model.meshes[node.mesh];
-
+assets::AssetId load_primitive(assets::AssetBundleBuilder *builder,
+                               const tinygltf::Model &model,
+                               const tinygltf::Primitive &primitive) {
   std::vector<assets::MeshVertex> vertices;
   std::vector<uint32_t> indices;
 
-  // TODO(marceline-cramer) Load all mesh primitives
-  uint32_t primitive_index = 0;
-  const tinygltf::Primitive &primitive = mesh.primitives[primitive_index];
   const auto &attributes = primitive.attributes;
 
   if (attributes.find("POSITION") == primitive.attributes.end()) {
@@ -119,7 +112,7 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
     log_ftl("GLTF primitive must have texture coordinates");
   }
 
-  // TODO(marceline-cramer) Generate indices if they're  not there
+  // TODO(marceline-cramer) Generate indices if they're not there
   if (primitive.indices <= -1) {
     log_ftl("GLTF primtive must have indices");
   }
@@ -193,10 +186,8 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
     }
   }
 
-  assets::AssetId mesh_id;
-
   {
-    log_inf("Writing asset data");
+    log_inf("Writing primitive mesh data");
 
     flatbuffers::FlatBufferBuilder fbb;
 
@@ -213,25 +204,103 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
     asset.add_mesh(mesh_offset);
     auto asset_offset = asset.Finish();
 
+    assets::AssetId mesh_id;
     builder->addAsset(&mesh_id, &fbb, asset_offset);
-    log_dbg("Added mesh asset 0x%0lx", mesh_id);
+    log_dbg("Added primitive mesh 0x%0lx", mesh_id);
+    return mesh_id;
+  }
+}
+
+assets::AssetId load_node(assets::AssetBundleBuilder *builder,
+                          const tinygltf::Model &model,
+                          const tinygltf::Node &node) {
+  std::vector<uint32_t> children;
+
+  glm::vec3 node_translation;
+  glm::quat node_orientation;
+
+  if (node.translation.size() == 3) {
+    node_translation = glm::make_vec3(node.translation.data());
+  } else {
+    node_translation = glm::vec3(0.0, 0.0, 0.0);
+  }
+
+  if (node.rotation.size() == 4) {
+    node_orientation = glm::make_quat(node.rotation.data());
+
+    // GLTF stores quaternions as xyzw, so we need to swizzle
+    auto temp = node_orientation.w;
+    node_orientation.w = node_orientation.z;
+    node_orientation.z = node_orientation.y;
+    node_orientation.y = node_orientation.x;
+    node_orientation.x = temp;
+  } else {
+    node_orientation = glm::quat(1.0, 0.0, 0.0, 0.0);
+  }
+
+  if (node.mesh != -1) {
+    log_inf("Creating mesh");
+
+    const auto &mesh = model.meshes[node.mesh];
+
+    for (const auto &primitive : mesh.primitives) {
+      assets::AssetId mesh_id = load_primitive(builder, model, primitive);
+      assets::AssetId material_id = load_dummy_material(builder);
+
+      flatbuffers::FlatBufferBuilder fbb;
+
+      assets::MeshRendererPrefabBuilder mesh_renderer(fbb);
+      mesh_renderer.add_mesh(mesh_id);
+      mesh_renderer.add_material(material_id);
+      auto mesh_renderer_offset = mesh_renderer.Finish();
+
+      assets::TransformPrefab transform;
+      transform.mutable_position().mutate_x(node_translation.x);
+      transform.mutable_position().mutate_y(node_translation.y);
+      transform.mutable_position().mutate_z(node_translation.z);
+
+      transform.mutable_orientation().mutate_w(node_orientation.w);
+      transform.mutable_orientation().mutate_x(node_orientation.x);
+      transform.mutable_orientation().mutate_y(node_orientation.y);
+      transform.mutable_orientation().mutate_z(node_orientation.z);
+
+      assets::PrefabAssetBuilder prefab(fbb);
+      prefab.add_mesh_renderer(mesh_renderer_offset);
+      prefab.add_transform(&transform);
+      auto prefab_offset = prefab.Finish();
+
+      assets::SerializedAssetBuilder asset(fbb);
+      asset.add_type(assets::AssetType::PrefabAsset);
+      asset.add_prefab(prefab_offset);
+      auto asset_offset = asset.Finish();
+
+      assets::AssetId asset_id;
+      builder->addAsset(&asset_id, &fbb, asset_offset);
+      log_dbg("Added primitive prefab 0x%0lx", mesh_id);
+
+      children.push_back(static_cast<uint32_t>(asset_id));
+    }
+  }
+
+  {
+    log_inf("Creating childen");
+
+    for (auto child_index : node.children) {
+      const auto &child_node = model.nodes[child_index];
+      assets::AssetId child_id = load_node(builder, model, child_node);
+      children.push_back(static_cast<uint32_t>(child_id));
+    }
   }
 
   {
     log_inf("Creating prefab");
 
-    // TODO(marceline-cramer) Load correct materials
-    assets::AssetId material_id = load_dummy_material(builder);
-
     flatbuffers::FlatBufferBuilder fbb;
 
-    assets::MeshRendererPrefabBuilder mesh_renderer(fbb);
-    mesh_renderer.add_mesh(mesh_id);
-    mesh_renderer.add_material(material_id);
-    auto mesh_renderer_offset = mesh_renderer.Finish();
+    auto children_offset = fbb.CreateVector(children);
 
     assets::PrefabAssetBuilder prefab_asset(fbb);
-    prefab_asset.add_mesh_renderer(mesh_renderer_offset);
+    prefab_asset.add_children(children_offset);
     auto prefab_offset = prefab_asset.Finish();
 
     assets::SerializedAssetBuilder asset(fbb);
@@ -241,14 +310,46 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
 
     assets::AssetId prefab_id;
     builder->addAsset(&prefab_id, &fbb, asset_offset);
-    builder->addInitialPrefab(prefab_id);
-    log_dbg("Added initial prefab asset 0x%0lx", prefab_id);
+    log_dbg("Added node prefab 0x%0lx", prefab_id);
     return prefab_id;
   }
 }
 
-assets::AssetId convert_gltf(assets::AssetBundleBuilder *builder,
-                             const std::filesystem::path &gltf_path) {
+assets::AssetId load_scene(assets::AssetBundleBuilder *builder,
+                           const tinygltf::Model &model,
+                           const tinygltf::Scene &scene) {
+  flatbuffers::FlatBufferBuilder fbb;
+
+  std::vector<uint32_t> children;
+
+  for (auto node_index : scene.nodes) {
+    const tinygltf::Node &node = model.nodes[node_index];
+    // TODO(marceline-cramer) Load everything else
+    if (node.mesh > -1) {
+      auto child_id = load_node(builder, model, node);
+      children.push_back(static_cast<uint32_t>(child_id));
+    }
+  }
+
+  auto children_offset = fbb.CreateVector(children);
+
+  assets::PrefabAssetBuilder prefab_asset(fbb);
+  prefab_asset.add_children(children_offset);
+  auto prefab_offset = prefab_asset.Finish();
+
+  assets::SerializedAssetBuilder asset(fbb);
+  asset.add_type(assets::AssetType::PrefabAsset);
+  asset.add_prefab(prefab_offset);
+  auto asset_offset = asset.Finish();
+
+  assets::AssetId prefab_id;
+  builder->addAsset(&prefab_id, &fbb, asset_offset);
+  log_dbg("Added GLTF scene prefab 0x%0lx", prefab_id);
+  return prefab_id;
+}
+
+void convert_gltf(assets::AssetBundleBuilder *builder,
+                  const std::filesystem::path &gltf_path) {
   tinygltf::Model gltf_model;
   tinygltf::TinyGLTF gltf_context;
   std::string error;
@@ -258,7 +359,8 @@ assets::AssetId convert_gltf(assets::AssetBundleBuilder *builder,
   bool binary = false;
   size_t extpos = filename.rfind('.', filename.length());
   if (extpos != std::string::npos) {
-    binary = (filename.substr(extpos + 1, filename.length() - extpos) == "glb");
+    auto extension = filename.substr(extpos + 1, filename.length() - extpos);
+    binary = (extension == "glb") || (extension == "vrm");
   }
 
   bool file_loaded = false;
@@ -279,22 +381,11 @@ assets::AssetId convert_gltf(assets::AssetBundleBuilder *builder,
     log_wrn("GLTF warning: %s", warning.c_str());
   }
 
-  // TODO(marceline-cramer) Handle all scenes in separate prefabs
-  uint32_t scene_index =
-      gltf_model.defaultScene > -1 ? gltf_model.defaultScene : 0;
-  const tinygltf::Scene &scene = gltf_model.scenes[scene_index];
-
-  for (uint32_t i = 0; i < scene.nodes.size(); i++) {
-    const tinygltf::Node &node = gltf_model.nodes[scene.nodes[i]];
-    // TODO(marceline-cramer) Load everything else
-    if (node.mesh > -1) {
-      return load_node(builder, gltf_model, scene, node);
-    }
+  for (const auto &scene : gltf_model.scenes) {
+    assets::AssetId initial_prefab = load_scene(builder, gltf_model, scene);
+    builder->addInitialPrefab(initial_prefab);
+    log_dbg("Added initial prefab asset 0x%0lx", initial_prefab);
   }
-
-  // TODO(marceline-cramer) Load everything
-  log_err("Couldn't find any mesh nodes");
-  return assets::AssetId::NullAsset;
 }
 
 }  // namespace mondradiko

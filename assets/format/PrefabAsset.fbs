@@ -10,11 +10,16 @@ table MeshRendererPrefab {
   material:AssetId;
 }
 
+struct TransformPrefab {
+  position:Vec3;
+  orientation:Quaternion;
+}
+
 table PrefabAsset {
-  // TODO(marceline-cramer) Add prefab children
-  // children:[AssetId];
+  children:[AssetId];
 
   mesh_renderer:MeshRendererPrefab;
+  transform:TransformPrefab;
 }
 
 root_type PrefabAsset;

@@ -15,7 +15,6 @@
 
 namespace mondradiko {
 
-assets::AssetId convert_gltf(assets::AssetBundleBuilder*,
-                             const std::filesystem::path&);
+void convert_gltf(assets::AssetBundleBuilder*, const std::filesystem::path&);
 
 }  // namespace mondradiko
