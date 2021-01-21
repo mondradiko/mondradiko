@@ -117,7 +117,7 @@ bool World::update() {
 
     auto transform_view = registry.view<TransformComponent>();
 
-    for (EntityId e : transform_view) {
+    for (auto e : transform_view) {
       TransformComponent& transform = transform_view.get(e);
       transform.this_entity = e;
     }
@@ -127,9 +127,12 @@ bool World::update() {
     log_zone_named("Sort transform hierarchy");
 
     registry.sort<TransformComponent>(
-        [](const auto& parent, const auto& child) {
+        [](const TransformComponent& lhs, const TransformComponent& rhs) {
           // Sort children after parents
-          return parent.this_entity >= child.getParent();
+          if (lhs.this_entity == rhs.getParent()) {
+            return true;
+          }
+          return false;
         });
   }
 
@@ -138,7 +141,7 @@ bool World::update() {
 
     auto transform_view = registry.view<TransformComponent>();
 
-    for (EntityId e : transform_view) {
+    for (auto e : transform_view) {
       TransformComponent& transform = transform_view.get(e);
 
       auto parent = transform.getParent();
@@ -157,7 +160,7 @@ bool World::update() {
         }
 
         parent_transform =
-            registry.get<TransformComponent>(parent).world_transform;
+            registry.get<TransformComponent>(parent).getWorldTransform();
       }
 
       glm::mat4 local_transform = transform.getLocalTransform();
