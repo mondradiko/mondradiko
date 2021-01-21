@@ -73,9 +73,13 @@ assets::AssetId stb_convert(assets::AssetBundleBuilder* builder,
   ktxTexture_Destroy(ktxTexture(texture));
   stbi_image_free(texture_src);
 
+  assets::KtxTextureBuilder ktx_texture(fbb);
+  ktx_texture.add_data(data_offset);
+  auto ktx_texture_offset = ktx_texture.Finish();
+
   assets::TextureAssetBuilder texture_asset(fbb);
   texture_asset.add_format(assets::TextureFormat::KTX);
-  texture_asset.add_data(data_offset);
+  texture_asset.add_ktx(ktx_texture_offset);
   auto texture_offset = texture_asset.Finish();
 
   assets::SerializedAssetBuilder asset(fbb);

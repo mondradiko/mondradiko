@@ -29,7 +29,7 @@ class GpuBuffer {
   VkBuffer getBuffer() { return buffer; }
 
   // TODO(marceline-cramer) Get rid of this method
-  void writeData(void*);
+  void writeData(const void*);
 
  protected:
   GpuBuffer(GpuInstance*, size_t, VkBufferUsageFlags, VmaMemoryUsage);

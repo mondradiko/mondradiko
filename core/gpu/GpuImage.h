@@ -26,7 +26,7 @@ class GpuImage {
   GpuImage(GpuInstance*, ktxTexture*, VkImageUsageFlags);
   ~GpuImage();
 
-  // void writeData(void*);
+  void writeData(const void*);
   void transitionLayout(VkImageLayout);
 
   VkFormat format;

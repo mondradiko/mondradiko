@@ -18,9 +18,11 @@
 #include <lib/tiny_gltf.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
+
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "assets/format/MaterialAsset_generated.h"
@@ -38,13 +40,99 @@ assets::AssetId load_dummy_texture(assets::AssetBundleBuilder *builder) {
   return stb_convert(builder, albedo_path);
 }
 
-assets::AssetId load_dummy_material(assets::AssetBundleBuilder *builder) {
+assets::AssetId load_image(assets::AssetBundleBuilder *builder,
+                           const tinygltf::Model &model,
+                           const tinygltf::Image &image) {
+  flatbuffers::FlatBufferBuilder fbb;
+
+  log_inf("Loading GLTF image");
+  log_inf("Name:\t\t\"%s\"", image.name.c_str());
+  log_inf("Component#:\t%d", image.component);
+  log_inf("Bits/channel:\t%d", image.bits);
+  log_inf("Size:\t\t%dx%d", image.width, image.height);
+
+  auto data_offset =
+      fbb.CreateVector(reinterpret_cast<const uint8_t *>(image.image.data()),
+                       image.image.size());
+
+  assets::RawTextureBuilder raw_texture(fbb);
+
+  raw_texture.add_components(image.component);
+  raw_texture.add_bit_depth(image.bits);
+
+  {
+    using Components = assets::TextureComponentType;
+    std::unordered_map<int, assets::TextureComponentType> types;
+    types.emplace(TINYGLTF_COMPONENT_TYPE_BYTE, Components::Byte);
+    types.emplace(TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE, Components::UByte);
+    types.emplace(TINYGLTF_COMPONENT_TYPE_SHORT, Components::Short);
+    types.emplace(TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT, Components::UShort);
+    types.emplace(TINYGLTF_COMPONENT_TYPE_INT, Components::Int);
+    types.emplace(TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT, Components::UInt);
+    types.emplace(TINYGLTF_COMPONENT_TYPE_FLOAT, Components::Float);
+    types.emplace(TINYGLTF_COMPONENT_TYPE_DOUBLE, Components::Double);
+
+    auto iter = types.find(image.pixel_type);
+
+    if (iter == types.end()) {
+      log_ftl("Unrecognized GLTF image component type %d", image.component);
+    }
+
+    raw_texture.add_component_type(iter->second);
+  }
+
+  raw_texture.add_width(image.width);
+  raw_texture.add_height(image.height);
+  raw_texture.add_data(data_offset);
+  auto raw_texture_offset = raw_texture.Finish();
+
+  assets::TextureAssetBuilder texture(fbb);
+  texture.add_format(assets::TextureFormat::Raw);
+  texture.add_raw(raw_texture_offset);
+  auto texture_offset = texture.Finish();
+
+  assets::SerializedAssetBuilder asset(fbb);
+  asset.add_type(assets::AssetType::TextureAsset);
+  asset.add_texture(texture_offset);
+  auto asset_offset = asset.Finish();
+
+  assets::AssetId asset_id;
+  builder->addAsset(&asset_id, &fbb, asset_offset);
+  log_dbg("Added GLTF image: 0x%0lx", asset_id);
+  return asset_id;
+}
+
+assets::AssetId load_texture(assets::AssetBundleBuilder *builder,
+                             const tinygltf::Model &model,
+                             const tinygltf::TextureInfo &texture_info) {
+  const tinygltf::Texture &texture = model.textures[texture_info.index];
+  const tinygltf::Image &image = model.images[texture.source];
+
+  // TODO(marceline-cramer) Add sampler support
+
+  return load_image(builder, model, image);
+}
+
+assets::AssetId load_material(assets::AssetBundleBuilder *builder,
+                              const tinygltf::Model &model,
+                              const tinygltf::Material &material) {
   flatbuffers::FlatBufferBuilder fbb;
 
   assets::MaterialAssetBuilder material_builder(fbb);
+
   assets::Vec3 albedo_factor(1.0, 1.0, 1.0);
+  if (material.pbrMetallicRoughness.baseColorFactor.size() >= 3) {
+    const auto &factor = material.pbrMetallicRoughness.baseColorFactor;
+    albedo_factor.mutate_x(factor[0]);
+    albedo_factor.mutate_y(factor[1]);
+    albedo_factor.mutate_z(factor[2]);
+  }
   material_builder.add_albedo_factor(&albedo_factor);
-  material_builder.add_albedo_texture(load_dummy_texture(builder));
+
+  const auto &base_color = material.pbrMetallicRoughness.baseColorTexture;
+  assets::AssetId base_color_id = load_texture(builder, model, base_color);
+  material_builder.add_albedo_texture(base_color_id);
+
   auto material_offset = material_builder.Finish();
 
   assets::SerializedAssetBuilder asset_builder(fbb);
@@ -239,6 +327,8 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
     node_orientation = glm::quat(1.0, 0.0, 0.0, 0.0);
   }
 
+  // TODO(marceline-cramer) Process glTF node scaling factor
+
   if (node.mesh != -1) {
     log_inf("Creating mesh");
 
@@ -246,7 +336,9 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
 
     for (const auto &primitive : mesh.primitives) {
       assets::AssetId mesh_id = load_primitive(builder, model, primitive);
-      assets::AssetId material_id = load_dummy_material(builder);
+
+      const tinygltf::Material &material = model.materials[primitive.material];
+      assets::AssetId material_id = load_material(builder, model, material);
 
       flatbuffers::FlatBufferBuilder fbb;
 
