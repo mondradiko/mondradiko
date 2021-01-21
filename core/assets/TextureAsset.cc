@@ -68,7 +68,6 @@ void TextureAsset::load(const assets::SerializedAsset* asset) {
       }
 
       texture_format = VK_FORMAT_R8G8B8A8_UNORM;
-      log_inf("%ux%u", raw_texture->width(), raw_texture->height());
 
       image = new GpuImage(
           gpu, texture_format, raw_texture->width(), raw_texture->height(),

@@ -217,7 +217,6 @@ void World::updateComponents(
     EntityId id = entities->Get(i);
 
     if (!registry.valid(id)) {
-      log_wrn("Entity hasn't been initialized client-side: 0x%0lx", id);
       // Discard returned ID, since we just ensured that the hint will be used
       static_cast<void>(registry.create(id));
     }

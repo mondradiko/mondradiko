@@ -22,10 +22,7 @@ namespace mondradiko {
 template <class ComponentType, class PrefabType>
 void initComponent(EntityRegistry* registry, EntityId instance_id,
                    const std::unique_ptr<PrefabType>& prefab) {
-  log_dbg("Testing %s", typeid(PrefabType).name());
-
   if (prefab) {
-    log_dbg("Initing %s", typeid(ComponentType).name());
     registry->emplace<ComponentType>(
         instance_id, static_cast<const PrefabType*>(prefab.get()));
   }

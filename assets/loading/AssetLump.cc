@@ -167,8 +167,6 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
 
 bool AssetLump::loadAsset(const SerializedAsset** asset, size_t offset,
                           size_t size) {
-  log_dbg("Loading asset from %s at 0x%08x", lump_path.c_str(), offset);
-
   if (offset + size > loaded_size) {
     log_err("Asset range exceeds lump size of 0x%08x", loaded_size);
     return false;
