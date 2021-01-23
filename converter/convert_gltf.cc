@@ -316,13 +316,6 @@ assets::AssetId load_node(assets::AssetBundleBuilder *builder,
 
   if (node.rotation.size() == 4) {
     node_orientation = glm::make_quat(node.rotation.data());
-
-    // GLTF stores quaternions as xyzw, so we need to swizzle
-    auto temp = node_orientation.w;
-    node_orientation.w = node_orientation.z;
-    node_orientation.z = node_orientation.y;
-    node_orientation.y = node_orientation.x;
-    node_orientation.x = temp;
   } else {
     node_orientation = glm::quat(1.0, 0.0, 0.0, 0.0);
   }
