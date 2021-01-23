@@ -52,7 +52,7 @@ int main(int argc, const char* argv[]) {
 
   try {
     Filesystem fs;
-    fs.loadAssetBundle("../test-folder/");
+    fs.loadAssetBundle("./");
 
     World world(&fs, nullptr);
     WorldEventSorter world_event_sorter(&world);

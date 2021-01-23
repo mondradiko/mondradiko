@@ -85,7 +85,7 @@ void player_session_run(const char* server_address, int port) {
 
 void spectator_session_run(const char* server_address, int port) {
   Filesystem fs;
-  fs.loadAssetBundle("../test-folder/");
+  fs.loadAssetBundle("./");
 
   SdlDisplay display;
   GpuInstance gpu(&display);
