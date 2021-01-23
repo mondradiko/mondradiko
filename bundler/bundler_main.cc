@@ -1,8 +1,7 @@
 /**
  * @file bundler_main.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Bundles a directory and its contents into a loadable
- * AssetBundle.
+ * @brief Entrypoint for the bundler build system.
  * @date 2020-12-10
  *
  * @copyright Copyright (c) 2020 the Mondradiko contributors.
@@ -13,31 +12,32 @@
 #include <cstring>
 #include <iostream>
 
-#include "assets/saving/AssetBundleBuilder.h"
-#include "converter/convert_gltf.h"
-#include "converter/wasm_converter.h"
+#include "bundler/Bundler.h"
 #include "log/log.h"
 
 using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 
+void print_usage(const char* arg1) {
+  std::cerr << "Usage:" << std::endl;
+  std::cerr << "  " << arg1 << " bundler-manifest.toml" << std::endl;
+}
+
 int main(int argc, const char* argv[]) {
-  assets::AssetBundleBuilder bundle_builder("../test-folder/");
-
-  const char* test_gltf = "../test-folder/7805900205566576665.vrm";
-  convert_gltf(&bundle_builder, test_gltf);
-
-  const char* test_script = "../test-folder/helloworld.wat";
-
-  assets::AssetId script_asset = wat_convert(&bundle_builder, test_script);
-
-  if (script_asset == assets::AssetId::NullAsset) {
-    log_err("Failed to load test script");
+  if (argc != 2) {
+    print_usage(argv[0]);
     return 1;
   }
 
-  log_dbg("Added ScriptAsset: 0x%0lx", script_asset);
+  const char* manifest_file = argv[1];
 
-  bundle_builder.buildBundle("registry.bin");
+  try {
+    Bundler bundler(manifest_file);
+    bundler.bundle();
+  } catch (const std::exception& e) {
+    log_err("Mondradiko bundler failed with message:");
+    log_err(e.what());
+    return 1;
+  }
 
   return 0;
 }
