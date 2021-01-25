@@ -25,7 +25,7 @@ namespace mondradiko {
 
 class Bundler {
  public:
-  Bundler(const std::filesystem::path&);
+  explicit Bundler(const std::filesystem::path&);
   ~Bundler();
 
   assets::AssetId addAsset(ConverterInterface::AssetBuilder*,

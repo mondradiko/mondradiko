@@ -19,7 +19,7 @@ namespace mondradiko {
 
 class GltfConverter : public ConverterInterface {
  public:
-  GltfConverter(Bundler*);
+  explicit GltfConverter(Bundler*);
 
  protected:
   Bundler* _bundler;

@@ -17,7 +17,7 @@ namespace mondradiko {
 
 class WasmConverter : public ConverterInterface {
  public:
-  WasmConverter(Bundler* bundler) : _bundler(bundler) {}
+  explicit WasmConverter(Bundler* bundler) : _bundler(bundler) {}
 
   // ConverterInterface implementation
   AssetOffset convert(AssetBuilder*, std::filesystem::path) const final;

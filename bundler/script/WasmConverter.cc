@@ -12,6 +12,7 @@
 #include "bundler/script/WasmConverter.h"
 
 #include <fstream>
+#include <vector>
 
 #include "bundler/Bundler.h"
 

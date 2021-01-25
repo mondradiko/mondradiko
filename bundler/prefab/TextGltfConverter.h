@@ -17,7 +17,7 @@ namespace mondradiko {
 
 class TextGltfConverter : public GltfConverter {
  public:
-  TextGltfConverter(Bundler* bundler) : GltfConverter(bundler) {}
+  explicit TextGltfConverter(Bundler* bundler) : GltfConverter(bundler) {}
 
   // ConverterInterface implementation
   AssetOffset convert(AssetBuilder*, std::filesystem::path) const final;

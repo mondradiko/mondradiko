@@ -11,6 +11,8 @@
 
 #include "bundler/prefab/BinaryGltfConverter.h"
 
+#include <string>
+
 #include "log/log.h"
 
 namespace mondradiko {
