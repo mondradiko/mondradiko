@@ -13,6 +13,9 @@
 #include <iostream>
 
 #include "bundler/Bundler.h"
+#include "bundler/prefab/BinaryGltfConverter.h"
+#include "bundler/prefab/TextGltfConverter.h"
+#include "bundler/script/WasmConverter.h"
 #include "log/log.h"
 
 using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
@@ -32,6 +35,17 @@ int main(int argc, const char* argv[]) {
 
   try {
     Bundler bundler(manifest_file);
+
+    BinaryGltfConverter binary_gltf_converter(&bundler);
+    bundler.addConverter("glb", &binary_gltf_converter);
+    bundler.addConverter("vrm", &binary_gltf_converter);
+
+    TextGltfConverter text_gltf_converter(&bundler);
+    bundler.addConverter("gltf", &text_gltf_converter);
+
+    WasmConverter wasm_converter(&bundler);
+    bundler.addConverter("wat", &wasm_converter);
+
     bundler.bundle();
   } catch (const std::exception& e) {
     log_err("Mondradiko bundler failed with message:");

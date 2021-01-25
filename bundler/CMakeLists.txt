@@ -2,9 +2,15 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 set(BUNDLER_SRC
+  prefab/BinaryGltfConverter.cc
+  prefab/GltfConverter.cc
+  prefab/TextGltfConverter.cc
+  script/WasmConverter.cc
   bundler_main.cc
   Bundler.cc
 )
 
 add_executable(mondradiko-bundler ${BUNDLER_SRC})
-target_link_libraries(mondradiko-bundler mondradiko-converter)
+# target_link_libraries(mondradiko-bundler mondradiko-converter)
+target_link_libraries(mondradiko-bundler mondradiko-assets)
+target_link_libraries(mondradiko-bundler mondradiko-lib)
