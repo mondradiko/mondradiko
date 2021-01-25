@@ -5,11 +5,6 @@ cmake_minimum_required(VERSION 3.13)
 
 project(Mondradiko VERSION 0.0.0)
 
-option(TEST_INITIALIZE "Create a mesh with testInitialize()" OFF)
-if (TEST_INITIALIZE)
-    add_definitions(-DTEST_INITIALIZE)
-endif()
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
@@ -33,5 +28,4 @@ add_subdirectory(core)
 add_subdirectory(client)
 add_subdirectory(launcher)
 add_subdirectory(server)
-add_subdirectory(converter)
 add_subdirectory(bundler)

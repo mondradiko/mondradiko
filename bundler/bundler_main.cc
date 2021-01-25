@@ -1,8 +1,7 @@
 /**
  * @file bundler_main.cc
  * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Bundles a directory and its contents into a loadable
- * AssetBundle.
+ * @brief Entrypoint for the bundler build system.
  * @date 2020-12-10
  *
  * @copyright Copyright (c) 2020 the Mondradiko contributors.
@@ -13,28 +12,46 @@
 #include <cstring>
 #include <iostream>
 
-#include "assets/saving/AssetBundleBuilder.h"
-#include "converter/assimp_converter.h"
-#include "converter/wasm_converter.h"
+#include "bundler/Bundler.h"
+#include "bundler/prefab/BinaryGltfConverter.h"
+#include "bundler/prefab/TextGltfConverter.h"
+#include "bundler/script/WasmConverter.h"
 #include "log/log.h"
 
 using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 
+void print_usage(const char* arg1) {
+  std::cerr << "Usage:" << std::endl;
+  std::cerr << "  " << arg1 << " bundler-manifest.toml" << std::endl;
+}
+
 int main(int argc, const char* argv[]) {
-  assets::AssetBundleBuilder bundle_builder("../test-folder/");
-
-  const char* assimp_test = "../test-folder/DamagedHelmet.gltf";
-
-  if (!convert_assimp(&bundle_builder, assimp_test)) {
-    std::cerr << "whoops" << std::endl;
+  if (argc != 2) {
+    print_usage(argv[0]);
     return 1;
   }
 
-  auto script_id =
-      wat_convert(&bundle_builder, "../test-folder/helloworld.wat");
-  log_dbg("Added ScriptAsset: 0x%0lx", script_id);
+  const char* manifest_file = argv[1];
 
-  bundle_builder.buildBundle("registry.bin");
+  try {
+    Bundler bundler(manifest_file);
+
+    BinaryGltfConverter binary_gltf_converter(&bundler);
+    bundler.addConverter("glb", &binary_gltf_converter);
+    bundler.addConverter("vrm", &binary_gltf_converter);
+
+    TextGltfConverter text_gltf_converter(&bundler);
+    bundler.addConverter("gltf", &text_gltf_converter);
+
+    WasmConverter wasm_converter(&bundler);
+    bundler.addConverter("wat", &wasm_converter);
+
+    bundler.bundle();
+  } catch (const std::exception& e) {
+    log_err("Mondradiko bundler failed with message:");
+    log_err(e.what());
+    return 1;
+  }
 
   return 0;
 }

@@ -46,11 +46,11 @@ GpuDescriptorPool::GpuDescriptorPool(GpuInstance* gpu) : gpu(gpu) {
 }
 
 GpuDescriptorPool::~GpuDescriptorPool() {
-  // Destroy all allocated sets
-  reset();
-
-  if (descriptor_pool != VK_NULL_HANDLE)
+  if (descriptor_pool != VK_NULL_HANDLE) {
+    // Destroy all allocated sets
+    reset();
     vkDestroyDescriptorPool(gpu->device, descriptor_pool, nullptr);
+  }
 }
 
 GpuDescriptorSet* GpuDescriptorPool::allocate(GpuDescriptorSetLayout* layout) {
@@ -63,7 +63,10 @@ GpuDescriptorSet* GpuDescriptorPool::allocate(GpuDescriptorSetLayout* layout) {
       .descriptorSetCount = 1,
       .pSetLayouts = &vk_set_layout};
 
-  vkAllocateDescriptorSets(gpu->device, &alloc_info, &vk_set);
+  if (vkAllocateDescriptorSets(gpu->device, &alloc_info, &vk_set) !=
+      VK_SUCCESS) {
+    log_ftl("Failed to allocate descriptor set");
+  }
 
   // TODO(marceline-cramer) Dynamic pool resizing
 

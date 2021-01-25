@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <set>
+#include <unordered_set>
 
 #include "core/common/vulkan_headers.h"
 
@@ -35,7 +35,7 @@ class GpuDescriptorPool {
 
   VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
 
-  std::set<GpuDescriptorSet*> descriptor_sets;
+  std::unordered_set<GpuDescriptorSet*> descriptor_sets;
 };
 
 }  // namespace mondradiko

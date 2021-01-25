@@ -14,20 +14,16 @@
 #include <string>
 #include <vector>
 
-#include "assets/format/ScriptAsset.h"
+#include "assets/format/ScriptAsset_generated.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/scripting/ScriptInstance.h"
 
 namespace mondradiko {
 
-ScriptAsset::ScriptAsset(AssetPool*, ScriptEnvironment* scripts)
-    : scripts(scripts) {}
+void ScriptAsset::load(const assets::SerializedAsset* asset) {
+  const assets::ScriptAsset* script = asset->script();
 
-void ScriptAsset::load(assets::ImmutableAsset& asset) {
-  assets::ScriptHeader header;
-  asset >> header;
-
-  if (header.type == assets::ScriptType::None) {
+  if (script->type() == assets::ScriptType::None) {
     log_err("Trying to load a null script");
     return;
   }
@@ -37,24 +33,35 @@ void ScriptAsset::load(assets::ImmutableAsset& asset) {
   wasmtime_error_t* module_error = nullptr;
 
   log_inf("Loading module into memory");
-  size_t script_size;
-  const char* script_data = asset.getData(&script_size);
   wasm_byte_vec_t module_data;
-  wasm_byte_vec_new(&module_data, script_size, script_data);
+  wasm_byte_vec_new(
+      &module_data, script->data()->size(),
+      reinterpret_cast<const wasm_byte_t*>(script->data()->data()));
 
   log_inf("Compiling module");
-  if (header.type == assets::ScriptType::Binary) {
-    module_error =
-        wasmtime_module_new(scripts->getEngine(), &module_data, &script_module);
-  } else if (header.type == assets::ScriptType::Text) {
-    wasm_byte_vec_t translated_data;
-    wasmtime_wat2wasm(&module_data, &translated_data);
-    module_error = wasmtime_module_new(scripts->getEngine(), &translated_data,
-                                       &script_module);
-    wasm_byte_vec_delete(&translated_data);
-  } else {
-    log_ftl("Unrecognized ScriptAsset type %d", header.type);
+
+  switch (script->type()) {
+    case assets::ScriptType::WasmBinary: {
+      module_error = wasmtime_module_new(scripts->getEngine(), &module_data,
+                                         &script_module);
+      break;
+    }
+
+    case assets::ScriptType::WasmText: {
+      wasm_byte_vec_t translated_data;
+      wasmtime_wat2wasm(&module_data, &translated_data);
+      module_error = wasmtime_module_new(scripts->getEngine(), &translated_data,
+                                         &script_module);
+      wasm_byte_vec_delete(&translated_data);
+      break;
+    }
+
+    default: {
+      log_ftl("Unrecognized ScriptAsset type %d", script->type());
+      break;
+    }
   }
+
   wasm_byte_vec_delete(&module_data);
 
   if (scripts->handleError(module_error, nullptr)) {
@@ -62,13 +69,11 @@ void ScriptAsset::load(assets::ImmutableAsset& asset) {
   }
 }
 
-void ScriptAsset::unload() {
+ScriptAsset::~ScriptAsset() {
   if (script_module) wasm_module_delete(script_module);
-
-  script_module = nullptr;
 }
 
-ScriptInstance* ScriptAsset::createInstance() {
+ScriptInstance* ScriptAsset::createInstance() const {
   ScriptInstance* instance = new ScriptInstance(scripts, script_module);
   return instance;
 }

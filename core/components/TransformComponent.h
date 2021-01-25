@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "assets/format/PrefabAsset_generated.h"
 #include "core/common/glm_headers.h"
 #include "core/common/wasm_headers.h"
 #include "core/components/Component.h"
@@ -21,11 +22,31 @@ namespace mondradiko {
 
 class TransformComponent : public Component<protocol::TransformComponent> {
  public:
-  TransformComponent() : Component() {}
   explicit TransformComponent(const protocol::TransformComponent& data)
       : Component(data) {}
 
-  glm::mat4 getWorldTransform() { return world_transform; }
+  explicit TransformComponent(const assets::TransformPrefab* prefab) {
+    _data.mutate_parent(static_cast<protocol::EntityId>(NullEntity));
+
+    // TODO(marceline-cramer) Make helpers for these
+
+    auto& position = _data.mutable_position();
+    position.mutate_x(prefab->position().x());
+    position.mutate_y(prefab->position().y());
+    position.mutate_z(prefab->position().z());
+
+    auto& orientation = _data.mutable_orientation();
+    orientation.mutate_w(prefab->orientation().w());
+    orientation.mutate_x(prefab->orientation().x());
+    orientation.mutate_y(prefab->orientation().y());
+    orientation.mutate_z(prefab->orientation().z());
+  }
+
+  glm::mat4 getWorldTransform() const { return world_transform; }
+
+  void setParent(EntityId parent) {
+    _data.mutate_parent(static_cast<protocol::EntityId>(parent));
+  }
 
   // Implement Component
   // Defined in generated API linker
@@ -37,10 +58,9 @@ class TransformComponent : public Component<protocol::TransformComponent> {
 
   // System helpers
   // Used by World to calculate transforms
+  EntityId getParent() const;
   glm::mat4 getLocalTransform();
 
-  // Local parent ID
-  EntityId local_parent;
   // Used to sort by parent
   EntityId this_entity;
   // Final transform result used in math

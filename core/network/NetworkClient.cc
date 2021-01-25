@@ -131,8 +131,18 @@ void NetworkClient::requestJoin() {
 
   auto username_offset = builder.CreateString("TestClient");
 
-  std::vector<assets::LumpHash> lump_checksums;
-  fs->getChecksums(lump_checksums);
+  // TODO(marceline-cramer) Use strings for hashes
+  std::vector<uint64_t> lump_checksums;
+
+  {
+    std::vector<assets::LumpHash> local_checksums;
+    fs->getChecksums(local_checksums);
+    // Convert from internal LumpHash type to protocol uint64
+    for (auto& checksum : local_checksums) {
+      lump_checksums.push_back(static_cast<uint64_t>(checksum));
+    }
+  }
+
   auto lump_checksums_offset = builder.CreateVector(lump_checksums);
 
   protocol::JoinRequestBuilder join_request(builder);

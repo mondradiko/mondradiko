@@ -25,13 +25,14 @@ class ScriptInstance;
 
 class ScriptAsset : public Asset {
  public:
-  ScriptAsset(AssetPool*, ScriptEnvironment*);
+  DECL_ASSET_TYPE(assets::AssetType::ScriptAsset);
 
-  // AssetPool implementation
-  void load(assets::ImmutableAsset&);
-  void unload();
+  // Asset lifetime implementation
+  explicit ScriptAsset(ScriptEnvironment* scripts) : scripts(scripts) {}
+  void load(const assets::SerializedAsset*) final;
+  ~ScriptAsset();
 
-  ScriptInstance* createInstance();
+  ScriptInstance* createInstance() const;
 
  private:
   ScriptEnvironment* scripts;

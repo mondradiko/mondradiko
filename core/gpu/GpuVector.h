@@ -55,6 +55,7 @@ void GpuVector::writeElement(uint32_t index, const ElementType& element) {
     log_err("Element size %d of type %s exceeds granularity of %d",
             sizeof(ElementType), typeid(ElementType).name(),
             element_granularity);
+    return;
   }
 
   size_t needed_size = (index + 1) * element_granularity;
@@ -62,7 +63,7 @@ void GpuVector::writeElement(uint32_t index, const ElementType& element) {
 
   memcpy(static_cast<char*>(allocation_info.pMappedData) +
              index * element_granularity,
-         static_cast<const void*>(&element), sizeof(ElementType));
+         reinterpret_cast<const char*>(&element), sizeof(ElementType));
 }
 
 }  // namespace mondradiko

@@ -14,9 +14,10 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <vector>
 
-#include "assets/loading/ImmutableAsset.h"
 #include "core/assets/Asset.h"
+#include "core/assets/AssetHandle.h"
 #include "core/common/api_headers.h"
 #include "core/filesystem/Filesystem.h"
 #include "log/log.h"
@@ -30,100 +31,99 @@ struct DummyAsset {
 
 class AssetPool {
  public:
-  explicit AssetPool(Filesystem* fs) : fs(fs) {
-    template_asset = asset_registry.create();
-  }
+  explicit AssetPool(Filesystem* fs) : fs(fs) {}
+
+  ~AssetPool() { unloadAll(); }
 
   template <typename AssetType, typename... Args>
   void initializeAssetType(Args&&... args) {
-    asset_registry.emplace<AssetType>(template_asset, this, args...);
-  }
+    uint32_t asset_type = static_cast<uint32_t>(AssetType::ASSET_TYPE);
+    const char* type_name = assets::EnumNameAssetType(AssetType::ASSET_TYPE);
 
-  template <typename AssetType, typename... Args>
-  void initializeDummyAssetType(Args&&... args) {
-    initializeAssetType<AssetType>(args...);
-    asset_registry.emplace<DummyAsset<AssetType>>(template_asset);
+    if (asset_type >= templates.size()) {
+      templates.resize(asset_type + 1, nullptr);
+    } else if (templates[asset_type]) {
+      log_err("Attempted to initialize %s pool twice", type_name);
+      return;
+    }
+
+    Asset* new_asset = new AssetType(args...);
+    templates[asset_type] = new_asset;
   }
 
   template <typename AssetType>
-  AssetId loadAsset(AssetId id) {
-    if (!isAssetTypeInitialized<AssetType>()) {
-      log_ftl("Attempted to load asset with uninitialized type %s",
-              typeid(AssetType).name());
+  AssetHandle<AssetType> load(AssetId id) {
+    uint32_t asset_type = static_cast<uint32_t>(AssetType::ASSET_TYPE);
+    const char* type_name = assets::EnumNameAssetType(AssetType::ASSET_TYPE);
+
+    {  // Check if this asset already exists
+      auto iter = pool.find(id);
+
+      if (iter != pool.end()) {
+        AssetType* asset = dynamic_cast<AssetType*>(iter->second);
+
+        if (asset == nullptr) {
+          log_err("Cached asset 0x%0lx does not have type %s as expected", id,
+                  type_name);
+          return AssetHandle<AssetType>(nullptr);
+        } else {
+          return AssetHandle<AssetType>(id, asset);
+        }
+      }
     }
 
-    auto iter = local_ids.find(id);
-    if (iter != local_ids.end()) return id;
+    if (templates.size() <= asset_type || templates[asset_type] == nullptr) {
+      log_err("Attempted to load unitialized asset type %s", type_name);
+      return AssetHandle<AssetType>(nullptr);
+    }
 
-    AssetId local_id = asset_registry.create(id);
-    local_ids.emplace(id, local_id);
-
-    assets::ImmutableAsset asset_data;
+    const assets::SerializedAsset* asset_data;
     bool loaded_successfully = fs->loadAsset(&asset_data, id);
+
+    if (loaded_successfully) {
+      if (asset_data->type() != AssetType::ASSET_TYPE) {
+        loaded_successfully = false;
+        log_err("SerializedAsset 0x%0lx does not have type %s as expected", id,
+                type_name);
+      }
+    }
 
     if (!loaded_successfully) {
       log_err("Failed to load asset 0x%0lx", id);
+      return AssetHandle<AssetType>(nullptr);
     }
 
-    AssetType& initial_asset = asset_registry.get<AssetType>(template_asset);
-    AssetType& new_asset =
-        asset_registry.emplace<AssetType>(local_id, initial_asset);
+    AssetType* template_asset = dynamic_cast<AssetType*>(templates[asset_type]);
 
-    // Dummy assets are never loaded, but are initialized
-    if (loaded_successfully && !isAssetTypeDummy<AssetType>()) {
-      new_asset.load(asset_data);
-      new_asset.loaded = true;
+    if (template_asset == nullptr) {
+      log_err("Template asset for 0x%0lx does not have type %s as expected", id,
+              type_name);
+      return AssetHandle<AssetType>(nullptr);
     }
 
-    return id;
+    AssetType* new_asset = new AssetType(*template_asset);
+    new_asset->load(asset_data);
+    new_asset->loaded = true;
+    pool.emplace(id, new_asset);
+
+    return AssetHandle<AssetType>(id, new_asset);
   }
 
-  template <typename AssetType>
-  bool isAssetTypeInitialized() const {
-    return asset_registry.has<AssetType>(template_asset);
-  }
+  // TODO(marceline-cramer) Add garbage collecting method
 
-  template <typename AssetType>
-  bool isAssetTypeDummy() const {
-    const DummyAsset<AssetType>* asset_ptr =
-        asset_registry.try_get<DummyAsset<AssetType>>(template_asset);
-    if (!asset_ptr) return false;
-    return true;
-  }
-
-  template <typename AssetType>
-  AssetType& getAsset(AssetId id) {
-    auto iter = local_ids.find(id);
-
-    AssetId local_id;
-    if (iter == local_ids.end()) {
-      loadAsset<AssetType>(id);
-      local_id = local_ids.find(id)->second;
-    } else {
-      local_id = iter->second;
-    }
-
-    return asset_registry.get<AssetType>(local_id);
-  }
-
-  template <typename AssetType>
   void unloadAll() {
-    auto assets_view = asset_registry.view<AssetType>();
-    for (auto local_id : assets_view) {
-      auto& asset = assets_view.get(local_id);
-      if (asset.isLoaded()) {
-        asset.unload();
-        asset.loaded = false;
-      }
+    for (auto& asset : pool) {
+      delete asset.second;
     }
+
+    pool.clear();
   }
 
  private:
   Filesystem* fs;
 
-  AssetId template_asset;
-  std::unordered_map<AssetId, AssetId> local_ids;
-  entt::basic_registry<AssetId> asset_registry;
+  std::vector<Asset*> templates;
+  std::unordered_map<AssetId, Asset*> pool;
 };
 
 }  // namespace mondradiko

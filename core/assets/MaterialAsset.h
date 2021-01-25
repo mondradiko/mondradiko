@@ -13,6 +13,7 @@
 
 #include "core/assets/Asset.h"
 #include "core/assets/AssetPool.h"
+#include "core/assets/TextureAsset.h"
 #include "core/common/glm_headers.h"
 
 namespace mondradiko {
@@ -29,11 +30,15 @@ struct MaterialUniform {
 
 class MaterialAsset : public Asset {
  public:
-  MaterialAsset(AssetPool*, GpuInstance*);
+  DECL_ASSET_TYPE(assets::AssetType::MaterialAsset);
 
-  // Asset implementation
-  void load(assets::ImmutableAsset&);
-  void unload() {}
+  // Asset lifetime implementation
+  MaterialAsset(AssetPool* asset_pool, GpuInstance* gpu)
+      : asset_pool(asset_pool), gpu(gpu) {}
+  void load(const assets::SerializedAsset*) final;
+
+  // Override isLoaded() to include the textures
+  bool isLoaded() const final { return albedo_texture.isLoaded(); }
 
   const MaterialUniform& getUniform() const { return uniform; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;
@@ -42,7 +47,7 @@ class MaterialAsset : public Asset {
   AssetPool* asset_pool;
   GpuInstance* gpu;
 
-  AssetId albedo_texture;
+  AssetHandle<TextureAsset> albedo_texture;
 
   MaterialUniform uniform;
 };

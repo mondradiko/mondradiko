@@ -25,17 +25,13 @@ class ScriptInstance;
 
 class ScriptComponent {
  public:
-  bool isLoaded(AssetPool* asset_pool) {
-    return asset_pool->getAsset<ScriptAsset>(getScriptAsset()).isLoaded();
-  }
-
-  AssetId getScriptAsset() { return script_asset; }
+  const AssetHandle<ScriptAsset>& getScriptAsset() { return script_asset; }
 
  private:
   // Systems allowed to access private members directly
   friend class ScriptEnvironment;
 
-  AssetId script_asset;
+  AssetHandle<ScriptAsset> script_asset;
   ScriptInstance* script_instance;
 };
 

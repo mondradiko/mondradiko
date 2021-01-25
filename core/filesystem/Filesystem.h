@@ -21,14 +21,16 @@ namespace mondradiko {
 
 class Filesystem {
  public:
-  explicit Filesystem(const std::filesystem::path&);
+  Filesystem();
   ~Filesystem();
 
+  bool loadAssetBundle(const std::filesystem::path&);
   void getChecksums(std::vector<assets::LumpHash>&);
-  bool loadAsset(assets::ImmutableAsset*, AssetId);
+  void getInitialPrefabs(std::vector<assets::AssetId>&);
+  bool loadAsset(const assets::SerializedAsset**, AssetId);
 
  private:
-  assets::AssetBundle asset_bundle;
+  std::vector<assets::AssetBundle*> asset_bundles;
 };
 
 }  // namespace mondradiko

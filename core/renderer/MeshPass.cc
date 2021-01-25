@@ -236,6 +236,8 @@ void MeshPass::createFrameData(MeshPassFrameData& frame) {
 }
 
 void MeshPass::destroyFrameData(MeshPassFrameData& frame) {
+  log_zone;
+
   if (frame.material_buffer != nullptr) delete frame.material_buffer;
   if (frame.mesh_buffer != nullptr) delete frame.mesh_buffer;
 }
@@ -246,56 +248,70 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
                                    GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  std::vector<MaterialUniform> material_uniforms;
-  std::vector<MeshUniform> mesh_uniforms;
+  std::unordered_map<AssetId, uint32_t> material_assets;
+  std::vector<MaterialUniform> frame_materials;
+  std::vector<GpuDescriptorSet*> frame_textures;
 
-  frame.textures.clear();
-  frame.meshes.clear();
+  std::vector<MeshUniform> frame_meshes;
+
+  frame.commands.clear();
 
   auto mesh_renderers =
       registry.view<MeshRendererComponent, TransformComponent>();
 
-  for (EntityId e : mesh_renderers) {
-    auto mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
+  for (auto e : mesh_renderers) {
+    auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
+    if (!mesh_renderer.isLoaded()) continue;
 
-    if (!mesh_renderer.isLoaded(asset_pool)) continue;
+    MeshRenderCommand cmd;
 
-    AssetId material_asset = mesh_renderer.getMaterialAsset();
-    auto iter = frame.textures.find(material_asset);
+    {  // Write material uniform
+      const auto& material_asset = mesh_renderer.getMaterialAsset();
+      const auto iter = material_assets.find(material_asset.getId());
 
-    if (iter == frame.textures.end()) {
-      auto& mesh_material = asset_pool->getAsset<MaterialAsset>(material_asset);
+      if (iter != material_assets.end()) {
+        cmd.material_idx = iter->second;
+        cmd.textures_descriptor = frame_textures[iter->second];
+      } else {
+        cmd.material_idx = frame_materials.size();
+        material_assets.emplace(material_asset.getId(), cmd.material_idx);
+        frame_materials.push_back(material_asset->getUniform());
 
-      frame.materials.emplace(material_asset, material_uniforms.size());
-      material_uniforms.push_back(mesh_material.getUniform());
-
-      GpuDescriptorSet* texture_descriptor =
-          descriptor_pool->allocate(texture_layout);
-      mesh_material.updateTextureDescriptor(texture_descriptor);
-      frame.textures.emplace(material_asset, texture_descriptor);
+        cmd.textures_descriptor = descriptor_pool->allocate(texture_layout);
+        material_asset->updateTextureDescriptor(cmd.textures_descriptor);
+        frame_textures.push_back(cmd.textures_descriptor);
+      }
     }
 
-    auto& transform = mesh_renderers.get<TransformComponent>(e);
+    {  // Write mesh uniform
+      auto& transform = mesh_renderers.get<TransformComponent>(e);
 
-    MeshUniform mesh_uniform;
-    mesh_uniform.model = transform.getWorldTransform();
+      MeshUniform mesh_uniform;
+      mesh_uniform.model = transform.getWorldTransform();
 
-    frame.meshes.emplace(e, mesh_uniforms.size());
-    mesh_uniforms.push_back(mesh_uniform);
+      cmd.mesh_idx = frame_meshes.size();
+      frame_meshes.push_back(mesh_uniform);
+    }
+
+    {  // Write mesh asset
+      cmd.mesh_asset = mesh_renderer.getMeshAsset();
+    }
+
+    frame.commands.push_back(cmd);
   }
 
-  if (material_uniforms.size() > 0) {
-    for (uint32_t i = 0; i < material_uniforms.size(); i++) {
-      frame.material_buffer->writeElement(i, material_uniforms[i]);
+  if (frame_materials.size() > 0) {
+    for (uint32_t i = 0; i < frame_materials.size(); i++) {
+      frame.material_buffer->writeElement(i, frame_materials[i]);
     }
 
     frame.material_descriptor = descriptor_pool->allocate(material_layout);
     frame.material_descriptor->updateDynamicBuffer(0, frame.material_buffer);
   }
 
-  if (mesh_uniforms.size() > 0) {
-    for (uint32_t i = 0; i < mesh_uniforms.size(); i++) {
-      frame.mesh_buffer->writeElement(i, mesh_uniforms[i]);
+  if (frame_meshes.size() > 0) {
+    for (uint32_t i = 0; i < frame_meshes.size(); i++) {
+      frame.mesh_buffer->writeElement(i, frame_meshes[i]);
     }
 
     frame.mesh_descriptor = descriptor_pool->allocate(mesh_layout);
@@ -315,38 +331,25 @@ void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
   viewport_descriptor->updateDynamicOffset(0, viewport_offset);
   viewport_descriptor->cmdBind(commandBuffer, pipeline_layout, 0);
 
-  auto mesh_renderers =
-      registry.view<MeshRendererComponent, TransformComponent>();
-  for (EntityId e : mesh_renderers) {
+  for (auto& cmd : frame.commands) {
     log_zone_named("Render mesh");
 
-    auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
-    if (!mesh_renderer.isLoaded(asset_pool)) continue;
-
-    // TODO(marceline-cramer) Iterate over mesh renderers by their cached
-    // descriptors
-
-    AssetId material_id = mesh_renderer.getMaterialAsset();
-
-    frame.material_descriptor->updateDynamicOffset(
-        0, frame.materials.find(material_id)->second);
+    frame.material_descriptor->updateDynamicOffset(0, cmd.material_idx);
     frame.material_descriptor->cmdBind(commandBuffer, pipeline_layout, 1);
 
-    frame.textures.find(material_id)
-        ->second->cmdBind(commandBuffer, pipeline_layout, 2);
+    cmd.textures_descriptor->cmdBind(commandBuffer, pipeline_layout, 2);
 
-    frame.mesh_descriptor->updateDynamicOffset(0, frame.meshes.find(e)->second);
+    frame.mesh_descriptor->updateDynamicOffset(0, cmd.mesh_idx);
     frame.mesh_descriptor->cmdBind(commandBuffer, pipeline_layout, 3);
 
-    MeshAsset& mesh_asset =
-        asset_pool->getAsset<MeshAsset>(mesh_renderer.getMeshAsset());
+    const auto& mesh_asset = cmd.mesh_asset;
 
-    VkBuffer vertex_buffers[] = {mesh_asset.vertex_buffer->getBuffer()};
+    VkBuffer vertex_buffers[] = {mesh_asset->vertex_buffer->getBuffer()};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, mesh_asset.index_buffer->getBuffer(), 0,
-                         VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(commandBuffer, mesh_asset.index_count, 1, 0, 0, 0);
+    vkCmdBindIndexBuffer(commandBuffer, mesh_asset->index_buffer->getBuffer(),
+                         0, VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(commandBuffer, mesh_asset->index_count, 1, 0, 0, 0);
   }
 }
 

@@ -16,9 +16,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "assets/format/AssetTypes.h"
+#include "assets/common/AssetTypes.h"
 #include "assets/loading/AssetLump.h"
-#include "assets/loading/ImmutableAsset.h"
 
 namespace mondradiko {
 namespace assets {
@@ -31,11 +30,14 @@ class AssetBundle {
   AssetResult loadRegistry(const char*);
 
   void getChecksums(std::vector<LumpHash>&);
+  void getInitialPrefabs(std::vector<AssetId>&);
   bool isAssetRegistered(AssetId);
-  bool loadAsset(ImmutableAsset*, AssetId);
+  bool loadAsset(const SerializedAsset**, AssetId);
 
  private:
   std::filesystem::path bundle_root;
+
+  std::vector<AssetId> initial_prefabs;
 
   struct AssetLookupEntry {
     uint32_t lump_index;

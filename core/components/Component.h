@@ -17,6 +17,7 @@
 namespace mondradiko {
 
 // Forward declarations
+class AssetPool;
 class ScriptEnvironment;
 class World;
 namespace protocol {
@@ -37,6 +38,8 @@ class Component {
 
   Component() {}
   explicit Component(const SerializedType& data) : _data(data) {}
+
+  virtual void refresh(AssetPool*) {}
 
   void markDirty() { dirty = true; }
   bool isDirty() { return dirty; }

@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(ASSIMP REQUIRED assimp)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(OPENXR REQUIRED openxr)
 pkg_check_modules(XXHASH REQUIRED libxxhash)
@@ -25,10 +24,6 @@ add_library(mondradiko-lib STATIC ${MONDRADIKO_LIB_SRC})
 
 # Add C++ std::filesystem
 target_link_libraries(mondradiko-lib PUBLIC stdc++fs)
-
-target_link_libraries(mondradiko-lib PUBLIC ${ASSIMP_LIBRARIES})
-target_include_directories(mondradiko-lib PUBLIC ${ASSIMP_INCLUDE_DIRS})
-target_compile_options(mondradiko-lib PUBLIC ${ASSIMP_CFLAGS_OTHER})
 
 target_link_libraries(mondradiko-lib PUBLIC ${SDL2_LIBRARIES})
 target_include_directories(mondradiko-lib PUBLIC ${SDL2_INCLUDE_DIRS})
@@ -72,7 +67,7 @@ if(NOT WASMTIME)
   file(ARCHIVE_EXTRACT INPUT ${WASMTIME_C_API_FILE})
 
   find_library(WASMTIME wasmtime PATHS "${WASMTIME_C_API_LIB}")
-  if(NOT WASMTIME) 
+  if(NOT WASMTIME)
     message(FATAL_ERROR "Failed to automatically download and link libwasmtime")
   endif()
 endif()

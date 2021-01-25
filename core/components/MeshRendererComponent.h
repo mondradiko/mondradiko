@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "assets/format/PrefabAsset_generated.h"
 #include "core/assets/MaterialAsset.h"
 #include "core/assets/MeshAsset.h"
 #include "core/components/Component.h"
@@ -24,23 +25,31 @@ class MeshRendererComponent
   explicit MeshRendererComponent(const protocol::MeshRendererComponent& data)
       : Component(data) {}
 
+  explicit MeshRendererComponent(const assets::MeshRendererPrefabT* prefab) {
+    _data.mutate_mesh_asset(static_cast<protocol::AssetId>(prefab->mesh));
+    _data.mutate_material_asset(
+        static_cast<protocol::AssetId>(prefab->material));
+  }
+
   MeshRendererComponent(AssetId mesh_asset, AssetId material_asset)
       : Component(protocol::MeshRendererComponent(
             static_cast<protocol::AssetId>(mesh_asset),
             static_cast<protocol::AssetId>(material_asset))) {}
 
-  bool isLoaded(AssetPool* asset_pool) const {
-    return asset_pool->getAsset<MeshAsset>(getMeshAsset()).isLoaded() &&
-           asset_pool->getAsset<MaterialAsset>(getMaterialAsset()).isLoaded();
+  // Component implementation
+  void refresh(AssetPool*) final;
+
+  bool isLoaded() const { return getMeshAsset() && getMaterialAsset(); }
+
+  const AssetHandle<MeshAsset>& getMeshAsset() const { return mesh_asset; }
+
+  const AssetHandle<MaterialAsset>& getMaterialAsset() const {
+    return material_asset;
   }
 
-  AssetId getMeshAsset() const {
-    return static_cast<AssetId>(_data.mesh_asset());
-  }
-
-  AssetId getMaterialAsset() const {
-    return static_cast<AssetId>(_data.material_asset());
-  }
+ private:
+  AssetHandle<MeshAsset> mesh_asset;
+  AssetHandle<MaterialAsset> material_asset;
 };
 
 }  // namespace mondradiko

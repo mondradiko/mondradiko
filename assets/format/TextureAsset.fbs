@@ -1,0 +1,45 @@
+// Copyright (c) 2020 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
+include "types.fbs";
+
+namespace mondradiko.assets;
+
+// TODO(marceline-cramer) Remove KTX
+enum TextureFormat : ubyte {
+  None = 0,
+  KTX,
+  Raw
+}
+
+enum TextureComponentType : ubyte {
+  Byte,
+  UByte,
+  Short,
+  UShort,
+  Int,
+  UInt,
+  Float,
+  Double
+}
+
+table KtxTexture {
+  data:[ubyte];
+}
+
+table RawTexture {
+  components:ubyte;
+  bit_depth:ubyte;
+  component_type:TextureComponentType;
+  width:uint;
+  height:uint;
+  data:[ubyte];
+}
+
+table TextureAsset {
+  format:TextureFormat;
+  ktx:KtxTexture;
+  raw:RawTexture;
+}
+
+root_type TextureAsset;

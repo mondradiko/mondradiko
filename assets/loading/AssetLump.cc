@@ -54,8 +54,7 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
 
   log_dbg("Asserting hash from lump %s", lump_path.c_str());
 
-  std::ifstream lump_file(lump_path.c_str(),
-                          std::ifstream::in | std::ifstream::binary);
+  std::ifstream lump_file(lump_path.c_str(), std::ifstream::binary);
 
   switch (hash_method) {
     case LumpHashMethod::xxHash: {
@@ -71,7 +70,7 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
         if (bytes_read) XXH3_64bits_update(hash_state, buffer, bytes_read);
       }
 
-      computed_hash = XXH3_64bits_digest(hash_state);
+      computed_hash = static_cast<LumpHash>(XXH3_64bits_digest(hash_state));
       XXH3_freeState(hash_state);
       break;
     }
@@ -104,8 +103,7 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
 void AssetLump::decompress(LumpCompressionMethod compression_method) {
   if (loaded_data) return;
 
-  std::ifstream lump_file(lump_path.c_str(),
-                          std::ifstream::in | std::ifstream::binary);
+  std::ifstream lump_file(lump_path.c_str(), std::ifstream::binary);
   lump_file.seekg(0, std::ifstream::end);
   size_t file_size = lump_file.tellg();
   lump_file.seekg(0);
@@ -167,17 +165,23 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
   lump_file.close();
 }
 
-bool AssetLump::loadAsset(ImmutableAsset* asset, size_t offset, size_t size) {
-  log_dbg("Loading asset from %s at 0x%08x", lump_path.c_str(), offset);
-
+bool AssetLump::loadAsset(const SerializedAsset** asset, size_t offset,
+                          size_t size) {
   if (offset + size > loaded_size) {
     log_err("Asset range exceeds lump size of 0x%08x", loaded_size);
     return false;
   }
 
-  asset->data = loaded_data + offset;
-  asset->cursor = asset->data;
-  asset->data_size = size;
+  const uint8_t* asset_data =
+      reinterpret_cast<const uint8_t*>(loaded_data + offset);
+
+  flatbuffers::Verifier verifier(asset_data, size);
+  if (!VerifySerializedAssetBuffer(verifier)) {
+    log_err("Asset validation failed");
+    return false;
+  }
+
+  *asset = GetSerializedAsset(asset_data);
 
   return true;
 }

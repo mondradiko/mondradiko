@@ -38,4 +38,5 @@ Mondradiko includes the following third-party libraries (lib/ directory):
 - stb_image.h : v2.08 - public domain image loader - [GitHub link](https://github.com/nothings/stb/blob/master/stb_image.h)
 - stb_image_write.h : v1.09 - public domain image writer - [GitHub link](https://github.com/nothings/stb/blob/master/stb_image_write.h)
 - tinygltf : Copyright (c) 2015 - 2020 Syoyo Fujita, Aurélien Chatelain and many contributors. MIT license. - [GitHub link](https://github.com/syoyo/tinygltf)
+- toml11 : Copyright (c) 2017 Toru Niina. MIT license. - [GitHub link](https://github.com/ToruNiina/toml11)
 - VulkanMemoryAllocator : Copyright (c) 2017-2020 Advanced Micro Devices, Inc. All rights reserved. MIT license. - [GitHub link](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)

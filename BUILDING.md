@@ -9,7 +9,7 @@ Unfortunately, Mondradiko has not been built for Windows or Oculus Quest yet, bu
 Install dependencies from packages:
 
 ```bash
-sudo apt install libsdl2-dev liblz4-dev libassimp-dev libvulkan-dev \
+sudo apt install libsdl2-dev liblz4-dev libvulkan-dev \
                  cmake ninja-build build-essential glslang-tools \
                  libzstd-dev \
                  libprotobuf-dev protobuf-compiler libssl-dev \

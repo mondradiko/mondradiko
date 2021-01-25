@@ -86,7 +86,7 @@ GpuImage::~GpuImage() {
   }
 }
 
-/*void GpuImage::writeData(void* src) {
+void GpuImage::writeData(const void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
   GpuBuffer stage(gpu, allocation_info.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -109,7 +109,7 @@ GpuImage::~GpuImage() {
                          &region);
 
   gpu->endSingleTimeCommands(commandBuffer);
-}*/
+}
 
 void GpuImage::transitionLayout(VkImageLayout targetLayout) {
   VkImageMemoryBarrier barrier{

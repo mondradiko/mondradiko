@@ -51,13 +51,14 @@ int main(int argc, const char* argv[]) {
   }
 
   try {
-    Filesystem fs("../test-folder/");
+    Filesystem fs;
+    fs.loadAssetBundle("./");
 
     World world(&fs, nullptr);
     WorldEventSorter world_event_sorter(&world);
     NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
 
-    world.testInitialize();
+    world.initializePrefabs();
 
     // TODO(marceline-cramer) CVARs
     const double MAX_FPS = 30.0;

@@ -56,7 +56,7 @@ void GpuBuffer::reserve(size_t target_size) {
   buffer_size = target_size;
 }
 
-void GpuBuffer::writeData(void* src) {
+void GpuBuffer::writeData(const void* src) {
   // TODO(marceline-cramer) This function is bad, please replace
   // Consider a streaming job system for all static GPU assets
   memcpy(allocation_info.pMappedData, src, allocation_info.size);

@@ -1,0 +1,25 @@
+// Copyright (c) 2020 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
+include "types.fbs";
+
+namespace mondradiko.assets;
+
+table MeshRendererPrefab {
+  mesh:AssetId;
+  material:AssetId;
+}
+
+struct TransformPrefab {
+  position:Vec3;
+  orientation:Quaternion;
+}
+
+table PrefabAsset {
+  children:[AssetId];
+
+  mesh_renderer:MeshRendererPrefab;
+  transform:TransformPrefab;
+}
+
+root_type PrefabAsset;

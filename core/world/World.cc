@@ -13,7 +13,9 @@
 #include "core/world/World.h"
 
 #include <iostream>
+#include <vector>
 
+#include "core/assets/PrefabAsset.h"
 #include "core/assets/ScriptAsset.h"
 #include "core/assets/TextureAsset.h"
 #include "core/components/MeshRendererComponent.h"
@@ -31,42 +33,29 @@ World::World(Filesystem* fs, GpuInstance* gpu)
     : fs(fs), gpu(gpu), asset_pool(fs) {
   log_zone;
 
-  if (gpu) {
-    asset_pool.initializeAssetType<MaterialAsset>(gpu);
-    asset_pool.initializeAssetType<MeshAsset>(gpu);
-    asset_pool.initializeAssetType<TextureAsset>(gpu);
-  } else {
-    asset_pool.initializeDummyAssetType<MaterialAsset>(gpu);
-    asset_pool.initializeDummyAssetType<MeshAsset>(gpu);
-    asset_pool.initializeDummyAssetType<TextureAsset>(gpu);
-  }
-
+  asset_pool.initializeAssetType<MaterialAsset>(&asset_pool, gpu);
+  asset_pool.initializeAssetType<MeshAsset>(gpu);
+  asset_pool.initializeAssetType<PrefabAsset>(&asset_pool);
   asset_pool.initializeAssetType<ScriptAsset>(&scripts);
+  asset_pool.initializeAssetType<TextureAsset>(gpu);
 
   scripts.linkComponentApis(this);
 }
 
 World::~World() {
   log_zone;
-
-  asset_pool.unloadAll<MaterialAsset>();
-  asset_pool.unloadAll<MeshAsset>();
-  asset_pool.unloadAll<ScriptAsset>();
-  asset_pool.unloadAll<TextureAsset>();
+  registry.clear();
+  asset_pool.unloadAll();
 }
 
-void World::testInitialize() {
-  auto test_entity = registry.create();
+void World::initializePrefabs() {
+  std::vector<AssetId> prefabs;
+  fs->getInitialPrefabs(prefabs);
 
-  MeshRendererComponent mesh_renderer_component(0x84b42359, 0xf643d4dc);
-  TransformComponent transform_component;
-
-  registry.emplace<MeshRendererComponent>(test_entity, mesh_renderer_component);
-  registry.emplace<TransformComponent>(test_entity, transform_component);
-
-  // Update an entity's script to initialize the ScriptComponent
-  scripts.updateScript(registry, &asset_pool, test_entity, 0x31069ecf, nullptr,
-                       static_cast<size_t>(0));
+  for (auto prefab_id : prefabs) {
+    auto prefab = asset_pool.load<PrefabAsset>(prefab_id);
+    prefab->instantiate(&registry);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,14 +63,15 @@ void World::testInitialize() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void World::onSpawnEntity(const protocol::SpawnEntity* event) {
-  EntityId server_id = static_cast<EntityId>(event->new_id());
+  EntityId id = static_cast<EntityId>(event->new_id());
 
-  if (server_ids.find(server_id) != server_ids.end()) {
+  if (registry.valid(id)) {
+    log_wrn("Spawned entity's ID is taken: 0x%0lx", id);
     return;
   }
 
-  EntityId new_id = registry.create(server_id);
-  server_ids.emplace(server_id, new_id);
+  // Discard returned ID, since we just ensured that the hint will be used
+  static_cast<void>(registry.create(id));
 }
 
 void World::onUpdateComponents(
@@ -127,11 +117,8 @@ bool World::update() {
 
     auto transform_view = registry.view<TransformComponent>();
 
-    for (EntityId e : transform_view) {
+    for (auto e : transform_view) {
       TransformComponent& transform = transform_view.get(e);
-
-      // TODO(marceline-cramer) Networked transform hierarchies
-      transform.local_parent = NullEntity;
       transform.this_entity = e;
     }
   }
@@ -140,9 +127,12 @@ bool World::update() {
     log_zone_named("Sort transform hierarchy");
 
     registry.sort<TransformComponent>(
-        [](const auto& parent, const auto& child) {
+        [](const TransformComponent& lhs, const TransformComponent& rhs) {
           // Sort children after parents
-          return parent.this_entity >= child.local_parent;
+          if (lhs.this_entity == rhs.getParent()) {
+            return true;
+          }
+          return false;
         });
   }
 
@@ -151,16 +141,26 @@ bool World::update() {
 
     auto transform_view = registry.view<TransformComponent>();
 
-    for (EntityId e : transform_view) {
+    for (auto e : transform_view) {
       TransformComponent& transform = transform_view.get(e);
 
+      auto parent = transform.getParent();
       glm::mat4 parent_transform;
-      if (transform.local_parent == NullEntity) {
+      if (parent == NullEntity) {
         parent_transform = glm::mat4(1.0);
       } else {
+        if (!registry.valid(parent)) {
+          log_err("Invalid Transform parent ID");
+          continue;
+        }
+
+        if (!registry.has<TransformComponent>(parent)) {
+          log_err("Transform parent has no Transform");
+          continue;
+        }
+
         parent_transform =
-            registry.get<TransformComponent>(transform.local_parent)
-                .world_transform;
+            registry.get<TransformComponent>(parent).getWorldTransform();
       }
 
       glm::mat4 local_transform = transform.getLocalTransform();
@@ -214,23 +214,22 @@ void World::updateComponents(
   }
 
   for (uint32_t i = 0; i < entities->size(); i++) {
-    EntityId server_entity = entities->Get(i);
+    EntityId id = entities->Get(i);
 
-    auto it = server_ids.find(server_entity);
-    EntityId client_entity;
-    if (it == server_ids.end()) {
-      client_entity = registry.create();
-      server_ids.emplace(server_entity, client_entity);
-    } else {
-      client_entity = it->second;
+    if (!registry.valid(id)) {
+      // Discard returned ID, since we just ensured that the hint will be used
+      static_cast<void>(registry.create(id));
     }
 
     const ProtocolComponentType& component = *components->Get(i);
 
-    if (registry.has<ComponentType>(client_entity)) {
-      registry.get<ComponentType>(client_entity).writeData(component);
+    if (registry.has<ComponentType>(id)) {
+      ComponentType& handle = registry.get<ComponentType>(id);
+      handle.writeData(component);
+      handle.refresh(&asset_pool);
     } else {
-      registry.emplace<ComponentType>(client_entity, component);
+      ComponentType& handle = registry.emplace<ComponentType>(id, component);
+      handle.refresh(&asset_pool);
     }
   }
 }

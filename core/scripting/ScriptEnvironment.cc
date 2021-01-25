@@ -106,7 +106,7 @@ void ScriptEnvironment::update(EntityRegistry& registry,
   for (auto& e : script_view) {
     auto& script = script_view.get(e);
 
-    if (!script.isLoaded(asset_pool)) continue;
+    if (!script.getScriptAsset()) continue;
 
     ScriptInstance* script_instance = script.script_instance;
     script_instance->runCallback("update");
@@ -114,10 +114,8 @@ void ScriptEnvironment::update(EntityRegistry& registry,
 }
 
 void ScriptEnvironment::updateScript(EntityRegistry& registry,
-                                     AssetPool* asset_pool,
-                                     EntityId entity,
-                                     AssetId script_asset,
-                                     const uint8_t* data,
+                                     AssetPool* asset_pool, EntityId entity,
+                                     AssetId script_id, const uint8_t* data,
                                      size_t data_size) {
   // Ensure the entity exists
   if (!registry.valid(entity)) {
@@ -125,6 +123,9 @@ void ScriptEnvironment::updateScript(EntityRegistry& registry,
   }
 
   bool needs_initialization = false;
+
+  const AssetHandle<ScriptAsset>& script_asset =
+      asset_pool->load<ScriptAsset>(script_id);
 
   // Destroy the old ScriptInstance if necessary
   if (registry.has<ScriptComponent>(entity)) {
@@ -141,10 +142,7 @@ void ScriptEnvironment::updateScript(EntityRegistry& registry,
       registry.get_or_emplace<ScriptComponent>(entity);
 
   if (needs_initialization) {
-    // TODO(marceline-cramer) Clean up ScriptInstances when World is destroyed
-    // TODO(marceline-cramer) AssetPool refcounts?
-    script_component.script_instance =
-        asset_pool->getAsset<ScriptAsset>(script_asset).createInstance();
+    script_component.script_instance = script_asset->createInstance();
   }
 
   script_component.script_asset = script_asset;

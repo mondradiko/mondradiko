@@ -22,11 +22,12 @@ class GpuInstance;
 
 class TextureAsset : public Asset {
  public:
-  TextureAsset(AssetPool*, GpuInstance*);
+  DECL_ASSET_TYPE(assets::AssetType::TextureAsset);
 
-  // AssetPool implementation
-  void load(assets::ImmutableAsset&);
-  void unload();
+  // Asset lifetime implementation
+  explicit TextureAsset(GpuInstance* gpu) : gpu(gpu) {}
+  void load(const assets::SerializedAsset*) final;
+  ~TextureAsset();
 
   GpuImage* getImage() const { return image; }
 

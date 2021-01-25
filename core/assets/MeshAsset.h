@@ -74,11 +74,12 @@ using MeshIndex = uint32_t;
 
 class MeshAsset : public Asset {
  public:
-  MeshAsset(AssetPool*, GpuInstance*);
+  DECL_ASSET_TYPE(assets::AssetType::MeshAsset);
 
-  // AssetPool implementation
-  void load(assets::ImmutableAsset&);
-  void unload();
+  // Asset lifetime implementation
+  explicit MeshAsset(GpuInstance* gpu) : gpu(gpu) {}
+  void load(const assets::SerializedAsset*) final;
+  ~MeshAsset();
 
   GpuBuffer* vertex_buffer = nullptr;
   GpuBuffer* index_buffer = nullptr;
