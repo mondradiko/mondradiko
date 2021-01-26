@@ -82,7 +82,7 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
     }
   }
 
-  camera_position = glm::vec3(0.0, -5.0, -5.0);
+  camera_position = glm::vec3(0.0, 0.0, 0.0);
   camera_pan = 0.0;
   camera_tilt = 0.0;
 }
