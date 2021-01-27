@@ -19,6 +19,7 @@
 #include "core/assets/ScriptAsset.h"
 #include "core/assets/TextureAsset.h"
 #include "core/components/MeshRendererComponent.h"
+#include "core/components/PointLightComponent.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/filesystem/Filesystem.h"
@@ -56,6 +57,30 @@ void World::initializePrefabs() {
     auto prefab = asset_pool.load<PrefabAsset>(prefab_id);
     prefab->instantiate(&registry);
   }
+
+  {
+    auto point_light = registry.create();
+    registry.emplace<PointLightComponent>(point_light, -10.0, 1.5, 0.0, 10.0,
+                                          1.0, 1.0);
+  }
+
+  {
+    auto point_light = registry.create();
+    registry.emplace<PointLightComponent>(point_light, 10.0, 1.5, 0.0, 1.0,
+                                          10.0, 1.0);
+  }
+
+  {
+    auto point_light = registry.create();
+    registry.emplace<PointLightComponent>(point_light, 0.0, 1.5, -1.0, 1.0, 1.0,
+                                          10.0);
+  }
+
+  {
+    auto point_light = registry.create();
+    registry.emplace<PointLightComponent>(point_light, 0.0, 1.5, 1.0, 1.0, 10.0,
+                                          10.0);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,6 +112,12 @@ void World::onUpdateComponents(
     case protocol::ComponentType::MeshRendererComponent: {
       updateComponents<MeshRendererComponent>(
           entities, update_components->mesh_renderer());
+      break;
+    }
+
+    case protocol::ComponentType::PointLightComponent: {
+      updateComponents<PointLightComponent>(entities,
+                                            update_components->point_light());
       break;
     }
 

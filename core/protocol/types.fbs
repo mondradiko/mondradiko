@@ -19,6 +19,7 @@ enum EntityId : uint32 {
 enum ComponentType : ushort {
   NoComponent = 0,
   MeshRendererComponent,
+  PointLightComponent,
   TransformComponent
 }
 

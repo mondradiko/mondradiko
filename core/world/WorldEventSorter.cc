@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "core/components/MeshRendererComponent.h"
+#include "core/components/PointLightComponent.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/world/World.h"
@@ -94,6 +95,7 @@ WorldEventSorter::WorldUpdateOffset WorldEventSorter::broadcastGlobalEvents(
 
   std::vector<flatbuffers::Offset<protocol::WorldEvent>> component_updates = {
       updateComponents<MeshRendererComponent>(&builder, &world->registry),
+      updateComponents<PointLightComponent>(&builder, &world->registry),
       updateComponents<TransformComponent>(&builder, &world->registry)};
 
   update_offsets.insert(update_offsets.end(), component_updates.begin(),

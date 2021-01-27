@@ -5,9 +5,14 @@ include "types.fbs";
 
 namespace mondradiko.assets;
 
-table MeshRendererPrefab {
+struct MeshRendererPrefab {
   mesh:AssetId;
   material:AssetId;
+}
+
+struct PointLightPrefab {
+  position:Vec3;
+  intensity:Vec3;
 }
 
 struct TransformPrefab {
@@ -19,6 +24,7 @@ table PrefabAsset {
   children:[AssetId];
 
   mesh_renderer:MeshRendererPrefab;
+  point_light:PointLightPrefab;
   transform:TransformPrefab;
 }
 

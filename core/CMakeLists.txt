@@ -18,6 +18,7 @@ add_subdirectory(protocol)
 flatc_schemas(PROTOCOL_HEADERS
   protocol/ClientEvent.fbs
   protocol/MeshRendererComponent.fbs
+  protocol/PointLightComponent.fbs
   protocol/ServerEvent.fbs
   protocol/TransformComponent.fbs
   protocol/ScriptData.fbs
@@ -42,6 +43,7 @@ set(MONDRADIKO_CORE_SRC
   assets/ScriptAsset.cc
   assets/TextureAsset.cc
   components/MeshRendererComponent.cc
+  components/PointLightComponent.cc
   components/ScriptComponent.cc
   components/TransformComponent.cc
   displays/OpenXrDisplay.cc
