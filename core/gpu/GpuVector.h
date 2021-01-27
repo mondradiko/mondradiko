@@ -25,14 +25,14 @@ class GpuVector : public GpuBuffer {
  public:
   GpuVector(GpuInstance* gpu, size_t element_size,
             VkBufferUsageFlags usage_flags)
-      : GpuBuffer(gpu, element_size, usage_flags, VMA_MEMORY_USAGE_CPU_TO_GPU),
-        gpu(gpu),
-        element_granularity(element_size) {
+      : GpuBuffer(gpu, element_size, usage_flags, VMA_MEMORY_USAGE_CPU_TO_GPU) {
     if (usage_flags & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT) {
       size_t uniform_alignment = gpu->physical_device_properties.limits
                                      .minUniformBufferOffsetAlignment;
       element_granularity =
           (element_size / uniform_alignment) + uniform_alignment;
+    } else {
+      element_granularity = element_size;
     }
   }
 
@@ -44,8 +44,6 @@ class GpuVector : public GpuBuffer {
   void writeData(void*) = delete;
 
  private:
-  GpuInstance* gpu;
-
   size_t element_granularity;
 };
 

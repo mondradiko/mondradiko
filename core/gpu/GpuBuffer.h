@@ -27,6 +27,7 @@ class GpuBuffer {
   ~GpuBuffer();
 
   VkBuffer getBuffer() { return buffer; }
+  size_t getBufferSize() { return buffer_size; }
 
   // TODO(marceline-cramer) Get rid of this method
   void writeData(const void*);
