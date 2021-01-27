@@ -120,6 +120,8 @@ void SdlViewport::writeUniform(ViewportUniform* uniform) {
 
   // Fix GLM matrix to work with Vulkan
   uniform->projection[1][1] *= -1.0;
+
+  uniform->position = camera_position;
 }
 
 void SdlViewport::moveCamera(float pan, float tilt, float truck, float dolly,

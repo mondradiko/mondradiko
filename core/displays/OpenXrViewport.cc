@@ -111,6 +111,7 @@ void OpenXrViewport::writeUniform(ViewportUniform* uniform) {
 
   uniform->view = glm::translate(glm::mat4(viewOrientation), -viewPosition);
   uniform->projection = createProjectionFromFOV(view.fov, 0.001, 1000.0);
+  uniform->position = viewPosition;
 }
 
 void OpenXrViewport::updateView(const XrView& new_view) { view = new_view; }
