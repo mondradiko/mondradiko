@@ -16,6 +16,7 @@
 
 #include "core/assets/MeshAsset.h"
 #include "core/components/MeshRendererComponent.h"
+#include "core/components/PointLightComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuDescriptorPool.h"
@@ -73,6 +74,7 @@ MeshPass::MeshPass(GpuInstance* gpu, GpuDescriptorSetLayout* viewport_layout,
 
     mesh_layout = new GpuDescriptorSetLayout(gpu);
     mesh_layout->addDynamicUniformBuffer(sizeof(MeshUniform));
+    mesh_layout->addStorageBuffer(sizeof(PointLightUniform));
   }
 
   {
@@ -233,6 +235,9 @@ void MeshPass::createFrameData(MeshPassFrameData& frame) {
 
   frame.mesh_buffer = new GpuVector(gpu, sizeof(MeshUniform),
                                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+  frame.point_lights = new GpuVector(gpu, sizeof(PointLightUniform),
+                                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
 void MeshPass::destroyFrameData(MeshPassFrameData& frame) {
@@ -240,6 +245,7 @@ void MeshPass::destroyFrameData(MeshPassFrameData& frame) {
 
   if (frame.material_buffer != nullptr) delete frame.material_buffer;
   if (frame.mesh_buffer != nullptr) delete frame.mesh_buffer;
+  if (frame.point_lights != nullptr) delete frame.point_lights;
 }
 
 void MeshPass::allocateDescriptors(EntityRegistry& registry,
@@ -247,6 +253,27 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
                                    AssetPool* asset_pool,
                                    GpuDescriptorPool* descriptor_pool) {
   log_zone;
+
+  uint32_t light_count;
+
+  {
+    auto point_lights = registry.view<PointLightComponent>();
+    std::vector<PointLightUniform> point_light_uniforms;
+
+    for (auto e : point_lights) {
+      auto& point_light = point_lights.get(e);
+
+      PointLightUniform uniform;
+      point_light.getUniform(&uniform);
+      point_light_uniforms.push_back(uniform);
+    }
+
+    light_count = point_light_uniforms.size();
+
+    for (uint32_t i = 0; i < light_count; i++) {
+      frame.point_lights->writeElement(i, point_light_uniforms[i]);
+    }
+  }
 
   std::unordered_map<AssetId, uint32_t> material_assets;
   std::vector<MaterialUniform> frame_materials;
@@ -288,6 +315,7 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
 
       MeshUniform mesh_uniform;
       mesh_uniform.model = transform.getWorldTransform();
+      mesh_uniform.light_count = light_count;
 
       cmd.mesh_idx = frame_meshes.size();
       frame_meshes.push_back(mesh_uniform);
@@ -316,6 +344,7 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
 
     frame.mesh_descriptor = descriptor_pool->allocate(mesh_layout);
     frame.mesh_descriptor->updateDynamicBuffer(0, frame.mesh_buffer);
+    frame.mesh_descriptor->updateStorageBuffer(1, frame.point_lights);
   }
 }
 

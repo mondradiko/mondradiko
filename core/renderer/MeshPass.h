@@ -33,6 +33,7 @@ class GpuVector;
 
 struct MeshUniform {
   glm::mat4 model;
+  alignas(16) uint32_t light_count;
 };
 
 class MeshPass {
@@ -42,10 +43,10 @@ class MeshPass {
 
   void createFrameData(MeshPassFrameData&);
   void destroyFrameData(MeshPassFrameData&);
-  void allocateDescriptors(EntityRegistry&, MeshPassFrameData&,
-                           AssetPool*, GpuDescriptorPool*);
-  void render(EntityRegistry&, MeshPassFrameData&, AssetPool*,
-              VkCommandBuffer, GpuDescriptorSet*, uint32_t);
+  void allocateDescriptors(EntityRegistry&, MeshPassFrameData&, AssetPool*,
+                           GpuDescriptorPool*);
+  void render(EntityRegistry&, MeshPassFrameData&, AssetPool*, VkCommandBuffer,
+              GpuDescriptorSet*, uint32_t);
 
   GpuDescriptorSetLayout* material_layout;
   GpuDescriptorSetLayout* texture_layout;

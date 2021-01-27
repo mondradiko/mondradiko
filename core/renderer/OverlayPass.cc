@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include "core/components/PointLightComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
@@ -267,6 +268,36 @@ void OverlayPass::allocateDescriptors(EntityRegistry& registry,
           .color = glm::vec3(0.0, 0.0, 1.0)};
 
       frame.debug_vertices->writeElement(vertex_count, vertex2);
+      frame.debug_indices->writeElement(frame.index_count, vertex_count);
+      vertex_count++;
+      frame.index_count++;
+    }
+  }
+
+  auto point_lights_view = registry.view<PointLightComponent>();
+
+  for (auto e : point_lights_view) {
+    auto& point_light = point_lights_view.get(e);
+
+    PointLightUniform uniform;
+    point_light.getUniform(&uniform);
+    glm::vec3 position =
+        glm::vec3(uniform.position.x, uniform.position.y, uniform.position.z);
+
+    {
+      DebugDrawVertex vertex{.position = position + glm::vec3(0.0, 0.1, 0.0),
+                             .color = glm::vec3(1.0)};
+
+      frame.debug_vertices->writeElement(vertex_count, vertex);
+      frame.debug_indices->writeElement(frame.index_count, vertex_count);
+      vertex_count++;
+      frame.index_count++;
+    }
+
+    {
+      DebugDrawVertex vertex{.position = position, .color = glm::vec3(1.0)};
+
+      frame.debug_vertices->writeElement(vertex_count, vertex);
       frame.debug_indices->writeElement(frame.index_count, vertex_count);
       vertex_count++;
       frame.index_count++;

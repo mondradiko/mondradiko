@@ -37,6 +37,7 @@ struct MeshRenderCommand {
 struct MeshPassFrameData {
   GpuVector* material_buffer = nullptr;
   GpuVector* mesh_buffer = nullptr;
+  GpuVector* point_lights = nullptr;
 
   GpuDescriptorSet* material_descriptor;
   GpuDescriptorSet* mesh_descriptor;

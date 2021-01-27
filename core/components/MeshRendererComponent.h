@@ -25,10 +25,10 @@ class MeshRendererComponent
   explicit MeshRendererComponent(const protocol::MeshRendererComponent& data)
       : Component(data) {}
 
-  explicit MeshRendererComponent(const assets::MeshRendererPrefabT* prefab) {
-    _data.mutate_mesh_asset(static_cast<protocol::AssetId>(prefab->mesh));
+  explicit MeshRendererComponent(const assets::MeshRendererPrefab* prefab) {
+    _data.mutate_mesh_asset(static_cast<protocol::AssetId>(prefab->mesh()));
     _data.mutate_material_asset(
-        static_cast<protocol::AssetId>(prefab->material));
+        static_cast<protocol::AssetId>(prefab->material()));
   }
 
   MeshRendererComponent(AssetId mesh_asset, AssetId material_asset)
