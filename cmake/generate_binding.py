@@ -114,9 +114,9 @@ class Linker(Codegen):
             "",
 
             # Import common headers
-            '#include "core/common/wasm_headers.h"',
             '#include "core/world/World.h"',
             '#include "core/scripting/ScriptEnvironment.h"',
+            '#include "lib/include/wasm_headers.h"',
             ""
             "namespace mondradiko {",
             "",

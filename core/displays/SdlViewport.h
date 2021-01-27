@@ -13,8 +13,8 @@
 
 #include <vector>
 
-#include "core/common/sdl2_headers.h"
 #include "core/displays/Viewport.h"
+#include "lib/include/sdl2_headers.h"
 
 namespace mondradiko {
 

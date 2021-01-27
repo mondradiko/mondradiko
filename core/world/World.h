@@ -17,7 +17,7 @@
 #include "core/assets/AssetPool.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/world/Entity.h"
-#include "flatbuffers/flatbuffers.h"
+#include "lib/include/flatbuffers_headers.h"
 
 namespace mondradiko {
 

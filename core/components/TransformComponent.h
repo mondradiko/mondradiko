@@ -12,11 +12,11 @@
 #pragma once
 
 #include "assets/format/PrefabAsset_generated.h"
-#include "core/common/glm_headers.h"
-#include "core/common/wasm_headers.h"
 #include "core/components/Component.h"
+#include "core/protocol/TransformComponent_generated.h"
 #include "core/world/Entity.h"
-#include "protocol/TransformComponent_generated.h"
+#include "lib/include/glm_headers.h"
+#include "lib/include/wasm_headers.h"
 
 namespace mondradiko {
 

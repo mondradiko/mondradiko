@@ -12,8 +12,7 @@
 #pragma once
 
 #include "bundler/ConverterInterface.h"
-#define TINYGLTF_NO_STB_IMAGE_WRITE
-#include "lib/tiny_gltf.h"
+#include "lib/include/tinygltf_headers.h"
 
 namespace mondradiko {
 

@@ -10,10 +10,8 @@
  */
 
 #define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
+#include "lib/include/vulkan_headers.h"
 
 #define TINYGLTF_IMPLEMENTATION
-#define TINYGLTF_NO_STB_IMAGE_WRITE
 #define STB_IMAGE_IMPLEMENTATION
-#define STBI_MSC_SECURE_CRT
-#include "tiny_gltf.h"
+#include "lib/include/tinygltf_headers.h"

@@ -16,8 +16,7 @@
 #include <string>
 
 #include "assets/format/types_generated.h"
-// TODO(marceline-cramer) Move header helpers into lib/
-#include "core/common/glm_headers.h"
+#include "lib/include/glm_headers.h"
 
 // Provided by build system
 #ifndef MONDRADIKO_ASSET_VERSION

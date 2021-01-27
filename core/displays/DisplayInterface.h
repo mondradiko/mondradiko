@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "core/common/vulkan_headers.h"
+#include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
 

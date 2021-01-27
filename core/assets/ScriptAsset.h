@@ -15,7 +15,7 @@
 #include <unordered_map>
 
 #include "core/assets/AssetPool.h"
-#include "core/common/wasm_headers.h"
+#include "lib/include/wasm_headers.h"
 
 namespace mondradiko {
 

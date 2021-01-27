@@ -34,7 +34,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "core/common/wasm_headers.h"
+#include "lib/include/wasm_headers.h"
 
 namespace mondradiko {
 

@@ -1,5 +1,5 @@
 /**
- * @file api_headers.h
+ * @file tinygltf_headers.h
  * @author Marceline Cramer (cramermarceline@gmail.com)
  * @brief Conveniently #includes all library headers with proper #defines.
  * @date 2020-10-24
@@ -11,5 +11,6 @@
 
 #pragma once
 
-#include "lib/entt.hpp"
-#include "lib/stb_image.h"
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#define STBI_MSC_SECURE_CRT
+#include <lib/third_party/tiny_gltf.h>

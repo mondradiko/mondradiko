@@ -14,7 +14,7 @@
 #include "core/assets/Asset.h"
 #include "core/assets/AssetPool.h"
 #include "core/assets/TextureAsset.h"
-#include "core/common/glm_headers.h"
+#include "lib/include/glm_headers.h"
 
 namespace mondradiko {
 

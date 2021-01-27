@@ -15,9 +15,8 @@
 #include <cstddef>
 
 #include "core/assets/AssetPool.h"
-#include "core/common/api_headers.h"
-#include "core/common/glm_headers.h"
-#include "core/common/vulkan_headers.h"
+#include "lib/include/glm_headers.h"
+#include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
 

@@ -13,7 +13,7 @@
 
 #include <unordered_set>
 
-#include "core/common/vulkan_headers.h"
+#include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
 

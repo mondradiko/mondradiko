@@ -13,8 +13,8 @@
 
 #include <array>
 
-#include "core/common/glm_headers.h"
 #include "core/renderer/RenderPass.h"
+#include "lib/include/glm_headers.h"
 
 namespace mondradiko {
 
@@ -64,8 +64,8 @@ class OverlayPass {
 
   void createFrameData(OverlayPassFrameData&);
   void destroyFrameData(OverlayPassFrameData&);
-  void allocateDescriptors(EntityRegistry&, OverlayPassFrameData&,
-                           AssetPool*, GpuDescriptorPool*);
+  void allocateDescriptors(EntityRegistry&, OverlayPassFrameData&, AssetPool*,
+                           GpuDescriptorPool*);
   void render(EntityRegistry&, OverlayPassFrameData&, AssetPool*,
               VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 

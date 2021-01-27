@@ -14,7 +14,6 @@
 #include <sstream>
 
 #include "core/assets/AssetPool.h"
-#include "core/common/api_headers.h"
 #include "core/displays/OpenXrDisplay.h"
 #include "core/displays/SdlDisplay.h"
 #include "core/filesystem/Filesystem.h"

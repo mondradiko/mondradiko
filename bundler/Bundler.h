@@ -19,7 +19,7 @@
 #include "assets/format/SerializedAsset_generated.h"
 #include "assets/saving/AssetBundleBuilder.h"
 #include "bundler/ConverterInterface.h"
-#include "lib/toml.hpp"
+#include "lib/include/toml_headers.h"
 
 namespace mondradiko {
 

@@ -11,8 +11,7 @@
 
 #pragma once
 
-#include "core/common/api_headers.h"
-#include "flatbuffers/flatbuffers.h"
+#include "lib/include/flatbuffers_headers.h"
 
 namespace mondradiko {
 

@@ -13,9 +13,9 @@
 #pragma once
 
 #include "assets/format/PrefabAsset_generated.h"
-#include "core/common/glm_headers.h"
 #include "core/components/Component.h"
-#include "protocol/PointLightComponent_generated.h"
+#include "core/protocol/PointLightComponent_generated.h"
+#include "lib/include/glm_headers.h"
 
 namespace mondradiko {
 

@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "core/common/openxr_headers.h"
 #include "core/displays/DisplayInterface.h"
+#include "lib/include/openxr_headers.h"
 
 namespace mondradiko {
 

@@ -13,8 +13,8 @@
 
 #include <vector>
 
-#include "core/common/openxr_headers.h"
 #include "core/displays/Viewport.h"
+#include "lib/include/openxr_headers.h"
 
 namespace mondradiko {
 

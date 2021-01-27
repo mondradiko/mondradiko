@@ -16,8 +16,8 @@
 
 #include "core/assets/AssetPool.h"
 #include "core/assets/MeshAsset.h"
-#include "core/common/vulkan_headers.h"
 #include "core/world/Entity.h"
+#include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
 

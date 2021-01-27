@@ -17,8 +17,8 @@
 #include <unordered_map>
 
 #include "core/assets/AssetPool.h"
-#include "core/common/glm_headers.h"
 #include "core/renderer/RenderPass.h"
+#include "lib/include/glm_headers.h"
 
 namespace mondradiko {
 
