@@ -33,6 +33,8 @@ class GpuDescriptorSetLayout {
   // void addStorageImage();
   // void addUniformTexelBuffer();
   // void addStorageTexelBuffer();
+  // void addUniformBuffer();
+  void addStorageBuffer(uint32_t);
   void addDynamicUniformBuffer(uint32_t);
   // void addDynamicStorageBuffer();
   // void addInputAttachment();

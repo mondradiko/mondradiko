@@ -65,8 +65,24 @@ void GpuDescriptorSet::updateDynamicBuffer(uint32_t binding,
       .pBufferInfo = &buffer_info};
 
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
+}
 
-  dynamic_offset_granularity[binding] = buffer->getGranularity();
+void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,
+                                           GpuVector* buffer) {
+  VkDescriptorBufferInfo buffer_info{.buffer = buffer->getBuffer(),
+                                     .offset = 0,
+                                     .range = buffer->getBufferSize()};
+
+  VkWriteDescriptorSet descriptor_writes{
+      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+      .dstSet = descriptor_set,
+      .dstBinding = binding,
+      .dstArrayElement = 0,
+      .descriptorCount = 1,
+      .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+      .pBufferInfo = &buffer_info};
+
+  vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
 }
 
 void GpuDescriptorSet::updateImage(uint32_t binding, GpuImage* image) {

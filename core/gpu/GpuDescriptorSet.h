@@ -33,6 +33,7 @@ class GpuDescriptorSet {
 
   void updateBuffer(uint32_t, GpuBuffer*);
   void updateDynamicBuffer(uint32_t, GpuVector*);
+  void updateStorageBuffer(uint32_t, GpuVector*);
   void updateImage(uint32_t, GpuImage*);
 
   void updateDynamicOffset(uint32_t, uint32_t);

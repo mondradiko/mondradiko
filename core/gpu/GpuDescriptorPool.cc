@@ -24,11 +24,13 @@ GpuDescriptorPool::GpuDescriptorPool(GpuInstance* gpu) : gpu(gpu) {
   // TODO(marceline-cramer) Dynamic pool recreation using set layouts
   std::vector<VkDescriptorPoolSize> pool_sizes;
 
-  pool_sizes.push_back(
-      {.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 1000});
-
   pool_sizes.push_back({.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                         .descriptorCount = 1000});
+
+  pool_sizes.push_back(
+      {.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 1000});
+  pool_sizes.push_back(
+      {.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, .descriptorCount = 1000});
 
   pool_sizes.push_back({.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
                         .descriptorCount = 1000});

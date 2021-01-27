@@ -34,6 +34,17 @@ void GpuDescriptorSetLayout::addCombinedImageSampler(VkSampler sampler) {
   immutable_samplers.push_back(sampler);
 }
 
+void GpuDescriptorSetLayout::addStorageBuffer(uint32_t element_size) {
+  VkDescriptorSetLayoutBinding storage_binding{
+      .binding = static_cast<uint32_t>(layout_bindings.size()),
+      .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT};
+
+  layout_bindings.push_back(storage_binding);
+  buffer_sizes.push_back(element_size);
+}
+
 void GpuDescriptorSetLayout::addDynamicUniformBuffer(uint32_t buffer_size) {
   dynamic_offset_count++;
 
