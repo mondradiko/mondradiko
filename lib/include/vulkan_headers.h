@@ -15,4 +15,3 @@
 
 #include <vulkan/vulkan.h>
 #include <lib/third_party/vk_mem_alloc.h>
-#include <ktxvulkan.h>  // NOLINT

@@ -11,8 +11,6 @@
 
 #include "core/gpu/GpuImage.h"
 
-#include <ktxvulkan.h>
-
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
@@ -52,38 +50,10 @@ GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
   createView();
 }
 
-GpuImage::GpuImage(GpuInstance* gpu, ktxTexture* texture,
-                   VkImageUsageFlags image_usage_flags)
-    : gpu(gpu) {
-  // TODO(marceline-cramer) Manual KTX texture uploading
-  KTX_error_code result = ktxTexture_VkUploadEx(
-      texture, &gpu->ktx_info, &ktx_texture, VK_IMAGE_TILING_OPTIMAL,
-      image_usage_flags, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-  if (result != KTX_SUCCESS) {
-    log_ftl("Failed to upload KTX texture");
-  }
-
-  using_ktx = true;
-
-  format = ktx_texture.imageFormat;
-  layout = ktx_texture.imageLayout;
-  width = ktx_texture.width;
-  height = ktx_texture.height;
-  image = ktx_texture.image;
-
-  createView();
-}
-
 GpuImage::~GpuImage() {
   if (view != VK_NULL_HANDLE) vkDestroyImageView(gpu->device, view, nullptr);
 
-  if (using_ktx) {
-    ktxVulkanTexture_Destruct(&ktx_texture, gpu->device, nullptr);
-  } else {
-    if (allocation != nullptr)
-      vmaDestroyImage(gpu->allocator, image, allocation);
-  }
+  if (allocation != nullptr) vmaDestroyImage(gpu->allocator, image, allocation);
 }
 
 void GpuImage::writeData(const void* src) {

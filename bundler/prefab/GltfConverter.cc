@@ -415,10 +415,10 @@ assets::AssetId GltfConverter::_loadImage(GltfModel model, GltfImage image,
       fbb.CreateVector(reinterpret_cast<const uint8_t *>(image.image.data()),
                        image.image.size());
 
-  assets::RawTextureBuilder raw_texture(fbb);
+  assets::TextureAssetBuilder texture(fbb);
 
-  raw_texture.add_components(image.component);
-  raw_texture.add_bit_depth(image.bits);
+  texture.add_components(image.component);
+  texture.add_bit_depth(image.bits);
 
   {
     using Components = assets::TextureComponentType;
@@ -438,18 +438,13 @@ assets::AssetId GltfConverter::_loadImage(GltfModel model, GltfImage image,
       log_ftl("Unrecognized GLTF image component type %d", image.component);
     }
 
-    raw_texture.add_component_type(iter->second);
+    texture.add_component_type(iter->second);
   }
 
-  raw_texture.add_width(image.width);
-  raw_texture.add_height(image.height);
-  raw_texture.add_srgb(srgb);
-  raw_texture.add_data(data_offset);
-  auto raw_texture_offset = raw_texture.Finish();
-
-  assets::TextureAssetBuilder texture(fbb);
-  texture.add_format(assets::TextureFormat::Raw);
-  texture.add_raw(raw_texture_offset);
+  texture.add_width(image.width);
+  texture.add_height(image.height);
+  texture.add_srgb(srgb);
+  texture.add_data(data_offset);
   auto texture_offset = texture.Finish();
 
   assets::SerializedAssetBuilder asset(fbb);

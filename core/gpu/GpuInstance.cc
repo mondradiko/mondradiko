@@ -46,14 +46,6 @@ GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
   createLogicalDevice(&requirements);
   createCommandPool();
   createAllocator();
-
-  {
-    log_zone_named("Fill out KTX info");
-
-    using_ktx = true;
-    ktxVulkanDeviceInfo_Construct(&ktx_info, physical_device, device,
-                                  graphics_queue, command_pool, nullptr);
-  }
 }
 
 GpuInstance::~GpuInstance() {
@@ -62,10 +54,6 @@ GpuInstance::~GpuInstance() {
   display->destroySession();
 
   vkDeviceWaitIdle(device);
-
-  if (using_ktx) {
-    ktxVulkanDeviceInfo_Destruct(&ktx_info);
-  }
 
   if (allocator != nullptr) vmaDestroyAllocator(allocator);
 

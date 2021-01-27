@@ -5,13 +5,6 @@ include "types.fbs";
 
 namespace mondradiko.assets;
 
-// TODO(marceline-cramer) Remove KTX
-enum TextureFormat : ubyte {
-  None = 0,
-  KTX,
-  Raw
-}
-
 enum TextureComponentType : ubyte {
   Byte,
   UByte,
@@ -23,11 +16,7 @@ enum TextureComponentType : ubyte {
   Double
 }
 
-table KtxTexture {
-  data:[ubyte];
-}
-
-table RawTexture {
+table TextureAsset {
   components:ubyte;
   bit_depth:ubyte;
   component_type:TextureComponentType;
@@ -35,12 +24,6 @@ table RawTexture {
   height:uint;
   srgb:bool;
   data:[ubyte];
-}
-
-table TextureAsset {
-  format:TextureFormat;
-  ktx:KtxTexture;
-  raw:RawTexture;
 }
 
 root_type TextureAsset;

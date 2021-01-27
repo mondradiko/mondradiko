@@ -9,7 +9,6 @@ pkg_check_modules(LZ4 REQUIRED liblz4)
 
 find_package(GameNetworkingSockets REQUIRED)
 find_package(Threads REQUIRED)
-find_package(Ktx REQUIRED COMPONENTS ktx)
 
 include(FindVulkan)
 
@@ -42,7 +41,6 @@ target_include_directories(mondradiko-lib PUBLIC ${LZ4_INCLUDE_DIRS})
 target_compile_options(mondradiko-lib PUBLIC ${LZ4_CFLAGS_OTHER})
 
 target_link_libraries(mondradiko-lib PUBLIC GameNetworkingSockets::GameNetworkingSockets_s)
-target_link_libraries(mondradiko-lib PUBLIC KTX::ktx)
 
 target_link_libraries(mondradiko-lib PUBLIC ${Vulkan_LIBRARIES})
 target_include_directories(mondradiko-lib PUBLIC ${Vulkan_INCLUDE_DIRS})
