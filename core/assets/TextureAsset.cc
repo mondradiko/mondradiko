@@ -67,7 +67,11 @@ void TextureAsset::load(const assets::SerializedAsset* asset) {
         log_ftl("Unsupported component type");
       }
 
-      texture_format = VK_FORMAT_R8G8B8A8_UNORM;
+      if (raw_texture->srgb()) {
+        texture_format = VK_FORMAT_R8G8B8A8_SRGB;
+      } else {
+        texture_format = VK_FORMAT_R8G8B8A8_UNORM;
+      }
 
       image = new GpuImage(
           gpu, texture_format, raw_texture->width(), raw_texture->height(),

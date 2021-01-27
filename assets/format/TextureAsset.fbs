@@ -33,6 +33,7 @@ table RawTexture {
   component_type:TextureComponentType;
   width:uint;
   height:uint;
+  srgb:bool;
   data:[ubyte];
 }
 
