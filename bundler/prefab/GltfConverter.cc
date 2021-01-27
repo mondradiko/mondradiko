@@ -47,6 +47,8 @@ GltfConverter::AssetOffset GltfConverter::_loadModel(AssetBuilder *fbb,
 
 assets::AssetId GltfConverter::_loadScene(GltfModel model,
                                           GltfScene scene) const {
+  log_inf("Loading scene");
+
   flatbuffers::FlatBufferBuilder fbb;
 
   std::vector<uint32_t> children;
@@ -116,10 +118,9 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
 
       flatbuffers::FlatBufferBuilder fbb;
 
-      assets::MeshRendererPrefabBuilder mesh_renderer(fbb);
-      mesh_renderer.add_mesh(mesh_id);
-      mesh_renderer.add_material(material_id);
-      auto mesh_renderer_offset = mesh_renderer.Finish();
+      assets::MeshRendererPrefab mesh_renderer;
+      mesh_renderer.mutate_mesh(mesh_id);
+      mesh_renderer.mutate_material(material_id);
 
       assets::TransformPrefab transform;
       transform.mutable_position().mutate_x(node_translation.x);
@@ -132,7 +133,7 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
       transform.mutable_orientation().mutate_z(node_orientation.z);
 
       assets::PrefabAssetBuilder prefab(fbb);
-      prefab.add_mesh_renderer(mesh_renderer_offset);
+      prefab.add_mesh_renderer(&mesh_renderer);
       prefab.add_transform(&transform);
       auto prefab_offset = prefab.Finish();
 
@@ -212,7 +213,7 @@ class GltfAccessor {
  private:
   const unsigned char *buffer_data;
   uint32_t count;
-  uint32_t stride;
+  int stride;
 };
 
 assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
@@ -337,24 +338,40 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
   }
 }
 
+// Helper function to load vectors
+// TODO(marceline-cramer) Move this into a helper file
+void loadVector(assets::Vec3 *dst, const std::vector<double> &src) {
+  if (src.size() >= 3) {
+    dst->mutate_x(src[0]);
+    dst->mutate_y(src[1]);
+    dst->mutate_z(src[2]);
+  }
+}
+
 assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
                                              GltfMaterial material) const {
   flatbuffers::FlatBufferBuilder fbb;
 
   assets::MaterialAssetBuilder material_builder(fbb);
 
-  assets::Vec3 albedo_factor(1.0, 1.0, 1.0);
-  if (material.pbrMetallicRoughness.baseColorFactor.size() >= 3) {
-    const auto &factor = material.pbrMetallicRoughness.baseColorFactor;
-    albedo_factor.mutate_x(factor[0]);
-    albedo_factor.mutate_y(factor[1]);
-    albedo_factor.mutate_z(factor[2]);
-  }
-  material_builder.add_albedo_factor(&albedo_factor);
+  {  // Load PBR
+    const auto &pbr = material.pbrMetallicRoughness;
 
-  const auto &base_color = material.pbrMetallicRoughness.baseColorTexture;
-  assets::AssetId base_color_id = _loadTexture(model, base_color);
-  material_builder.add_albedo_texture(base_color_id);
+    assets::Vec3 albedo_factor(1.0, 1.0, 1.0);
+    loadVector(&albedo_factor, pbr.baseColorFactor);
+    material_builder.add_albedo_factor(&albedo_factor);
+
+    assets::AssetId albedo_texture =
+        _loadTexture(model, pbr.baseColorTexture, true);
+    material_builder.add_albedo_texture(albedo_texture);
+
+    material_builder.add_metallic_factor(pbr.metallicFactor);
+    material_builder.add_roughness_factor(pbr.roughnessFactor);
+
+    assets::AssetId metallic_roughness_texture =
+        _loadTexture(model, pbr.metallicRoughnessTexture, false);
+    material_builder.add_metallic_roughness_texture(metallic_roughness_texture);
+  }
 
   auto material_offset = material_builder.Finish();
 
@@ -368,18 +385,24 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
   return asset_id;
 }
 
-assets::AssetId GltfConverter::_loadTexture(
-    GltfModel model, GltfTextureInfo texture_info) const {
+assets::AssetId GltfConverter::_loadTexture(GltfModel model,
+                                            GltfTextureInfo texture_info,
+                                            bool srgb) const {
+  if (texture_info.index == -1) {
+    log_err("Attempting to load null texture");
+    return assets::AssetId::NullAsset;
+  }
+
   const auto &texture = model.textures[texture_info.index];
   const auto &image = model.images[texture.source];
 
   // TODO(marceline-cramer) Add sampler support
 
-  return _loadImage(model, image);
+  return _loadImage(model, image, srgb);
 }
 
-assets::AssetId GltfConverter::_loadImage(GltfModel model,
-                                          GltfImage image) const {
+assets::AssetId GltfConverter::_loadImage(GltfModel model, GltfImage image,
+                                          bool srgb) const {
   flatbuffers::FlatBufferBuilder fbb;
 
   log_inf("Loading GLTF image");
@@ -420,6 +443,7 @@ assets::AssetId GltfConverter::_loadImage(GltfModel model,
 
   raw_texture.add_width(image.width);
   raw_texture.add_height(image.height);
+  raw_texture.add_srgb(srgb);
   raw_texture.add_data(data_offset);
   auto raw_texture_offset = raw_texture.Finish();
 
