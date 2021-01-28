@@ -46,6 +46,7 @@ set(MONDRADIKO_CORE_SRC
   components/PointLightComponent.cc
   components/ScriptComponent.cc
   components/TransformComponent.cc
+  cvars/CVarScope.cc
   displays/OpenXrDisplay.cc
   displays/OpenXrViewport.cc
   displays/SdlDisplay.cc

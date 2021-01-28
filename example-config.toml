@@ -1,0 +1,12 @@
+[server]
+max_tps = 50.0
+update_rate = 20.0
+
+[client]
+username = "Example username"
+metaverse_provider = ""
+
+[renderer.debug]
+enabled = true
+draw_lights = true
+draw_transforms = true
