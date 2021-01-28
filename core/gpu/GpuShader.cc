@@ -1,13 +1,5 @@
-/**
- * @file GpuShader.cc
- * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Creates a shader module from SPIR-V bytecode.
- * @date 2020-11-25
- *
- * @copyright Copyright (c) 2020 the Mondradiko contributors.
- * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- */
+// Copyright (c) 2020-2021 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "core/gpu/GpuShader.h"
 

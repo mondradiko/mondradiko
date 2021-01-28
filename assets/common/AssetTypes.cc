@@ -1,13 +1,5 @@
-/**
- * @file Asset.cc
- * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Implements AssetType.h's helper functions.
- * @date 2020-12-08
- *
- * @copyright Copyright (c) 2020 the Mondradiko contributors.
- * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- */
+// Copyright (c) 2020-2021 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "assets/common/AssetTypes.h"
 

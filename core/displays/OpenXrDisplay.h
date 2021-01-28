@@ -1,13 +1,5 @@
-/**
- * @file OpenXrDisplay.h
- * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Implements an OpenXR VR display interface.
- * @date 2020-11-08
- *
- * @copyright Copyright (c) 2020 the Mondradiko contributors.
- * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- */
+// Copyright (c) 2020-2021 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #pragma once
 

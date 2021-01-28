@@ -1,13 +1,5 @@
-/**
- * @file GpuBuffer.h
- * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Creates and manages a Vulkan buffer and its allocation.
- * @date 2020-10-24
- *
- * @copyright Copyright (c) 2020 the Mondradiko contributors.
- * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- */
+// Copyright (c) 2020-2021 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #pragma once
 

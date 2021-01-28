@@ -1,4 +1,4 @@
-# Copyright (c) 2020 the Mondradiko contributors.
+# Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 find_program(FLATC_COMMAND flatc)
@@ -18,7 +18,7 @@ function(flatc_schema ret FBS)
 
   add_custom_command(
 		OUTPUT ${HEADER}
-		COMMAND ${FLATC_COMMAND} --gen-object-api --gen-mutable --scoped-enums -c -o ${OUTPUTDIR} ${FBS} 
+		COMMAND ${FLATC_COMMAND} --gen-object-api --gen-mutable --scoped-enums -c -o ${OUTPUTDIR} ${FBS}
 		DEPENDS ${FBS})
 
 	set(${ret} "${HEADER}" PARENT_SCOPE)

@@ -1,14 +1,5 @@
-/**
- * @file PointLightComponent.cc
- * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Illuminates a world with an omnidirectional point light.
- * @date 2021-01-26
- *
- * @copyright Copyright (c) 2020 the Mondradiko contributors.
- * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- *
- */
+// Copyright (c) 2020-2021 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "core/components/PointLightComponent.h"
 

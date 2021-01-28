@@ -1,26 +1,19 @@
-/**
- * @file ScriptInstance.h
- * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Instantiates the Wasm module imported from a ScriptAsset.
- * @date 2021-01-02
- *
- * @copyright Copyright (c) 2020 the Mondradiko contributors.
- * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- * After a Wasm module is loaded and created by ScriptAsset, it can create
- * ScriptInstances, which represent individual WebAssembly processes, each with
- * their own execution environment.
- *
- * When a ScriptInstance is created, it calls the instantiate() function of the
- * instance, if it exists. If it does, then instantiate() returns a pointer to a
- * structure inside of Wasm memory, that needs to be synchronized over the
- * network. This is represented by a byte array, copied directly from the Wasm
- * store, and packaged in the ScriptComponent flatbuffer.
- *
- * Then, the callbacks exported from from the module are registered, and the
- * ScriptEnvironment is ready to start calling them on world events.
- */
-
+// Copyright (c) 2020-2021 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
+//
+// After a Wasm module is loaded and created by ScriptAsset, it can create
+// ScriptInstances, which represent individual WebAssembly processes, each with
+// their own execution environment.
+//
+// When a ScriptInstance is created, it calls the instantiate() function of the
+// instance, if it exists. If it does, then instantiate() returns a pointer to a
+// structure inside of Wasm memory, that needs to be synchronized over the
+// network. This is represented by a byte array, copied directly from the Wasm
+// store, and packaged in the ScriptComponent flatbuffer.
+//
+// Then, the callbacks exported from from the module are registered, and the
+// ScriptEnvironment is ready to start calling them on world events.
+//
 ///////////////////////////////////////////////////////////////////////////////
 // To-do list:
 //

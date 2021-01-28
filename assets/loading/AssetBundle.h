@@ -1,14 +1,5 @@
-/**
- * @file AssetBundle.h
- * @author Marceline Cramer (cramermarceline@gmail.com)
- * @brief Loads an asset bundle, its registry, its
- * lumps, and the assets themselves.
- * @date 2020-12-08
- *
- * @copyright Copyright (c) 2020 the Mondradiko contributors.
- * SPDX-License-Identifier: LGPL-3.0-or-later
- *
- */
+// Copyright (c) 2020-2021 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #pragma once
 

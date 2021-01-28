@@ -1,4 +1,4 @@
-# Copyright (c) 2020 the Mondradiko contributors.
+# Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 name = "Transform"
@@ -8,7 +8,7 @@ name = "Transform"
   [methods.getPosition]
   brief = "Retrieves the position of this Transform."
   params = []
-  return = "Vec3"    
+  return = "Vec3"
 
   [methods.setPosition]
   brief = "Sets the position of this Transform."
