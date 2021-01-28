@@ -9,6 +9,7 @@
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/PointLightComponent.h"
 #include "core/components/TransformComponent.h"
+#include "core/cvars/CVarScope.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
@@ -22,6 +23,8 @@
 #include "shaders/mesh.vert.h"
 
 namespace mondradiko {
+
+void MeshPass::initCVars(CVarScope* cvars) {}
 
 MeshPass::MeshPass(GpuInstance* gpu, GpuDescriptorSetLayout* viewport_layout,
                    VkRenderPass render_pass, uint32_t subpass_index)

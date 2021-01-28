@@ -11,6 +11,7 @@
 namespace mondradiko {
 
 // Forward declarations
+class CVarScope;
 class GpuDescriptorSetLayout;
 class GpuInstance;
 
@@ -51,7 +52,10 @@ using DebugDrawIndex = uint16_t;
 
 class OverlayPass {
  public:
-  OverlayPass(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
+  static void initCVars(CVarScope*);
+
+  OverlayPass(const CVarScope*, GpuInstance*, GpuDescriptorSetLayout*,
+              VkRenderPass, uint32_t);
   ~OverlayPass();
 
   void createFrameData(OverlayPassFrameData&);
@@ -65,6 +69,7 @@ class OverlayPass {
   VkPipeline debug_pipeline = VK_NULL_HANDLE;
 
  private:
+  const CVarScope* cvars;
   GpuInstance* gpu;
 };
 

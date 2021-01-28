@@ -12,6 +12,7 @@
 namespace mondradiko {
 
 // Forward declarations
+class CVarScope;
 class DisplayInterface;
 class GpuDescriptorPool;
 class GpuDescriptorSetLayout;
@@ -27,7 +28,9 @@ struct FramePushConstant {
 
 class Renderer {
  public:
-  Renderer(DisplayInterface*, GpuInstance*);
+  static void initCVars(CVarScope*);
+
+  Renderer(const CVarScope*, DisplayInterface*, GpuInstance*);
   ~Renderer();
 
   void renderFrame(EntityRegistry&, AssetPool*);
@@ -40,6 +43,7 @@ class Renderer {
   OverlayPass* overlay_pass = nullptr;
 
  private:
+  const CVarScope* cvars;
   DisplayInterface* display;
   GpuInstance* gpu;
 

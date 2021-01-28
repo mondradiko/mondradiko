@@ -14,6 +14,7 @@
 namespace mondradiko {
 
 // Forward declarations
+class CVarScope;
 class MeshRendererComponent;
 class GpuBuffer;
 class GpuDescriptorPool;
@@ -29,6 +30,8 @@ struct MeshUniform {
 
 class MeshPass {
  public:
+  static void initCVars(CVarScope*);
+
   MeshPass(GpuInstance*, GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
   ~MeshPass();
 

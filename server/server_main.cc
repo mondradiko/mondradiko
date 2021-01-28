@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "core/assets/AssetPool.h"
+#include "core/cvars/CVarScope.h"
+#include "core/cvars/FloatCVar.h"
 #include "core/displays/SdlDisplay.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
@@ -45,18 +47,25 @@ int main(int argc, const char* argv[]) {
     Filesystem fs;
     fs.loadAssetBundle("./");
 
+    auto config = fs.loadToml("config.toml");
+
+    CVarScope cvars;
+
+    CVarScope* server_cvars = cvars.addChild("server");
+    server_cvars->addValue<FloatCVar>("max_tps", 1.0, 100.0);
+    server_cvars->addValue<FloatCVar>("update_rate", 0.1, 20.0);
+
+    cvars.loadConfig(config);
+
     World world(&fs, nullptr);
     WorldEventSorter world_event_sorter(&world);
     NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
 
     world.initializePrefabs();
 
-    // TODO(marceline-cramer) CVARs
-    const double MAX_FPS = 30.0;
-    const double MAX_UPDATES_PER_SECOND = 10.0;
-
-    const double min_frame_time = 1.0 / MAX_FPS;
-    const double min_update_time = 1.0 / MAX_UPDATES_PER_SECOND;
+    const double min_frame_time = 1.0 / server_cvars->get<FloatCVar>("max_tps");
+    const double min_update_time =
+        1.0 / server_cvars->get<FloatCVar>("update_rate");
 
     using clock = std::chrono::high_resolution_clock;
     std::chrono::time_point last_frame = clock::now();

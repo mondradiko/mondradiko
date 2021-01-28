@@ -7,6 +7,8 @@
 
 #include "core/components/PointLightComponent.h"
 #include "core/components/TransformComponent.h"
+#include "core/cvars/BoolCVar.h"
+#include "core/cvars/CVarScope.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
@@ -18,10 +20,18 @@
 
 namespace mondradiko {
 
-OverlayPass::OverlayPass(GpuInstance* gpu,
+void OverlayPass::initCVars(CVarScope* cvars) {
+  CVarScope* debug = cvars->addChild("debug");
+
+  debug->addValue<BoolCVar>("enabled");
+  debug->addValue<BoolCVar>("draw_lights");
+  debug->addValue<BoolCVar>("draw_transforms");
+}
+
+OverlayPass::OverlayPass(const CVarScope* cvars, GpuInstance* gpu,
                          GpuDescriptorSetLayout* viewport_layout,
                          VkRenderPass parent_pass, uint32_t subpass_index)
-    : gpu(gpu) {
+    : cvars(cvars->getChild("debug")), gpu(gpu) {
   log_zone;
 
   {
@@ -194,105 +204,111 @@ void OverlayPass::allocateDescriptors(EntityRegistry& registry,
   frame.index_count = 0;
   DebugDrawIndex vertex_count = 0;
 
-  auto transform_view = registry.view<TransformComponent>();
+  if (!cvars->get<BoolCVar>("enabled")) return;
 
-  for (auto& e : transform_view) {
-    glm::mat4 transform = transform_view.get(e).getWorldTransform();
+  if (cvars->get<BoolCVar>("draw_transforms")) {
+    auto transform_view = registry.view<TransformComponent>();
 
-    {
-      // Draw X line
+    for (auto& e : transform_view) {
+      glm::mat4 transform = transform_view.get(e).getWorldTransform();
 
-      DebugDrawVertex vertex1{
-          .position = transform * glm::vec4(1.0, 0.0, 0.0, 1.0),
-          .color = glm::vec3(1.0, 0.0, 0.0)};
+      {
+        // Draw X line
 
-      frame.debug_vertices->writeElement(vertex_count, vertex1);
-      frame.debug_indices->writeElement(frame.index_count, vertex_count);
-      vertex_count++;
-      frame.index_count++;
+        DebugDrawVertex vertex1{
+            .position = transform * glm::vec4(1.0, 0.0, 0.0, 1.0),
+            .color = glm::vec3(1.0, 0.0, 0.0)};
 
-      DebugDrawVertex vertex2{
-          .position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0),
-          .color = glm::vec3(1.0, 0.0, 0.0)};
+        frame.debug_vertices->writeElement(vertex_count, vertex1);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
 
-      frame.debug_vertices->writeElement(vertex_count, vertex2);
-      frame.debug_indices->writeElement(frame.index_count, vertex_count);
-      vertex_count++;
-      frame.index_count++;
-    }
+        DebugDrawVertex vertex2{
+            .position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0),
+            .color = glm::vec3(1.0, 0.0, 0.0)};
 
-    {
-      // Draw Y line
+        frame.debug_vertices->writeElement(vertex_count, vertex2);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
+      }
 
-      DebugDrawVertex vertex1{
-          .position = transform * glm::vec4(0.0, 1.0, 0.0, 1.0),
-          .color = glm::vec3(0.0, 1.0, 0.0)};
+      {
+        // Draw Y line
 
-      frame.debug_vertices->writeElement(vertex_count, vertex1);
-      frame.debug_indices->writeElement(frame.index_count, vertex_count);
-      vertex_count++;
-      frame.index_count++;
+        DebugDrawVertex vertex1{
+            .position = transform * glm::vec4(0.0, 1.0, 0.0, 1.0),
+            .color = glm::vec3(0.0, 1.0, 0.0)};
 
-      DebugDrawVertex vertex2{
-          .position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0),
-          .color = glm::vec3(0.0, 1.0, 0.0)};
+        frame.debug_vertices->writeElement(vertex_count, vertex1);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
 
-      frame.debug_vertices->writeElement(vertex_count, vertex2);
-      frame.debug_indices->writeElement(frame.index_count, vertex_count);
-      vertex_count++;
-      frame.index_count++;
-    }
+        DebugDrawVertex vertex2{
+            .position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0),
+            .color = glm::vec3(0.0, 1.0, 0.0)};
 
-    {
-      // Draw Z line
+        frame.debug_vertices->writeElement(vertex_count, vertex2);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
+      }
 
-      DebugDrawVertex vertex1{
-          .position = transform * glm::vec4(0.0, 0.0, 1.0, 1.0),
-          .color = glm::vec3(0.0, 0.0, 1.0)};
+      {
+        // Draw Z line
 
-      frame.debug_vertices->writeElement(vertex_count, vertex1);
-      frame.debug_indices->writeElement(frame.index_count, vertex_count);
-      vertex_count++;
-      frame.index_count++;
+        DebugDrawVertex vertex1{
+            .position = transform * glm::vec4(0.0, 0.0, 1.0, 1.0),
+            .color = glm::vec3(0.0, 0.0, 1.0)};
 
-      DebugDrawVertex vertex2{
-          .position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0),
-          .color = glm::vec3(0.0, 0.0, 1.0)};
+        frame.debug_vertices->writeElement(vertex_count, vertex1);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
 
-      frame.debug_vertices->writeElement(vertex_count, vertex2);
-      frame.debug_indices->writeElement(frame.index_count, vertex_count);
-      vertex_count++;
-      frame.index_count++;
+        DebugDrawVertex vertex2{
+            .position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0),
+            .color = glm::vec3(0.0, 0.0, 1.0)};
+
+        frame.debug_vertices->writeElement(vertex_count, vertex2);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
+      }
     }
   }
 
-  auto point_lights_view = registry.view<PointLightComponent>();
+  if (cvars->get<BoolCVar>("draw_lights")) {
+    auto point_lights_view = registry.view<PointLightComponent>();
 
-  for (auto e : point_lights_view) {
-    auto& point_light = point_lights_view.get(e);
+    for (auto e : point_lights_view) {
+      auto& point_light = point_lights_view.get(e);
 
-    PointLightUniform uniform;
-    point_light.getUniform(&uniform);
-    glm::vec3 position =
-        glm::vec3(uniform.position.x, uniform.position.y, uniform.position.z);
+      PointLightUniform uniform;
+      point_light.getUniform(&uniform);
+      glm::vec3 position =
+          glm::vec3(uniform.position.x, uniform.position.y, uniform.position.z);
 
-    {
-      DebugDrawVertex vertex{.position = position + glm::vec3(0.0, 0.1, 0.0),
-                             .color = glm::vec3(1.0)};
+      {
+        DebugDrawVertex vertex{.position = position + glm::vec3(0.0, 0.1, 0.0),
+                               .color = glm::vec3(1.0)};
 
-      frame.debug_vertices->writeElement(vertex_count, vertex);
-      frame.debug_indices->writeElement(frame.index_count, vertex_count);
-      vertex_count++;
-      frame.index_count++;
-    }
+        frame.debug_vertices->writeElement(vertex_count, vertex);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
+      }
 
-    {
-      DebugDrawVertex vertex{.position = position, .color = glm::vec3(1.0)};
+      {
+        DebugDrawVertex vertex{.position = position, .color = glm::vec3(1.0)};
 
-      frame.debug_vertices->writeElement(vertex_count, vertex);
-      frame.debug_indices->writeElement(frame.index_count, vertex_count);
-      vertex_count++;
-      frame.index_count++;
+        frame.debug_vertices->writeElement(vertex_count, vertex);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
+      }
     }
   }
 }

@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "core/cvars/BoolCVar.h"
+#include "core/cvars/StringCVar.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/world/World.h"
 #include "log/log.h"
@@ -18,13 +20,21 @@
 
 namespace mondradiko {
 
+void NetworkClient::initCVars(CVarScope* cvars) {
+  CVarScope* client = cvars->addChild("client");
+
+  client->addValue<StringCVar>("username");
+  client->addValue<StringCVar>("metaverse_provider");
+}
+
 // Nasty singleton
 // GameNetworkingSockets doesn't give us a choice here
 NetworkClient* g_client = nullptr;
 
-NetworkClient::NetworkClient(Filesystem* fs, World* world,
-                             const char* server_ip, int server_port)
-    : fs(fs), world(world) {
+NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
+                             World* world, const char* server_ip,
+                             int server_port)
+    : cvars(cvars->getChild("client")), fs(fs), world(world) {
   log_zone;
 
   if (g_client) {
@@ -120,7 +130,8 @@ void NetworkClient::requestJoin() {
   flatbuffers::FlatBufferBuilder builder;
   builder.Clear();
 
-  auto username_offset = builder.CreateString("TestClient");
+  auto username_offset =
+      builder.CreateString(cvars->get<StringCVar>("username").str());
 
   // TODO(marceline-cramer) Use strings for hashes
   std::vector<uint64_t> lump_checksums;

@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "core/assets/AssetPool.h"
+#include "core/cvars/CVarScope.h"
 #include "core/displays/OpenXrDisplay.h"
 #include "core/displays/SdlDisplay.h"
 #include "core/filesystem/Filesystem.h"
@@ -34,9 +35,16 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
     log_ftl("Failed to create display session!");
   }
 
-  Renderer renderer(display, gpu);
+  auto config = fs->loadToml("./config.toml");
+
+  CVarScope cvars;
+  Renderer::initCVars(&cvars);
+  NetworkClient::initCVars(&cvars);
+  cvars.loadConfig(config);
+
+  Renderer renderer(&cvars, display, gpu);
   World world(fs, gpu);
-  NetworkClient client(fs, &world, "127.0.0.1", 10555);
+  NetworkClient client(&cvars, fs, &world, "127.0.0.1", 10555);
 
   while (!g_interrupted) {
     DisplayPollEventsInfo poll_info;

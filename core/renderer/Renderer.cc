@@ -3,6 +3,7 @@
 
 #include "core/renderer/Renderer.h"
 
+#include "core/cvars/CVarScope.h"
 #include "core/displays/DisplayInterface.h"
 #include "core/displays/Viewport.h"
 #include "core/gpu/GpuDescriptorPool.h"
@@ -16,8 +17,15 @@
 
 namespace mondradiko {
 
-Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
-    : display(display), gpu(gpu) {
+void Renderer::initCVars(CVarScope* cvars) {
+  CVarScope* renderer = cvars->addChild("renderer");
+
+  OverlayPass::initCVars(renderer);
+}
+
+Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
+                   GpuInstance* gpu)
+    : cvars(_cvars->getChild("renderer")), display(display), gpu(gpu) {
   log_zone;
 
   {
@@ -90,7 +98,8 @@ Renderer::Renderer(DisplayInterface* display, GpuInstance* gpu)
     log_zone_named("Create pipelines");
 
     mesh_pass = new MeshPass(gpu, viewport_layout, composite_pass, 0);
-    overlay_pass = new OverlayPass(gpu, viewport_layout, composite_pass, 0);
+    overlay_pass =
+        new OverlayPass(cvars, gpu, viewport_layout, composite_pass, 0);
   }
 
   {

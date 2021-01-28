@@ -7,6 +7,7 @@
 #include <queue>
 #include <vector>
 
+#include "core/cvars/CVarScope.h"
 #include "core/network/NetworkShared.h"
 #include "flatbuffers/flatbuffers.h"
 #include "steam/isteamnetworkingsockets.h"
@@ -26,7 +27,9 @@ enum class ClientState { Disconnected, Connecting, Joining, Joined };
 
 class NetworkClient {
  public:
-  NetworkClient(Filesystem*, World*, const char*, int);
+  static void initCVars(CVarScope*);
+
+  NetworkClient(const CVarScope*, Filesystem*, World*, const char*, int);
   ~NetworkClient();
 
   void update();
@@ -35,6 +38,7 @@ class NetworkClient {
   ClientState state = ClientState::Disconnected;
 
  private:
+  const CVarScope* cvars;
   Filesystem* fs;
   World* world;
 

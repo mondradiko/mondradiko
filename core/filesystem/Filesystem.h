@@ -8,6 +8,7 @@
 
 #include "assets/loading/AssetBundle.h"
 #include "core/assets/Asset.h"
+#include "lib/include/toml_headers.h"
 
 namespace mondradiko {
 
@@ -20,6 +21,8 @@ class Filesystem {
   void getChecksums(std::vector<assets::LumpHash>&);
   void getInitialPrefabs(std::vector<assets::AssetId>&);
   bool loadAsset(const assets::SerializedAsset**, AssetId);
+
+  toml::value loadToml(const std::filesystem::path&);
 
  private:
   std::vector<assets::AssetBundle*> asset_bundles;

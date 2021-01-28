@@ -64,4 +64,9 @@ bool Filesystem::loadAsset(const assets::SerializedAsset** asset, AssetId id) {
   return false;
 }
 
+toml::value Filesystem::loadToml(const std::filesystem::path& toml_path) {
+  log_dbg("Loading TOML file", toml_path.c_str());
+  return toml::parse(toml_path);
+}
+
 }  // namespace mondradiko
