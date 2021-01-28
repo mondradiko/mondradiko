@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 cmake_minimum_required(VERSION 3.13)
-
 project(Mondradiko VERSION 0.0.0)
+
+option(TRACY_ENABLE "Enable Tracy profiling." OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
@@ -12,6 +13,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(api_bindings)
 include(SPIR-V)
 include(flatc)
+
+# Enable Tracy profiling
+if(${TRACY_ENABLE})
+  add_compile_definitions(TRACY_ENABLE)
+endif()
 
 # Let all parts of the source base access each other's headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")

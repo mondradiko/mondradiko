@@ -14,12 +14,20 @@ include(FindVulkan)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(MONDRADIKO_LIB_SRC
-  library_implementation.cc
-  tracy/TracyClient.cpp
-)
+set(MONDRADIKO_LIB_SRC library_implementation.cc)
+
+if(${TRACY_ENABLE})
+  list(APPEND MONDRADIKO_LIB_SRC tracy/TracyClient.cpp)
+endif()
 
 add_library(mondradiko-lib STATIC ${MONDRADIKO_LIB_SRC})
+
+if(${TRACY_ENABLE})
+  if(${UNIX})
+    target_link_libraries(mondradiko-lib PUBLIC dl)
+    target_link_libraries(mondradiko-lib PUBLIC pthread)
+  endif()
+endif()
 
 # Add C++ std::filesystem
 target_link_libraries(mondradiko-lib PUBLIC stdc++fs)

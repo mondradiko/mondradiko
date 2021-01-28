@@ -13,13 +13,6 @@
 
 #include <cstdio>
 
-// Enable Tracy for Intellisense
-#if defined(__INTELLISENSE__) && !defined(TRACY_ENABLE)
-#define TRACY_ENABLE
-#endif
-
-#include "lib/tracy/Tracy.hpp"
-
 #define log_at(logLevel, ...) \
   mondradiko::log_formatted(__FILE__, __LINE__, logLevel, __VA_ARGS__)
 #define log_inf(...) log_at(mondradiko::LOG_LEVEL_INFO, __VA_ARGS__)
@@ -27,12 +20,24 @@
 #define log_wrn(...) log_at(mondradiko::LOG_LEVEL_WARNING, __VA_ARGS__)
 #define log_err(...) log_at(mondradiko::LOG_LEVEL_ERROR, __VA_ARGS__)
 #define log_ftl(...) log_at(mondradiko::LOG_LEVEL_FATAL, __VA_ARGS__)
+
+// Enable Tracy for Intellisense
+#if defined(__INTELLISENSE__) && !defined(TRACY_ENABLE)
+#define TRACY_ENABLE
+#endif
+
+#ifdef TRACY_ENABLE
+#include "lib/tracy/Tracy.hpp"
 #define log_zone \
   ZoneScoped;    \
   // mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
 #define log_zone_named(name) \
   ZoneScopedN(name);         \
   // mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
+#else
+#define log_zone
+#define log_zone_named(name)
+#endif
 
 namespace mondradiko {
 
