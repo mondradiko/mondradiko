@@ -19,6 +19,9 @@ if(${TRACY_ENABLE})
   add_compile_definitions(TRACY_ENABLE)
 endif()
 
+# Copy runtime config into binary folder
+configure_file(example-config.toml config.toml COPYONLY)
+
 # Let all parts of the source base access each other's headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 # Let all parts of the source base access each other's generated files
