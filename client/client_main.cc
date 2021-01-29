@@ -13,6 +13,7 @@
 #include "core/gpu/GpuInstance.h"
 #include "core/network/NetworkClient.h"
 #include "core/renderer/Renderer.h"
+#include "core/ui/GlyphLoader.h"
 #include "core/world/World.h"
 #include "log/log.h"
 
@@ -38,10 +39,12 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   auto config = fs->loadToml("./config.toml");
 
   CVarScope cvars;
+  GlyphLoader::initCVars(&cvars);
   Renderer::initCVars(&cvars);
   NetworkClient::initCVars(&cvars);
   cvars.loadConfig(config);
 
+  GlyphLoader glyphs(&cvars);
   Renderer renderer(&cvars, display, gpu);
   World world(fs, gpu);
   NetworkClient client(&cvars, fs, &world, "127.0.0.1", 10555);

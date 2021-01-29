@@ -67,6 +67,7 @@ set(MONDRADIKO_CORE_SRC
   scripting/ScriptInstance.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
+  ui/GlyphLoader.cc
   world/World.cc
   world/WorldEventSorter.cc
 )

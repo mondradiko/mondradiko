@@ -12,6 +12,7 @@ namespace mondradiko {
 class StringCVar : public CVarValueInterface {
  public:
   const std::string& str() const { return value; }
+  const char* c_str() const { return value.c_str(); }
 
  protected:
   std::string value;

@@ -6,6 +6,12 @@ update_rate = 20.0
 username = "Example username"
 metaverse_provider = ""
 
+[glyphs]
+font_path = "/usr/share/fonts/mononoki/mononoki-Regular.ttf"
+glyph_scale = 4.0
+glyph_border = 1.0
+sdf_range = 4.0
+
 [renderer.debug]
 enabled = true
 draw_lights = true

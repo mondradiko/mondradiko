@@ -3,5 +3,6 @@
 
 #pragma once
 
+#include <freetype/freetype.h>
 #include <lib/msdfgen/msdfgen-ext.h>
 #include <lib/msdfgen/msdfgen.h>
