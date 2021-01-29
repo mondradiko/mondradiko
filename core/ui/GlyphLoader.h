@@ -14,7 +14,7 @@ class GlyphLoader {
  public:
   static void initCVars(CVarScope*);
 
-  GlyphLoader(const CVarScope*);
+  explicit GlyphLoader(const CVarScope*);
   ~GlyphLoader();
 
   void loadGlyph(msdfgen::unicode_t);

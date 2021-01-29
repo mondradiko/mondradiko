@@ -6,6 +6,8 @@
 #define STB_RECT_PACK_IMPLEMENTATION
 #include <lib/third_party/stb_rect_pack.h>
 
+#include <vector>
+
 #include "core/cvars/CVarScope.h"
 #include "core/cvars/FloatCVar.h"
 #include "core/cvars/StringCVar.h"
