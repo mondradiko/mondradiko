@@ -11,6 +11,7 @@
 #include "core/cvars/CVarScope.h"
 #include "core/cvars/FloatCVar.h"
 #include "core/cvars/StringCVar.h"
+#include "core/gpu/GpuImage.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -24,8 +25,8 @@ void GlyphLoader::initCVars(CVarScope* cvars) {
   glyphs->addValue<FloatCVar>("sdf_range", 1.0, 8.0);
 }
 
-GlyphLoader::GlyphLoader(const CVarScope* _cvars)
-    : cvars(_cvars->getChild("glyphs")) {
+GlyphLoader::GlyphLoader(const CVarScope* _cvars, GpuInstance* gpu)
+    : cvars(_cvars->getChild("glyphs")), gpu(gpu) {
   FT_Error error = FT_Init_FreeType(&freetype);
   if (error) {
     log_ftl("Failed to initialize FreeType");
@@ -98,7 +99,12 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars)
     }
   }
 
-  msdfgen::Bitmap<float, 3> atlas(atlas_width, atlas_height);
+  atlas_image =
+      new GpuImage(gpu, VK_FORMAT_R8G8B8A8_UNORM, atlas_width, atlas_height,
+                   VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                   VMA_MEMORY_USAGE_GPU_ONLY);
+
+  unsigned char* atlas_data = new unsigned char[atlas_width * atlas_height * 4];
 
   for (auto& rect : glyph_rects) {
     auto& glyph = glyphs[rect.id];
@@ -107,38 +113,63 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars)
     msdfgen::Vector2 translate;
     translate.set(-bounds.l, -bounds.b);
 
-    msdfgen::Bitmap<float, 3> msdf(rect.w, rect.h);
-    msdfgen::generateMSDF(msdf, glyph, sdf_range, glyph_scale, translate);
+    msdfgen::Bitmap<float, 4> msdf(rect.w, rect.h);
+    msdfgen::generateMTSDF(msdf, glyph, sdf_range, glyph_scale, translate);
 
     for (uint32_t x = 0; x < rect.w; x++) {
       for (uint32_t y = 0; y < rect.h; y++) {
         float* src = msdf(x, y);
-        float* dst = atlas(x + rect.x, y + rect.y);
+        unsigned char* dst =
+            &atlas_data[(y + rect.y) * atlas_width * 4 + (x + rect.x) * 4];
 
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = src[2];
+        dst[0] = msdfgen::pixelFloatToByte(src[0]);
+        dst[1] = msdfgen::pixelFloatToByte(src[1]);
+        dst[2] = msdfgen::pixelFloatToByte(src[2]);
+        dst[3] = msdfgen::pixelFloatToByte(src[3]);
       }
     }
   }
 
-  msdfgen::savePng(atlas, "glyph-atlas.png");
+  atlas_image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  atlas_image->writeData(atlas_data);
+  atlas_image->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+  delete[] atlas_data;
+
+  {
+    log_zone_named("Create SDF sampler");
+
+    VkSamplerCreateInfo sampler_info{
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = 0.0f,
+        // TODO(marceline-cramer) Anisotropy support
+        .anisotropyEnable = VK_FALSE,
+        .compareEnable = VK_FALSE,
+        .minLod = 0.0f,
+        .maxLod = 0.0f,
+        .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = VK_FALSE};
+
+    if (vkCreateSampler(gpu->device, &sampler_info, nullptr, &sdf_sampler) !=
+        VK_SUCCESS) {
+      log_ftl("Failed to create texture sampler.");
+    }
+  }
 }
 
 GlyphLoader::~GlyphLoader() {
+  if (sdf_sampler != VK_NULL_HANDLE)
+    vkDestroySampler(gpu->device, sdf_sampler, nullptr);
+  if (atlas_image != nullptr) delete atlas_image;
   if (sdf_font != nullptr) msdfgen::destroyFont(sdf_font);
   FT_Done_Face(font_face);
   FT_Done_FreeType(freetype);
-}
-
-void GlyphLoader::loadGlyph(msdfgen::unicode_t character) {
-  msdfgen::Shape shape;
-  if (!msdfgen::loadGlyph(shape, sdf_font, 'A')) {
-    log_ftl("msdfgen failed to load glyph");
-  }
-
-  shape.normalize();
-  msdfgen::edgeColoringSimple(shape, 3.0);
 }
 
 }  // namespace mondradiko

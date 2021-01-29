@@ -3,28 +3,35 @@
 
 #pragma once
 
+#include "core/gpu/GpuInstance.h"
 #include "lib/include/msdfgen_headers.h"
 
 namespace mondradiko {
 
 // Forward declarations
 class CVarScope;
+class GpuImage;
 
 class GlyphLoader {
  public:
   static void initCVars(CVarScope*);
 
-  explicit GlyphLoader(const CVarScope*);
+  GlyphLoader(const CVarScope*, GpuInstance*);
   ~GlyphLoader();
 
-  void loadGlyph(msdfgen::unicode_t);
+  VkSampler getSampler() const { return sdf_sampler; }
+  const GpuImage* getAtlas() const { return atlas_image; }
 
  private:
   const CVarScope* cvars;
+  GpuInstance* gpu;
 
   FT_Library freetype;
   FT_Face font_face;
   msdfgen::FontHandle* sdf_font = nullptr;
+
+  VkSampler sdf_sampler = VK_NULL_HANDLE;
+  GpuImage* atlas_image = nullptr;
 };
 
 }  // namespace mondradiko
