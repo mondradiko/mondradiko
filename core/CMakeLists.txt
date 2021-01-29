@@ -10,6 +10,8 @@ add_subdirectory(shaders)
 spirv_shaders(SHADER_HEADERS
   shaders/debug.frag
   shaders/debug.vert
+  shaders/glyph.frag
+  shaders/glyph.vert
   shaders/mesh.frag
   shaders/mesh.vert
 )
