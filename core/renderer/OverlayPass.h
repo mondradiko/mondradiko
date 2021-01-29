@@ -12,6 +12,7 @@ namespace mondradiko {
 
 // Forward declarations
 class CVarScope;
+class GlyphLoader;
 class GpuDescriptorSetLayout;
 class GpuInstance;
 
@@ -50,12 +51,45 @@ struct DebugDrawVertex {
 
 using DebugDrawIndex = uint16_t;
 
+using GlyphInstanceAttributeDescriptions =
+    std::array<VkVertexInputAttributeDescription, 2>;
+
+struct GlyphInstance {
+  glm::vec2 position;
+  uint32_t glyph_index;
+
+  static VkVertexInputBindingDescription getBindingDescription() {
+    VkVertexInputBindingDescription description{
+        .binding = 0,
+        .stride = sizeof(GlyphInstance),
+        .inputRate = VK_VERTEX_INPUT_RATE_INSTANCE};
+
+    return description;
+  }
+
+  static GlyphInstanceAttributeDescriptions getAttributeDescriptions() {
+    GlyphInstanceAttributeDescriptions descriptions;
+
+    descriptions[0] = {.location = 0,
+                       .binding = 0,
+                       .format = VK_FORMAT_R32G32_SFLOAT,
+                       .offset = offsetof(GlyphInstance, position)};
+
+    descriptions[1] = {.location = 1,
+                       .binding = 0,
+                       .format = VK_FORMAT_R32_UINT,
+                       .offset = offsetof(GlyphInstance, glyph_index)};
+
+    return descriptions;
+  }
+};
+
 class OverlayPass {
  public:
   static void initCVars(CVarScope*);
 
-  OverlayPass(const CVarScope*, GpuInstance*, GpuDescriptorSetLayout*,
-              VkRenderPass, uint32_t);
+  OverlayPass(const CVarScope*, const GlyphLoader*, GpuInstance*,
+              GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
   ~OverlayPass();
 
   void createFrameData(OverlayPassFrameData&);
@@ -65,12 +99,18 @@ class OverlayPass {
   void render(EntityRegistry&, OverlayPassFrameData&, AssetPool*,
               VkCommandBuffer, GpuDescriptorSet*, uint32_t);
 
+ private:
+  const CVarScope* cvars;
+  const GlyphLoader* glyphs;
+  GpuInstance* gpu;
+
   VkPipelineLayout debug_pipeline_layout = VK_NULL_HANDLE;
   VkPipeline debug_pipeline = VK_NULL_HANDLE;
 
- private:
-  const CVarScope* cvars;
-  GpuInstance* gpu;
+  VkPipelineLayout glyph_pipeline_layout = VK_NULL_HANDLE;
+  VkPipeline glyph_pipeline = VK_NULL_HANDLE;
+
+  GpuDescriptorSetLayout* glyph_set_layout = nullptr;
 };
 
 }  // namespace mondradiko

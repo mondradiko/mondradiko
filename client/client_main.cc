@@ -44,8 +44,8 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   NetworkClient::initCVars(&cvars);
   cvars.loadConfig(config);
 
-  GlyphLoader glyphs(&cvars);
-  Renderer renderer(&cvars, display, gpu);
+  GlyphLoader glyphs(&cvars, gpu);
+  Renderer renderer(&cvars, display, &glyphs, gpu);
   World world(fs, gpu);
   NetworkClient client(&cvars, fs, &world, "127.0.0.1", 10555);
 

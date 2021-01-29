@@ -14,6 +14,7 @@ namespace mondradiko {
 // Forward declarations
 class CVarScope;
 class DisplayInterface;
+class GlyphLoader;
 class GpuDescriptorPool;
 class GpuDescriptorSetLayout;
 class GpuInstance;
@@ -30,7 +31,8 @@ class Renderer {
  public:
   static void initCVars(CVarScope*);
 
-  Renderer(const CVarScope*, DisplayInterface*, GpuInstance*);
+  Renderer(const CVarScope*, DisplayInterface*, const GlyphLoader*,
+           GpuInstance*);
   ~Renderer();
 
   void renderFrame(EntityRegistry&, AssetPool*);
@@ -45,6 +47,7 @@ class Renderer {
  private:
   const CVarScope* cvars;
   DisplayInterface* display;
+  const GlyphLoader* glyphs;
   GpuInstance* gpu;
 
   uint32_t current_frame = 0;

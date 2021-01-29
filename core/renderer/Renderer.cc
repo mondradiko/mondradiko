@@ -24,8 +24,11 @@ void Renderer::initCVars(CVarScope* cvars) {
 }
 
 Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
-                   GpuInstance* gpu)
-    : cvars(_cvars->getChild("renderer")), display(display), gpu(gpu) {
+                   const GlyphLoader* glyphs, GpuInstance* gpu)
+    : cvars(_cvars->getChild("renderer")),
+      display(display),
+      glyphs(glyphs),
+      gpu(gpu) {
   log_zone;
 
   {
@@ -99,7 +102,7 @@ Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
 
     mesh_pass = new MeshPass(gpu, viewport_layout, composite_pass, 0);
     overlay_pass =
-        new OverlayPass(cvars, gpu, viewport_layout, composite_pass, 0);
+        new OverlayPass(cvars, glyphs, gpu, viewport_layout, composite_pass, 0);
   }
 
   {
