@@ -1,3 +1,6 @@
 [submodule "tracy"]
 	path = lib/tracy
 	url = https://github.com/wolfpld/tracy
+[submodule "lib/msdfgen"]
+	path = lib/msdfgen
+	url = https://github.com/Chlumsky/msdfgen

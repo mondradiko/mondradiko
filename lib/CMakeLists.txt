@@ -54,6 +54,11 @@ target_link_libraries(mondradiko-lib PUBLIC ${Vulkan_LIBRARIES})
 target_include_directories(mondradiko-lib PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_compile_options(mondradiko-lib PUBLIC ${Vulkan_CFLAGS_OTHER})
 
+# Add msdfgen
+add_subdirectory(msdfgen)
+target_link_libraries(mondradiko-lib PUBLIC msdfgen::msdfgen)
+target_link_libraries(mondradiko-lib PUBLIC msdfgen::msdfgen-ext)
+
 # Add Wasmtime
 # TODO(marceline-cramer) Download the appropriate package per-OS and architecture
 # TODO(marceline-cramer) Move this to its own module

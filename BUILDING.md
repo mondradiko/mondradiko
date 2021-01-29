@@ -32,7 +32,7 @@ from the [latest KTX-Software release](https://github.com/KhronosGroup/KTX-Softw
 ### Compiling
 
 ```bash
-git clone https://github.com/mondradiko/mondradiko
+git clone --recurse-submodules https://github.com/mondradiko/mondradiko
 mkdir builddir
 cd builddir
 cmake -GNinja ..
