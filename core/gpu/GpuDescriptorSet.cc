@@ -77,7 +77,7 @@ void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
 }
 
-void GpuDescriptorSet::updateImage(uint32_t binding, GpuImage* image) {
+void GpuDescriptorSet::updateImage(uint32_t binding, const GpuImage* image) {
   VkDescriptorImageInfo image_info{.imageView = image->view,
                                    .imageLayout = image->layout};
 
