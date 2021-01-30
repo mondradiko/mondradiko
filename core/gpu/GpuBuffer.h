@@ -18,8 +18,8 @@ class GpuBuffer {
                   VMA_MEMORY_USAGE_CPU_TO_GPU) {}
   ~GpuBuffer();
 
-  VkBuffer getBuffer() { return buffer; }
-  size_t getBufferSize() { return buffer_size; }
+  VkBuffer getBuffer() const { return buffer; }
+  size_t getBufferSize() const { return buffer_size; }
 
   // TODO(marceline-cramer) Get rid of this method
   void writeData(const void*);

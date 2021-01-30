@@ -44,6 +44,8 @@ struct OverlayPassFrameData {
   uint16_t index_count;
 
   GpuDescriptorSet* glyph_descriptor = nullptr;
+  GpuVector* glyph_instances = nullptr;
+  uint32_t glyph_count;
 };
 
 struct PipelinedFrameData {

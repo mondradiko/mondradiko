@@ -9,16 +9,21 @@ layout(set = 0, binding = 0) uniform CameraUniform {
     mat4 projection;
 } camera;
 
-layout(location = 0) out vec2 fragTexCoord;
-
-const vec2 vertex_positions[] = {
-  vec2(-1.0, -1.0),
-  vec2( 1.0, -1.0),
-  vec2(-1.0,  1.0),
-  vec2( 1.0,  1.0),
+struct GlyphData {
+  vec2 atlas_coords[4];
+  vec2 glyph_coords[4];
 };
 
+layout(set = 1, binding = 1) buffer readonly GlyphSet {
+  GlyphData data[];
+} glyphs;
+
+layout(location = 0) in vec2 glyph_position;
+layout(location = 1) in uint glyph_index;
+
+layout(location = 0) out vec2 fragTexCoord;
+
 void main() {
-  gl_Position = camera.projection * camera.view * vec4(vertex_positions[gl_VertexIndex], 0.0, 1.0);
-  fragTexCoord = vertex_positions[gl_VertexIndex] * 0.5 + 0.5;
+  gl_Position = camera.projection * camera.view * vec4(glyphs.data[glyph_index].glyph_coords[gl_VertexIndex].xy + glyph_position, 0.0, 1.0);
+  fragTexCoord = glyphs.data[glyph_index].atlas_coords[gl_VertexIndex].xy;
 }

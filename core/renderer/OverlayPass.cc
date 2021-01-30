@@ -62,6 +62,7 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
 
     glyph_set_layout = new GpuDescriptorSetLayout(gpu);
     glyph_set_layout->addCombinedImageSampler(glyphs->getSampler());
+    glyph_set_layout->addStorageBuffer(sizeof(GlyphUniform));
 
     std::vector<VkDescriptorSetLayout> set_layouts{
         viewport_layout->getSetLayout(), glyph_set_layout->getSetLayout()};
@@ -210,9 +211,9 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
 
     VkPipelineVertexInputStateCreateInfo vertex_input_info{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .vertexBindingDescriptionCount = 0,  // 1,
+        .vertexBindingDescriptionCount = 1,
         .pVertexBindingDescriptions = &binding_description,
-        .vertexAttributeDescriptionCount = 0,  // attribute_descriptions.size(),
+        .vertexAttributeDescriptionCount = attribute_descriptions.size(),
         .pVertexAttributeDescriptions = attribute_descriptions.data()};
 
     VkPipelineInputAssemblyStateCreateInfo input_assembly_info{
@@ -333,6 +334,8 @@ void OverlayPass::createFrameData(OverlayPassFrameData& frame) {
                                        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
   frame.debug_indices = new GpuVector(gpu, sizeof(DebugDrawIndex),
                                       VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+  frame.glyph_instances = new GpuVector(gpu, sizeof(GlyphInstance),
+                                        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }
 
 void OverlayPass::destroyFrameData(OverlayPassFrameData& frame) {
@@ -340,6 +343,7 @@ void OverlayPass::destroyFrameData(OverlayPassFrameData& frame) {
 
   if (frame.debug_vertices != nullptr) delete frame.debug_vertices;
   if (frame.debug_indices != nullptr) delete frame.debug_indices;
+  if (frame.glyph_instances != nullptr) delete frame.glyph_instances;
 }
 
 void OverlayPass::allocateDescriptors(EntityRegistry& registry,
@@ -353,6 +357,18 @@ void OverlayPass::allocateDescriptors(EntityRegistry& registry,
 
   frame.glyph_descriptor = descriptor_pool->allocate(glyph_set_layout);
   frame.glyph_descriptor->updateImage(0, glyphs->getAtlas());
+  frame.glyph_descriptor->updateStorageBuffer(1, glyphs->getGlyphs());
+
+  frame.glyph_count = 0;
+
+  GlyphString test_string;
+  glyphs->drawString(&test_string,
+                     "The quick brown fox jumps over the lazy dog.");
+
+  for (uint32_t i = 0; i < test_string.size(); i++) {
+    frame.glyph_instances->writeElement(frame.glyph_count, test_string[i]);
+    frame.glyph_count++;
+  }
 
   if (!cvars->get<BoolCVar>("enabled")) return;
 
@@ -469,27 +485,38 @@ void OverlayPass::render(EntityRegistry& registry, OverlayPassFrameData& frame,
                          uint32_t viewport_offset) {
   log_zone;
 
-  vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    debug_pipeline);
+  {
+    log_zone_named("Render debug");
 
-  // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
-  viewport_descriptor->updateDynamicOffset(0, viewport_offset);
-  viewport_descriptor->cmdBind(command_buffer, debug_pipeline_layout, 0);
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                      debug_pipeline);
 
-  VkBuffer vertex_buffers[] = {frame.debug_vertices->getBuffer()};
-  VkDeviceSize offsets[] = {0};
-  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-  vkCmdBindIndexBuffer(command_buffer, frame.debug_indices->getBuffer(), 0,
-                       VK_INDEX_TYPE_UINT16);
-  vkCmdDrawIndexed(command_buffer, frame.index_count, 1, 0, 0, 0);
+    // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
+    viewport_descriptor->updateDynamicOffset(0, viewport_offset);
+    viewport_descriptor->cmdBind(command_buffer, debug_pipeline_layout, 0);
 
-  vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    glyph_pipeline);
+    VkBuffer vertex_buffers[] = {frame.debug_vertices->getBuffer()};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+    vkCmdBindIndexBuffer(command_buffer, frame.debug_indices->getBuffer(), 0,
+                         VK_INDEX_TYPE_UINT16);
+    vkCmdDrawIndexed(command_buffer, frame.index_count, 1, 0, 0, 0);
+  }
 
-  viewport_descriptor->cmdBind(command_buffer, glyph_pipeline_layout, 0);
-  frame.glyph_descriptor->cmdBind(command_buffer, glyph_pipeline_layout, 1);
+  {
+    log_zone_named("Render glyphs");
 
-  vkCmdDraw(command_buffer, 4, 1, 0, 0);
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                      glyph_pipeline);
+
+    viewport_descriptor->cmdBind(command_buffer, glyph_pipeline_layout, 0);
+    frame.glyph_descriptor->cmdBind(command_buffer, glyph_pipeline_layout, 1);
+
+    VkBuffer vertex_buffers[] = {frame.glyph_instances->getBuffer()};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+    vkCmdDraw(command_buffer, 4, frame.glyph_count, 0, 0);
+  }
 }
 
 }  // namespace mondradiko

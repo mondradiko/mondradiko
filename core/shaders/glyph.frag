@@ -17,7 +17,7 @@ float median(float r, float g, float b) {
 void main() {
   vec4 sdf = texture(glyph_atlas, fragTexCoord);
   if (median(sdf.r, sdf.g, sdf.b) < 0.5) discard;
-  // if (sdf.r > 0.5) discard;
+  // if (sdf.a < 0.5) discard;
 
   outColor = vec4(1.0);
 }

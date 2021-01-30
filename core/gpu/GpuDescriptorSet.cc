@@ -60,7 +60,7 @@ void GpuDescriptorSet::updateDynamicBuffer(uint32_t binding,
 }
 
 void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,
-                                           GpuVector* buffer) {
+                                           const GpuBuffer* buffer) {
   VkDescriptorBufferInfo buffer_info{.buffer = buffer->getBuffer(),
                                      .offset = 0,
                                      .range = buffer->getBufferSize()};
