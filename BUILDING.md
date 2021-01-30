@@ -11,7 +11,7 @@ Install dependencies from packages:
 ```bash
 sudo apt install libsdl2-dev liblz4-dev libvulkan-dev \
                  cmake ninja-build build-essential glslang-tools \
-                 libzstd-dev \
+                 libzstd-dev libfreetype6-dev \
                  libprotobuf-dev protobuf-compiler libssl-dev \
                  libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
                  libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
