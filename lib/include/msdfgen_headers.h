@@ -3,6 +3,8 @@
 
 #pragma once
 
-#include <freetype/freetype.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <lib/msdfgen/msdfgen-ext.h>
 #include <lib/msdfgen/msdfgen.h>
