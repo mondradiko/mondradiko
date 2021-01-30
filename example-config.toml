@@ -3,13 +3,13 @@ max_tps = 50.0
 update_rate = 20.0
 
 [client]
-username = "Example username"
+username = "ExampleUsername"
 metaverse_provider = ""
 
 [glyphs]
 font_path = "/usr/share/fonts/mononoki/mononoki-Regular.ttf"
-glyph_scale = 4.0
-glyph_border = 1.0
+sdf_scale = 2.0
+sdf_border = 1.0
 sdf_range = 4.0
 
 [renderer.debug]
