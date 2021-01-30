@@ -193,7 +193,7 @@ bool World::update() {
 
   scripts.update(registry, &asset_pool);
 
-  FrameMark;
+  log_frame_mark;
   return true;
 }
 

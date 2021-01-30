@@ -26,9 +26,11 @@
 #define log_zone_named(name) \
   ZoneScopedN(name);         \
   // mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
+#define log_frame_mark FrameMark
 #else
 #define log_zone
 #define log_zone_named(name)
+#define log_frame_mark
 #endif
 
 namespace mondradiko {

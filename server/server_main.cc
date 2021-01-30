@@ -32,9 +32,6 @@ void signalHandler(int signum) {
 }
 
 int main(int argc, const char* argv[]) {
-  TracyMessageL("Hello Tracy!");
-  log_inf("Hello internet!");
-
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
   }
