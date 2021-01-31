@@ -17,7 +17,8 @@ namespace mondradiko {
 
 GpuPipeline::GpuPipeline(GpuInstance* gpu, VkPipelineLayout pipeline_layout,
                          VkRenderPass render_pass, uint32_t subpass_index,
-                         GpuShader* vertex_shader, GpuShader* fragment_shader,
+                         const GpuShader* vertex_shader,
+                         const GpuShader* fragment_shader,
                          const VertexBindings& vertex_bindings,
                          const AttributeDescriptions& attribute_descriptions)
     : gpu(gpu),
@@ -27,7 +28,9 @@ GpuPipeline::GpuPipeline(GpuInstance* gpu, VkPipelineLayout pipeline_layout,
       vertex_shader(vertex_shader),
       fragment_shader(fragment_shader),
       vertex_bindings(vertex_bindings),
-      attribute_descriptions(attribute_descriptions) {}
+      attribute_descriptions(attribute_descriptions) {
+  log_zone;
+}
 
 GpuPipeline::~GpuPipeline() {
   log_zone;
@@ -184,8 +187,6 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
       vertex_shader->getStageCreateInfo(),
       fragment_shader->getStageCreateInfo()};
 
-  log_inf("%d %d", vertex_bindings.size(), attribute_descriptions.size());
-
   VkPipelineVertexInputStateCreateInfo vertex_input_info{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
       .vertexBindingDescriptionCount =
@@ -284,6 +285,8 @@ GpuPipeline::StateHash GpuPipeline::getStateHash(
 
 void GpuPipeline::cmdBind(VkCommandBuffer command_buffer,
                           StateHash state_hash) {
+  log_zone;
+
   auto iter = pipelines.find(state_hash);
   if (iter == pipelines.end()) {
     log_ftl("Pipeline 0x%0lx not found", state_hash);
@@ -291,6 +294,21 @@ void GpuPipeline::cmdBind(VkCommandBuffer command_buffer,
 
   vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                     iter->second);
+}
+
+void GpuPipeline::cmdBind(VkCommandBuffer command_buffer,
+                          const GraphicsState& graphics_state) {
+  log_zone;
+
+  StateHash state_hash = getStateHash(graphics_state);
+
+  auto iter = pipelines.find(state_hash);
+  if (iter == pipelines.end()) {
+    log_wrn("Pipeline cache miss: 0x%0lx", state_hash);
+    createPipeline(graphics_state);
+  }
+
+  cmdBind(command_buffer, state_hash);
 }
 
 }  // namespace mondradiko

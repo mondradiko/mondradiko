@@ -27,7 +27,7 @@ GpuShader::~GpuShader() {
     vkDestroyShaderModule(gpu->device, shader_module, nullptr);
 }
 
-VkPipelineShaderStageCreateInfo GpuShader::getStageCreateInfo() {
+VkPipelineShaderStageCreateInfo GpuShader::getStageCreateInfo() const {
   return VkPipelineShaderStageCreateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .stage = stage_flags,

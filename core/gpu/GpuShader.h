@@ -15,7 +15,7 @@ class GpuShader {
   GpuShader(GpuInstance*, VkShaderStageFlagBits, const uint32_t*, size_t);
   ~GpuShader();
 
-  VkPipelineShaderStageCreateInfo getStageCreateInfo();
+  VkPipelineShaderStageCreateInfo getStageCreateInfo() const;
 
  private:
   GpuInstance* gpu;

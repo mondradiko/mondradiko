@@ -22,13 +22,14 @@ class GpuPipeline {
   using AttributeDescriptions = std::vector<VkVertexInputAttributeDescription>;
 
   GpuPipeline(GpuInstance*, VkPipelineLayout, VkRenderPass, uint32_t,
-              GpuShader*, GpuShader*, const VertexBindings&,
+              const GpuShader*, const GpuShader*, const VertexBindings&,
               const AttributeDescriptions&);
   ~GpuPipeline();
 
   StateHash createPipeline(const GraphicsState&);
   StateHash getStateHash(const GraphicsState&);
   void cmdBind(VkCommandBuffer, StateHash);
+  void cmdBind(VkCommandBuffer, const GraphicsState&);
 
  private:
   GpuInstance* gpu;
@@ -36,8 +37,8 @@ class GpuPipeline {
   VkPipelineLayout pipeline_layout;
   VkRenderPass render_pass;
   uint32_t subpass_index;
-  GpuShader* vertex_shader;
-  GpuShader* fragment_shader;
+  const GpuShader* vertex_shader;
+  const GpuShader* fragment_shader;
   VertexBindings vertex_bindings;
   AttributeDescriptions attribute_descriptions;
 
