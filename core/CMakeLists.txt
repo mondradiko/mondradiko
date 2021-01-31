@@ -61,6 +61,7 @@ set(MONDRADIKO_CORE_SRC
   gpu/GpuDescriptorSetLayout.cc
   gpu/GpuImage.cc
   gpu/GpuInstance.cc
+  gpu/GpuPipeline.cc
   gpu/GpuShader.cc
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
