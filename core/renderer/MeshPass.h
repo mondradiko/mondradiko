@@ -21,6 +21,7 @@ class GpuDescriptorPool;
 class GpuDescriptorSet;
 class GpuDescriptorSetLayout;
 class GpuInstance;
+class GpuPipeline;
 class GpuVector;
 
 struct MeshUniform {
@@ -47,7 +48,7 @@ class MeshPass {
   GpuDescriptorSetLayout* mesh_layout;
 
   VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
-  VkPipeline pipeline = VK_NULL_HANDLE;
+  GpuPipeline* pipeline = nullptr;
 
   VkSampler texture_sampler = VK_NULL_HANDLE;
 

@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "core/assets/AssetPool.h"
+#include "core/gpu/GpuPipeline.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/vulkan_headers.h"
 
@@ -16,26 +17,24 @@ namespace mondradiko {
 class GpuInstance;
 class GpuBuffer;
 
-using MeshVertexAttributeDescriptions =
-    std::array<VkVertexInputAttributeDescription, 4>;
-
 struct MeshVertex {
   glm::vec3 position;
   glm::vec3 normal;
   glm::vec3 color;
   glm::vec2 tex_coord;
 
-  static VkVertexInputBindingDescription getBindingDescription() {
-    VkVertexInputBindingDescription description{
-        .binding = 0,
-        .stride = sizeof(MeshVertex),
-        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
+  static GpuPipeline::VertexBindings getVertexBindings() {
+    GpuPipeline::VertexBindings bindings(1);
 
-    return description;
+    bindings[0] = {.binding = 0,
+                   .stride = sizeof(MeshVertex),
+                   .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
+
+    return bindings;
   }
 
-  static MeshVertexAttributeDescriptions getAttributeDescriptions() {
-    MeshVertexAttributeDescriptions descriptions;
+  static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
+    GpuPipeline::AttributeDescriptions descriptions(4);
 
     descriptions[0] = {.location = 0,
                        .binding = 0,

@@ -15,8 +15,10 @@
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
+#include "core/gpu/GpuPipeline.h"
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
+#include "core/gpu/GraphicsState.h"
 #include "core/renderer/Renderer.h"
 #include "log/log.h"
 #include "shaders/mesh.frag.h"
@@ -97,113 +99,28 @@ MeshPass::MeshPass(GpuInstance* gpu, GpuDescriptorSetLayout* viewport_layout,
     GpuShader frag_shader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_mesh_frag,
                           sizeof(shaders_mesh_frag));
 
-    std::vector<VkPipelineShaderStageCreateInfo> shader_stages = {
-        vert_shader.getStageCreateInfo(), frag_shader.getStageCreateInfo()};
-
-    auto binding_description = MeshVertex::getBindingDescription();
+    auto vertex_bindings = MeshVertex::getVertexBindings();
     auto attribute_descriptions = MeshVertex::getAttributeDescriptions();
 
-    VkPipelineVertexInputStateCreateInfo vertex_input_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .vertexBindingDescriptionCount = 1,
-        .pVertexBindingDescriptions = &binding_description,
-        .vertexAttributeDescriptionCount = attribute_descriptions.size(),
-        .pVertexAttributeDescriptions = attribute_descriptions.data()};
+    pipeline = new GpuPipeline(gpu, pipeline_layout, render_pass, subpass_index,
+                               &vert_shader, &frag_shader, vertex_bindings,
+                               attribute_descriptions);
 
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-        .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-        .primitiveRestartEnable = VK_FALSE};
+    GraphicsState graphics_state;
 
-    // TODO(marceline-cramer) Get viewport state from Viewport
-    VkViewport viewport{.x = 0.0f,
-                        .y = 0.0f,
-                        .width = static_cast<float>(500),
-                        .height = static_cast<float>(500),
-                        .minDepth = 0.0f,
-                        .maxDepth = 1.0f};
+    graphics_state.input_assembly_state = {
+        .primitive_topology = GraphicsState::PrimitiveTopology::TriangleList,
+        .primitive_restart_enable = GraphicsState::BoolFlag::False};
 
-    VkRect2D scissor{.offset = {0, 0}, .extent = {500, 500}};
+    graphics_state.rasterization_state = {
+        .polygon_mode = GraphicsState::PolygonMode::Fill,
+        .cull_mode = GraphicsState::CullMode::Back};
 
-    VkPipelineViewportStateCreateInfo viewport_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-        .viewportCount = 1,
-        .pViewports = &viewport,
-        .scissorCount = 1,
-        .pScissors = &scissor};
+    graphics_state.depth_state.test_enable = GraphicsState::BoolFlag::True;
+    graphics_state.depth_state.write_enable = GraphicsState::BoolFlag::True;
+    graphics_state.depth_state.compare_op = GraphicsState::CompareOp::Less;
 
-    VkPipelineRasterizationStateCreateInfo rasterization_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-        .depthClampEnable = VK_FALSE,
-        .rasterizerDiscardEnable = VK_FALSE,
-        .polygonMode = VK_POLYGON_MODE_FILL,
-        .cullMode = VK_CULL_MODE_BACK_BIT,
-        .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        .depthBiasEnable = VK_FALSE,
-        .depthBiasConstantFactor = 0.0f,
-        .depthBiasClamp = 0.0f,
-        .depthBiasSlopeFactor = 0.0f,
-        .lineWidth = 1.0f};
-
-    VkPipelineMultisampleStateCreateInfo multisample_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-        .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-        .sampleShadingEnable = VK_FALSE,
-        .minSampleShading = 1.0f,
-        .pSampleMask = nullptr,
-        .alphaToCoverageEnable = VK_FALSE,
-        .alphaToOneEnable = VK_FALSE};
-
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-        .depthTestEnable = VK_TRUE,
-        .depthWriteEnable = VK_TRUE,
-        .depthCompareOp = VK_COMPARE_OP_LESS,
-        .depthBoundsTestEnable = VK_FALSE,
-        .stencilTestEnable = VK_FALSE};
-
-    VkPipelineColorBlendAttachmentState color_blend_attachment{
-        .blendEnable = VK_FALSE,
-        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                          VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT};
-
-    VkPipelineColorBlendStateCreateInfo color_blend_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-        .logicOpEnable = VK_FALSE,
-        .attachmentCount = 1,
-        .pAttachments = &color_blend_attachment};
-
-    std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
-                                                  VK_DYNAMIC_STATE_SCISSOR};
-
-    VkPipelineDynamicStateCreateInfo dynamic_state_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .dynamicStateCount = static_cast<uint32_t>(dynamic_states.size()),
-        .pDynamicStates = dynamic_states.data()};
-
-    VkGraphicsPipelineCreateInfo pipeline_info{
-        .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-        .stageCount = static_cast<uint32_t>(shader_stages.size()),
-        .pStages = shader_stages.data(),
-        .pVertexInputState = &vertex_input_info,
-        .pInputAssemblyState = &input_assembly_info,
-        .pViewportState = &viewport_info,
-        .pRasterizationState = &rasterization_info,
-        .pMultisampleState = &multisample_info,
-        .pDepthStencilState = &depth_stencil_info,
-        .pColorBlendState = &color_blend_info,
-        .pDynamicState = &dynamic_state_info,
-        .layout = pipeline_layout,
-        .renderPass = render_pass,
-        .subpass = subpass_index,
-        .basePipelineHandle = VK_NULL_HANDLE,
-        .basePipelineIndex = -1};
-
-    if (vkCreateGraphicsPipelines(gpu->device, VK_NULL_HANDLE, 1,
-                                  &pipeline_info, nullptr,
-                                  &pipeline) != VK_SUCCESS) {
-      log_ftl("Failed to create pipeline.");
-    }
+    pipeline->createPipeline(graphics_state);
   }
 }
 
@@ -212,8 +129,7 @@ MeshPass::~MeshPass() {
 
   if (texture_sampler != VK_NULL_HANDLE)
     vkDestroySampler(gpu->device, texture_sampler, nullptr);
-  if (pipeline != VK_NULL_HANDLE)
-    vkDestroyPipeline(gpu->device, pipeline, nullptr);
+  if (pipeline != nullptr) delete pipeline;
   if (pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, pipeline_layout, nullptr);
   if (material_layout != nullptr) delete material_layout;
@@ -343,36 +259,53 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
 }
 
 void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
-                      AssetPool* asset_pool, VkCommandBuffer commandBuffer,
+                      AssetPool* asset_pool, VkCommandBuffer command_buffer,
                       GpuDescriptorSet* viewport_descriptor,
                       uint32_t viewport_offset) {
   log_zone;
 
-  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  {
+    GraphicsState graphics_state;
+
+    graphics_state.input_assembly_state = {
+        .primitive_topology = GraphicsState::PrimitiveTopology::TriangleList,
+        .primitive_restart_enable = GraphicsState::BoolFlag::False};
+
+    graphics_state.rasterization_state = {
+        .polygon_mode = GraphicsState::PolygonMode::Fill,
+        .cull_mode = GraphicsState::CullMode::Back};
+
+    graphics_state.depth_state = {.test_enable = GraphicsState::BoolFlag::True,
+                                  .write_enable = GraphicsState::BoolFlag::True,
+                                  .compare_op = GraphicsState::CompareOp::Less};
+
+    auto state_hash = pipeline->getStateHash(graphics_state);
+    pipeline->cmdBind(command_buffer, state_hash);
+  }
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
   viewport_descriptor->updateDynamicOffset(0, viewport_offset);
-  viewport_descriptor->cmdBind(commandBuffer, pipeline_layout, 0);
+  viewport_descriptor->cmdBind(command_buffer, pipeline_layout, 0);
 
   for (auto& cmd : frame.commands) {
     log_zone_named("Render mesh");
 
     frame.material_descriptor->updateDynamicOffset(0, cmd.material_idx);
-    frame.material_descriptor->cmdBind(commandBuffer, pipeline_layout, 1);
+    frame.material_descriptor->cmdBind(command_buffer, pipeline_layout, 1);
 
-    cmd.textures_descriptor->cmdBind(commandBuffer, pipeline_layout, 2);
+    cmd.textures_descriptor->cmdBind(command_buffer, pipeline_layout, 2);
 
     frame.mesh_descriptor->updateDynamicOffset(0, cmd.mesh_idx);
-    frame.mesh_descriptor->cmdBind(commandBuffer, pipeline_layout, 3);
+    frame.mesh_descriptor->cmdBind(command_buffer, pipeline_layout, 3);
 
     const auto& mesh_asset = cmd.mesh_asset;
 
     VkBuffer vertex_buffers[] = {mesh_asset->vertex_buffer->getBuffer()};
     VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, mesh_asset->index_buffer->getBuffer(),
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+    vkCmdBindIndexBuffer(command_buffer, mesh_asset->index_buffer->getBuffer(),
                          0, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(commandBuffer, mesh_asset->index_count, 1, 0, 0, 0);
+    vkCmdDrawIndexed(command_buffer, mesh_asset->index_count, 1, 0, 0, 0);
   }
 }
 
