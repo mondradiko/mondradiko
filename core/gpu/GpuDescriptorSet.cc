@@ -99,7 +99,7 @@ void GpuDescriptorSet::updateDynamicOffset(uint32_t binding, uint32_t offset) {
 
 void GpuDescriptorSet::cmdBind(VkCommandBuffer command_buffer,
                                VkPipelineLayout pipeline_layout,
-                               uint32_t binding) {
+                               uint32_t binding) const {
   vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                           pipeline_layout, binding, 1, &descriptor_set,
                           static_cast<uint32_t>(dynamic_offsets.size()),

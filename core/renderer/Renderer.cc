@@ -24,11 +24,12 @@ void Renderer::initCVars(CVarScope* cvars) {
 }
 
 Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
-                   const GlyphLoader* glyphs, GpuInstance* gpu)
+                   const GlyphLoader* glyphs, GpuInstance* gpu, World* world)
     : cvars(_cvars->getChild("renderer")),
       display(display),
       glyphs(glyphs),
-      gpu(gpu) {
+      gpu(gpu),
+      world(world) {
   log_zone;
 
   {
@@ -100,9 +101,9 @@ Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
   {
     log_zone_named("Create pipelines");
 
-    mesh_pass = new MeshPass(gpu, viewport_layout, composite_pass, 0);
-    overlay_pass =
-        new OverlayPass(cvars, glyphs, gpu, viewport_layout, composite_pass, 0);
+    mesh_pass = new MeshPass(gpu, world, viewport_layout, composite_pass, 0);
+    overlay_pass = new OverlayPass(cvars, glyphs, gpu, world, viewport_layout,
+                                   composite_pass, 0);
   }
 
   {
@@ -110,8 +111,10 @@ Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
 
     // Pipeline two frames
     frames_in_flight.resize(2);
-
     current_frame = 0;
+
+    mesh_pass->createFrameData(frames_in_flight.size());
+    overlay_pass->createFrameData(frames_in_flight.size());
 
     for (auto& frame : frames_in_flight) {
       VkCommandBufferAllocateInfo alloc_info{
@@ -146,9 +149,6 @@ Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
       frame.viewports = new GpuVector(
           // TODO(marceline-cramer) Better descriptor management
           gpu, sizeof(ViewportUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-
-      mesh_pass->createFrameData(frame.mesh_pass);
-      overlay_pass->createFrameData(frame.overlay_pass);
     }
   }
 }
@@ -158,10 +158,10 @@ Renderer::~Renderer() {
 
   vkDeviceWaitIdle(gpu->device);
 
-  for (auto& frame : frames_in_flight) {
-    mesh_pass->destroyFrameData(frame.mesh_pass);
-    overlay_pass->destroyFrameData(frame.overlay_pass);
+  mesh_pass->destroyFrameData();
+  overlay_pass->destroyFrameData();
 
+  for (auto& frame : frames_in_flight) {
     if (frame.viewports != nullptr) delete frame.viewports;
     if (frame.on_render_finished != VK_NULL_HANDLE)
       vkDestroySemaphore(gpu->device, frame.on_render_finished, nullptr);
@@ -179,7 +179,7 @@ Renderer::~Renderer() {
     vkDestroyRenderPass(gpu->device, composite_pass, nullptr);
 }
 
-void Renderer::renderFrame(EntityRegistry& registry, AssetPool* asset_pool) {
+void Renderer::renderFrame() {
   log_zone;
 
   current_frame++;
@@ -187,18 +187,18 @@ void Renderer::renderFrame(EntityRegistry& registry, AssetPool* asset_pool) {
     current_frame = 0;
   }
 
-  PipelinedFrameData* frame = &frames_in_flight[current_frame];
+  auto& frame = frames_in_flight[current_frame];
 
   {
     log_zone_named("Fence frame");
 
-    vkWaitForFences(gpu->device, 1, &frame->is_in_use, VK_TRUE, UINT64_MAX);
+    vkWaitForFences(gpu->device, 1, &frame.is_in_use, VK_TRUE, UINT64_MAX);
   }
 
   {
     log_zone_named("Clean up last frame");
 
-    frame->descriptor_pool->reset();
+    frame.descriptor_pool->reset();
   }
 
   std::vector<Viewport*> viewports;
@@ -228,13 +228,11 @@ void Renderer::renderFrame(EntityRegistry& registry, AssetPool* asset_pool) {
   {
     log_zone_named("Allocate descriptors");
 
-    viewport_descriptor = frame->descriptor_pool->allocate(viewport_layout);
-    viewport_descriptor->updateDynamicBuffer(0, frame->viewports);
+    viewport_descriptor = frame.descriptor_pool->allocate(viewport_layout);
+    viewport_descriptor->updateDynamicBuffer(0, frame.viewports);
 
-    mesh_pass->allocateDescriptors(registry, frame->mesh_pass, asset_pool,
-                                   frame->descriptor_pool);
-    overlay_pass->allocateDescriptors(registry, frame->overlay_pass, asset_pool,
-                                      frame->descriptor_pool);
+    mesh_pass->allocateDescriptors(current_frame, frame.descriptor_pool);
+    overlay_pass->allocateDescriptors(current_frame, frame.descriptor_pool);
   }
 
   {
@@ -244,22 +242,22 @@ void Renderer::renderFrame(EntityRegistry& registry, AssetPool* asset_pool) {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT};
 
-    vkBeginCommandBuffer(frame->command_buffer, &beginInfo);
+    vkBeginCommandBuffer(frame.command_buffer, &beginInfo);
 
     for (uint32_t viewport_index = 0; viewport_index < viewports.size();
          viewport_index++) {
-      viewports[viewport_index]->beginRenderPass(frame->command_buffer,
+      viewport_descriptor->updateDynamicOffset(
+          0, viewport_index * sizeof(ViewportUniform));
+      viewports[viewport_index]->beginRenderPass(frame.command_buffer,
                                                  composite_pass);
-      mesh_pass->render(registry, frame->mesh_pass, asset_pool,
-                        frame->command_buffer, viewport_descriptor,
-                        viewport_index);
-      overlay_pass->render(registry, frame->overlay_pass, asset_pool,
-                           frame->command_buffer, viewport_descriptor,
-                           viewport_index);
-      vkCmdEndRenderPass(frame->command_buffer);
+      mesh_pass->render(current_frame, frame.command_buffer,
+                        viewport_descriptor);
+      overlay_pass->render(current_frame, frame.command_buffer,
+                           viewport_descriptor);
+      vkCmdEndRenderPass(frame.command_buffer);
     }
 
-    vkEndCommandBuffer(frame->command_buffer);
+    vkEndCommandBuffer(frame.command_buffer);
   }
 
   {
@@ -268,7 +266,7 @@ void Renderer::renderFrame(EntityRegistry& registry, AssetPool* asset_pool) {
     for (uint32_t i = 0; i < viewports.size(); i++) {
       ViewportUniform uniform;
       viewports[i]->writeUniform(&uniform);
-      frame->viewports->writeElement(i, uniform);
+      frame.viewports->writeElement(i, uniform);
     }
   }
 
@@ -287,19 +285,19 @@ void Renderer::renderFrame(EntityRegistry& registry, AssetPool* asset_pool) {
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &frame->command_buffer;
+    submitInfo.pCommandBuffers = &frame.command_buffer;
 
     if (viewports_require_signal) {
       submitInfo.signalSemaphoreCount = 1;
-      submitInfo.pSignalSemaphores = &frame->on_render_finished;
+      submitInfo.pSignalSemaphores = &frame.on_render_finished;
     } else {
       submitInfo.signalSemaphoreCount = 0;
       submitInfo.pSignalSemaphores = nullptr;
     }
 
-    vkResetFences(gpu->device, 1, &frame->is_in_use);
+    vkResetFences(gpu->device, 1, &frame.is_in_use);
 
-    if (vkQueueSubmit(gpu->graphics_queue, 1, &submitInfo, frame->is_in_use) !=
+    if (vkQueueSubmit(gpu->graphics_queue, 1, &submitInfo, frame.is_in_use) !=
         VK_SUCCESS) {
       log_ftl("Failed to submit primary frame command buffer.");
     }
@@ -310,7 +308,7 @@ void Renderer::renderFrame(EntityRegistry& registry, AssetPool* asset_pool) {
 
     for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
          viewportIndex++) {
-      viewports[viewportIndex]->release(frame->on_render_finished);
+      viewports[viewportIndex]->release(frame.on_render_finished);
     }
   }
 }

@@ -17,6 +17,8 @@ class GlyphLoader;
 class GpuDescriptorSetLayout;
 class GpuInstance;
 class GpuShader;
+class GpuVector;
+class World;
 
 struct DebugDrawVertex {
   glm::vec3 position;
@@ -51,25 +53,25 @@ struct DebugDrawVertex {
 
 using DebugDrawIndex = uint16_t;
 
-class OverlayPass {
+class OverlayPass : public RenderPass {
  public:
   static void initCVars(CVarScope*);
 
-  OverlayPass(const CVarScope*, const GlyphLoader*, GpuInstance*,
+  OverlayPass(const CVarScope*, const GlyphLoader*, GpuInstance*, World*,
               GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
   ~OverlayPass();
 
-  void createFrameData(OverlayPassFrameData&);
-  void destroyFrameData(OverlayPassFrameData&);
-  void allocateDescriptors(EntityRegistry&, OverlayPassFrameData&, AssetPool*,
-                           GpuDescriptorPool*);
-  void render(EntityRegistry&, OverlayPassFrameData&, AssetPool*,
-              VkCommandBuffer, GpuDescriptorSet*, uint32_t);
+  // RenderPass implementation
+  void createFrameData(uint32_t) final;
+  void destroyFrameData() final;
+  void allocateDescriptors(uint32_t, GpuDescriptorPool*) final;
+  void render(uint32_t, VkCommandBuffer, const GpuDescriptorSet*) final;
 
  private:
   const CVarScope* cvars;
   const GlyphLoader* glyphs;
   GpuInstance* gpu;
+  World* world;
 
   VkPipelineLayout debug_pipeline_layout = VK_NULL_HANDLE;
   GpuShader* debug_vertex_shader = nullptr;
@@ -80,6 +82,19 @@ class OverlayPass {
   GpuPipeline* glyph_pipeline = nullptr;
 
   GpuDescriptorSetLayout* glyph_set_layout = nullptr;
+
+  struct FrameData {
+    GpuVector* debug_vertices = nullptr;
+    GpuVector* debug_indices = nullptr;
+
+    uint16_t index_count;
+
+    GpuDescriptorSet* glyph_descriptor = nullptr;
+    GpuVector* glyph_instances = nullptr;
+    uint32_t glyph_count;
+  };
+
+  std::vector<FrameData> frame_data;
 };
 
 }  // namespace mondradiko

@@ -17,6 +17,7 @@
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
 #include "core/ui/GlyphLoader.h"
+#include "core/world/World.h"
 #include "log/log.h"
 #include "shaders/debug.frag.h"
 #include "shaders/debug.vert.h"
@@ -32,10 +33,10 @@ void OverlayPass::initCVars(CVarScope* cvars) {
 }
 
 OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
-                         GpuInstance* gpu,
+                         GpuInstance* gpu, World* world,
                          GpuDescriptorSetLayout* viewport_layout,
                          VkRenderPass parent_pass, uint32_t subpass_index)
-    : cvars(cvars->getChild("debug")), glyphs(glyphs), gpu(gpu) {
+    : cvars(cvars->getChild("debug")), glyphs(glyphs), gpu(gpu), world(world) {
   log_zone;
 
   {
@@ -127,30 +128,36 @@ OverlayPass::~OverlayPass() {
   if (glyph_set_layout != nullptr) delete glyph_set_layout;
 }
 
-void OverlayPass::createFrameData(OverlayPassFrameData& frame) {
+void OverlayPass::createFrameData(uint32_t frame_count) {
   log_zone;
 
-  frame.debug_vertices = new GpuVector(gpu, sizeof(DebugDrawVertex),
-                                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-  frame.debug_indices = new GpuVector(gpu, sizeof(DebugDrawIndex),
-                                      VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-  frame.glyph_instances = new GpuVector(gpu, sizeof(GlyphInstance),
-                                        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+  frame_data.resize(frame_count);
+
+  for (auto& frame : frame_data) {
+    frame.debug_vertices = new GpuVector(gpu, sizeof(DebugDrawVertex),
+                                         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    frame.debug_indices = new GpuVector(gpu, sizeof(DebugDrawIndex),
+                                        VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    frame.glyph_instances = new GpuVector(gpu, sizeof(GlyphInstance),
+                                          VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+  }
 }
 
-void OverlayPass::destroyFrameData(OverlayPassFrameData& frame) {
+void OverlayPass::destroyFrameData() {
   log_zone;
 
-  if (frame.debug_vertices != nullptr) delete frame.debug_vertices;
-  if (frame.debug_indices != nullptr) delete frame.debug_indices;
-  if (frame.glyph_instances != nullptr) delete frame.glyph_instances;
+  for (auto& frame : frame_data) {
+    if (frame.debug_vertices != nullptr) delete frame.debug_vertices;
+    if (frame.debug_indices != nullptr) delete frame.debug_indices;
+    if (frame.glyph_instances != nullptr) delete frame.glyph_instances;
+  }
 }
 
-void OverlayPass::allocateDescriptors(EntityRegistry& registry,
-                                      OverlayPassFrameData& frame,
-                                      AssetPool* asset_pool,
+void OverlayPass::allocateDescriptors(uint32_t frame_index,
                                       GpuDescriptorPool* descriptor_pool) {
   log_zone;
+
+  auto& frame = frame_data[frame_index];
 
   frame.index_count = 0;
   DebugDrawIndex vertex_count = 0;
@@ -173,7 +180,7 @@ void OverlayPass::allocateDescriptors(EntityRegistry& registry,
   if (!cvars->get<BoolCVar>("enabled")) return;
 
   if (cvars->get<BoolCVar>("draw_transforms")) {
-    auto transform_view = registry.view<TransformComponent>();
+    auto transform_view = world->registry.view<TransformComponent>();
 
     for (auto& e : transform_view) {
       glm::mat4 transform = transform_view.get(e).getWorldTransform();
@@ -247,7 +254,7 @@ void OverlayPass::allocateDescriptors(EntityRegistry& registry,
   }
 
   if (cvars->get<BoolCVar>("draw_lights")) {
-    auto point_lights_view = registry.view<PointLightComponent>();
+    auto point_lights_view = world->registry.view<PointLightComponent>();
 
     for (auto e : point_lights_view) {
       auto& point_light = point_lights_view.get(e);
@@ -279,11 +286,11 @@ void OverlayPass::allocateDescriptors(EntityRegistry& registry,
   }
 }
 
-void OverlayPass::render(EntityRegistry& registry, OverlayPassFrameData& frame,
-                         AssetPool* asset_pool, VkCommandBuffer command_buffer,
-                         GpuDescriptorSet* viewport_descriptor,
-                         uint32_t viewport_offset) {
+void OverlayPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
+                         const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
+
+  auto& frame = frame_data[frame_index];
 
   {
     log_zone_named("Render debug");
@@ -308,7 +315,6 @@ void OverlayPass::render(EntityRegistry& registry, OverlayPassFrameData& frame,
     }
 
     // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
-    viewport_descriptor->updateDynamicOffset(0, viewport_offset);
     viewport_descriptor->cmdBind(command_buffer, debug_pipeline_layout, 0);
 
     VkBuffer vertex_buffers[] = {frame.debug_vertices->getBuffer()};

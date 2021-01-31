@@ -30,7 +30,7 @@ class GpuDescriptorSet {
 
   void updateDynamicOffset(uint32_t, uint32_t);
 
-  void cmdBind(VkCommandBuffer, VkPipelineLayout, uint32_t);
+  void cmdBind(VkCommandBuffer, VkPipelineLayout, uint32_t) const;
 
  private:
   GpuInstance* gpu;

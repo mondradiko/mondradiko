@@ -20,6 +20,7 @@
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
 #include "core/renderer/Renderer.h"
+#include "core/world/World.h"
 #include "log/log.h"
 #include "shaders/mesh.frag.h"
 #include "shaders/mesh.vert.h"
@@ -28,9 +29,10 @@ namespace mondradiko {
 
 void MeshPass::initCVars(CVarScope* cvars) {}
 
-MeshPass::MeshPass(GpuInstance* gpu, GpuDescriptorSetLayout* viewport_layout,
+MeshPass::MeshPass(GpuInstance* gpu, World* world,
+                   GpuDescriptorSetLayout* viewport_layout,
                    VkRenderPass render_pass, uint32_t subpass_index)
-    : gpu(gpu) {
+    : gpu(gpu), world(world) {
   log_zone;
 
   {
@@ -128,37 +130,43 @@ MeshPass::~MeshPass() {
   if (mesh_layout != nullptr) delete mesh_layout;
 }
 
-void MeshPass::createFrameData(MeshPassFrameData& frame) {
+void MeshPass::createFrameData(uint32_t frame_count) {
   log_zone;
 
-  frame.material_buffer = new GpuVector(gpu, sizeof(MaterialUniform),
-                                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+  frame_data.resize(frame_count);
 
-  frame.mesh_buffer = new GpuVector(gpu, sizeof(MeshUniform),
-                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+  for (auto& frame : frame_data) {
+    frame.material_buffer = new GpuVector(gpu, sizeof(MaterialUniform),
+                                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
-  frame.point_lights = new GpuVector(gpu, sizeof(PointLightUniform),
-                                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    frame.mesh_buffer = new GpuVector(gpu, sizeof(MeshUniform),
+                                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+    frame.point_lights = new GpuVector(gpu, sizeof(PointLightUniform),
+                                       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+  }
 }
 
-void MeshPass::destroyFrameData(MeshPassFrameData& frame) {
+void MeshPass::destroyFrameData() {
   log_zone;
 
-  if (frame.material_buffer != nullptr) delete frame.material_buffer;
-  if (frame.mesh_buffer != nullptr) delete frame.mesh_buffer;
-  if (frame.point_lights != nullptr) delete frame.point_lights;
+  for (auto& frame : frame_data) {
+    if (frame.material_buffer != nullptr) delete frame.material_buffer;
+    if (frame.mesh_buffer != nullptr) delete frame.mesh_buffer;
+    if (frame.point_lights != nullptr) delete frame.point_lights;
+  }
 }
 
-void MeshPass::allocateDescriptors(EntityRegistry& registry,
-                                   MeshPassFrameData& frame,
-                                   AssetPool* asset_pool,
+void MeshPass::allocateDescriptors(uint32_t frame_index,
                                    GpuDescriptorPool* descriptor_pool) {
   log_zone;
+
+  auto& frame = frame_data[frame_index];
 
   uint32_t light_count;
 
   {
-    auto point_lights = registry.view<PointLightComponent>();
+    auto point_lights = world->registry.view<PointLightComponent>();
     std::vector<PointLightUniform> point_light_uniforms;
 
     for (auto e : point_lights) {
@@ -185,7 +193,7 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
   frame.commands.clear();
 
   auto mesh_renderers =
-      registry.view<MeshRendererComponent, TransformComponent>();
+      world->registry.view<MeshRendererComponent, TransformComponent>();
 
   for (auto e : mesh_renderers) {
     auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
@@ -249,11 +257,11 @@ void MeshPass::allocateDescriptors(EntityRegistry& registry,
   }
 }
 
-void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
-                      AssetPool* asset_pool, VkCommandBuffer command_buffer,
-                      GpuDescriptorSet* viewport_descriptor,
-                      uint32_t viewport_offset) {
+void MeshPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
+                      const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
+
+  auto& frame = frame_data[frame_index];
 
   {
     GraphicsState graphics_state;
@@ -274,7 +282,6 @@ void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
   }
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
-  viewport_descriptor->updateDynamicOffset(0, viewport_offset);
   viewport_descriptor->cmdBind(command_buffer, pipeline_layout, 0);
 
   for (auto& cmd : frame.commands) {

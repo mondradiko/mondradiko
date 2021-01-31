@@ -3,12 +3,6 @@
 
 #pragma once
 
-#include <unordered_map>
-#include <vector>
-
-#include "core/assets/AssetPool.h"
-#include "core/assets/MeshAsset.h"
-#include "core/world/Entity.h"
 #include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
@@ -16,49 +10,17 @@ namespace mondradiko {
 // Forward declarations;
 class GpuDescriptorPool;
 class GpuDescriptorSet;
-class GpuVector;
 
-struct MeshRenderCommand {
-  uint32_t mesh_idx;
-  uint32_t material_idx;
-  GpuDescriptorSet* textures_descriptor;
+class RenderPass {
+ public:
+  virtual ~RenderPass() {}
 
-  AssetHandle<MeshAsset> mesh_asset;
-};
+  virtual void createFrameData(uint32_t) = 0;
+  virtual void destroyFrameData() = 0;
+  virtual void allocateDescriptors(uint32_t, GpuDescriptorPool*) = 0;
+  virtual void render(uint32_t, VkCommandBuffer, const GpuDescriptorSet*) = 0;
 
-struct MeshPassFrameData {
-  GpuVector* material_buffer = nullptr;
-  GpuVector* mesh_buffer = nullptr;
-  GpuVector* point_lights = nullptr;
-
-  GpuDescriptorSet* material_descriptor;
-  GpuDescriptorSet* mesh_descriptor;
-
-  std::vector<MeshRenderCommand> commands;
-};
-
-struct OverlayPassFrameData {
-  GpuVector* debug_vertices = nullptr;
-  GpuVector* debug_indices = nullptr;
-
-  uint16_t index_count;
-
-  GpuDescriptorSet* glyph_descriptor = nullptr;
-  GpuVector* glyph_instances = nullptr;
-  uint32_t glyph_count;
-};
-
-struct PipelinedFrameData {
-  // TODO(marceline-cramer) Use command pool per frame, per thread
-  VkCommandBuffer command_buffer;
-  VkSemaphore on_render_finished;
-  VkFence is_in_use;
-
-  GpuDescriptorPool* descriptor_pool;
-  GpuVector* viewports;
-
-  MeshPassFrameData mesh_pass;
-  OverlayPassFrameData overlay_pass;
+ private:
 };
 
 }  // namespace mondradiko

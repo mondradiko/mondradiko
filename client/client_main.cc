@@ -45,8 +45,8 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   cvars.loadConfig(config);
 
   GlyphLoader glyphs(&cvars, gpu);
-  Renderer renderer(&cvars, display, &glyphs, gpu);
   World world(fs, gpu);
+  Renderer renderer(&cvars, display, &glyphs, gpu, &world);
   NetworkClient client(&cvars, fs, &world, "127.0.0.1", 10555);
 
   while (!g_interrupted) {
@@ -63,7 +63,7 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
       if (!world.update()) break;
 
       if (frame_info.should_render) {
-        renderer.renderFrame(world.registry, &world.asset_pool);
+        renderer.renderFrame();
       }
 
       display->endFrame(&frame_info);
