@@ -15,12 +15,11 @@
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
+#include "core/gpu/GraphicsState.h"
 #include "core/ui/GlyphLoader.h"
 #include "log/log.h"
 #include "shaders/debug.frag.h"
 #include "shaders/debug.vert.h"
-#include "shaders/glyph.frag.h"
-#include "shaders/glyph.vert.h"
 
 namespace mondradiko {
 
@@ -79,249 +78,50 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
   }
 
   {
+    log_zone_named("Create debug shaders");
+
+    debug_vertex_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_debug_vert,
+                      sizeof(shaders_debug_vert));
+    debug_fragment_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_debug_frag,
+                      sizeof(shaders_debug_frag));
+  }
+
+  {
     log_zone_named("Create debug pipeline");
 
-    GpuShader vert_shader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_debug_vert,
-                          sizeof(shaders_debug_vert));
-    GpuShader frag_shader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_debug_frag,
-                          sizeof(shaders_debug_frag));
-
-    std::vector<VkPipelineShaderStageCreateInfo> shader_stages = {
-        vert_shader.getStageCreateInfo(), frag_shader.getStageCreateInfo()};
-
-    auto binding_description = DebugDrawVertex::getBindingDescription();
+    auto vertex_bindings = DebugDrawVertex::getVertexBindings();
     auto attribute_descriptions = DebugDrawVertex::getAttributeDescriptions();
 
-    VkPipelineVertexInputStateCreateInfo vertex_input_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .vertexBindingDescriptionCount = 1,
-        .pVertexBindingDescriptions = &binding_description,
-        .vertexAttributeDescriptionCount = attribute_descriptions.size(),
-        .pVertexAttributeDescriptions = attribute_descriptions.data()};
-
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-        .topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
-        .primitiveRestartEnable = VK_FALSE};
-
-    // TODO(marceline-cramer) Get viewport state from Viewport
-    VkViewport viewport{.x = 0.0f,
-                        .y = 0.0f,
-                        .width = static_cast<float>(500),
-                        .height = static_cast<float>(500),
-                        .minDepth = 0.0f,
-                        .maxDepth = 1.0f};
-
-    VkRect2D scissor{.offset = {0, 0}, .extent = {500, 500}};
-
-    VkPipelineViewportStateCreateInfo viewport_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-        .viewportCount = 1,
-        .pViewports = &viewport,
-        .scissorCount = 1,
-        .pScissors = &scissor};
-
-    VkPipelineRasterizationStateCreateInfo rasterization_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-        .depthClampEnable = VK_FALSE,
-        .rasterizerDiscardEnable = VK_FALSE,
-        .polygonMode = VK_POLYGON_MODE_FILL,
-        .cullMode = VK_CULL_MODE_BACK_BIT,
-        .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        .depthBiasEnable = VK_FALSE,
-        .depthBiasConstantFactor = 0.0f,
-        .depthBiasClamp = 0.0f,
-        .depthBiasSlopeFactor = 0.0f,
-        .lineWidth = 1.0f};
-
-    VkPipelineMultisampleStateCreateInfo multisample_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-        .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-        .sampleShadingEnable = VK_FALSE,
-        .minSampleShading = 1.0f,
-        .pSampleMask = nullptr,
-        .alphaToCoverageEnable = VK_FALSE,
-        .alphaToOneEnable = VK_FALSE};
-
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-        .depthTestEnable = VK_TRUE,
-        .depthWriteEnable = VK_TRUE,
-        .depthCompareOp = VK_COMPARE_OP_LESS,
-        .depthBoundsTestEnable = VK_FALSE,
-        .stencilTestEnable = VK_FALSE};
-
-    VkPipelineColorBlendAttachmentState color_blend_attachment{
-        .blendEnable = VK_FALSE,
-        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                          VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT};
-
-    VkPipelineColorBlendStateCreateInfo color_blend_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-        .logicOpEnable = VK_FALSE,
-        .attachmentCount = 1,
-        .pAttachments = &color_blend_attachment};
-
-    std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
-                                                  VK_DYNAMIC_STATE_SCISSOR};
-
-    VkPipelineDynamicStateCreateInfo dynamic_state_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .dynamicStateCount = static_cast<uint32_t>(dynamic_states.size()),
-        .pDynamicStates = dynamic_states.data()};
-
-    VkGraphicsPipelineCreateInfo pipeline_info{
-        .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-        .stageCount = static_cast<uint32_t>(shader_stages.size()),
-        .pStages = shader_stages.data(),
-        .pVertexInputState = &vertex_input_info,
-        .pInputAssemblyState = &input_assembly_info,
-        .pViewportState = &viewport_info,
-        .pRasterizationState = &rasterization_info,
-        .pMultisampleState = &multisample_info,
-        .pDepthStencilState = &depth_stencil_info,
-        .pColorBlendState = &color_blend_info,
-        .pDynamicState = &dynamic_state_info,
-        .layout = debug_pipeline_layout,
-        .renderPass = parent_pass,
-        .subpass = subpass_index,
-        .basePipelineHandle = VK_NULL_HANDLE,
-        .basePipelineIndex = -1};
-
-    if (vkCreateGraphicsPipelines(gpu->device, VK_NULL_HANDLE, 1,
-                                  &pipeline_info, nullptr,
-                                  &debug_pipeline) != VK_SUCCESS) {
-      log_ftl("Failed to create pipeline.");
-    }
+    debug_pipeline =
+        new GpuPipeline(gpu, debug_pipeline_layout, parent_pass, subpass_index,
+                        debug_vertex_shader, debug_fragment_shader,
+                        vertex_bindings, attribute_descriptions);
   }
 
   {
     log_zone_named("Create glyph pipeline");
 
-    GpuShader vert_shader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_glyph_vert,
-                          sizeof(shaders_glyph_vert));
-    GpuShader frag_shader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_glyph_frag,
-                          sizeof(shaders_glyph_frag));
-
-    std::vector<VkPipelineShaderStageCreateInfo> shader_stages = {
-        vert_shader.getStageCreateInfo(), frag_shader.getStageCreateInfo()};
-
-    auto binding_description = GlyphInstance::getBindingDescription();
+    auto vertex_bindings = GlyphInstance::getVertexBindings();
     auto attribute_descriptions = GlyphInstance::getAttributeDescriptions();
 
-    VkPipelineVertexInputStateCreateInfo vertex_input_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .vertexBindingDescriptionCount = 1,
-        .pVertexBindingDescriptions = &binding_description,
-        .vertexAttributeDescriptionCount = attribute_descriptions.size(),
-        .pVertexAttributeDescriptions = attribute_descriptions.data()};
-
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-        .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
-        .primitiveRestartEnable = VK_FALSE};
-
-    // TODO(marceline-cramer) Get viewport state from Viewport
-    VkViewport viewport{.x = 0.0f,
-                        .y = 0.0f,
-                        .width = static_cast<float>(500),
-                        .height = static_cast<float>(500),
-                        .minDepth = 0.0f,
-                        .maxDepth = 1.0f};
-
-    VkRect2D scissor{.offset = {0, 0}, .extent = {500, 500}};
-
-    VkPipelineViewportStateCreateInfo viewport_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-        .viewportCount = 1,
-        .pViewports = &viewport,
-        .scissorCount = 1,
-        .pScissors = &scissor};
-
-    VkPipelineRasterizationStateCreateInfo rasterization_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-        .depthClampEnable = VK_FALSE,
-        .rasterizerDiscardEnable = VK_FALSE,
-        .polygonMode = VK_POLYGON_MODE_FILL,
-        .cullMode = VK_CULL_MODE_NONE,
-        .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        .depthBiasEnable = VK_FALSE,
-        .depthBiasConstantFactor = 0.0f,
-        .depthBiasClamp = 0.0f,
-        .depthBiasSlopeFactor = 0.0f,
-        .lineWidth = 1.0f};
-
-    VkPipelineMultisampleStateCreateInfo multisample_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-        .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-        .sampleShadingEnable = VK_FALSE,
-        .minSampleShading = 1.0f,
-        .pSampleMask = nullptr,
-        .alphaToCoverageEnable = VK_FALSE,
-        .alphaToOneEnable = VK_FALSE};
-
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-        .depthTestEnable = VK_TRUE,
-        .depthWriteEnable = VK_TRUE,
-        .depthCompareOp = VK_COMPARE_OP_LESS,
-        .depthBoundsTestEnable = VK_FALSE,
-        .stencilTestEnable = VK_FALSE};
-
-    VkPipelineColorBlendAttachmentState color_blend_attachment{
-        .blendEnable = VK_FALSE,
-        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                          VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT};
-
-    VkPipelineColorBlendStateCreateInfo color_blend_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-        .logicOpEnable = VK_FALSE,
-        .attachmentCount = 1,
-        .pAttachments = &color_blend_attachment};
-
-    std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
-                                                  VK_DYNAMIC_STATE_SCISSOR};
-
-    VkPipelineDynamicStateCreateInfo dynamic_state_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .dynamicStateCount = static_cast<uint32_t>(dynamic_states.size()),
-        .pDynamicStates = dynamic_states.data()};
-
-    VkGraphicsPipelineCreateInfo pipeline_info{
-        .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-        .stageCount = static_cast<uint32_t>(shader_stages.size()),
-        .pStages = shader_stages.data(),
-        .pVertexInputState = &vertex_input_info,
-        .pInputAssemblyState = &input_assembly_info,
-        .pViewportState = &viewport_info,
-        .pRasterizationState = &rasterization_info,
-        .pMultisampleState = &multisample_info,
-        .pDepthStencilState = &depth_stencil_info,
-        .pColorBlendState = &color_blend_info,
-        .pDynamicState = &dynamic_state_info,
-        .layout = glyph_pipeline_layout,
-        .renderPass = parent_pass,
-        .subpass = subpass_index,
-        .basePipelineHandle = VK_NULL_HANDLE,
-        .basePipelineIndex = -1};
-
-    if (vkCreateGraphicsPipelines(gpu->device, VK_NULL_HANDLE, 1,
-                                  &pipeline_info, nullptr,
-                                  &glyph_pipeline) != VK_SUCCESS) {
-      log_ftl("Failed to create pipeline.");
-    }
+    glyph_pipeline =
+        new GpuPipeline(gpu, glyph_pipeline_layout, parent_pass, subpass_index,
+                        glyphs->getVertexShader(), glyphs->getFragmentShader(),
+                        vertex_bindings, attribute_descriptions);
   }
 }
 
 OverlayPass::~OverlayPass() {
   log_zone;
 
-  if (debug_pipeline != VK_NULL_HANDLE)
-    vkDestroyPipeline(gpu->device, debug_pipeline, nullptr);
+  if (debug_vertex_shader != nullptr) delete debug_vertex_shader;
+  if (debug_fragment_shader != nullptr) delete debug_fragment_shader;
+  if (debug_pipeline != nullptr) delete debug_pipeline;
   if (debug_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, debug_pipeline_layout, nullptr);
-  if (glyph_pipeline != VK_NULL_HANDLE)
-    vkDestroyPipeline(gpu->device, glyph_pipeline, nullptr);
+  if (glyph_pipeline != nullptr) delete glyph_pipeline;
   if (glyph_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, glyph_pipeline_layout, nullptr);
   if (glyph_set_layout != nullptr) delete glyph_set_layout;
@@ -488,8 +288,24 @@ void OverlayPass::render(EntityRegistry& registry, OverlayPassFrameData& frame,
   {
     log_zone_named("Render debug");
 
-    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                      debug_pipeline);
+    {
+      GraphicsState graphics_state;
+
+      graphics_state.input_assembly_state = {
+          .primitive_topology = GraphicsState::PrimitiveTopology::LineList,
+          .primitive_restart_enable = GraphicsState::BoolFlag::False};
+
+      graphics_state.rasterization_state = {
+          .polygon_mode = GraphicsState::PolygonMode::Fill,
+          .cull_mode = GraphicsState::CullMode::None};
+
+      graphics_state.depth_state = {
+          .test_enable = GraphicsState::BoolFlag::False,
+          .write_enable = GraphicsState::BoolFlag::False,
+          .compare_op = GraphicsState::CompareOp::Always};
+
+      debug_pipeline->cmdBind(command_buffer, graphics_state);
+    }
 
     // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
     viewport_descriptor->updateDynamicOffset(0, viewport_offset);
@@ -506,8 +322,24 @@ void OverlayPass::render(EntityRegistry& registry, OverlayPassFrameData& frame,
   {
     log_zone_named("Render glyphs");
 
-    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                      glyph_pipeline);
+    {
+      GraphicsState graphics_state;
+
+      graphics_state.input_assembly_state = {
+          .primitive_topology = GraphicsState::PrimitiveTopology::TriangleStrip,
+          .primitive_restart_enable = GraphicsState::BoolFlag::False};
+
+      graphics_state.rasterization_state = {
+          .polygon_mode = GraphicsState::PolygonMode::Fill,
+          .cull_mode = GraphicsState::CullMode::None};
+
+      graphics_state.depth_state = {
+          .test_enable = GraphicsState::BoolFlag::False,
+          .write_enable = GraphicsState::BoolFlag::False,
+          .compare_op = GraphicsState::CompareOp::Always};
+
+      glyph_pipeline->cmdBind(command_buffer, graphics_state);
+    }
 
     viewport_descriptor->cmdBind(command_buffer, glyph_pipeline_layout, 0);
     frame.glyph_descriptor->cmdBind(command_buffer, glyph_pipeline_layout, 1);

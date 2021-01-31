@@ -5,6 +5,7 @@
 
 #include <array>
 
+#include "core/gpu/GpuPipeline.h"
 #include "core/renderer/RenderPass.h"
 #include "lib/include/glm_headers.h"
 
@@ -15,25 +16,24 @@ class CVarScope;
 class GlyphLoader;
 class GpuDescriptorSetLayout;
 class GpuInstance;
-
-using DebugDrawVertexAttributeDescriptions =
-    std::array<VkVertexInputAttributeDescription, 2>;
+class GpuShader;
 
 struct DebugDrawVertex {
   glm::vec3 position;
   glm::vec3 color;
 
-  static VkVertexInputBindingDescription getBindingDescription() {
-    VkVertexInputBindingDescription description{
-        .binding = 0,
-        .stride = sizeof(DebugDrawVertex),
-        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
+  static GpuPipeline::VertexBindings getVertexBindings() {
+    GpuPipeline::VertexBindings bindings(1);
 
-    return description;
+    bindings[0] = {.binding = 0,
+                   .stride = sizeof(DebugDrawVertex),
+                   .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
+
+    return bindings;
   }
 
-  static DebugDrawVertexAttributeDescriptions getAttributeDescriptions() {
-    DebugDrawVertexAttributeDescriptions descriptions;
+  static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
+    GpuPipeline::AttributeDescriptions descriptions(2);
 
     descriptions[0] = {.location = 0,
                        .binding = 0,
@@ -72,10 +72,12 @@ class OverlayPass {
   GpuInstance* gpu;
 
   VkPipelineLayout debug_pipeline_layout = VK_NULL_HANDLE;
-  VkPipeline debug_pipeline = VK_NULL_HANDLE;
+  GpuShader* debug_vertex_shader = nullptr;
+  GpuShader* debug_fragment_shader = nullptr;
+  GpuPipeline* debug_pipeline = nullptr;
 
   VkPipelineLayout glyph_pipeline_layout = VK_NULL_HANDLE;
-  VkPipeline glyph_pipeline = VK_NULL_HANDLE;
+  GpuPipeline* glyph_pipeline = nullptr;
 
   GpuDescriptorSetLayout* glyph_set_layout = nullptr;
 };

@@ -92,35 +92,24 @@ MeshPass::MeshPass(GpuInstance* gpu, GpuDescriptorSetLayout* viewport_layout,
   }
 
   {
-    log_zone_named("Create pipeline");
+    log_zone_named("Create shaders");
 
-    GpuShader vert_shader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_mesh_vert,
-                          sizeof(shaders_mesh_vert));
-    GpuShader frag_shader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_mesh_frag,
-                          sizeof(shaders_mesh_frag));
+    vertex_shader = new GpuShader(gpu, VK_SHADER_STAGE_VERTEX_BIT,
+                                  shaders_mesh_vert, sizeof(shaders_mesh_vert));
+    fragment_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_mesh_frag,
+                      sizeof(shaders_mesh_frag));
+  }
+
+  {
+    log_zone_named("Create pipeline");
 
     auto vertex_bindings = MeshVertex::getVertexBindings();
     auto attribute_descriptions = MeshVertex::getAttributeDescriptions();
 
     pipeline = new GpuPipeline(gpu, pipeline_layout, render_pass, subpass_index,
-                               &vert_shader, &frag_shader, vertex_bindings,
+                               vertex_shader, fragment_shader, vertex_bindings,
                                attribute_descriptions);
-
-    GraphicsState graphics_state;
-
-    graphics_state.input_assembly_state = {
-        .primitive_topology = GraphicsState::PrimitiveTopology::TriangleList,
-        .primitive_restart_enable = GraphicsState::BoolFlag::False};
-
-    graphics_state.rasterization_state = {
-        .polygon_mode = GraphicsState::PolygonMode::Fill,
-        .cull_mode = GraphicsState::CullMode::Back};
-
-    graphics_state.depth_state.test_enable = GraphicsState::BoolFlag::True;
-    graphics_state.depth_state.write_enable = GraphicsState::BoolFlag::True;
-    graphics_state.depth_state.compare_op = GraphicsState::CompareOp::Less;
-
-    pipeline->createPipeline(graphics_state);
   }
 }
 
@@ -130,6 +119,8 @@ MeshPass::~MeshPass() {
   if (texture_sampler != VK_NULL_HANDLE)
     vkDestroySampler(gpu->device, texture_sampler, nullptr);
   if (pipeline != nullptr) delete pipeline;
+  if (vertex_shader != nullptr) delete vertex_shader;
+  if (fragment_shader != nullptr) delete fragment_shader;
   if (pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, pipeline_layout, nullptr);
   if (material_layout != nullptr) delete material_layout;
@@ -279,8 +270,7 @@ void MeshPass::render(EntityRegistry& registry, MeshPassFrameData& frame,
                                   .write_enable = GraphicsState::BoolFlag::True,
                                   .compare_op = GraphicsState::CompareOp::Less};
 
-    auto state_hash = pipeline->getStateHash(graphics_state);
-    pipeline->cmdBind(command_buffer, state_hash);
+    pipeline->cmdBind(command_buffer, graphics_state);
   }
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout

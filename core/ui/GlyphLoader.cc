@@ -13,7 +13,10 @@
 #include "core/cvars/StringCVar.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuImage.h"
+#include "core/gpu/GpuShader.h"
 #include "log/log.h"
+#include "shaders/glyph.frag.h"
+#include "shaders/glyph.vert.h"
 
 namespace mondradiko {
 
@@ -208,9 +211,22 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, GpuInstance* gpu)
       log_ftl("Failed to create texture sampler.");
     }
   }
+
+  {
+    log_zone_named("Create shaders");
+
+    vertex_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_glyph_vert,
+                      sizeof(shaders_glyph_vert));
+    fragment_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_glyph_frag,
+                      sizeof(shaders_glyph_frag));
+  }
 }
 
 GlyphLoader::~GlyphLoader() {
+  if (vertex_shader != nullptr) delete vertex_shader;
+  if (fragment_shader != nullptr) delete fragment_shader;
   if (sdf_sampler != VK_NULL_HANDLE)
     vkDestroySampler(gpu->device, sdf_sampler, nullptr);
   if (glyph_buffer != nullptr) delete glyph_buffer;
