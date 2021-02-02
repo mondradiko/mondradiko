@@ -236,13 +236,25 @@ void Renderer::renderFrame() {
   }
 
   {
-    log_zone_named("Record command buffers");
+    log_zone_named("Begin command buffers");
 
     VkCommandBufferBeginInfo beginInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT};
 
     vkBeginCommandBuffer(frame.command_buffer, &beginInfo);
+  }
+
+  {
+    log_zone_named("Run pre-render commands");
+
+    for (auto& render_pass : render_passes) {
+      render_pass->preRender(current_frame, frame.command_buffer);
+    }
+  }
+
+  {
+    log_zone_named("Render frame");
 
     for (uint32_t viewport_index = 0; viewport_index < viewports.size();
          viewport_index++) {

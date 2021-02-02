@@ -43,6 +43,7 @@ class MeshPass : public RenderPass {
   void createFrameData(uint32_t) final;
   void destroyFrameData() final;
   void allocateDescriptors(uint32_t, GpuDescriptorPool*) final;
+  void preRender(uint32_t, VkCommandBuffer) final {}
   void render(uint32_t, VkCommandBuffer, const GpuDescriptorSet*) final;
 
  private:

@@ -18,6 +18,7 @@ class RenderPass {
   virtual void createFrameData(uint32_t) = 0;
   virtual void destroyFrameData() = 0;
   virtual void allocateDescriptors(uint32_t, GpuDescriptorPool*) = 0;
+  virtual void preRender(uint32_t, VkCommandBuffer) = 0;
   virtual void render(uint32_t, VkCommandBuffer, const GpuDescriptorSet*) = 0;
 
  private:
