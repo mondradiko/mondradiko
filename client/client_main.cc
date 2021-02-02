@@ -12,6 +12,8 @@
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/network/NetworkClient.h"
+#include "core/renderer/MeshPass.h"
+#include "core/renderer/OverlayPass.h"
 #include "core/renderer/Renderer.h"
 #include "core/ui/GlyphLoader.h"
 #include "core/world/World.h"
@@ -46,7 +48,15 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
 
   GlyphLoader glyphs(&cvars, gpu);
   World world(fs, gpu);
-  Renderer renderer(&cvars, display, &glyphs, gpu, &world);
+
+  Renderer renderer(&cvars, display, gpu);
+  MeshPass mesh_pass(&renderer, &world);
+  OverlayPass overlay_pass(cvars.getChild("renderer"), &glyphs, &renderer,
+                           &world);
+
+  renderer.addRenderPass(&mesh_pass);
+  renderer.addRenderPass(&overlay_pass);
+
   NetworkClient client(&cvars, fs, &world, "127.0.0.1", 10555);
 
   while (!g_interrupted) {
@@ -72,6 +82,7 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
     client.update();
   }
 
+  renderer.destroyFrameData();
   display->destroySession();
 }
 

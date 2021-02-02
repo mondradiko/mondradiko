@@ -14,41 +14,37 @@ namespace mondradiko {
 // Forward declarations
 class CVarScope;
 class DisplayInterface;
-class GlyphLoader;
 class GpuDescriptorPool;
 class GpuDescriptorSetLayout;
 class GpuInstance;
 class GpuVector;
-class MeshPass;
-class OverlayPass;
-class UserInterface;
-class World;
 
 class Renderer {
  public:
   static void initCVars(CVarScope*);
 
-  Renderer(const CVarScope*, DisplayInterface*, const GlyphLoader*,
-           GpuInstance*, World*);
+  Renderer(const CVarScope*, DisplayInterface*, GpuInstance*);
   ~Renderer();
+
+  void addRenderPass(RenderPass*);
+  void destroyFrameData();
 
   void renderFrame();
 
-  VkRenderPass getCompositePass() { return composite_pass; }
+  GpuInstance* getGpu() { return gpu; }
+  GpuDescriptorSetLayout* getViewportLayout() { return viewport_layout; }
+  VkRenderPass getCompositePass() const { return composite_pass; }
 
  private:
   const CVarScope* cvars;
   DisplayInterface* display;
-  const GlyphLoader* glyphs;
   GpuInstance* gpu;
-  World* world;
 
   VkRenderPass composite_pass = VK_NULL_HANDLE;
 
   GpuDescriptorSetLayout* viewport_layout = nullptr;
 
-  MeshPass* mesh_pass = nullptr;
-  OverlayPass* overlay_pass = nullptr;
+  std::vector<RenderPass*> render_passes;
 
   struct PipelinedFrameData {
     // TODO(marceline-cramer) Use command pool per frame, per thread

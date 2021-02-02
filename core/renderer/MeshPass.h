@@ -24,6 +24,7 @@ class GpuInstance;
 class GpuPipeline;
 class GpuShader;
 class GpuVector;
+class Renderer;
 class World;
 
 struct MeshUniform {
@@ -35,8 +36,7 @@ class MeshPass : public RenderPass {
  public:
   static void initCVars(CVarScope*);
 
-  MeshPass(GpuInstance*, World*, GpuDescriptorSetLayout*, VkRenderPass,
-           uint32_t);
+  MeshPass(Renderer*, World*);
   ~MeshPass();
 
   // RenderPass implementation
@@ -47,6 +47,7 @@ class MeshPass : public RenderPass {
 
  private:
   GpuInstance* gpu;
+  Renderer* renderer;
   World* world;
 
   GpuShader* vertex_shader = nullptr;

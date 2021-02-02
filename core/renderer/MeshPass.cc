@@ -29,10 +29,8 @@ namespace mondradiko {
 
 void MeshPass::initCVars(CVarScope* cvars) {}
 
-MeshPass::MeshPass(GpuInstance* gpu, World* world,
-                   GpuDescriptorSetLayout* viewport_layout,
-                   VkRenderPass render_pass, uint32_t subpass_index)
-    : gpu(gpu), world(world) {
+MeshPass::MeshPass(Renderer* renderer, World* world)
+    : gpu(renderer->getGpu()), renderer(renderer), world(world) {
   log_zone;
 
   {
@@ -79,8 +77,9 @@ MeshPass::MeshPass(GpuInstance* gpu, World* world,
     log_zone_named("Create pipeline layout");
 
     std::vector<VkDescriptorSetLayout> set_layouts{
-        viewport_layout->getSetLayout(), material_layout->getSetLayout(),
-        texture_layout->getSetLayout(), mesh_layout->getSetLayout()};
+        renderer->getViewportLayout()->getSetLayout(),
+        material_layout->getSetLayout(), texture_layout->getSetLayout(),
+        mesh_layout->getSetLayout()};
 
     VkPipelineLayoutCreateInfo layoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -109,9 +108,9 @@ MeshPass::MeshPass(GpuInstance* gpu, World* world,
     auto vertex_bindings = MeshVertex::getVertexBindings();
     auto attribute_descriptions = MeshVertex::getAttributeDescriptions();
 
-    pipeline = new GpuPipeline(gpu, pipeline_layout, render_pass, subpass_index,
-                               vertex_shader, fragment_shader, vertex_bindings,
-                               attribute_descriptions);
+    pipeline = new GpuPipeline(
+        gpu, pipeline_layout, renderer->getCompositePass(), 0, vertex_shader,
+        fragment_shader, vertex_bindings, attribute_descriptions);
   }
 }
 

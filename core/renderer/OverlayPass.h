@@ -18,6 +18,7 @@ class GpuDescriptorSetLayout;
 class GpuInstance;
 class GpuShader;
 class GpuVector;
+class Renderer;
 class World;
 
 struct DebugDrawVertex {
@@ -57,8 +58,7 @@ class OverlayPass : public RenderPass {
  public:
   static void initCVars(CVarScope*);
 
-  OverlayPass(const CVarScope*, const GlyphLoader*, GpuInstance*, World*,
-              GpuDescriptorSetLayout*, VkRenderPass, uint32_t);
+  OverlayPass(const CVarScope*, const GlyphLoader*, Renderer*, World*);
   ~OverlayPass();
 
   // RenderPass implementation
@@ -71,6 +71,7 @@ class OverlayPass : public RenderPass {
   const CVarScope* cvars;
   const GlyphLoader* glyphs;
   GpuInstance* gpu;
+  Renderer* renderer;
   World* world;
 
   VkPipelineLayout debug_pipeline_layout = VK_NULL_HANDLE;

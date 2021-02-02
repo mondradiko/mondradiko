@@ -11,8 +11,8 @@
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuVector.h"
-#include "core/renderer/MeshPass.h"
 #include "core/renderer/OverlayPass.h"
+#include "core/renderer/RenderPass.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -23,13 +23,9 @@ void Renderer::initCVars(CVarScope* cvars) {
   OverlayPass::initCVars(renderer);
 }
 
-Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
-                   const GlyphLoader* glyphs, GpuInstance* gpu, World* world)
-    : cvars(_cvars->getChild("renderer")),
-      display(display),
-      glyphs(glyphs),
-      gpu(gpu),
-      world(world) {
+Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
+                   GpuInstance* gpu)
+    : cvars(cvars->getChild("renderer")), display(display), gpu(gpu) {
   log_zone;
 
   {
@@ -99,22 +95,11 @@ Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
   }
 
   {
-    log_zone_named("Create pipelines");
-
-    mesh_pass = new MeshPass(gpu, world, viewport_layout, composite_pass, 0);
-    overlay_pass = new OverlayPass(cvars, glyphs, gpu, world, viewport_layout,
-                                   composite_pass, 0);
-  }
-
-  {
     log_zone_named("Create frame data");
 
     // Pipeline two frames
     frames_in_flight.resize(2);
     current_frame = 0;
-
-    mesh_pass->createFrameData(frames_in_flight.size());
-    overlay_pass->createFrameData(frames_in_flight.size());
 
     for (auto& frame : frames_in_flight) {
       VkCommandBufferAllocateInfo alloc_info{
@@ -156,10 +141,29 @@ Renderer::Renderer(const CVarScope* _cvars, DisplayInterface* display,
 Renderer::~Renderer() {
   log_zone;
 
+  destroyFrameData();
+
+  if (viewport_layout != nullptr) delete viewport_layout;
+
+  if (composite_pass != VK_NULL_HANDLE)
+    vkDestroyRenderPass(gpu->device, composite_pass, nullptr);
+}
+
+void Renderer::addRenderPass(RenderPass* render_pass) {
+  log_zone;
+
+  render_pass->createFrameData(frames_in_flight.size());
+  render_passes.push_back(render_pass);
+}
+
+void Renderer::destroyFrameData() {
+  log_zone;
+
   vkDeviceWaitIdle(gpu->device);
 
-  mesh_pass->destroyFrameData();
-  overlay_pass->destroyFrameData();
+  for (auto& render_pass : render_passes) {
+    render_pass->destroyFrameData();
+  }
 
   for (auto& frame : frames_in_flight) {
     if (frame.viewports != nullptr) delete frame.viewports;
@@ -170,13 +174,8 @@ Renderer::~Renderer() {
     if (frame.descriptor_pool != nullptr) delete frame.descriptor_pool;
   }
 
-  if (mesh_pass != nullptr) delete mesh_pass;
-  if (overlay_pass != nullptr) delete overlay_pass;
-
-  if (viewport_layout != nullptr) delete viewport_layout;
-
-  if (composite_pass != VK_NULL_HANDLE)
-    vkDestroyRenderPass(gpu->device, composite_pass, nullptr);
+  render_passes.clear();
+  frames_in_flight.clear();
 }
 
 void Renderer::renderFrame() {
@@ -231,8 +230,9 @@ void Renderer::renderFrame() {
     viewport_descriptor = frame.descriptor_pool->allocate(viewport_layout);
     viewport_descriptor->updateDynamicBuffer(0, frame.viewports);
 
-    mesh_pass->allocateDescriptors(current_frame, frame.descriptor_pool);
-    overlay_pass->allocateDescriptors(current_frame, frame.descriptor_pool);
+    for (auto& render_pass : render_passes) {
+      render_pass->allocateDescriptors(current_frame, frame.descriptor_pool);
+    }
   }
 
   {
@@ -250,10 +250,12 @@ void Renderer::renderFrame() {
           0, viewport_index * sizeof(ViewportUniform));
       viewports[viewport_index]->beginRenderPass(frame.command_buffer,
                                                  composite_pass);
-      mesh_pass->render(current_frame, frame.command_buffer,
-                        viewport_descriptor);
-      overlay_pass->render(current_frame, frame.command_buffer,
-                           viewport_descriptor);
+
+      for (auto& render_pass : render_passes) {
+        render_pass->render(current_frame, frame.command_buffer,
+                            viewport_descriptor);
+      }
+
       vkCmdEndRenderPass(frame.command_buffer);
     }
 

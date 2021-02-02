@@ -16,6 +16,7 @@
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
+#include "core/renderer/Renderer.h"
 #include "core/ui/GlyphLoader.h"
 #include "core/world/World.h"
 #include "log/log.h"
@@ -33,17 +34,19 @@ void OverlayPass::initCVars(CVarScope* cvars) {
 }
 
 OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
-                         GpuInstance* gpu, World* world,
-                         GpuDescriptorSetLayout* viewport_layout,
-                         VkRenderPass parent_pass, uint32_t subpass_index)
-    : cvars(cvars->getChild("debug")), glyphs(glyphs), gpu(gpu), world(world) {
+                         Renderer* renderer, World* world)
+    : cvars(cvars->getChild("debug")),
+      glyphs(glyphs),
+      gpu(renderer->getGpu()),
+      renderer(renderer),
+      world(world) {
   log_zone;
 
   {
     log_zone_named("Create debug pipeline layout");
 
     std::vector<VkDescriptorSetLayout> set_layouts{
-        viewport_layout->getSetLayout(),
+        renderer->getViewportLayout()->getSetLayout(),
     };
 
     VkPipelineLayoutCreateInfo layoutInfo{
@@ -65,7 +68,8 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
     glyph_set_layout->addStorageBuffer(sizeof(GlyphUniform));
 
     std::vector<VkDescriptorSetLayout> set_layouts{
-        viewport_layout->getSetLayout(), glyph_set_layout->getSetLayout()};
+        renderer->getViewportLayout()->getSetLayout(),
+        glyph_set_layout->getSetLayout()};
 
     VkPipelineLayoutCreateInfo layoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -95,10 +99,10 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
     auto vertex_bindings = DebugDrawVertex::getVertexBindings();
     auto attribute_descriptions = DebugDrawVertex::getAttributeDescriptions();
 
-    debug_pipeline =
-        new GpuPipeline(gpu, debug_pipeline_layout, parent_pass, subpass_index,
-                        debug_vertex_shader, debug_fragment_shader,
-                        vertex_bindings, attribute_descriptions);
+    debug_pipeline = new GpuPipeline(gpu, debug_pipeline_layout,
+                                     renderer->getCompositePass(), 0,
+                                     debug_vertex_shader, debug_fragment_shader,
+                                     vertex_bindings, attribute_descriptions);
   }
 
   {
@@ -107,10 +111,10 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
     auto vertex_bindings = GlyphInstance::getVertexBindings();
     auto attribute_descriptions = GlyphInstance::getAttributeDescriptions();
 
-    glyph_pipeline =
-        new GpuPipeline(gpu, glyph_pipeline_layout, parent_pass, subpass_index,
-                        glyphs->getVertexShader(), glyphs->getFragmentShader(),
-                        vertex_bindings, attribute_descriptions);
+    glyph_pipeline = new GpuPipeline(
+        gpu, glyph_pipeline_layout, renderer->getCompositePass(), 0,
+        glyphs->getVertexShader(), glyphs->getFragmentShader(), vertex_bindings,
+        attribute_descriptions);
   }
 }
 
