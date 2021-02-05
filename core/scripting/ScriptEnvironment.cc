@@ -81,6 +81,10 @@ ScriptEnvironment::~ScriptEnvironment() {
   if (engine) wasm_engine_delete(engine);
 }
 
+void ScriptEnvironment::linkUiApis(UserInterface* ui) {
+  // TODO(marceline-cramer) UI API
+}
+
 // Helper function to link a component type's API
 template <class ComponentType>
 void linkComponentApi(ScriptEnvironment* scripts, World* world) {

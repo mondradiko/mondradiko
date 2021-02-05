@@ -14,6 +14,8 @@ spirv_shaders(SHADER_HEADERS
   shaders/glyph.vert
   shaders/mesh.frag
   shaders/mesh.vert
+  shaders/panel.frag
+  shaders/panel.vert
 )
 
 add_subdirectory(protocol)
@@ -71,6 +73,8 @@ set(MONDRADIKO_CORE_SRC
   network/NetworkClient.cc
   network/NetworkServer.cc
   ui/GlyphLoader.cc
+  ui/UiPanel.cc
+  ui/UserInterface.cc
   world/World.cc
   world/WorldEventSorter.cc
 )

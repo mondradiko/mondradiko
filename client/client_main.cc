@@ -16,6 +16,7 @@
 #include "core/renderer/OverlayPass.h"
 #include "core/renderer/Renderer.h"
 #include "core/ui/GlyphLoader.h"
+#include "core/ui/UserInterface.h"
 #include "core/world/World.h"
 #include "log/log.h"
 
@@ -56,6 +57,9 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
 
   renderer.addRenderPass(&mesh_pass);
   renderer.addRenderPass(&overlay_pass);
+
+  UserInterface ui(&glyphs, &renderer);
+  renderer.addRenderPass(&ui);
 
   NetworkClient client(&cvars, fs, &world, "127.0.0.1", 10555);
 

@@ -13,6 +13,7 @@
 namespace mondradiko {
 
 // Forward declarations
+class UserInterface;
 class World;
 
 class ScriptEnvironment {
@@ -20,6 +21,7 @@ class ScriptEnvironment {
   ScriptEnvironment();
   ~ScriptEnvironment();
 
+  void linkUiApis(UserInterface*);
   void linkComponentApis(World*);
   void update(EntityRegistry&, AssetPool*);
 
