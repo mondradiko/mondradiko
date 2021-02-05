@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "assets/common/AssetTypes.h"
-#include "assets/format/Registry_generated.h"
-#include "assets/format/SerializedAsset_generated.h"
+#include "types/assets/Registry_generated.h"
+#include "types/assets/SerializedAsset_generated.h"
 #include "flatbuffers/flatbuffers.h"
 
 namespace mondradiko {

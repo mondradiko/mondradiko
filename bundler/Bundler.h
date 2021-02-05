@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 
-#include "assets/format/SerializedAsset_generated.h"
+#include "types/assets/SerializedAsset_generated.h"
 #include "assets/saving/AssetBundleBuilder.h"
 #include "bundler/ConverterInterface.h"
 #include "lib/include/toml_headers.h"

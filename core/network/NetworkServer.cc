@@ -10,9 +10,9 @@
 #include "core/world/World.h"
 #include "core/world/WorldEventSorter.h"
 #include "log/log.h"
-#include "protocol/ClientEvent_generated.h"
-#include "protocol/ServerEvent_generated.h"
-#include "protocol/WorldEvent_generated.h"
+#include "types/protocol/ClientEvent_generated.h"
+#include "types/protocol/ServerEvent_generated.h"
+#include "types/protocol/WorldEvent_generated.h"
 #include "steam/isteamnetworkingutils.h"
 #include "steam/steamnetworkingsockets.h"
 

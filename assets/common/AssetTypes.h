@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "assets/format/types_generated.h"
 #include "lib/include/glm_headers.h"
+#include "types/assets/types_generated.h"
 
 // Provided by build system
 #ifndef MONDRADIKO_ASSET_VERSION

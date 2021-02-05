@@ -4,7 +4,7 @@
 #pragma once
 
 #include "assets/common/AssetTypes.h"
-#include "assets/format/SerializedAsset_generated.h"
+#include "types/assets/SerializedAsset_generated.h"
 
 #define DECL_ASSET_TYPE(type) \
   static constexpr assets::AssetType ASSET_TYPE = type;

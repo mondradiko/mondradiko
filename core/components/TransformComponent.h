@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "assets/format/PrefabAsset_generated.h"
+#include "types/assets/PrefabAsset_generated.h"
 #include "core/components/Component.h"
-#include "core/protocol/TransformComponent_generated.h"
+#include "types/protocol/TransformComponent_generated.h"
 #include "core/world/Entity.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/wasm_headers.h"

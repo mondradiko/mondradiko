@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "assets/format/PrefabAsset_generated.h"
+#include "types/assets/PrefabAsset_generated.h"
 #include "bundler/Bundler.h"
 #include "log/log.h"
 

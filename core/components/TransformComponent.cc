@@ -3,7 +3,7 @@
 
 #include "core/components/TransformComponent.h"
 
-#include "protocol/WorldEvent_generated.h"
+#include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 

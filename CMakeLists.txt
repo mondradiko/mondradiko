@@ -32,6 +32,8 @@ add_subdirectory(lib)
 add_compile_options(-Wall)
 
 add_subdirectory(log)
+add_subdirectory(types)
+add_subdirectory(bindings)
 add_subdirectory(assets)
 add_subdirectory(core)
 add_subdirectory(client)

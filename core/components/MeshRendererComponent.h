@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "assets/format/PrefabAsset_generated.h"
 #include "core/assets/MaterialAsset.h"
 #include "core/assets/MeshAsset.h"
 #include "core/components/Component.h"
-#include "protocol/MeshRendererComponent_generated.h"
+#include "types/assets/PrefabAsset_generated.h"
+#include "types/protocol/MeshRendererComponent_generated.h"
 
 namespace mondradiko {
 

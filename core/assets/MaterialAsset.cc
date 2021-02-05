@@ -3,7 +3,7 @@
 
 #include "core/assets/MaterialAsset.h"
 
-#include "assets/format/MaterialAsset_generated.h"
+#include "types/assets/MaterialAsset_generated.h"
 #include "core/assets/Asset.h"
 #include "core/assets/TextureAsset.h"
 #include "core/gpu/GpuDescriptorSet.h"

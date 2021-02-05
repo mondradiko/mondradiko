@@ -6,7 +6,7 @@
 #include <filesystem>
 
 #include "assets/common/AssetTypes.h"
-#include "assets/format/SerializedAsset_generated.h"
+#include "types/assets/SerializedAsset_generated.h"
 #include "assets/saving/AssetBundleBuilder.h"
 
 namespace mondradiko {

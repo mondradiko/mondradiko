@@ -5,8 +5,8 @@
 
 #include <vector>
 
+#include "bindings/script_linker.h"
 #include "core/assets/ScriptAsset.h"
-#include "core/bindings/script_linker.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ScriptInstance.h"

@@ -11,7 +11,7 @@
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/world/World.h"
-#include "protocol/WorldEvent_generated.h"
+#include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 

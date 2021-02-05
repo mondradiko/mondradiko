@@ -17,7 +17,7 @@
 #include "core/gpu/GpuInstance.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "log/log.h"
-#include "protocol/WorldEvent_generated.h"
+#include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 

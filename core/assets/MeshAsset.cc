@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "assets/format/MeshAsset_generated.h"
+#include "types/assets/MeshAsset_generated.h"
 #include "core/assets/Asset.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuInstance.h"

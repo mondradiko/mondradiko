@@ -6,7 +6,7 @@
 #include <cstring>
 #include <fstream>
 
-#include "assets/format/Registry_generated.h"
+#include "types/assets/Registry_generated.h"
 #include "log/log.h"
 #include "xxhash.h"  // NOLINT
 

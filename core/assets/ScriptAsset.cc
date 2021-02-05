@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "assets/format/ScriptAsset_generated.h"
+#include "types/assets/ScriptAsset_generated.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/scripting/ScriptInstance.h"
 

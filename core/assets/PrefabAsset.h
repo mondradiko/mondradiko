@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "assets/format/PrefabAsset_generated.h"
+#include "types/assets/PrefabAsset_generated.h"
 #include "core/assets/AssetHandle.h"
 #include "core/world/Entity.h"
 

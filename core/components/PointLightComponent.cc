@@ -3,7 +3,7 @@
 
 #include "core/components/PointLightComponent.h"
 
-#include "core/protocol/WorldEvent_generated.h"
+#include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 

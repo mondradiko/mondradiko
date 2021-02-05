@@ -18,23 +18,6 @@ spirv_shaders(SHADER_HEADERS
   shaders/panel.vert
 )
 
-add_subdirectory(protocol)
-flatc_schemas(PROTOCOL_HEADERS
-  protocol/ClientEvent.fbs
-  protocol/MeshRendererComponent.fbs
-  protocol/PointLightComponent.fbs
-  protocol/ServerEvent.fbs
-  protocol/TransformComponent.fbs
-  protocol/ScriptData.fbs
-  protocol/WorldEvent.fbs
-  protocol/types.fbs
-)
-
-add_subdirectory(bindings)
-api_bindings(SCRIPT_LINKERS
-  bindings/components/Transform.toml
-)
-
 configure_file(build_config.h.in build_config.h)
 
 #
@@ -79,8 +62,9 @@ set(MONDRADIKO_CORE_SRC
   world/WorldEventSorter.cc
 )
 
-add_library(mondradiko-core STATIC ${SCRIPT_LINKERS} ${PROTOCOL_HEADERS} ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
+add_library(mondradiko-core STATIC $<TARGET_OBJECTS:mondradiko-api-components> ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
 
 target_link_libraries(mondradiko-core mondradiko-assets)
 target_link_libraries(mondradiko-core mondradiko-log)
 target_link_libraries(mondradiko-core mondradiko-lib)
+target_link_libraries(mondradiko-core mondradiko-types)

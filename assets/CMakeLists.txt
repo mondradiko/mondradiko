@@ -1,18 +1,6 @@
 # Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-add_subdirectory(format)
-flatc_schemas(FORMAT_HEADERS
-  format/MaterialAsset.fbs
-  format/MeshAsset.fbs
-  format/PrefabAsset.fbs
-  format/Registry.fbs
-  format/ScriptAsset.fbs
-  format/SerializedAsset.fbs
-  format/TextureAsset.fbs
-  format/types.fbs
-)
-
 set(MONDRADIKO_ASSETS_SRC
   common/AssetTypes.cc
   loading/AssetBundle.cc
