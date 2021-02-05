@@ -10,8 +10,8 @@
 
 #include "core/network/NetworkShared.h"
 #include "core/world/World.h"
-#include "flatbuffers/flatbuffers.h"
-#include "steam/isteamnetworkingsockets.h"
+#include "lib/include/flatbuffers_headers.h"
+#include "lib/include/gamenetworkingsockets_include.h"
 
 namespace mondradiko {
 

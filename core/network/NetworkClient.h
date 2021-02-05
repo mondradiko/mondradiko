@@ -9,8 +9,8 @@
 
 #include "core/cvars/CVarScope.h"
 #include "core/network/NetworkShared.h"
-#include "flatbuffers/flatbuffers.h"
-#include "steam/isteamnetworkingsockets.h"
+#include "lib/include/flatbuffers_headers.h"
+#include "lib/include/gamenetworkingsockets_include.h"
 
 namespace mondradiko {
 
