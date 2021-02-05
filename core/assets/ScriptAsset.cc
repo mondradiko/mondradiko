@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "types/assets/ScriptAsset_generated.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/scripting/ScriptInstance.h"
+#include "types/assets/ScriptAsset_generated.h"
 
 namespace mondradiko {
 

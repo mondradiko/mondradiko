@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <vector>
 
 #include "core/gpu/GpuPipeline.h"
 #include "core/renderer/RenderPass.h"

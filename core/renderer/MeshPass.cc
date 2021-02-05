@@ -3,6 +3,7 @@
 
 #include "core/renderer/MeshPass.h"
 
+#include <unordered_map>
 #include <vector>
 
 #include "core/assets/MeshAsset.h"

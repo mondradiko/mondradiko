@@ -5,9 +5,9 @@
 
 #include <vector>
 
-#include "types/assets/PrefabAsset_generated.h"
 #include "core/assets/AssetHandle.h"
 #include "core/world/Entity.h"
+#include "types/assets/PrefabAsset_generated.h"
 
 namespace mondradiko {
 

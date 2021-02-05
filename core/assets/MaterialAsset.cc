@@ -3,11 +3,11 @@
 
 #include "core/assets/MaterialAsset.h"
 
-#include "types/assets/MaterialAsset_generated.h"
 #include "core/assets/Asset.h"
 #include "core/assets/TextureAsset.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuInstance.h"
+#include "types/assets/MaterialAsset_generated.h"
 
 namespace mondradiko {
 
