@@ -38,7 +38,6 @@ class SdlDisplay : public DisplayInterface {
   void endFrame(DisplayBeginFrameInfo*) final;
 
   SDL_Window* window = nullptr;
-  SDL_Surface* window_surface;
 
   VkSurfaceKHR surface = VK_NULL_HANDLE;
   VkSurfaceCapabilitiesKHR surface_capabilities;

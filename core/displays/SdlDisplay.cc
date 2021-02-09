@@ -14,7 +14,7 @@ SdlDisplay::SdlDisplay() {
   log_zone;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    log_ftl("Failed to initialize SDL.");
+    log_ftl("Failed to initialize SDL: %s", SDL_GetError());
   }
 
   window = SDL_CreateWindow(
@@ -22,7 +22,7 @@ SdlDisplay::SdlDisplay() {
       600, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 
   if (!window) {
-    log_ftl("Failed to create SDL window.");
+    log_ftl("Failed to create SDL window: %s", SDL_GetError());
   }
 
   key_state = SDL_GetKeyboardState(nullptr);
@@ -62,14 +62,8 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
                                  VkPhysicalDevice* physical_device) {
   log_zone;
 
-  window_surface = SDL_GetWindowSurface(window);
-
-  // Clear window
-  SDL_FillRect(window_surface, nullptr, 0);
-  SDL_UpdateWindowSurface(window);
-
   if (SDL_Vulkan_CreateSurface(window, instance, &surface) != SDL_TRUE) {
-    log_err("Failed to create SDL window surface.");
+    log_err("Failed to create SDL window surface: %s", SDL_GetError());
     return false;
   }
 
