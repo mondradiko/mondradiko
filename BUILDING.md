@@ -26,9 +26,6 @@ The following dependencies must be built from source:
 - [OpenXR SDK](#openxr-sdk-linux)
 - [Flatbuffers](#flatbuffers-linux)
 
-Download and install the `.deb` package
-from the [latest KTX-Software release](https://github.com/KhronosGroup/KTX-Software/releases).
-
 ### Compiling
 
 ```bash
@@ -51,19 +48,6 @@ git clone https://github.com/Cyan4973/xxHash
 cd xxHash
 make
 sudo make install
-```
-
-### KTX-Software (Linux)
-
-[Download and extract the latest release tarball.](https://github.com/KhronosGroup/KTX-Software/releases)
-
-```bash
-# Once inside the repo...
-mkdir build
-cd build
-cmake -GNinja ..
-ninja
-sudo ninja install
 ```
 
 ### GameNetworkingSockets (Linux)
