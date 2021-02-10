@@ -123,7 +123,8 @@ void ScriptInstance::runCallback(const std::string& callback_name) {
   auto iter = callbacks.find(callback_name);
 
   if (iter == callbacks.end()) {
-    log_err("Attempted to call non-existent callback %s", callback_name.c_str());
+    log_err("Attempted to call non-existent callback %s",
+            callback_name.c_str());
     return;
   }
 

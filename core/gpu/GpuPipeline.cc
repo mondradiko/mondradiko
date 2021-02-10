@@ -188,11 +188,15 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
       fragment_shader->getStageCreateInfo()};
 
   VkPipelineVertexInputStateCreateInfo vertex_input_info;
-  vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertex_input_info.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_bindings.size());
+  vertex_input_info.sType =
+      VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+  vertex_input_info.vertexBindingDescriptionCount =
+      static_cast<uint32_t>(vertex_bindings.size());
   vertex_input_info.pVertexBindingDescriptions = vertex_bindings.data();
-  vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
-  vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
+  vertex_input_info.vertexAttributeDescriptionCount =
+      static_cast<uint32_t>(attribute_descriptions.size());
+  vertex_input_info.pVertexAttributeDescriptions =
+      attribute_descriptions.data();
 
   VkPipelineInputAssemblyStateCreateInfo input_assembly_info{};
   createVkInputAssemblyState(graphics_state, &input_assembly_info);
@@ -221,7 +225,8 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   createVkRasterizationState(graphics_state, &rasterization_info);
 
   VkPipelineMultisampleStateCreateInfo multisample_info;
-  multisample_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  multisample_info.sType =
+      VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
   multisample_info.sampleShadingEnable = VK_FALSE;
   multisample_info.minSampleShading = 1.0f;
@@ -233,11 +238,14 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   createVkDepthStencilState(graphics_state, &depth_stencil_info);
 
   VkPipelineColorBlendAttachmentState color_blend_attachment;
-color_blend_attachment.blendEnable = VK_FALSE;
-color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  color_blend_attachment.blendEnable = VK_FALSE;
+  color_blend_attachment.colorWriteMask =
+      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
   VkPipelineColorBlendStateCreateInfo color_blend_info;
-  color_blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+  color_blend_info.sType =
+      VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   color_blend_info.logicOpEnable = VK_FALSE;
   color_blend_info.attachmentCount = 1;
   color_blend_info.pAttachments = &color_blend_attachment;
@@ -246,8 +254,10 @@ color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMP
                                                 VK_DYNAMIC_STATE_SCISSOR};
 
   VkPipelineDynamicStateCreateInfo dynamic_state_info;
-  dynamic_state_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-  dynamic_state_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
+  dynamic_state_info.sType =
+      VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+  dynamic_state_info.dynamicStateCount =
+      static_cast<uint32_t>(dynamic_states.size());
   dynamic_state_info.pDynamicStates = dynamic_states.data();
 
   VkGraphicsPipelineCreateInfo pipeline_info;
@@ -269,8 +279,8 @@ color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMP
   pipeline_info.basePipelineIndex = -1;
 
   if (vkCreateGraphicsPipelines(gpu->device, VK_NULL_HANDLE, 1, &pipeline_info,
-                                nullptr, &pipeline_object) != VK_SUCCESS) {
-    log_ftl("Failed to create pipeline 0x%0lx", state_hash);
+                              nullptr, &pipeline_object) != VK_SUCCESS) {
+  log_ftl("Failed to create pipeline 0x%0lx", state_hash);
   }
 
   pipelines.emplace(state_hash, pipeline_object);

@@ -52,7 +52,8 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
   XrSwapchainCreateInfo swapchainCreateInfo;
   swapchainCreateInfo.type = XR_TYPE_SWAPCHAIN_CREATE_INFO;
   swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
-  swapchainCreateInfo.format = static_cast<int64_t>(display->getSwapchainFormat()),
+  swapchainCreateInfo.format =
+      static_cast<int64_t>(display->getSwapchainFormat()),
   swapchainCreateInfo.sampleCount = 1;
   swapchainCreateInfo.width = _image_width;
   swapchainCreateInfo.height = _image_height;

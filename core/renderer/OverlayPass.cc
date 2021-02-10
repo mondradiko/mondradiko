@@ -306,8 +306,10 @@ void OverlayPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
       GraphicsState graphics_state;
 
       GraphicsState::InputAssemblyState input_assembly_state;
-      input_assembly_state.primitive_topology = GraphicsState::PrimitiveTopology::LineList;
-      input_assembly_state.primitive_restart_enable = GraphicsState::BoolFlag::False;
+      input_assembly_state.primitive_topology =
+          GraphicsState::PrimitiveTopology::LineList;
+      input_assembly_state.primitive_restart_enable =
+          GraphicsState::BoolFlag::False;
       graphics_state.input_assembly_state = input_assembly_state;
 
       GraphicsState::RasterizatonState rasterization_state;
@@ -342,8 +344,10 @@ void OverlayPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
       GraphicsState graphics_state;
 
       GraphicsState::InputAssemblyState input_assembly_state;
-      input_assembly_state.primitive_topology = GraphicsState::PrimitiveTopology::TriangleStrip;
-      input_assembly_state.primitive_restart_enable = GraphicsState::BoolFlag::False;
+      input_assembly_state.primitive_topology =
+          GraphicsState::PrimitiveTopology::TriangleStrip;
+      input_assembly_state.primitive_restart_enable =
+          GraphicsState::BoolFlag::False;
       graphics_state.input_assembly_state = input_assembly_state;
 
       GraphicsState::RasterizatonState rasterization_state;
