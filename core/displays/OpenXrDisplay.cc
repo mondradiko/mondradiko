@@ -132,7 +132,7 @@ OpenXrDisplay::~OpenXrDisplay() {
     xrDestroyInstance(instance);
 }
 
-bool OpenXrDisplay::createSession(GpuInstance *_gpu) {
+bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
   log_zone;
 
   gpu = _gpu;
@@ -207,10 +207,9 @@ void OpenXrDisplay::destroySession() {
   session = XR_NULL_HANDLE;
 }
 
-bool OpenXrDisplay::getVulkanRequirements(VulkanRequirements *requirements) {
+bool OpenXrDisplay::getVulkanRequirements(VulkanRequirements* requirements) {
   XrGraphicsRequirementsVulkanKHR vulkanRequirements;
   vulkanRequirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR;
-
   if (ext_xrGetVulkanGraphicsRequirementsKHR(
           instance, system_id, &vulkanRequirements) != XR_SUCCESS) {
     log_err("Failed to get OpenXR Vulkan requirements.");
@@ -400,7 +399,7 @@ void OpenXrDisplay::acquireViewports(std::vector<Viewport*>* acquired) {
   }
 }
 
-void OpenXrDisplay::endFrame(DisplayBeginFrameInfo *frame_info) {
+void OpenXrDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
   XrCompositionLayerBaseHeader* layer = nullptr;
   XrCompositionLayerProjection projection_layer{
       .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION};
