@@ -6,8 +6,9 @@
 #include <cstring>
 #include <fstream>
 
-#include "types/assets/Registry_generated.h"
 #include "log/log.h"
+#include "lz4frame.h"  // NOLINT
+#include "types/assets/Registry_generated.h"
 #include "xxhash.h"  // NOLINT
 
 namespace mondradiko {
@@ -32,6 +33,11 @@ AssetResult AssetBundleBuilder::addAsset(
   fbb->Finish(asset_offset);
   size_t asset_size = fbb->GetSize();
 
+  if (asset_size > ASSET_LUMP_MAX_SIZE) {
+    log_err("Asset size exceeds max asset lump size");
+    return AssetResult::BadSize;
+  }
+
   // Generate ID by hashing asset data
   *id = static_cast<AssetId>(XXH3_64bits(fbb->GetBufferPointer(), asset_size));
 
@@ -53,6 +59,11 @@ AssetResult AssetBundleBuilder::addAsset(
     allocateLump(&new_lump);
     lumps.push_back(new_lump);
     lump_index++;
+  }
+
+  if (lumps[lump_index].compression_method != LumpCompressionMethod::None) {
+    log_err("Lump %d has already been compressed; can't add asset", lump_index);
+    return AssetResult::BadContents;
   }
 
   AssetToSave new_asset;
@@ -81,7 +92,8 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
     auto lump_path = bundle_root / lump_name;
     std::ofstream lump_file(lump_path.c_str(), std::ofstream::binary);
 
-    // TODO(marceline-cramer) Lump compression
+    // TODO(marceline-cramer) Lump compression configuration
+    compressLump(&lump);
 
     lump_file.write(reinterpret_cast<char*>(lump.data), lump.total_size);
 
@@ -115,9 +127,10 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
           static_cast<LumpHash>(XXH3_64bits(lump.data, lump.total_size));
       log_dbg("Lump has checksum 0x%016lx", checksum);
 
+      lump_entry.add_file_size(lump.total_size);
       lump_entry.add_checksum(checksum);
       lump_entry.add_hash_method(LumpHashMethod::xxHash);
-      lump_entry.add_compression_method(LumpCompressionMethod::None);
+      lump_entry.add_compression_method(lump.compression_method);
       lump_entry.add_assets(assets_offset);
 
       lump_offsets.push_back(lump_entry.Finish());
@@ -146,9 +159,46 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
 }
 
 void AssetBundleBuilder::allocateLump(LumpToSave* new_lump) {
+  new_lump->compression_method = LumpCompressionMethod::None;
   new_lump->total_size = 0;
   new_lump->data = new char[ASSET_LUMP_MAX_SIZE];
   new_lump->assets.resize(0);
+}
+
+void AssetBundleBuilder::compressLump(LumpToSave* lump) {
+  if (lump->compression_method != LumpCompressionMethod::None) {
+    log_err("Can't compress lump; lump is already compressed");
+    return;
+  }
+
+  // TODO(marceline-cramer) More lump compression types?
+  log_dbg("Compressing lump with LZ4");
+
+  LZ4F_preferences_t preferences;
+  memset(&preferences, 0, sizeof(preferences));
+  preferences.frameInfo.contentSize = lump->total_size;
+  preferences.compressionLevel = LZ4F_compressionLevel_max();
+  preferences.autoFlush = 1;
+  preferences.favorDecSpeed = 1;
+
+  size_t compressed_size =
+      LZ4F_compressFrameBound(lump->total_size, &preferences);
+  char* compressed_data = new char[compressed_size];
+
+  size_t written_size =
+      LZ4F_compressFrame(compressed_data, compressed_size, lump->data,
+                         lump->total_size, &preferences);
+
+  if (LZ4F_isError(written_size)) {
+    log_err("LZ4HC compression failed: %s", LZ4F_getErrorName(written_size));
+    return;
+  }
+
+  // TODO(marceline-cramer) Stream out to a file
+  delete[] lump->data;
+  lump->compression_method = LumpCompressionMethod::LZ4;
+  lump->total_size = written_size;
+  lump->data = compressed_data;
 }
 
 }  // namespace assets

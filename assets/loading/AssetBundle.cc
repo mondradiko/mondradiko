@@ -6,8 +6,8 @@
 #include <cstring>
 #include <fstream>
 
-#include "types/assets/Registry_generated.h"
 #include "log/log.h"
+#include "types/assets/Registry_generated.h"
 
 namespace mondradiko {
 namespace assets {
@@ -129,7 +129,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       }
 
       lump_cache[lump_index].lump = nullptr;
-      lump_cache[lump_index].expected_length = asset_offset;
+      lump_cache[lump_index].file_size = lump_entry->file_size();
       lump_cache[lump_index].hash_method = lump_entry->hash_method();
       lump_cache[lump_index].checksum = lump_entry->checksum();
       lump_cache[lump_index].compression_method =
@@ -151,7 +151,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       auto& cached_lump = lump_cache[i];
       AssetLump lump(lump_path);
 
-      if (!lump.assertLength(cached_lump.expected_length)) {
+      if (!lump.assertFileSize(cached_lump.file_size)) {
         return AssetResult::BadSize;
       }
 
@@ -183,7 +183,7 @@ bool AssetBundle::isAssetRegistered(AssetId id) {
 bool AssetBundle::loadAsset(const SerializedAsset** asset, AssetId id) {
   // TODO(marceline-cramer) Better error checking and logging
   // TODO(marceline-cramer) Check lump checksums when loading into cache
-  log_dbg("Loading asset 0x%0lx", id);
+  log_inf("Loading asset 0x%0lx", id);
 
   auto stored_asset = asset_lookup.find(id)->second;
   auto lump_index = stored_asset.lump_index;
@@ -194,7 +194,7 @@ bool AssetBundle::loadAsset(const SerializedAsset** asset, AssetId id) {
     cached_lump.lump =
         new AssetLump(bundle_root / generateLumpName(lump_index));
 
-    if (!cached_lump.lump->assertLength(cached_lump.expected_length)) {
+    if (!cached_lump.lump->assertFileSize(cached_lump.file_size)) {
       return false;
     }
 

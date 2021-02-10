@@ -12,6 +12,7 @@ struct AssetEntry {
 
 table LumpEntry {
   checksum:LumpHash;
+  file_size:uint64;
   hash_method:LumpHashMethod;
   compression_method:LumpCompressionMethod;
   assets:[AssetEntry];

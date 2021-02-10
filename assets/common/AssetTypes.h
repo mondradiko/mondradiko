@@ -18,9 +18,9 @@
 namespace mondradiko {
 namespace assets {
 
-static const uint32_t ASSET_REGISTRY_MAX_LUMPS = 256;
-static const uint32_t ASSET_LUMP_MAX_ASSETS = 4096;
-static const uint32_t ASSET_LUMP_MAX_SIZE = 128 * 1024 * 1024;  // 128 MiB
+static const size_t ASSET_REGISTRY_MAX_LUMPS = 256;
+static const size_t ASSET_LUMP_MAX_ASSETS = 4096;
+static const size_t ASSET_LUMP_MAX_SIZE = 48 * 1024 * 1024;  // 128 MiB
 
 // TODO(marceline-cramer) AssetLump error handling
 enum class AssetResult {

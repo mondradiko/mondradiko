@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "assets/common/AssetTypes.h"
+#include "flatbuffers/flatbuffers.h"
 #include "types/assets/Registry_generated.h"
 #include "types/assets/SerializedAsset_generated.h"
-#include "flatbuffers/flatbuffers.h"
 
 namespace mondradiko {
 namespace assets {
@@ -34,6 +34,7 @@ class AssetBundleBuilder {
   };
 
   struct LumpToSave {
+    LumpCompressionMethod compression_method;
     size_t total_size;
     char* data;
 
@@ -45,6 +46,7 @@ class AssetBundleBuilder {
   std::vector<AssetId> initial_prefabs;
 
   void allocateLump(LumpToSave*);
+  void compressLump(LumpToSave*);
 };
 
 }  // namespace assets

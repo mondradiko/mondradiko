@@ -13,22 +13,25 @@
 namespace mondradiko {
 namespace assets {
 
-const uint32_t ASSET_LOAD_CHUNK_SIZE = 1024;
+const uint32_t ASSET_LOAD_CHUNK_SIZE = 4 * 1024;  // 4 KiB
 static_assert(ASSET_LOAD_CHUNK_SIZE >= LZ4F_HEADER_SIZE_MAX);
 
 AssetLump::AssetLump(const std::filesystem::path& lump_path)
     : lump_path(lump_path) {
+  log_zone;
   log_dbg("Loading lump %s", lump_path.c_str());
 }
 
 AssetLump::~AssetLump() {
+  log_zone;
   log_dbg("Unloading lump %s", lump_path.c_str());
 
   if (loaded_data) delete[] loaded_data;
 }
 
-bool AssetLump::assertLength(size_t check_size) {
-  log_dbg("Asserting size of lump %s", lump_path.c_str());
+bool AssetLump::assertFileSize(size_t check_size) {
+  log_zone;
+  log_dbg("Asserting size of lump file %s", lump_path.c_str());
 
   size_t lump_length = std::filesystem::file_size(lump_path);
 
@@ -42,9 +45,10 @@ bool AssetLump::assertLength(size_t check_size) {
 }
 
 bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
-  LumpHash computed_hash;
-
+  log_zone;
   log_dbg("Asserting hash from lump %s", lump_path.c_str());
+
+  LumpHash computed_hash;
 
   std::ifstream lump_file(lump_path.c_str(), std::ifstream::binary);
 
@@ -94,6 +98,7 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
 
 void AssetLump::decompress(LumpCompressionMethod compression_method) {
   if (loaded_data) return;
+  log_zone;
 
   std::ifstream lump_file(lump_path.c_str(), std::ifstream::binary);
   lump_file.seekg(0, std::ifstream::end);
@@ -118,23 +123,55 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
             LZ4F_getFrameInfo(context, &frame_info, buffer.data(), &bytes_read);
 
         if (LZ4F_isError(result)) {
-          log_ftl("LZ4 decompression error");
+          log_ftl("Failed to read LZ4 frame info: %s",
+                  LZ4F_getErrorName(result));
         }
 
         loaded_size = frame_info.contentSize;
-        loaded_data = new char[loaded_size];
 
+        if (loaded_size == 0) {
+          log_ftl("LZ4 compressed lump must contain content size");
+        }
+
+        loaded_data = new char[loaded_size];
         buffer.resize(result);
         lump_file.seekg(bytes_read);
       }
 
-      // TODO(marceline-cramer) Finish this
+      int remaining_size = loaded_size;
+      char* decompressed_data = loaded_data;
 
-      /*while (!lump_file.eof()) {
+      while (!lump_file.eof()) {
         lump_file.read(buffer.data(), buffer.size());
-        auto bytes_read = lump_file.gcount();
-        LZ4F_decompress(context, )
-      }*/
+        size_t bytes_read = lump_file.gcount();
+
+        size_t decompressed_size = remaining_size;
+        size_t bytes_consumed = bytes_read;
+        size_t buf_hint =
+            LZ4F_decompress(context, decompressed_data, &decompressed_size,
+                            buffer.data(), &bytes_consumed, nullptr);
+
+        if (LZ4F_isError(buf_hint)) {
+          log_err("LZ4 decompression failed: %s", LZ4F_getErrorName(buf_hint));
+          break;
+        }
+
+        decompressed_data += decompressed_size;
+        remaining_size -= decompressed_size;
+
+        if (remaining_size < 0) {
+          log_wrn("LZ4 decompression ran out of RAM early");
+          break;
+        }
+
+        if (bytes_consumed < bytes_read) {
+          log_wrn("LZ4 decompression overflow");
+        }
+
+        if (buf_hint <= ASSET_LOAD_CHUNK_SIZE) {
+          buffer.resize(buf_hint);
+        }
+      }
 
       LZ4F_freeDecompressionContext(context);
       break;

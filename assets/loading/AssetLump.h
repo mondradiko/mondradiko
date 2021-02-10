@@ -17,7 +17,7 @@ class AssetLump {
   explicit AssetLump(const std::filesystem::path&);
   ~AssetLump();
 
-  bool assertLength(size_t);
+  bool assertFileSize(size_t);
   bool assertHash(LumpHashMethod, LumpHash);
 
   void decompress(LumpCompressionMethod);

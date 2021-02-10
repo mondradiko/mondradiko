@@ -40,7 +40,7 @@ class AssetBundle {
 
   struct LumpCacheEntry {
     AssetLump* lump;
-    size_t expected_length;
+    size_t file_size;
     LumpCompressionMethod compression_method;
     LumpHashMethod hash_method;
     LumpHash checksum;
