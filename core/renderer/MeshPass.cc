@@ -37,22 +37,22 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
   {
     log_zone_named("Create texture sampler");
 
-    VkSamplerCreateInfo sampler_info{
-        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .magFilter = VK_FILTER_LINEAR,
-        .minFilter = VK_FILTER_LINEAR,
-        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .mipLodBias = 0.0f,
-        // TODO(marceline-cramer) Anisotropy support
-        .anisotropyEnable = VK_FALSE,
-        .compareEnable = VK_FALSE,
-        .minLod = 0.0f,
-        .maxLod = 0.0f,
-        .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-        .unnormalizedCoordinates = VK_FALSE};
+    VkSamplerCreateInfo sampler_info;
+    sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sampler_info.magFilter = VK_FILTER_LINEAR;
+    sampler_info.minFilter = VK_FILTER_LINEAR;
+    sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_info.mipLodBias = 0.0f;
+    // TODO(marceline-cramer) Anisotropy support
+    sampler_info.anisotropyEnable = VK_FALSE;
+    sampler_info.compareEnable = VK_FALSE;
+    sampler_info.minLod = 0.0f;
+    sampler_info.maxLod = 0.0f;
+    sampler_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    sampler_info.unnormalizedCoordinates = VK_FALSE;
 
     if (vkCreateSampler(gpu->device, &sampler_info, nullptr,
                         &texture_sampler) != VK_SUCCESS) {
@@ -82,10 +82,10 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
         material_layout->getSetLayout(), texture_layout->getSetLayout(),
         mesh_layout->getSetLayout()};
 
-    VkPipelineLayoutCreateInfo layoutInfo{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .setLayoutCount = static_cast<uint32_t>(set_layouts.size()),
-        .pSetLayouts = set_layouts.data()};
+    VkPipelineLayoutCreateInfo layoutInfo;
+        layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        layoutInfo.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
+        layoutInfo.pSetLayouts = set_layouts.data();
 
     if (vkCreatePipelineLayout(gpu->device, &layoutInfo, nullptr,
                                &pipeline_layout) != VK_SUCCESS) {
@@ -266,17 +266,21 @@ void MeshPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
   {
     GraphicsState graphics_state;
 
-    graphics_state.input_assembly_state = {
-        .primitive_topology = GraphicsState::PrimitiveTopology::TriangleList,
-        .primitive_restart_enable = GraphicsState::BoolFlag::False};
+    GraphicsState::InputAssemblyState input_assembly_state;
+    input_assembly_state.primitive_topology = GraphicsState::PrimitiveTopology::TriangleList;
+    input_assembly_state.primitive_restart_enable = GraphicsState::BoolFlag::False;
+    graphics_state.input_assembly_state = input_assembly_state;
 
-    graphics_state.rasterization_state = {
-        .polygon_mode = GraphicsState::PolygonMode::Fill,
-        .cull_mode = GraphicsState::CullMode::Back};
+    GraphicsState::RasterizatonState rasterization_state;
+    rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
+    rasterization_state.cull_mode = GraphicsState::CullMode::Back;
+    graphics_state.rasterization_state = rasterization_state;
 
-    graphics_state.depth_state = {.test_enable = GraphicsState::BoolFlag::True,
-                                  .write_enable = GraphicsState::BoolFlag::True,
-                                  .compare_op = GraphicsState::CompareOp::Less};
+    GraphicsState::DepthState depth_state;
+    depth_state.test_enable = GraphicsState::BoolFlag::True;
+    depth_state.write_enable = GraphicsState::BoolFlag::True;
+    depth_state.compare_op = GraphicsState::CompareOp::Less;
+    graphics_state.depth_state = depth_state;
 
     pipeline->cmdBind(command_buffer, graphics_state);
   }

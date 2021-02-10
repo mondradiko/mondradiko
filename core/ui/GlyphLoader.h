@@ -31,29 +31,18 @@ struct GlyphInstance {
   uint32_t glyph_index;
 
   static GpuPipeline::VertexBindings getVertexBindings() {
-    GpuPipeline::VertexBindings bindings(1);
-
-    bindings[0] = {.binding = 0,
-                   .stride = sizeof(GlyphInstance),
-                   .inputRate = VK_VERTEX_INPUT_RATE_INSTANCE};
-
-    return bindings;
+    // VkVertexInputBindingDescription{binding, stride, inputRate}
+    return {
+      { 0, sizeof(GlyphInstance), VK_VERTEX_INPUT_RATE_INSTANCE },
+    };
   }
 
   static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
-    GpuPipeline::AttributeDescriptions descriptions(2);
-
-    descriptions[0] = {.location = 0,
-                       .binding = 0,
-                       .format = VK_FORMAT_R32G32_SFLOAT,
-                       .offset = offsetof(GlyphInstance, position)};
-
-    descriptions[1] = {.location = 1,
-                       .binding = 0,
-                       .format = VK_FORMAT_R32_UINT,
-                       .offset = offsetof(GlyphInstance, glyph_index)};
-
-    return descriptions;
+    // VkVertexInputAttributeDescription{location, binding, format, offset}
+    return {
+      { 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(GlyphInstance, position) },
+      { 1, 0, VK_FORMAT_R32_UINT, offsetof(GlyphInstance, glyph_index) },
+    };
   }
 };
 

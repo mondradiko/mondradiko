@@ -17,7 +17,7 @@ ConverterInterface::AssetOffset BinaryGltfConverter::convert(
   std::string warning;
 
   bool file_loaded = gltf_context.LoadBinaryFromFile(
-      &gltf_model, &error, &warning, model_path.c_str());
+      &gltf_model, &error, &warning, model_path.string().c_str());
   if (!file_loaded) {
     log_ftl("Failed to load model with error: %s", error.c_str());
   }

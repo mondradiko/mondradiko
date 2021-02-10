@@ -24,39 +24,20 @@ struct MeshVertex {
   glm::vec2 tex_coord;
 
   static GpuPipeline::VertexBindings getVertexBindings() {
-    GpuPipeline::VertexBindings bindings(1);
-
-    bindings[0] = {.binding = 0,
-                   .stride = sizeof(MeshVertex),
-                   .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
-
-    return bindings;
+    // VkVertexInputBindingDescription{binding, stride, inputRate}
+    return {
+      { 0, sizeof(MeshVertex), VK_VERTEX_INPUT_RATE_VERTEX },
+    };
   }
 
   static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
-    GpuPipeline::AttributeDescriptions descriptions(4);
-
-    descriptions[0] = {.location = 0,
-                       .binding = 0,
-                       .format = VK_FORMAT_R32G32B32_SFLOAT,
-                       .offset = offsetof(MeshVertex, position)};
-
-    descriptions[1] = {.location = 1,
-                       .binding = 0,
-                       .format = VK_FORMAT_R32G32B32_SFLOAT,
-                       .offset = offsetof(MeshVertex, normal)};
-
-    descriptions[2] = {.location = 2,
-                       .binding = 0,
-                       .format = VK_FORMAT_R32G32B32_SFLOAT,
-                       .offset = offsetof(MeshVertex, color)};
-
-    descriptions[3] = {.location = 3,
-                       .binding = 0,
-                       .format = VK_FORMAT_R32G32_SFLOAT,
-                       .offset = offsetof(MeshVertex, tex_coord)};
-
-    return descriptions;
+    // VkVertexInputAttributeDescription{location, binding, format, offset}
+    return {
+      { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, position) },
+      { 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, normal) },
+      { 2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, color) },
+      { 3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(MeshVertex, tex_coord) },
+    };
   }
 };
 

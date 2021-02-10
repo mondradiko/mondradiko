@@ -27,29 +27,18 @@ struct DebugDrawVertex {
   glm::vec3 color;
 
   static GpuPipeline::VertexBindings getVertexBindings() {
-    GpuPipeline::VertexBindings bindings(1);
-
-    bindings[0] = {.binding = 0,
-                   .stride = sizeof(DebugDrawVertex),
-                   .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
-
-    return bindings;
+    // VkVertexInputBindingDescription{binding, stride, inputRate}
+    return {
+      { 0, sizeof(DebugDrawVertex), VK_VERTEX_INPUT_RATE_VERTEX },
+    };
   }
 
   static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
-    GpuPipeline::AttributeDescriptions descriptions(2);
-
-    descriptions[0] = {.location = 0,
-                       .binding = 0,
-                       .format = VK_FORMAT_R32G32B32_SFLOAT,
-                       .offset = offsetof(DebugDrawVertex, position)};
-
-    descriptions[1] = {.location = 1,
-                       .binding = 0,
-                       .format = VK_FORMAT_R32G32B32_SFLOAT,
-                       .offset = offsetof(DebugDrawVertex, color)};
-
-    return descriptions;
+    // VkVertexInputAttributeDescription{location, binding, format, offset}
+    return {
+      { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DebugDrawVertex, position) },
+      { 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DebugDrawVertex, color) },
+    };
   }
 };
 

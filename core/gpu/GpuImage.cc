@@ -17,25 +17,26 @@ GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
       width(height),
       height(height),
       gpu(gpu) {
-  VkImageCreateInfo imageCreateInfo{
-      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-      .imageType = VK_IMAGE_TYPE_2D,
-      .format = format,
-      .extent = {.width = width, .height = height, .depth = 1},
-      .mipLevels = 1,
-      .arrayLayers = 1,
-      .samples = VK_SAMPLE_COUNT_1_BIT,
-      .tiling = VK_IMAGE_TILING_OPTIMAL,
-      .usage = image_usage_flags,
-      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .initialLayout = layout};
+  VkImageCreateInfo imageCreateInfo;
+  imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+  imageCreateInfo.format = format;
+  imageCreateInfo.extent = VkExtent3D{ width, height, 1 };
+  imageCreateInfo.mipLevels = 1;
+  imageCreateInfo.arrayLayers = 1;
+  imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+  imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+  imageCreateInfo.usage = image_usage_flags;
+  imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  imageCreateInfo.initialLayout = layout;
 
-  VmaAllocationCreateInfo allocationCreateInfo{
-      .flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
-      .usage = memory_usage};
+  VmaAllocationCreateInfo allocationCreateInfo;
+  allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
+  allocationCreateInfo.usage = memory_usage;
 
-  if (vmaCreateImage(gpu->allocator, &imageCreateInfo, &allocationCreateInfo,
-                     &image, &allocation, &allocation_info) != VK_SUCCESS) {
+  if (vmaCreateImage(gpu->allocator, &imageCreateInfo,
+                     &allocationCreateInfo, &image, &allocation,
+                     &allocation_info) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan image.");
   }
 
@@ -56,16 +57,20 @@ void GpuImage::writeData(const void* src) {
 
   VkCommandBuffer commandBuffer = gpu->beginSingleTimeCommands();
 
-  VkBufferImageCopy region{
-      .bufferOffset = 0,
-      .bufferRowLength = 0,
-      .bufferImageHeight = 0,
-      .imageSubresource = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                           .mipLevel = 0,
-                           .baseArrayLayer = 0,
-                           .layerCount = 1},
-      .imageOffset = {0, 0, 0},
-      .imageExtent = {width, height, 1}};
+  VkBufferImageCopy region;
+  region.bufferOffset = 0;
+  region.bufferRowLength = 0;
+  region.bufferImageHeight = 0;
+
+  VkImageSubresourceLayers imageSubresource;
+  imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  imageSubresource.mipLevel = 0;
+  imageSubresource.baseArrayLayer = 0;
+  imageSubresource.layerCount = 1;
+  region.imageSubresource = imageSubresource;
+
+  region.imageOffset = {0, 0, 0};
+  region.imageExtent = {width, height, 1};
 
   vkCmdCopyBufferToImage(commandBuffer, stage.getBuffer(), image, layout, 1,
                          &region);
@@ -74,18 +79,21 @@ void GpuImage::writeData(const void* src) {
 }
 
 void GpuImage::transitionLayout(VkImageLayout targetLayout) {
-  VkImageMemoryBarrier barrier{
-      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-      .oldLayout = layout,
-      .newLayout = targetLayout,
-      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-      .image = image,
-      .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                           .baseMipLevel = 0,
-                           .levelCount = 1,
-                           .baseArrayLayer = 0,
-                           .layerCount = 1}};
+  VkImageMemoryBarrier barrier;
+  barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+  barrier.oldLayout = layout;
+  barrier.newLayout = targetLayout;
+  barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  barrier.image = image;
+
+  VkImageSubresourceRange subresourceRange;
+  subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  subresourceRange.baseMipLevel = 0;
+  subresourceRange.levelCount = 1;
+  subresourceRange.baseArrayLayer = 0;
+  subresourceRange.layerCount = 1;
+  barrier.subresourceRange = subresourceRange;
 
   VkPipelineStageFlags sourceStage;
   VkPipelineStageFlags destinationStage;
@@ -133,18 +141,22 @@ void GpuImage::createView() {
     }
   }
 
-  VkImageViewCreateInfo viewInfo{
-      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-      .image = image,
-      .viewType = VK_IMAGE_VIEW_TYPE_2D,
-      .format = format,
-      .subresourceRange = {.aspectMask = aspect_mask,
-                           .baseMipLevel = 0,
-                           .levelCount = 1,
-                           .baseArrayLayer = 0,
-                           .layerCount = 1}};
+  VkImageViewCreateInfo viewInfo;
+  viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  viewInfo.image = image;
+  viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  viewInfo.format = format;
 
-  if (vkCreateImageView(gpu->device, &viewInfo, nullptr, &view) != VK_SUCCESS) {
+  VkImageSubresourceRange subresourceRange;
+  subresourceRange.aspectMask = aspect_mask;
+  subresourceRange.baseMipLevel = 0;
+  subresourceRange.levelCount = 1;
+  subresourceRange.baseArrayLayer = 0;
+  subresourceRange.layerCount = 1;
+  viewInfo.subresourceRange = subresourceRange;
+
+  if (vkCreateImageView(gpu->device, &viewInfo, nullptr, &view) !=
+      VK_SUCCESS) {
     log_ftl("Failed to create VulkanImage view.");
   }
 }

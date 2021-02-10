@@ -11,10 +11,10 @@ namespace mondradiko {
 GpuShader::GpuShader(GpuInstance* gpu, VkShaderStageFlagBits stage_flags,
                      const uint32_t* spirv_data, size_t spirv_size)
     : gpu(gpu), stage_flags(stage_flags) {
-  VkShaderModuleCreateInfo module_info{
-      .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-      .codeSize = spirv_size,
-      .pCode = spirv_data};
+  VkShaderModuleCreateInfo module_info;
+  module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  module_info.codeSize = spirv_size;
+  module_info.pCode = spirv_data;
 
   if (vkCreateShaderModule(gpu->device, &module_info, nullptr,
                            &shader_module) != VK_SUCCESS) {
@@ -28,11 +28,12 @@ GpuShader::~GpuShader() {
 }
 
 VkPipelineShaderStageCreateInfo GpuShader::getStageCreateInfo() const {
-  return VkPipelineShaderStageCreateInfo{
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-      .stage = stage_flags,
-      .module = shader_module,
-      .pName = "main"};
+  VkPipelineShaderStageCreateInfo create_info;
+  create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  create_info.stage = stage_flags;
+  create_info.module = shader_module;
+  create_info.pName = "main";
+  return create_info;
 }
 
 }  // namespace mondradiko
