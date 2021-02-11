@@ -3,11 +3,11 @@
 
 #include "core/displays/OpenXrDisplay.h"
 
-#include "./build_config.h"
 #include "core/common/openxr_validation.h"
 #include "core/displays/OpenXrViewport.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
+#include "types/build_config.h"
 
 #define XR_LOAD_FN_PTR(name, fnPtr)     \
   xrGetInstanceProcAddr(instance, name, \
@@ -273,7 +273,7 @@ void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
             XrSessionBeginInfo beginInfo{};
             beginInfo.type = XR_TYPE_SESSION_BEGIN_INFO;
             beginInfo.primaryViewConfigurationType =
-              XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+                XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
             xrBeginSession(session, &beginInfo);
             createViewports(poll_info->renderer);
 

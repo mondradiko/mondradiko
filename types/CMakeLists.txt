@@ -1,6 +1,8 @@
 # Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+configure_file(build_config.h.in build_config.h)
+
 add_subdirectory(assets)
 flatc_schemas(ASSET_HEADERS
   assets/MaterialAsset.fbs
