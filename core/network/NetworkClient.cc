@@ -44,8 +44,8 @@ NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
   SteamDatagramErrMsg err;
   if (!GameNetworkingSockets_Init(nullptr, err)) {
     std::string message = err;
-    log_ftl("Failed to initialize SteamNetworkingSockets with error: %s",
-            message.c_str());
+    log_ftl_fmt("Failed to initialize SteamNetworkingSockets with error: %s",
+                message.c_str());
   }
 
   sockets = SteamNetworkingSockets();
@@ -54,7 +54,7 @@ NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
   server_addr.Clear();
 
   if (!server_addr.ParseString(server_ip)) {
-    log_ftl("Failed to parse server address %s", server_ip);
+    log_ftl_fmt("Failed to parse server address %s", server_ip);
   }
 
   server_addr.m_port = server_port;
@@ -62,7 +62,7 @@ NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
   char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
   server_addr.ToString(szAddr, sizeof(szAddr), true);
   std::string addr_string = szAddr;
-  log_dbg("Connecting to server at %s", addr_string.c_str());
+  log_dbg_fmt("Connecting to server at %s", addr_string.c_str());
 
   SteamNetworkingConfigValue_t callback;
   callback.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
@@ -110,13 +110,13 @@ void NetworkClient::disconnect() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void NetworkClient::onAnnouncement(const protocol::Announcement* announcement) {
-  log_dbg("Server announcement: %s", announcement->message()->c_str());
+  log_dbg_fmt("Server announcement: %s", announcement->message()->c_str());
 }
 
 void NetworkClient::onAssignClientId(
     const protocol::AssignClientId* assign_client_id) {
   client_id = static_cast<ClientId>(assign_client_id->new_id());
-  log_dbg("Assigned new ID #%d", client_id);
+  log_dbg_fmt("Assigned new ID #%d", client_id);
   state = ClientState::Joined;
 }
 
@@ -233,7 +233,7 @@ void NetworkClient::receiveEvents() {
       }
 
       default: {
-        log_err("Unhandled server event %d", event->type());
+        log_err_fmt("Unhandled server event %hu", event->type());
         break;
       }
     }  // switch (event->type())
@@ -315,7 +315,7 @@ void NetworkClient::callback_ConnectionStatusChanged(
     }
 
     default: {
-      log_wrn("Uncaught connection status change %s", description.c_str());
+      log_wrn_fmt("Uncaught connection status change %s", description.c_str());
       break;
     }
   }

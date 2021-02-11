@@ -125,8 +125,7 @@ int main(int argc, char* argv[]) {
     // player_session_run("127.0.0.1", 10555);
     spectator_session_run("127.0.0.1", 10555);
   } catch (const std::exception& e) {
-    log_err("Mondradiko player session failed with message:");
-    log_err(e.what());
+    log_err_fmt("Mondradiko player session failed with message: %s", e.what());
     return 1;
   }
 

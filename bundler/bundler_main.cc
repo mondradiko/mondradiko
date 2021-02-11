@@ -40,8 +40,7 @@ int main(int argc, const char* argv[]) {
 
     bundler.bundle();
   } catch (const std::exception& e) {
-    log_err("Mondradiko bundler failed with message:");
-    log_err(e.what());
+    log_err_fmt("Mondradiko bundler failed with message: %s", e.what());
     return 1;
   }
 

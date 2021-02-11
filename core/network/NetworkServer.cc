@@ -35,13 +35,13 @@ NetworkServer::NetworkServer(Filesystem* fs,
   SteamDatagramErrMsg err;
   if (!GameNetworkingSockets_Init(nullptr, err)) {
     std::string message = err;
-    log_ftl("Failed to initialize SteamNetworkingSockets with error: %s",
-            message.c_str());
+    log_ftl_fmt("Failed to initialize SteamNetworkingSockets with error: %s",
+                message.c_str());
   }
 
   sockets = SteamNetworkingSockets();
 
-  log_dbg("Listening on port %d", server_port);
+  log_dbg_fmt("Listening on port %d", server_port);
 
   SteamNetworkingIPAddr address;
   address.Clear();
@@ -54,7 +54,7 @@ NetworkServer::NetworkServer(Filesystem* fs,
   listen_socket = sockets->CreateListenSocketIP(address, 1, &callback);
 
   if (listen_socket == k_HSteamListenSocket_Invalid) {
-    log_ftl("Failed to listen at port %d", server_port);
+    log_ftl_fmt("Failed to listen at port %d", server_port);
   }
 
   poll_group = sockets->CreatePollGroup();
@@ -116,15 +116,15 @@ void NetworkServer::onJoinRequest(ClientId client_id,
   bool check_passed = true;
 
   if (join_request->lump_checksums()->size() != our_checksums.size()) {
-    log_dbg("Checksum count mismatch (we have %d, they have %d",
-            our_checksums.size(), join_request->lump_checksums()->size());
+    log_dbg_fmt("Checksum count mismatch (we have %lu, they have %du)",
+                our_checksums.size(), join_request->lump_checksums()->size());
     check_passed = false;
   } else {
     for (uint32_t i = 0; i < our_checksums.size(); i++) {
-      log_dbg("Checking checksum %d: 0x%016lx", i, our_checksums[i]);
+      log_dbg_fmt("Checking checksum %d: 0x%016lx", i, our_checksums[i]);
       auto their_checksum = join_request->lump_checksums()->Get(i);
       if (our_checksums[i] != static_cast<assets::LumpHash>(their_checksum)) {
-        log_dbg("Checksum mismatch (client has 0x%016lx)", their_checksum);
+        log_dbg_fmt("Checksum mismatch (client has 0x%016lx)", their_checksum);
         check_passed = false;
         break;
       }
@@ -132,12 +132,12 @@ void NetworkServer::onJoinRequest(ClientId client_id,
   }
 
   if (check_passed) {
-    log_dbg("Client joined: %s", join_request->username()->c_str());
+    log_dbg_fmt("Client joined: %s", join_request->username()->c_str());
     std::string connect_message =
         "Welcome client #" + std::to_string(client_id);
     sendAnnouncement(connect_message);
   } else {
-    log_dbg("Client join request denied: %d", client_id);
+    log_dbg_fmt("Client join request denied: %d", client_id);
   }
 }
 
@@ -188,11 +188,11 @@ void NetworkServer::setClientId(ClientId new_id) {
 
 void NetworkServer::onConnecting(std::string description,
                                  HSteamNetConnection connection) {
-  log_dbg("Connection request from %s", description.c_str());
+  log_dbg_fmt("Connection request from %s", description.c_str());
 
   if (sockets->AcceptConnection(connection) != k_EResultOK) {
     sockets->CloseConnection(connection, 0, nullptr, false);
-    log_err("Failed to accept connection from %s", description.c_str());
+    log_err_fmt("Failed to accept connection from %s", description.c_str());
   }
 }
 
@@ -210,7 +210,7 @@ void NetworkServer::onConnected(std::string description,
 
   connections.emplace(new_id, connection);
 
-  log_dbg("Client #%d connected", new_id);
+  log_dbg_fmt("Client #%d connected", new_id);
 }
 
 void NetworkServer::onProblemDetected(std::string description,
@@ -235,7 +235,7 @@ void NetworkServer::onDisconnect(std::string description,
   }
 
   if (client_id != 0) {
-    log_dbg("Client #%d disconnected", client_id);
+    log_dbg_fmt("Client #%d disconnected", client_id);
     connections.erase(client_id);
   }
 
@@ -286,7 +286,7 @@ void NetworkServer::receiveEvents() {
       }
 
       default: {
-        log_err("Unhandled client event %d", event->type());
+        log_err_fmt("Unhandled client event %hu", event->type());
         break;
       }
     }  // switch (event->type())
@@ -348,7 +348,7 @@ void NetworkServer::sendQueuedEvents() {
     auto destination = connections.find(event.destination);
 
     if (destination == connections.end()) {
-      log_err("Invalid destination %d", destination->first);
+      log_err_fmt("Invalid destination %d", destination->first);
       continue;
     }
 
@@ -405,7 +405,7 @@ void NetworkServer::callback_ConnectionStatusChanged(
     }
 
     default: {
-      log_wrn("Uncaught connection status change %s", description.c_str());
+      log_wrn_fmt("Uncaught connection status change %s", description.c_str());
       break;
     }
   }

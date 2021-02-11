@@ -171,7 +171,7 @@ bool ScriptEnvironment::handleError(wasmtime_error_t* error,
 
   std::string error_string(error_message.data, error_message.size);
   wasm_byte_vec_delete(&error_message);
-  log_err("Wasmtime error thrown: %s", error_string.c_str());
+  log_err_fmt("Wasmtime error thrown: %s", error_string.c_str());
   return true;
 }
 

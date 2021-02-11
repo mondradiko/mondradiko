@@ -41,9 +41,9 @@ class GpuVector : public GpuBuffer {
 template <typename ElementType>
 void GpuVector::writeElement(uint32_t index, const ElementType& element) {
   if (sizeof(ElementType) > element_granularity) {
-    log_err("Element size %d of type %s exceeds granularity of %d",
-            sizeof(ElementType), typeid(ElementType).name(),
-            element_granularity);
+    log_err_fmt("Element size %lu of type %s exceeds granularity of %lu",
+                sizeof(ElementType), typeid(ElementType).name(),
+                element_granularity);
     return;
   }
 

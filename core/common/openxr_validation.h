@@ -17,14 +17,14 @@ debugCallbackOpenXR(XrDebugUtilsMessageSeverityFlagsEXT message_severity,
 
   switch (message_severity) {
     case XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-      severity = LOG_LEVEL_INFO;
+      severity = LogLevel::Info;
       break;
     case XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-      severity = LOG_LEVEL_WARNING;
+      severity = LogLevel::Warn;
       break;
     case XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
     default:
-      severity = LOG_LEVEL_ERROR;
+      severity = LogLevel::Error;
       break;
   }
 

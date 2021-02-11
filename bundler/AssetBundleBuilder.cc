@@ -16,11 +16,11 @@ namespace assets {
 
 AssetBundleBuilder::AssetBundleBuilder(const std::filesystem::path& bundle_root)
     : bundle_root(bundle_root) {
-  log_dbg("Building asset bundle at %s", bundle_root.c_str());
+  log_dbg_fmt("Building asset bundle at %s", bundle_root.c_str());
 }
 
 AssetBundleBuilder::~AssetBundleBuilder() {
-  log_dbg("Cleaning up asset bundle %s", bundle_root.c_str());
+  log_dbg_fmt("Cleaning up asset bundle %s", bundle_root.c_str());
 
   for (auto& lump : lumps) {
     delete[] lump.data;
@@ -42,8 +42,7 @@ AssetResult AssetBundleBuilder::addAsset(
   *id = static_cast<AssetId>(XXH3_64bits(fbb->GetBufferPointer(), asset_size));
 
   if (used_ids.find(*id) != used_ids.end()) {
-    log_wrn("Attempting to build asset with duplicated ID 0x%08x; skipping",
-            *id);
+    log_wrn_fmt("Attempted to build asset with duplicated ID 0x%0x", *id);
     return AssetResult::DuplicateAsset;
   }
 
@@ -62,7 +61,7 @@ AssetResult AssetBundleBuilder::addAsset(
   }
 
   if (lumps[lump_index].compression_method != LumpCompressionMethod::None) {
-    log_err("Lump %d has already been compressed; can't add asset", lump_index);
+    log_err_fmt("Lump %d has already been compressed", lump_index);
     return AssetResult::BadContents;
   }
 
@@ -107,8 +106,8 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
   for (uint32_t lump_index = 0; lump_index < lumps.size(); lump_index++) {
     auto& lump = lumps[lump_index];
 
-    log_dbg("Writing lump %d", lump_index);
-    log_dbg("Lump size: %lu", lump.total_size);
+    log_dbg_fmt("Writing lump %d", lump_index);
+    log_dbg_fmt("Lump size: %lu", lump.total_size);
 
     AssetEntry* asset_entries;
     auto assets_offset = fbb.CreateUninitializedVectorOfStructs(
@@ -125,7 +124,7 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
     {
       LumpHash checksum =
           static_cast<LumpHash>(XXH3_64bits(lump.data, lump.total_size));
-      log_dbg("Lump has checksum 0x%016lx", checksum);
+      log_dbg_fmt("Lump has checksum 0x%0lx", checksum);
 
       lump_entry.add_file_size(lump.total_size);
       lump_entry.add_checksum(checksum);
@@ -185,19 +184,19 @@ void AssetBundleBuilder::compressLump(LumpToSave* lump) {
       LZ4F_compressFrameBound(lump->total_size, &preferences);
   char* compressed_data = new char[compressed_size];
 
-  size_t written_size =
+  size_t out_size =
       LZ4F_compressFrame(compressed_data, compressed_size, lump->data,
                          lump->total_size, &preferences);
 
-  if (LZ4F_isError(written_size)) {
-    log_err("LZ4HC compression failed: %s", LZ4F_getErrorName(written_size));
+  if (LZ4F_isError(out_size)) {
+    log_err_fmt("LZ4HC compression failed: %s", LZ4F_getErrorName(out_size));
     return;
   }
 
   // TODO(marceline-cramer) Stream out to a file
   delete[] lump->data;
   lump->compression_method = LumpCompressionMethod::LZ4;
-  lump->total_size = written_size;
+  lump->total_size = out_size;
   lump->data = compressed_data;
 }
 

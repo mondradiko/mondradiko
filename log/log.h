@@ -5,13 +5,21 @@
 
 #include <cstdio>
 
-#define log_at(logLevel, ...) \
+#define log_at(logLevel, message) \
+  mondradiko::log(__FILE__, __LINE__, logLevel, message)
+#define log_inf(message) log_at(mondradiko::LogLevel::Info, message)
+#define log_dbg(message) log_at(mondradiko::LogLevel::Debug, message)
+#define log_wrn(message) log_at(mondradiko::LogLevel::Warn, message)
+#define log_err(message) log_at(mondradiko::LogLevel::Error, message)
+#define log_ftl(message) log_at(mondradiko::LogLevel::Fatal, message)
+
+#define log_at_fmt(logLevel, ...) \
   mondradiko::log_formatted(__FILE__, __LINE__, logLevel, __VA_ARGS__)
-#define log_inf(...) log_at(mondradiko::LOG_LEVEL_INFO, __VA_ARGS__)
-#define log_dbg(...) log_at(mondradiko::LOG_LEVEL_DEBUG, __VA_ARGS__)
-#define log_wrn(...) log_at(mondradiko::LOG_LEVEL_WARNING, __VA_ARGS__)
-#define log_err(...) log_at(mondradiko::LOG_LEVEL_ERROR, __VA_ARGS__)
-#define log_ftl(...) log_at(mondradiko::LOG_LEVEL_FATAL, __VA_ARGS__)
+#define log_inf_fmt(...) log_at_fmt(mondradiko::LogLevel::Info, __VA_ARGS__)
+#define log_dbg_fmt(...) log_at_fmt(mondradiko::LogLevel::Debug, __VA_ARGS__)
+#define log_wrn_fmt(...) log_at_fmt(mondradiko::LogLevel::Warn, __VA_ARGS__)
+#define log_err_fmt(...) log_at_fmt(mondradiko::LogLevel::Error, __VA_ARGS__)
+#define log_ftl_fmt(...) log_at_fmt(mondradiko::LogLevel::Fatal, __VA_ARGS__)
 
 // Enable Tracy for Intellisense
 #if defined(__INTELLISENSE__) && !defined(TRACY_ENABLE)
@@ -22,10 +30,10 @@
 #include "lib/tracy/Tracy.hpp"
 #define log_zone \
   ZoneScoped;    \
-  // mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
+  // mondradiko::log(__FILE__, __LINE__, LogLevel::Zone, __FUNCTION__);
 #define log_zone_named(name) \
   ZoneScopedN(name);         \
-  // mondradiko::log(__FILE__, __LINE__, LOG_LEVEL_ZONE, __FUNCTION__);
+  // mondradiko::log(__FILE__, __LINE__, LogLevel::Zone, __FUNCTION__);
 #define log_frame_mark FrameMark
 #else
 #define log_zone
@@ -35,14 +43,7 @@
 
 namespace mondradiko {
 
-enum LogLevel {
-  LOG_LEVEL_ZONE,
-  LOG_LEVEL_INFO,
-  LOG_LEVEL_DEBUG,
-  LOG_LEVEL_WARNING,
-  LOG_LEVEL_ERROR,
-  LOG_LEVEL_FATAL
-};
+enum class LogLevel { Zone = 0, Info, Debug, Warn, Error, Fatal };
 
 const char* getLogPrefix(LogLevel);
 

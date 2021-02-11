@@ -52,7 +52,7 @@ class AssetHandle {
   const AssetType* operator->() const {
     if (!isLoaded()) {
       const char* type_name = assets::EnumNameAssetType(AssetType::ASSET_TYPE);
-      log_err("Operating on unloaded %s", type_name);
+      log_err_fmt("Operating on unloaded %s", type_name);
     }
 
     return ptr;

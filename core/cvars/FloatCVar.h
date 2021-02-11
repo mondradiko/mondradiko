@@ -24,7 +24,7 @@ class FloatCVar : public CVarValueInterface {
   bool loadConfig(const toml::value& config) final {
     value = config.as_floating();
     if (value < min_val || value > max_val) {
-      log_err("Value is outside of range [%f - %f]", min_val, max_val);
+      log_err_fmt("Value is outside of range [%f - %f]", min_val, max_val);
       return false;
     }
 

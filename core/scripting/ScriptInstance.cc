@@ -34,7 +34,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
       wasm_func_t* binding_func = scripts->getBinding(binding_name);
 
       if (binding_func == nullptr) {
-        log_err("Script binding \"%s\" is missing", binding_name.c_str());
+        log_err_fmt("Script binding \"%s\" is missing", binding_name.c_str());
         binding_func = scripts->getInterruptFunc();
       }
 
@@ -60,7 +60,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
       wasm_func_t* binding_func = scripts->getBinding(binding_name);
 
       if (binding_func == nullptr) {
-        log_err("Script binding \"%s\" is missing", binding_name.c_str());
+        log_err_fmt("Script binding \"%s\" is missing", binding_name.c_str());
         binding_func = scripts->getInterruptFunc();
       }
 
@@ -123,8 +123,7 @@ void ScriptInstance::runCallback(const std::string& callback_name) {
   auto iter = callbacks.find(callback_name);
 
   if (iter == callbacks.end()) {
-    log_err("Attempted to call non-existent callback %s",
-            callback_name.c_str());
+    log_err_fmt("Attempted to call missing callback %s", callback_name.c_str());
     return;
   }
 
@@ -134,7 +133,7 @@ void ScriptInstance::runCallback(const std::string& callback_name) {
   module_error =
       wasmtime_func_call(iter->second, nullptr, 0, nullptr, 0, &module_trap);
   if (scripts->handleError(module_error, module_trap)) {
-    log_err("Error while running callback %s", callback_name.c_str());
+    log_err_fmt("Error while running callback %s", callback_name.c_str());
   }
 }
 

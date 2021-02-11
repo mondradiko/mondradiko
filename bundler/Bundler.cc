@@ -17,15 +17,15 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
   }
 
   if (!std::filesystem::exists(manifest_path)) {
-    log_ftl("Manifest path %s does not exist", manifest_path.c_str());
+    log_ftl_fmt("Manifest path %s does not exist", manifest_path.c_str());
   }
 
   source_root = manifest_path.parent_path();
   bundle_root = "./";
 
-  log_dbg("Bundler manifest: %s", manifest_path.c_str());
-  log_dbg("Bundler source dir: %s", source_root.c_str());
-  log_dbg("Bundler bundle dir: %s", bundle_root.c_str());
+  log_dbg_fmt("Bundler manifest: %s", manifest_path.c_str());
+  log_dbg_fmt("Bundler source dir: %s", source_root.c_str());
+  log_dbg_fmt("Bundler bundle dir: %s", bundle_root.c_str());
 
   bundle_builder = new assets::AssetBundleBuilder(bundle_root);
 
@@ -80,13 +80,14 @@ void Bundler::bundle() {
     }
 
     {
-      log_dbg("Converting %s asset %s", asset_type.c_str(), asset_path.c_str());
+      log_dbg_fmt("Converting %s asset %s", asset_type.c_str(),
+                  asset_path.c_str());
 
       // TODO(marceline-cramer) Converted asset caching
       auto iter = converters.find(asset_type);
 
       if (iter == converters.end()) {
-        log_ftl("Couldn't find converter for %s", asset_type.c_str());
+        log_ftl_fmt("Couldn't find converter for %s", asset_type.c_str());
       }
 
       flatbuffers::FlatBufferBuilder fbb;
@@ -94,7 +95,7 @@ void Bundler::bundle() {
 
       assets::AssetId asset_id;
       bundle_builder->addAsset(&asset_id, &fbb, asset_offset);
-      log_inf("Added %s asset: 0x%0lx", asset_type.c_str(), asset_id);
+      log_inf_fmt("Added %s asset: 0x%0dx", asset_type.c_str(), asset_id);
 
       if (initial_prefab) {
         bundle_builder->addInitialPrefab(asset_id);

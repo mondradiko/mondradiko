@@ -179,7 +179,7 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   auto iter = pipelines.find(state_hash);
   if (iter != pipelines.end()) return state_hash;
 
-  log_inf("Creating pipeline: 0x%0lx", state_hash);
+  log_inf_fmt("Creating pipeline: 0x%0lx", state_hash);
 
   VkPipeline pipeline_object;
 
@@ -280,7 +280,7 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
 
   if (vkCreateGraphicsPipelines(gpu->device, VK_NULL_HANDLE, 1, &pipeline_info,
                                 nullptr, &pipeline_object) != VK_SUCCESS) {
-    log_ftl("Failed to create pipeline 0x%0lx", state_hash);
+    log_ftl_fmt("Failed to create pipeline 0x%0lx", state_hash);
   }
 
   pipelines.emplace(state_hash, pipeline_object);
@@ -299,7 +299,7 @@ void GpuPipeline::cmdBind(VkCommandBuffer command_buffer,
 
   auto iter = pipelines.find(state_hash);
   if (iter == pipelines.end()) {
-    log_ftl("Pipeline 0x%0lx not found", state_hash);
+    log_ftl_fmt("Pipeline 0x%0lx not found", state_hash);
   }
 
   vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -314,7 +314,7 @@ void GpuPipeline::cmdBind(VkCommandBuffer command_buffer,
 
   auto iter = pipelines.find(state_hash);
   if (iter == pipelines.end()) {
-    log_wrn("Pipeline cache miss: 0x%0lx", state_hash);
+    log_wrn_fmt("Pipeline cache miss: 0x%0lx", state_hash);
     createPipeline(graphics_state);
   }
 

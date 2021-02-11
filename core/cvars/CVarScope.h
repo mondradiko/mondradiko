@@ -32,28 +32,28 @@ class CVarScope {
 
   using KeyType = std::string;
 
-  template <class CVarValueType, typename... Args>
+  template <class ValueType, typename... Args>
   void addValue(const KeyType& key, Args&&... args) {
     if (children.find(key) != children.end()) {
-      log_ftl("CVar %s shadows child scope", getValuePath(key).c_str());
+      log_ftl_fmt("CVar %s shadows child scope", getValuePath(key).c_str());
     } else if (values.find(key) != values.end()) {
-      log_ftl("Attempted to overwrite CVar %s", getValuePath(key).c_str());
+      log_ftl_fmt("Attempted to overwrite CVar %s", getValuePath(key).c_str());
     }
 
-    CVarValueType* new_value = new CVarValueType(args...);
+    ValueType* new_value = new ValueType(args...);
     values.emplace(key, new_value);
   }
 
-  template <class CVarValueType>
-  const CVarValueType& get(const KeyType& key) const {
+  template <class ValueType>
+  const ValueType& get(const KeyType& key) const {
     auto iter = values.find(key);
     if (iter == values.end()) {
-      log_ftl("CVar %s does not exist", key.c_str());
+      log_ftl_fmt("CVar %s does not exist", key.c_str());
     }
 
-    const CVarValueType* value = dynamic_cast<CVarValueType*>(iter->second);
+    const ValueType* value = dynamic_cast<ValueType*>(iter->second);
     if (value == nullptr) {
-      log_ftl("CVar %s is not %s", key.c_str(), typeid(CVarValueType).name());
+      log_ftl_fmt("CVar %s is not %s", key.c_str(), typeid(ValueType).name());
     }
 
     return *value;

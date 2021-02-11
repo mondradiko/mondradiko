@@ -60,12 +60,12 @@ bool Filesystem::loadAsset(const assets::SerializedAsset** asset, AssetId id) {
     }
   }
 
-  log_err("Asset 0x%08x does not exist", id);
+  log_err_fmt("Asset 0x%0dx does not exist", id);
   return false;
 }
 
 toml::value Filesystem::loadToml(const std::filesystem::path& toml_path) {
-  log_dbg("Loading TOML file", toml_path.c_str());
+  log_dbg_fmt("Loading TOML file: %s", toml_path.c_str());
   return toml::parse(toml_path);
 }
 

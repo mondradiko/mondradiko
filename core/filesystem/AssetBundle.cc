@@ -30,7 +30,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
 
     auto registry_path = bundle_root / registry_name;
 
-    log_dbg("Opening asset bundle at %s", registry_path.c_str());
+    log_dbg_fmt("Opening asset bundle at %s", registry_path.c_str());
 
     if (!std::filesystem::exists(registry_path)) {
       return AssetResult::FileNotFound;
@@ -70,7 +70,8 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
     }
 
     if (registry->lumps()->size() > ASSET_REGISTRY_MAX_LUMPS) {
-      log_err("Registry lump count exceeds limit of %d", ASSET_LUMP_MAX_ASSETS);
+      log_err_fmt("Registry lump count exceeds limit of %lu",
+                  ASSET_LUMP_MAX_ASSETS);
       return AssetResult::BadSize;
     }
   }
@@ -98,8 +99,8 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       uint32_t asset_count = lump_entry->assets()->size();
 
       if (asset_count > ASSET_LUMP_MAX_ASSETS) {
-        log_err("Asset lump asset count exceeds limit of %d",
-                ASSET_LUMP_MAX_ASSETS);
+        log_err_fmt("Asset lump asset count exceeds limit of %lu",
+                    ASSET_LUMP_MAX_ASSETS);
         return AssetResult::BadSize;
       }
 

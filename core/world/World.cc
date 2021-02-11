@@ -82,7 +82,7 @@ void World::onSpawnEntity(const protocol::SpawnEntity* event) {
   EntityId id = static_cast<EntityId>(event->new_id());
 
   if (registry.valid(id)) {
-    log_wrn("Spawned entity's ID is taken: 0x%0lx", id);
+    log_wrn_fmt("Spawned entity's ID is taken: 0x%0dx", id);
     return;
   }
 
@@ -119,7 +119,7 @@ void World::onUpdateComponents(
     }
 
     default: {
-      log_err("Unrecognized component type %d", update_components->type());
+      log_err_fmt("Unrecognized component type %hu", update_components->type());
       break;
     }
   }
@@ -220,7 +220,7 @@ void World::processEvent(const protocol::WorldEvent* event) {
     }
 
     default: {
-      log_err("Unrecognized world event %d", event->type());
+      log_err_fmt("Unrecognized world event %hu", event->type());
       break;
     }
   }

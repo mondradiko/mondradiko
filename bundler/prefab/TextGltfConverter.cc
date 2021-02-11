@@ -19,11 +19,11 @@ ConverterInterface::AssetOffset TextGltfConverter::convert(
   bool file_loaded = gltf_context.LoadASCIIFromFile(
       &gltf_model, &error, &warning, model_path.string().c_str());
   if (!file_loaded) {
-    log_ftl("Failed to load model with error: %s", error.c_str());
+    log_ftl_fmt("Failed to load model with error: %s", error.c_str());
   }
 
   if (warning.length() > 0) {
-    log_wrn("GLTF warning: %s", warning.c_str());
+    log_wrn_fmt("GLTF warning: %s", warning.c_str());
   }
 
   return _loadModel(fbb, gltf_model);

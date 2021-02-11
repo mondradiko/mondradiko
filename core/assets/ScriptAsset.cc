@@ -24,13 +24,10 @@ void ScriptAsset::load(const assets::SerializedAsset* asset) {
 
   wasmtime_error_t* module_error = nullptr;
 
-  log_inf("Loading module into memory");
   wasm_byte_vec_t module_data;
   wasm_byte_vec_new(
       &module_data, script->data()->size(),
       reinterpret_cast<const wasm_byte_t*>(script->data()->data()));
-
-  log_inf("Compiling module");
 
   switch (script->type()) {
     case assets::ScriptType::WasmBinary: {
@@ -49,7 +46,7 @@ void ScriptAsset::load(const assets::SerializedAsset* asset) {
     }
 
     default: {
-      log_ftl("Unrecognized ScriptAsset type %d", script->type());
+      log_ftl_fmt("Unrecognized ScriptAsset type %hhd", script->type());
       break;
     }
   }

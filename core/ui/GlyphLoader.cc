@@ -40,12 +40,12 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, GpuInstance* gpu)
 
   error = FT_New_Face(freetype, font_path, 0, &font_face);
   if (error) {
-    log_ftl("Failed to load font %s", font_path);
+    log_ftl_fmt("Failed to load font %s", font_path);
   }
 
   sdf_font = msdfgen::adoptFreetypeFont(font_face);
   if (sdf_font == nullptr) {
-    log_ftl("msdfgen failed to adopt font %s", font_path);
+    log_ftl_fmt("msdfgen failed to adopt font %s", font_path);
   }
 
   std::vector<msdfgen::unicode_t> characters;
@@ -68,7 +68,7 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, GpuInstance* gpu)
 
     char c = characters[i];
     if (!msdfgen::getGlyphIndex(glyph_index, sdf_font, c)) {
-      log_err("No glyph for character %c", c);
+      log_err_fmt("No glyph for character %c", c);
       continue;
     }
     character_map.emplace(c, i);

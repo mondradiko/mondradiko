@@ -19,25 +19,26 @@ static_assert(ASSET_LOAD_CHUNK_SIZE >= LZ4F_HEADER_SIZE_MAX);
 AssetLump::AssetLump(const std::filesystem::path& lump_path)
     : lump_path(lump_path) {
   log_zone;
-  log_dbg("Loading lump %s", lump_path.c_str());
+  log_dbg_fmt("Loading lump %s", lump_path.c_str());
 }
 
 AssetLump::~AssetLump() {
   log_zone;
-  log_dbg("Unloading lump %s", lump_path.c_str());
+  log_dbg_fmt("Unloading lump %s", lump_path.c_str());
 
   if (loaded_data) delete[] loaded_data;
 }
 
 bool AssetLump::assertFileSize(size_t check_size) {
   log_zone;
-  log_inf("Asserting size of lump file %s", lump_path.c_str());
+  log_inf_fmt("Asserting size of lump file %s", lump_path.c_str());
 
   size_t lump_length = std::filesystem::file_size(lump_path);
 
   if (lump_length != check_size) {
-    log_err("Lump size assertion failed (expected 0x%08x bytes, got 0x%08x)",
-            check_size, lump_length);
+    log_err_fmt(
+        "Lump size assertion failed (expected 0x%08x bytes, got 0x%08x)",
+        check_size, lump_length);
     return false;
   }
 
@@ -46,7 +47,7 @@ bool AssetLump::assertFileSize(size_t check_size) {
 
 bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
   log_zone;
-  log_inf("Asserting hash from lump %s", lump_path.c_str());
+  log_inf_fmt("Asserting hash from lump %s", lump_path.c_str());
 
   LumpHash computed_hash;
 
@@ -87,11 +88,11 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
   lump_file.close();
 
   if (computed_hash == checksum) {
-    log_inf("Checksum passed with value 0x%016lx", checksum);
+    log_inf_fmt("Checksum passed with value 0x%016lx", checksum);
     return true;
   } else {
-    log_err("Calculated hash 0x%016lx does not match checksum 0x%016lx",
-            computed_hash, checksum);
+    log_err_fmt("Calculated hash 0x%016lx does not match checksum 0x%016lx",
+                computed_hash, checksum);
     return false;
   }
 }
@@ -107,7 +108,7 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
 
   switch (compression_method) {
     case LumpCompressionMethod::LZ4: {
-      log_inf("Decompressing lump %s with LZ4", lump_path.c_str());
+      log_inf_fmt("Decompressing lump %s with LZ4", lump_path.c_str());
 
       LZ4F_dctx* context;
       LZ4F_createDecompressionContext(&context, LZ4F_VERSION);
@@ -123,8 +124,8 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
             LZ4F_getFrameInfo(context, &frame_info, buffer.data(), &bytes_read);
 
         if (LZ4F_isError(result)) {
-          log_ftl("Failed to read LZ4 frame info: %s",
-                  LZ4F_getErrorName(result));
+          log_ftl_fmt("Failed to read LZ4 frame info: %s",
+                      LZ4F_getErrorName(result));
         }
 
         loaded_size = frame_info.contentSize;
@@ -152,7 +153,8 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
                             buffer.data(), &bytes_consumed, nullptr);
 
         if (LZ4F_isError(buf_hint)) {
-          log_err("LZ4 decompression failed: %s", LZ4F_getErrorName(buf_hint));
+          log_err_fmt("LZ4 decompression failed: %s",
+                      LZ4F_getErrorName(buf_hint));
           break;
         }
 
@@ -182,7 +184,7 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
     }
 
     case LumpCompressionMethod::None: {
-      log_dbg("Loading lump %s directly from disk", lump_path.c_str());
+      log_dbg_fmt("Loading lump %s directly from disk", lump_path.c_str());
 
       loaded_size = file_size;
       loaded_data = new char[loaded_size];
@@ -197,7 +199,7 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
 bool AssetLump::loadAsset(const SerializedAsset** asset, size_t offset,
                           size_t size) {
   if (offset + size > loaded_size) {
-    log_err("Asset range exceeds lump size of 0x%08x", loaded_size);
+    log_err_fmt("Asset range exceeds lump size of 0x%0lx", loaded_size);
     return false;
   }
 

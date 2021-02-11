@@ -6,9 +6,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "types/assets/PrefabAsset_generated.h"
 #include "bundler/Bundler.h"
 #include "log/log.h"
+#include "types/assets/PrefabAsset_generated.h"
 
 namespace mondradiko {
 
@@ -135,7 +135,7 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
       auto asset_offset = asset.Finish();
 
       assets::AssetId asset_id = _bundler->addAsset(&fbb, asset_offset);
-      log_dbg("Added primitive prefab 0x%0lx", mesh_id);
+      log_dbg_fmt("Added primitive prefab 0x%0dx", mesh_id);
 
       children.push_back(static_cast<uint32_t>(asset_id));
     }
@@ -168,7 +168,7 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
     auto asset_offset = asset.Finish();
 
     assets::AssetId prefab_id = _bundler->addAsset(&fbb, asset_offset);
-    log_dbg("Added node prefab 0x%0lx", prefab_id);
+    log_dbg_fmt("Added node prefab 0x%0dx", prefab_id);
     return prefab_id;
   }
 }
@@ -300,7 +300,7 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
         break;
       }
       default: {
-        log_ftl("Index component type %s", accessor.componentType);
+        log_ftl_fmt("Index component type %d", accessor.componentType);
         break;
       }
     }
@@ -325,7 +325,7 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
     auto asset_offset = asset.Finish();
 
     assets::AssetId mesh_id = _bundler->addAsset(&fbb, asset_offset);
-    log_dbg("Added primitive mesh 0x%0lx", mesh_id);
+    log_dbg_fmt("Added primitive mesh 0x%0dx", mesh_id);
     return mesh_id;
   }
 }
@@ -373,7 +373,7 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
   auto asset_offset = asset_builder.Finish();
 
   assets::AssetId asset_id = _bundler->addAsset(&fbb, asset_offset);
-  log_dbg("Added material asset: 0x%0lx", asset_id);
+  log_dbg_fmt("Added material asset: 0x%0dx", asset_id);
   return asset_id;
 }
 
@@ -398,10 +398,10 @@ assets::AssetId GltfConverter::_loadImage(GltfModel model, GltfImage image,
   flatbuffers::FlatBufferBuilder fbb;
 
   log_inf("Loading GLTF image");
-  log_inf("Name:\t\t\"%s\"", image.name.c_str());
-  log_inf("Component#:\t%d", image.component);
-  log_inf("Bits/channel:\t%d", image.bits);
-  log_inf("Size:\t\t%dx%d", image.width, image.height);
+  log_inf_fmt("Name:\t\t\"%s\"", image.name.c_str());
+  log_inf_fmt("Component#:\t%d", image.component);
+  log_inf_fmt("Bits/channel:\t%d", image.bits);
+  log_inf_fmt("Size:\t\t%dx%d", image.width, image.height);
 
   auto data_offset =
       fbb.CreateVector(reinterpret_cast<const uint8_t *>(image.image.data()),
@@ -427,7 +427,7 @@ assets::AssetId GltfConverter::_loadImage(GltfModel model, GltfImage image,
     auto iter = types.find(image.pixel_type);
 
     if (iter == types.end()) {
-      log_ftl("Unrecognized GLTF image component type %d", image.component);
+      log_ftl_fmt("Unrecognized GLTF image component type %d", image.component);
     }
 
     texture.add_component_type(iter->second);
@@ -445,7 +445,7 @@ assets::AssetId GltfConverter::_loadImage(GltfModel model, GltfImage image,
   auto asset_offset = asset.Finish();
 
   assets::AssetId asset_id = _bundler->addAsset(&fbb, asset_offset);
-  log_dbg("Added GLTF image: 0x%0lx", asset_id);
+  log_dbg_fmt("Added GLTF image: 0x%0dx", asset_id);
   return asset_id;
 }
 

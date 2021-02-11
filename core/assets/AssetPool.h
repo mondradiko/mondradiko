@@ -35,7 +35,7 @@ class AssetPool {
     if (asset_type >= templates.size()) {
       templates.resize(asset_type + 1, nullptr);
     } else if (templates[asset_type]) {
-      log_err("Attempted to initialize %s pool twice", type_name);
+      log_err_fmt("Attempted to initialize %s pool twice", type_name);
       return;
     }
 
@@ -55,8 +55,8 @@ class AssetPool {
         AssetType* asset = dynamic_cast<AssetType*>(iter->second);
 
         if (asset == nullptr) {
-          log_err("Cached asset 0x%0lx does not have type %s as expected", id,
-                  type_name);
+          log_err_fmt("Cached asset 0x%0lx does not have type %s as expected",
+                      id, type_name);
           return AssetHandle<AssetType>(nullptr);
         } else {
           return AssetHandle<AssetType>(id, asset);
@@ -65,7 +65,7 @@ class AssetPool {
     }
 
     if (templates.size() <= asset_type || templates[asset_type] == nullptr) {
-      log_err("Attempted to load unitialized asset type %s", type_name);
+      log_err_fmt("Attempted to load unitialized asset type %s", type_name);
       return AssetHandle<AssetType>(nullptr);
     }
 
@@ -75,21 +75,21 @@ class AssetPool {
     if (loaded_successfully) {
       if (asset_data->type() != AssetType::ASSET_TYPE) {
         loaded_successfully = false;
-        log_err("SerializedAsset 0x%0lx does not have type %s as expected", id,
-                type_name);
+        log_err_fmt("SerializedAsset 0x%0lx does not have type %s as expected",
+                    id, type_name);
       }
     }
 
     if (!loaded_successfully) {
-      log_err("Failed to load asset 0x%0lx", id);
+      log_err_fmt("Failed to load asset 0x%0dx", id);
       return AssetHandle<AssetType>(nullptr);
     }
 
     AssetType* template_asset = dynamic_cast<AssetType*>(templates[asset_type]);
 
     if (template_asset == nullptr) {
-      log_err("Template asset for 0x%0lx does not have type %s as expected", id,
-              type_name);
+      log_err_fmt("Template asset for 0x%0lx does not have type %s as expected",
+                  id, type_name);
       return AssetHandle<AssetType>(nullptr);
     }
 
