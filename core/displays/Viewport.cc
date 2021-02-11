@@ -20,12 +20,12 @@ void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
   clear_values[0].color = {0.2, 0.0, 0.0, 1.0};
   clear_values[1].depthStencil = {1.0f};
 
-  VkRenderPassBeginInfo render_pass_info;
+  VkRenderPassBeginInfo render_pass_info{};
   render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   render_pass_info.renderPass = render_pass;
   render_pass_info.framebuffer = _images[_current_image_index].framebuffer;
 
-  VkRect2D render_area;
+  VkRect2D render_area{};
   render_area.offset = {0, 0};
   render_area.extent = {_image_width, _image_height};
 
@@ -36,7 +36,7 @@ void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
   vkCmdBeginRenderPass(command_buffer, &render_pass_info,
                        VK_SUBPASS_CONTENTS_INLINE);
 
-  VkViewport viewport;
+  VkViewport viewport{};
   viewport.x = 0;
   viewport.y = 0;
   viewport.width = static_cast<float>(_image_width);
@@ -44,7 +44,7 @@ void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
   viewport.minDepth = 0.0f;
   viewport.maxDepth = 1.0f;
 
-  VkRect2D scissor;
+  VkRect2D scissor{};
   scissor.offset = {0, 0};
   scissor.extent = {_image_width, _image_height};
 
@@ -58,20 +58,20 @@ void Viewport::_createImages() {
       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
   for (uint32_t i = 0; i < _images.size(); i++) {
-    VkImageViewCreateInfo view_info;
+    VkImageViewCreateInfo view_info{};
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.image = _images[i].image;
     view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     view_info.format = display->getSwapchainFormat();
 
-    VkComponentMapping components;
+    VkComponentMapping components{};
     components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
     components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
     components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
     view_info.components = components;
 
-    VkImageSubresourceRange subresourceRange;
+    VkImageSubresourceRange subresourceRange{};
     subresourceRange.baseMipLevel = 0;
     subresourceRange.levelCount = 1;
     subresourceRange.baseArrayLayer = 0;
@@ -87,7 +87,7 @@ void Viewport::_createImages() {
     std::array<VkImageView, 2> framebuffer_attachments = {_images[i].image_view,
                                                           _depth_image->view};
 
-    VkFramebufferCreateInfo framebuffer_info;
+    VkFramebufferCreateInfo framebuffer_info{};
     framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebuffer_info.renderPass = renderer->getCompositePass();
     framebuffer_info.attachmentCount = framebuffer_attachments.size();

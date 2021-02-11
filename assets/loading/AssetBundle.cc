@@ -114,7 +114,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
           return AssetResult::DuplicateAsset;
         }
 
-        AssetLookupEntry lookup_entry;
+        AssetLookupEntry lookup_entry{};
         lookup_entry.lump_index = lump_index;
         lookup_entry.offset = asset_offset;
         lookup_entry.size = asset_entry->size();

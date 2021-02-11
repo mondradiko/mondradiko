@@ -27,14 +27,14 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
   SDL_Vulkan_GetDrawableSize(display->window, &window_width, &window_height);
 
   // TODO(marceline-cramer) Better queue sharing
-  VkSwapchainCreateInfoKHR swapchain_info;
+  VkSwapchainCreateInfoKHR swapchain_info{};
   swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   swapchain_info.surface = display->surface;
   swapchain_info.minImageCount = display->surface_capabilities.minImageCount;
   swapchain_info.imageFormat = display->swapchain_format;
   swapchain_info.imageColorSpace = display->swapchain_color_space;
 
-  VkExtent2D imageExtent;
+  VkExtent2D imageExtent{};
   imageExtent.width = static_cast<uint32_t>(window_width);
   imageExtent.height = static_cast<uint32_t>(window_height);
   swapchain_info.imageExtent = imageExtent;
@@ -72,7 +72,7 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
   on_image_acquire.resize(image_count);
 
   for (uint32_t i = 0; i < on_image_acquire.size(); i++) {
-    VkSemaphoreCreateInfo semaphore_info;
+    VkSemaphoreCreateInfo semaphore_info{};
     semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
     if (vkCreateSemaphore(gpu->device, &semaphore_info, nullptr,
@@ -167,7 +167,7 @@ void SdlViewport::_releaseImage(uint32_t current_image_index,
                                 VkSemaphore on_render_finished) {
   log_zone;
 
-  VkPresentInfoKHR present_info;
+  VkPresentInfoKHR present_info{};
   present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   present_info.waitSemaphoreCount = 1;
   present_info.pWaitSemaphores = &on_render_finished;

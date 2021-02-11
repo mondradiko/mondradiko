@@ -37,7 +37,7 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
   {
     log_zone_named("Create texture sampler");
 
-    VkSamplerCreateInfo sampler_info;
+    VkSamplerCreateInfo sampler_info{};
     sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     sampler_info.magFilter = VK_FILTER_LINEAR;
     sampler_info.minFilter = VK_FILTER_LINEAR;
@@ -82,10 +82,10 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
         material_layout->getSetLayout(), texture_layout->getSetLayout(),
         mesh_layout->getSetLayout()};
 
-    VkPipelineLayoutCreateInfo layoutInfo;
-        layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutInfo.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
-        layoutInfo.pSetLayouts = set_layouts.data();
+    VkPipelineLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    layoutInfo.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
+    layoutInfo.pSetLayouts = set_layouts.data();
 
     if (vkCreatePipelineLayout(gpu->device, &layoutInfo, nullptr,
                                &pipeline_layout) != VK_SUCCESS) {
@@ -266,19 +266,19 @@ void MeshPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
   {
     GraphicsState graphics_state;
 
-    GraphicsState::InputAssemblyState input_assembly_state;
+    GraphicsState::InputAssemblyState input_assembly_state{};
     input_assembly_state.primitive_topology =
         GraphicsState::PrimitiveTopology::TriangleList;
     input_assembly_state.primitive_restart_enable =
         GraphicsState::BoolFlag::False;
     graphics_state.input_assembly_state = input_assembly_state;
 
-    GraphicsState::RasterizatonState rasterization_state;
+    GraphicsState::RasterizatonState rasterization_state{};
     rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
     rasterization_state.cull_mode = GraphicsState::CullMode::Back;
     graphics_state.rasterization_state = rasterization_state;
 
-    GraphicsState::DepthState depth_state;
+    GraphicsState::DepthState depth_state{};
     depth_state.test_enable = GraphicsState::BoolFlag::True;
     depth_state.write_enable = GraphicsState::BoolFlag::True;
     depth_state.compare_op = GraphicsState::CompareOp::Less;

@@ -187,7 +187,7 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
       vertex_shader->getStageCreateInfo(),
       fragment_shader->getStageCreateInfo()};
 
-  VkPipelineVertexInputStateCreateInfo vertex_input_info;
+  VkPipelineVertexInputStateCreateInfo vertex_input_info{};
   vertex_input_info.sType =
       VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
   vertex_input_info.vertexBindingDescriptionCount =
@@ -202,7 +202,7 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   createVkInputAssemblyState(graphics_state, &input_assembly_info);
 
   // TODO(marceline-cramer) Get viewport state from Viewport
-  VkViewport viewport;
+  VkViewport viewport{};
   viewport.x = 0.0f;
   viewport.y = 0.0f;
   viewport.width = static_cast<float>(500);
@@ -210,11 +210,11 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   viewport.minDepth = 0.0f;
   viewport.maxDepth = 1.0f;
 
-  VkRect2D scissor;
+  VkRect2D scissor{};
   scissor.offset = {0, 0};
   scissor.extent = {500, 500};
 
-  VkPipelineViewportStateCreateInfo viewport_info;
+  VkPipelineViewportStateCreateInfo viewport_info{};
   viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
   viewport_info.viewportCount = 1;
   viewport_info.pViewports = &viewport;
@@ -224,7 +224,7 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   VkPipelineRasterizationStateCreateInfo rasterization_info{};
   createVkRasterizationState(graphics_state, &rasterization_info);
 
-  VkPipelineMultisampleStateCreateInfo multisample_info;
+  VkPipelineMultisampleStateCreateInfo multisample_info{};
   multisample_info.sType =
       VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -237,13 +237,13 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   VkPipelineDepthStencilStateCreateInfo depth_stencil_info{};
   createVkDepthStencilState(graphics_state, &depth_stencil_info);
 
-  VkPipelineColorBlendAttachmentState color_blend_attachment;
+  VkPipelineColorBlendAttachmentState color_blend_attachment{};
   color_blend_attachment.blendEnable = VK_FALSE;
   color_blend_attachment.colorWriteMask =
       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
       VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
-  VkPipelineColorBlendStateCreateInfo color_blend_info;
+  VkPipelineColorBlendStateCreateInfo color_blend_info{};
   color_blend_info.sType =
       VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   color_blend_info.logicOpEnable = VK_FALSE;
@@ -253,14 +253,14 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
                                                 VK_DYNAMIC_STATE_SCISSOR};
 
-  VkPipelineDynamicStateCreateInfo dynamic_state_info;
+  VkPipelineDynamicStateCreateInfo dynamic_state_info{};
   dynamic_state_info.sType =
       VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
   dynamic_state_info.dynamicStateCount =
       static_cast<uint32_t>(dynamic_states.size());
   dynamic_state_info.pDynamicStates = dynamic_states.data();
 
-  VkGraphicsPipelineCreateInfo pipeline_info;
+  VkGraphicsPipelineCreateInfo pipeline_info{};
   pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipeline_info.stageCount = static_cast<uint32_t>(shader_stages.size());
   pipeline_info.pStages = shader_stages.data();
@@ -279,8 +279,8 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   pipeline_info.basePipelineIndex = -1;
 
   if (vkCreateGraphicsPipelines(gpu->device, VK_NULL_HANDLE, 1, &pipeline_info,
-                              nullptr, &pipeline_object) != VK_SUCCESS) {
-  log_ftl("Failed to create pipeline 0x%0lx", state_hash);
+                                nullptr, &pipeline_object) != VK_SUCCESS) {
+    log_ftl("Failed to create pipeline 0x%0lx", state_hash);
   }
 
   pipelines.emplace(state_hash, pipeline_object);

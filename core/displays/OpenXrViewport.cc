@@ -49,7 +49,7 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
   _image_width = view_config->recommendedImageRectWidth;
   _image_height = view_config->recommendedImageRectHeight;
 
-  XrSwapchainCreateInfo swapchainCreateInfo;
+  XrSwapchainCreateInfo swapchainCreateInfo{};
   swapchainCreateInfo.type = XR_TYPE_SWAPCHAIN_CREATE_INFO;
   swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
   swapchainCreateInfo.format =
@@ -115,11 +115,11 @@ void OpenXrViewport::writeCompositionLayers(
   projection_view->pose = view.pose;
   projection_view->fov = view.fov;
 
-  XrSwapchainSubImage subImage;
+  XrSwapchainSubImage subImage{};
   subImage.swapchain = swapchain;
   projection_view->subImage = subImage;
 
-  XrRect2Di imageRect;
+  XrRect2Di imageRect{};
   imageRect.offset = {0, 0};
   imageRect.extent = {static_cast<int32_t>(_image_width),
                       static_cast<int32_t>(_image_height)};
@@ -129,13 +129,13 @@ void OpenXrViewport::writeCompositionLayers(
 VkSemaphore OpenXrViewport::_acquireImage(uint32_t* image_index) {
   log_zone;
 
-  XrSwapchainImageAcquireInfo acquireInfo;
+  XrSwapchainImageAcquireInfo acquireInfo{};
   acquireInfo.type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO;
   acquireInfo.next = nullptr;
 
   xrAcquireSwapchainImage(swapchain, &acquireInfo, image_index);
 
-  XrSwapchainImageWaitInfo waitInfo;
+  XrSwapchainImageWaitInfo waitInfo{};
   waitInfo.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO;
   waitInfo.timeout = XR_INFINITE_DURATION;
 
@@ -147,7 +147,7 @@ VkSemaphore OpenXrViewport::_acquireImage(uint32_t* image_index) {
 void OpenXrViewport::_releaseImage(uint32_t, VkSemaphore) {
   log_zone;
 
-  XrSwapchainImageReleaseInfo release_info;
+  XrSwapchainImageReleaseInfo release_info{};
   release_info.type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO;
 
   xrReleaseSwapchainImage(swapchain, &release_info);

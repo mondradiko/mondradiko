@@ -11,7 +11,7 @@ namespace mondradiko {
 GpuShader::GpuShader(GpuInstance* gpu, VkShaderStageFlagBits stage_flags,
                      const uint32_t* spirv_data, size_t spirv_size)
     : gpu(gpu), stage_flags(stage_flags) {
-  VkShaderModuleCreateInfo module_info;
+  VkShaderModuleCreateInfo module_info{};
   module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
   module_info.codeSize = spirv_size;
   module_info.pCode = spirv_data;
@@ -28,7 +28,7 @@ GpuShader::~GpuShader() {
 }
 
 VkPipelineShaderStageCreateInfo GpuShader::getStageCreateInfo() const {
-  VkPipelineShaderStageCreateInfo create_info;
+  VkPipelineShaderStageCreateInfo create_info{};
   create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   create_info.stage = stage_flags;
   create_info.module = shader_module;

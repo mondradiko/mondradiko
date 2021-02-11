@@ -21,7 +21,7 @@ GpuDescriptorPool::GpuDescriptorPool(GpuInstance* gpu) : gpu(gpu) {
   pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 });
   pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
 
-  VkDescriptorPoolCreateInfo create_info;
+  VkDescriptorPoolCreateInfo create_info{};
   create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
   create_info.maxSets = 1000,
   create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size()),
@@ -45,7 +45,7 @@ GpuDescriptorSet* GpuDescriptorPool::allocate(GpuDescriptorSetLayout* layout) {
   VkDescriptorSetLayout vk_set_layout = layout->getSetLayout();
   VkDescriptorSet vk_set;
 
-  VkDescriptorSetAllocateInfo alloc_info;
+  VkDescriptorSetAllocateInfo alloc_info{};
   alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
   alloc_info.descriptorPool = descriptor_pool,
   alloc_info.descriptorSetCount = 1,

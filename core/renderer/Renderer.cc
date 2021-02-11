@@ -31,7 +31,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
   {
     log_zone_named("Create render pass");
 
-    VkAttachmentDescription swapchain_attachment_description;
+    VkAttachmentDescription swapchain_attachment_description{};
     swapchain_attachment_description.format = display->getSwapchainFormat();
     swapchain_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
     swapchain_attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -39,7 +39,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
     swapchain_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     swapchain_attachment_description.finalLayout = display->getFinalLayout();
 
-    VkAttachmentDescription depth_attachment_description;
+    VkAttachmentDescription depth_attachment_description{};
     depth_attachment_description.format = display->getDepthFormat();
     depth_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
     depth_attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -48,12 +48,12 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
     depth_attachment_description.finalLayout =
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference swapchain_attachment_reference;
+    VkAttachmentReference swapchain_attachment_reference{};
     swapchain_attachment_reference.attachment = 0;
     swapchain_attachment_reference.layout =
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference depth_attachment_reference;
+    VkAttachmentReference depth_attachment_reference{};
     depth_attachment_reference.attachment = 1;
     depth_attachment_reference.layout =
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -61,7 +61,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
     std::vector<VkAttachmentDescription> attachments = {
         swapchain_attachment_description, depth_attachment_description};
 
-    VkSubpassDescription composite_subpass_description;
+    VkSubpassDescription composite_subpass_description{};
     composite_subpass_description.pipelineBindPoint =
         VK_PIPELINE_BIND_POINT_GRAPHICS;
     composite_subpass_description.colorAttachmentCount = 1;
@@ -70,7 +70,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
     composite_subpass_description.pDepthStencilAttachment =
         &depth_attachment_reference;
 
-    VkSubpassDependency swapchain_dependency;
+    VkSubpassDependency swapchain_dependency{};
     swapchain_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     swapchain_dependency.dstSubpass = 0;
     swapchain_dependency.srcStageMask =
@@ -81,7 +81,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
     swapchain_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     swapchain_dependency.dependencyFlags = 0;
 
-    VkRenderPassCreateInfo composite_pass_create_info;
+    VkRenderPassCreateInfo composite_pass_create_info{};
     composite_pass_create_info.sType =
         VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     composite_pass_create_info.attachmentCount = (uint32_t)attachments.size();
@@ -112,7 +112,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
     current_frame = 0;
 
     for (auto& frame : frames_in_flight) {
-      VkCommandBufferAllocateInfo alloc_info;
+      VkCommandBufferAllocateInfo alloc_info{};
       alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
       alloc_info.commandPool = gpu->command_pool;
       alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -123,7 +123,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
         log_ftl("Failed to allocate frame command buffers.");
       }
 
-      VkSemaphoreCreateInfo semaphore_info;
+      VkSemaphoreCreateInfo semaphore_info{};
       semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
       if (vkCreateSemaphore(gpu->device, &semaphore_info, nullptr,
@@ -131,7 +131,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
         log_ftl("Failed to create frame render finished semaphore.");
       }
 
-      VkFenceCreateInfo fence_info;
+      VkFenceCreateInfo fence_info{};
       fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
       fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
@@ -249,7 +249,7 @@ void Renderer::renderFrame() {
   {
     log_zone_named("Begin command buffers");
 
-    VkCommandBufferBeginInfo begin_info;
+    VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 

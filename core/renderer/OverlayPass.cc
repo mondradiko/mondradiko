@@ -49,7 +49,7 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
         renderer->getViewportLayout()->getSetLayout(),
     };
 
-    VkPipelineLayoutCreateInfo layout_info;
+    VkPipelineLayoutCreateInfo layout_info{};
     layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     layout_info.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
     layout_info.pSetLayouts = set_layouts.data();
@@ -71,7 +71,7 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
         renderer->getViewportLayout()->getSetLayout(),
         glyph_set_layout->getSetLayout()};
 
-    VkPipelineLayoutCreateInfo layout_info;
+    VkPipelineLayoutCreateInfo layout_info{};
     layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     layout_info.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
     layout_info.pSetLayouts = set_layouts.data();
@@ -192,7 +192,7 @@ void OverlayPass::allocateDescriptors(uint32_t frame_index,
       {
         // Draw X line
 
-        DebugDrawVertex vertex1;
+        DebugDrawVertex vertex1{};
         vertex1.position = transform * glm::vec4(1.0, 0.0, 0.0, 1.0);
         vertex1.color = glm::vec3(1.0, 0.0, 0.0);
 
@@ -201,7 +201,7 @@ void OverlayPass::allocateDescriptors(uint32_t frame_index,
         vertex_count++;
         frame.index_count++;
 
-        DebugDrawVertex vertex2;
+        DebugDrawVertex vertex2{};
         vertex2.position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0);
         vertex2.color = glm::vec3(1.0, 0.0, 0.0);
 
@@ -214,7 +214,7 @@ void OverlayPass::allocateDescriptors(uint32_t frame_index,
       {
         // Draw Y line
 
-        DebugDrawVertex vertex1;
+        DebugDrawVertex vertex1{};
         vertex1.position = transform * glm::vec4(0.0, 1.0, 0.0, 1.0);
         vertex1.color = glm::vec3(0.0, 1.0, 0.0);
 
@@ -223,7 +223,7 @@ void OverlayPass::allocateDescriptors(uint32_t frame_index,
         vertex_count++;
         frame.index_count++;
 
-        DebugDrawVertex vertex2;
+        DebugDrawVertex vertex2{};
         vertex2.position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0);
         vertex2.color = glm::vec3(0.0, 1.0, 0.0);
 
@@ -236,7 +236,7 @@ void OverlayPass::allocateDescriptors(uint32_t frame_index,
       {
         // Draw Z line
 
-        DebugDrawVertex vertex1;
+        DebugDrawVertex vertex1{};
         vertex1.position = transform * glm::vec4(0.0, 0.0, 1.0, 1.0);
         vertex1.color = glm::vec3(0.0, 0.0, 1.0);
 
@@ -245,7 +245,7 @@ void OverlayPass::allocateDescriptors(uint32_t frame_index,
         vertex_count++;
         frame.index_count++;
 
-        DebugDrawVertex vertex2;
+        DebugDrawVertex vertex2{};
         vertex2.position = transform * glm::vec4(0.0, 0.0, 0.0, 1.0);
         vertex2.color = glm::vec3(0.0, 0.0, 1.0);
 
@@ -269,7 +269,7 @@ void OverlayPass::allocateDescriptors(uint32_t frame_index,
           glm::vec3(uniform.position.x, uniform.position.y, uniform.position.z);
 
       {
-        DebugDrawVertex vertex;
+        DebugDrawVertex vertex{};
         vertex.position = position + glm::vec3(0.0, 0.1, 0.0);
         vertex.color = glm::vec3(1.0);
 
@@ -280,7 +280,7 @@ void OverlayPass::allocateDescriptors(uint32_t frame_index,
       }
 
       {
-        DebugDrawVertex vertex;
+        DebugDrawVertex vertex{};
         vertex.position = position;
         vertex.color = glm::vec3(1.0);
 
@@ -305,19 +305,19 @@ void OverlayPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
     {
       GraphicsState graphics_state;
 
-      GraphicsState::InputAssemblyState input_assembly_state;
+      GraphicsState::InputAssemblyState input_assembly_state{};
       input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::LineList;
       input_assembly_state.primitive_restart_enable =
           GraphicsState::BoolFlag::False;
       graphics_state.input_assembly_state = input_assembly_state;
 
-      GraphicsState::RasterizatonState rasterization_state;
+      GraphicsState::RasterizatonState rasterization_state{};
       rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
       rasterization_state.cull_mode = GraphicsState::CullMode::None;
       graphics_state.rasterization_state = rasterization_state;
 
-      GraphicsState::DepthState depth_state;
+      GraphicsState::DepthState depth_state{};
       depth_state.test_enable = GraphicsState::BoolFlag::False;
       depth_state.write_enable = GraphicsState::BoolFlag::False;
       depth_state.compare_op = GraphicsState::CompareOp::Always;
@@ -343,19 +343,19 @@ void OverlayPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
     {
       GraphicsState graphics_state;
 
-      GraphicsState::InputAssemblyState input_assembly_state;
+      GraphicsState::InputAssemblyState input_assembly_state{};
       input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::TriangleStrip;
       input_assembly_state.primitive_restart_enable =
           GraphicsState::BoolFlag::False;
       graphics_state.input_assembly_state = input_assembly_state;
 
-      GraphicsState::RasterizatonState rasterization_state;
+      GraphicsState::RasterizatonState rasterization_state{};
       rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
       rasterization_state.cull_mode = GraphicsState::CullMode::None;
       graphics_state.rasterization_state = rasterization_state;
 
-      GraphicsState::DepthState depth_state;
+      GraphicsState::DepthState depth_state{};
       depth_state.test_enable = GraphicsState::BoolFlag::False;
       depth_state.write_enable = GraphicsState::BoolFlag::False;
       depth_state.compare_op = GraphicsState::CompareOp::Always;

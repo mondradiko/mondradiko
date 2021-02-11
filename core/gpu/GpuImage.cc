@@ -17,7 +17,7 @@ GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
       width(height),
       height(height),
       gpu(gpu) {
-  VkImageCreateInfo imageCreateInfo;
+  VkImageCreateInfo imageCreateInfo{};
   imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
   imageCreateInfo.format = format;
@@ -30,13 +30,12 @@ GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
   imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   imageCreateInfo.initialLayout = layout;
 
-  VmaAllocationCreateInfo allocationCreateInfo;
+  VmaAllocationCreateInfo allocationCreateInfo{};
   allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
   allocationCreateInfo.usage = memory_usage;
 
-  if (vmaCreateImage(gpu->allocator, &imageCreateInfo,
-                     &allocationCreateInfo, &image, &allocation,
-                     &allocation_info) != VK_SUCCESS) {
+  if (vmaCreateImage(gpu->allocator, &imageCreateInfo, &allocationCreateInfo,
+                     &image, &allocation, &allocation_info) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan image.");
   }
 
@@ -57,12 +56,12 @@ void GpuImage::writeData(const void* src) {
 
   VkCommandBuffer commandBuffer = gpu->beginSingleTimeCommands();
 
-  VkBufferImageCopy region;
+  VkBufferImageCopy region{};
   region.bufferOffset = 0;
   region.bufferRowLength = 0;
   region.bufferImageHeight = 0;
 
-  VkImageSubresourceLayers imageSubresource;
+  VkImageSubresourceLayers imageSubresource{};
   imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
   imageSubresource.mipLevel = 0;
   imageSubresource.baseArrayLayer = 0;
@@ -79,7 +78,7 @@ void GpuImage::writeData(const void* src) {
 }
 
 void GpuImage::transitionLayout(VkImageLayout targetLayout) {
-  VkImageMemoryBarrier barrier;
+  VkImageMemoryBarrier barrier{};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
   barrier.oldLayout = layout;
   barrier.newLayout = targetLayout;
@@ -87,7 +86,7 @@ void GpuImage::transitionLayout(VkImageLayout targetLayout) {
   barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   barrier.image = image;
 
-  VkImageSubresourceRange subresourceRange;
+  VkImageSubresourceRange subresourceRange{};
   subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
   subresourceRange.baseMipLevel = 0;
   subresourceRange.levelCount = 1;
@@ -141,13 +140,13 @@ void GpuImage::createView() {
     }
   }
 
-  VkImageViewCreateInfo viewInfo;
+  VkImageViewCreateInfo viewInfo{};
   viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
   viewInfo.image = image;
   viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
   viewInfo.format = format;
 
-  VkImageSubresourceRange subresourceRange;
+  VkImageSubresourceRange subresourceRange{};
   subresourceRange.aspectMask = aspect_mask;
   subresourceRange.baseMipLevel = 0;
   subresourceRange.levelCount = 1;
@@ -155,8 +154,7 @@ void GpuImage::createView() {
   subresourceRange.layerCount = 1;
   viewInfo.subresourceRange = subresourceRange;
 
-  if (vkCreateImageView(gpu->device, &viewInfo, nullptr, &view) !=
-      VK_SUCCESS) {
+  if (vkCreateImageView(gpu->device, &viewInfo, nullptr, &view) != VK_SUCCESS) {
     log_ftl("Failed to create VulkanImage view.");
   }
 }

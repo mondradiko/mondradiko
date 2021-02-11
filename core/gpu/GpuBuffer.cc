@@ -32,13 +32,13 @@ void GpuBuffer::reserve(size_t target_size) {
 
   allocation = nullptr;
 
-  VkBufferCreateInfo bufferInfo;
+  VkBufferCreateInfo bufferInfo{};
   bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   bufferInfo.size = target_size;
   bufferInfo.usage = buffer_usage_flags;
   bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-  VmaAllocationCreateInfo allocationCreateInfo;
+  VmaAllocationCreateInfo allocationCreateInfo{};
   allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
   allocationCreateInfo.usage = memory_usage;
 

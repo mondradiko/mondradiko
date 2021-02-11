@@ -97,7 +97,7 @@ bool GpuInstance::findSupportedFormat(const std::vector<VkFormat>* options,
 }
 
 VkCommandBuffer GpuInstance::beginSingleTimeCommands() {
-  VkCommandBufferAllocateInfo allocInfo;
+  VkCommandBufferAllocateInfo allocInfo{};
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   allocInfo.commandPool = command_pool;
   allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -106,7 +106,7 @@ VkCommandBuffer GpuInstance::beginSingleTimeCommands() {
   VkCommandBuffer commandBuffer;
   vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
 
-  VkCommandBufferBeginInfo beginInfo;
+  VkCommandBufferBeginInfo beginInfo{};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
@@ -118,7 +118,7 @@ VkCommandBuffer GpuInstance::beginSingleTimeCommands() {
 void GpuInstance::endSingleTimeCommands(VkCommandBuffer command_buffer) {
   vkEndCommandBuffer(command_buffer);
 
-  VkSubmitInfo submitInfo;
+  VkSubmitInfo submitInfo{};
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &command_buffer;
@@ -158,15 +158,15 @@ bool GpuInstance::checkValidationLayerSupport() {
 
 void GpuInstance::populateDebugMessengerCreateInfo(
     VkDebugUtilsMessengerCreateInfoEXT* createInfo) {
-  auto& createInfoEXT = *createInfo;
-  createInfoEXT.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-  createInfoEXT.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+  *createInfo = {};
+  createInfo->sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+  createInfo->messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
                      VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
                      VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-  createInfoEXT.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+  createInfo->messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                  VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                  VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-  createInfoEXT.pfnUserCallback = debugCallbackVulkan;
+  createInfo->pfnUserCallback = debugCallbackVulkan;
 }
 
 void GpuInstance::createInstance(VulkanRequirements* requirements) {
@@ -179,7 +179,7 @@ void GpuInstance::createInstance(VulkanRequirements* requirements) {
 
   extensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-  VkApplicationInfo appInfo;
+  VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   appInfo.pApplicationName = "Mondradiko";
   appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);
@@ -187,7 +187,7 @@ void GpuInstance::createInstance(VulkanRequirements* requirements) {
   appInfo.engineVersion = MONDRADIKO_VULKAN_VERSION;
   appInfo.apiVersion = requirements->min_api_version;
 
-  VkInstanceCreateInfo createInfo;
+  VkInstanceCreateInfo createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   createInfo.pApplicationInfo = &appInfo;
   createInfo.enabledExtensionCount =
@@ -270,7 +270,7 @@ void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
 
   float queuePriority = 1.0f;
   for (uint32_t queueFamily : uniqueQueueFamilies) {
-    VkDeviceQueueCreateInfo queueCreateInfo;
+    VkDeviceQueueCreateInfo queueCreateInfo{};
     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     queueCreateInfo.queueFamilyIndex = queueFamily;
     queueCreateInfo.queueCount = 1;
@@ -278,11 +278,11 @@ void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
     queueCreateInfos.push_back(queueCreateInfo);
   }
 
-  VkPhysicalDeviceFeatures deviceFeatures;
+  VkPhysicalDeviceFeatures deviceFeatures{};
   deviceFeatures.multiViewport = VK_TRUE;
   deviceFeatures.samplerAnisotropy = VK_TRUE;
 
-  VkDeviceCreateInfo createInfo;
+  VkDeviceCreateInfo createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   createInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
   createInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -308,7 +308,7 @@ void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
 void GpuInstance::createCommandPool() {
   log_zone;
 
-  VkCommandPoolCreateInfo createInfo;
+  VkCommandPoolCreateInfo createInfo{};
   createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   createInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
                      VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -323,7 +323,7 @@ void GpuInstance::createCommandPool() {
 void GpuInstance::createAllocator() {
   log_zone;
 
-  VmaAllocatorCreateInfo createInfo;
+  VmaAllocatorCreateInfo createInfo{};
   createInfo.physicalDevice = physical_device;
   createInfo.device = device;
   createInfo.instance = instance;

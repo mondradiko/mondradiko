@@ -23,12 +23,12 @@ GpuDescriptorSet::GpuDescriptorSet(GpuInstance* gpu,
 GpuDescriptorSet::~GpuDescriptorSet() {}
 
 void GpuDescriptorSet::updateBuffer(uint32_t binding, GpuBuffer* buffer) {
-  VkDescriptorBufferInfo buffer_info;
+  VkDescriptorBufferInfo buffer_info{};
   buffer_info.buffer = buffer->getBuffer(),
   buffer_info.offset = 0,
   buffer_info.range = set_layout->getBufferSize(binding);
 
-  VkWriteDescriptorSet descriptor_writes;
+  VkWriteDescriptorSet descriptor_writes{};
   descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
   descriptor_writes.dstSet = descriptor_set;
   descriptor_writes.dstBinding = binding;
@@ -42,12 +42,12 @@ void GpuDescriptorSet::updateBuffer(uint32_t binding, GpuBuffer* buffer) {
 
 void GpuDescriptorSet::updateDynamicBuffer(uint32_t binding,
                                            GpuVector* buffer) {
-  VkDescriptorBufferInfo buffer_info;
+  VkDescriptorBufferInfo buffer_info{};
   buffer_info.buffer = buffer->getBuffer();
   buffer_info.offset = 0;
   buffer_info.range = set_layout->getBufferSize(binding);
 
-  VkWriteDescriptorSet descriptor_writes;
+  VkWriteDescriptorSet descriptor_writes{};
   descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
   descriptor_writes.dstSet = descriptor_set;
   descriptor_writes.dstBinding = binding;
@@ -61,12 +61,12 @@ void GpuDescriptorSet::updateDynamicBuffer(uint32_t binding,
 
 void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,
                                            const GpuBuffer* buffer) {
-  VkDescriptorBufferInfo buffer_info;
+  VkDescriptorBufferInfo buffer_info{};
   buffer_info.buffer = buffer->getBuffer();
   buffer_info.offset = 0;
   buffer_info.range = buffer->getBufferSize();;
 
-  VkWriteDescriptorSet descriptor_writes;
+  VkWriteDescriptorSet descriptor_writes{};
   descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
   descriptor_writes.dstSet = descriptor_set;
   descriptor_writes.dstBinding = binding;
@@ -79,11 +79,11 @@ void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,
 }
 
 void GpuDescriptorSet::updateImage(uint32_t binding, const GpuImage* image) {
-  VkDescriptorImageInfo image_info;
+  VkDescriptorImageInfo image_info{};
   image_info.imageView = image->view;
   image_info.imageLayout = image->layout;
 
-  VkWriteDescriptorSet descriptor_writes;
+  VkWriteDescriptorSet descriptor_writes{};
   descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
   descriptor_writes.dstSet = descriptor_set;
   descriptor_writes.dstBinding = binding;

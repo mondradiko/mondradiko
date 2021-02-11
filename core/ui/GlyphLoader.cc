@@ -189,7 +189,7 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, GpuInstance* gpu)
   {
     log_zone_named("Create SDF sampler");
 
-    VkSamplerCreateInfo sampler_info;
+    VkSamplerCreateInfo sampler_info{};
     sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     sampler_info.magFilter = VK_FILTER_LINEAR;
     sampler_info.minFilter = VK_FILTER_LINEAR;
