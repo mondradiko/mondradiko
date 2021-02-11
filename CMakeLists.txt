@@ -3,6 +3,8 @@
 
 cmake_minimum_required(VERSION 3.13)
 project(Mondradiko VERSION 0.0.0)
+set(Mondradiko_COPYRIGHT "Copyright (c) 2020-2021 the Mondradiko contributors.")
+set(Mondradiko_LICENSE "SPDX-License-Identifier: LGPL-3.0-or-later")
 
 option(TRACY_ENABLE "Enable Tracy profiling." OFF)
 
