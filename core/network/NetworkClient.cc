@@ -207,16 +207,13 @@ void NetworkClient::receiveEvents() {
 
     auto event = protocol::GetServerEvent(incoming_msg->GetData());
 
-    log_dbg("Received server event");
-
     switch (event->type()) {
       case protocol::ServerEventType::NoMessage: {
-        log_dbg("Received empty server event");
+        log_wrn("Received empty server event");
         break;
       }
 
       case protocol::ServerEventType::WorldUpdate: {
-        log_dbg("Received world update event");
         auto world_update = event->world_update();
         for (uint32_t i = 0; i < world_update->size(); i++) {
           world->processEvent(world_update->Get(i));

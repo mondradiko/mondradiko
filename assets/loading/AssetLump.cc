@@ -31,7 +31,7 @@ AssetLump::~AssetLump() {
 
 bool AssetLump::assertFileSize(size_t check_size) {
   log_zone;
-  log_dbg("Asserting size of lump file %s", lump_path.c_str());
+  log_inf("Asserting size of lump file %s", lump_path.c_str());
 
   size_t lump_length = std::filesystem::file_size(lump_path);
 
@@ -46,7 +46,7 @@ bool AssetLump::assertFileSize(size_t check_size) {
 
 bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
   log_zone;
-  log_dbg("Asserting hash from lump %s", lump_path.c_str());
+  log_inf("Asserting hash from lump %s", lump_path.c_str());
 
   LumpHash computed_hash;
 
@@ -72,7 +72,7 @@ bool AssetLump::assertHash(LumpHashMethod hash_method, LumpHash checksum) {
     }
 
     case LumpHashMethod::None: {
-      log_dbg("Lump has no hash method; approving");
+      log_inf("Lump has no hash method; approving");
       lump_file.close();
       return true;
     }
@@ -107,7 +107,7 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
 
   switch (compression_method) {
     case LumpCompressionMethod::LZ4: {
-      log_dbg("Decompressing lump %s with LZ4", lump_path.c_str());
+      log_inf("Decompressing lump %s with LZ4", lump_path.c_str());
 
       LZ4F_dctx* context;
       LZ4F_createDecompressionContext(&context, LZ4F_VERSION);
@@ -160,12 +160,12 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
         remaining_size -= decompressed_size;
 
         if (remaining_size < 0) {
-          log_wrn("LZ4 decompression ran out of RAM early");
+          log_err("LZ4 decompression overflow");
           break;
         }
 
         if (bytes_consumed < bytes_read) {
-          log_wrn("LZ4 decompression overflow");
+          log_err("LZ4 decompression underflow");
         }
 
         if (buf_hint <= ASSET_LOAD_CHUNK_SIZE) {
