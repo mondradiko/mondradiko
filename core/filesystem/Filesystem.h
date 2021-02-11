@@ -6,8 +6,8 @@
 #include <filesystem>
 #include <vector>
 
-#include "assets/loading/AssetBundle.h"
 #include "core/assets/Asset.h"
+#include "core/filesystem/AssetBundle.h"
 #include "lib/include/toml_headers.h"
 
 namespace mondradiko {

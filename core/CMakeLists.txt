@@ -39,6 +39,8 @@ set(MONDRADIKO_CORE_SRC
   displays/SdlDisplay.cc
   displays/SdlViewport.cc
   displays/Viewport.cc
+  filesystem/AssetBundle.cc
+  filesystem/AssetLump.cc
   filesystem/Filesystem.cc
   gpu/GpuBuffer.cc
   gpu/GpuDescriptorPool.cc

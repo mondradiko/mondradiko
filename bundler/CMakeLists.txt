@@ -6,6 +6,7 @@ set(BUNDLER_SRC
   prefab/GltfConverter.cc
   prefab/TextGltfConverter.cc
   script/WasmConverter.cc
+  AssetBundleBuilder.cc
   bundler_main.cc
   Bundler.cc
 )

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "assets/common/AssetTypes.h"
-#include "assets/loading/AssetLump.h"
+#include "core/filesystem/AssetLump.h"
 
 namespace mondradiko {
 namespace assets {

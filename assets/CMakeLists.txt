@@ -3,9 +3,6 @@
 
 set(MONDRADIKO_ASSETS_SRC
   common/AssetTypes.cc
-  loading/AssetBundle.cc
-  loading/AssetLump.cc
-  saving/AssetBundleBuilder.cc
 )
 
 add_compile_definitions(MONDRADIKO_ASSET_VERSION=0)
