@@ -9,6 +9,7 @@
   mondradiko::log(__FILE__, __LINE__, logLevel, message)
 #define log_inf(message) log_at(mondradiko::LogLevel::Info, message)
 #define log_dbg(message) log_at(mondradiko::LogLevel::Debug, message)
+#define log_msg(message) log_at(mondradiko::LogLevel::Message, message)
 #define log_wrn(message) log_at(mondradiko::LogLevel::Warn, message)
 #define log_err(message) log_at(mondradiko::LogLevel::Error, message)
 #define log_ftl(message) log_at(mondradiko::LogLevel::Fatal, message)
@@ -17,6 +18,7 @@
   mondradiko::log_formatted(__FILE__, __LINE__, logLevel, __VA_ARGS__)
 #define log_inf_fmt(...) log_at_fmt(mondradiko::LogLevel::Info, __VA_ARGS__)
 #define log_dbg_fmt(...) log_at_fmt(mondradiko::LogLevel::Debug, __VA_ARGS__)
+#define log_msg_fmt(...) log_at_fmt(mondradiko::LogLevel::Message, __VA_ARGS__)
 #define log_wrn_fmt(...) log_at_fmt(mondradiko::LogLevel::Warn, __VA_ARGS__)
 #define log_err_fmt(...) log_at_fmt(mondradiko::LogLevel::Error, __VA_ARGS__)
 #define log_ftl_fmt(...) log_at_fmt(mondradiko::LogLevel::Fatal, __VA_ARGS__)
@@ -43,7 +45,7 @@
 
 namespace mondradiko {
 
-enum class LogLevel { Zone = 0, Info, Debug, Warn, Error, Fatal };
+enum class LogLevel { Zone = 0, Info, Debug, Message, Warn, Error, Fatal };
 
 const char* getLogPrefix(LogLevel);
 

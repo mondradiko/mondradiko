@@ -27,6 +27,8 @@ const char* getLogPrefix(LogLevel level) {
       return "\e[36m[INF ";
     case LogLevel::Debug:
       return "\e[32m[DBG ";
+    case LogLevel::Message:
+      return "\x1b[00m[MSG ";
     case LogLevel::Warn:
       return "\e[33m[WRN ";
     case LogLevel::Error:
