@@ -183,8 +183,6 @@ bool AssetBundle::isAssetRegistered(AssetId id) {
 
 bool AssetBundle::loadAsset(const SerializedAsset** asset, AssetId id) {
   // TODO(marceline-cramer) Better error checking and logging
-  // TODO(marceline-cramer) Check lump checksums when loading into cache
-  log_inf("Loading asset 0x%0lx", id);
 
   auto stored_asset = asset_lookup.find(id)->second;
   auto lump_index = stored_asset.lump_index;

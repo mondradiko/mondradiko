@@ -2,6 +2,17 @@
 
 Unfortunately, Mondradiko has not been built for Windows or Oculus Quest yet, but it will be soon!
 
+## Python
+
+Python 3 is required, along with the following libraries:
+
+- [`toml`](https://pypi.org/project/toml/)
+
+All of the above can be installed with the following `pip` command:
+```bash
+$ pip install toml
+```
+
 ## Linux
 
 ### Debian
