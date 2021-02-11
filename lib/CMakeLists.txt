@@ -22,8 +22,8 @@ endif()
 
 add_library(mondradiko-lib STATIC ${MONDRADIKO_LIB_SRC})
 
-if(${TRACY_ENABLE})
-  if(${UNIX})
+if(TRACY_ENABLE)
+  if(UNIX)
     target_link_libraries(mondradiko-lib PUBLIC dl)
     target_link_libraries(mondradiko-lib PUBLIC pthread)
   endif()
@@ -84,3 +84,7 @@ if(NOT WASMTIME)
 endif()
 
 target_link_libraries(mondradiko-lib PUBLIC ${WASMTIME})
+
+# Add CLI11
+add_subdirectory(CLI11)
+target_link_libraries(mondradiko-lib PUBLIC CLI11::CLI11)
