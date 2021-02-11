@@ -110,7 +110,7 @@ void spectator_session_run(const char* server_address, int port) {
   session_loop(&fs, &display, &gpu);
 }
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
   log_inf("Hello VR!");
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {

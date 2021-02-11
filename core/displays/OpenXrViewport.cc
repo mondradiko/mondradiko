@@ -49,16 +49,17 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
   _image_width = view_config->recommendedImageRectWidth;
   _image_height = view_config->recommendedImageRectHeight;
 
-  XrSwapchainCreateInfo swapchainCreateInfo{
-      .type = XR_TYPE_SWAPCHAIN_CREATE_INFO,
-      .usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
-      .format = static_cast<int64_t>(display->getSwapchainFormat()),
-      .sampleCount = 1,
-      .width = _image_width,
-      .height = _image_height,
-      .faceCount = 1,
-      .arraySize = 1,
-      .mipCount = 1};
+  XrSwapchainCreateInfo swapchainCreateInfo{};
+  swapchainCreateInfo.type = XR_TYPE_SWAPCHAIN_CREATE_INFO;
+  swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
+  swapchainCreateInfo.format =
+      static_cast<int64_t>(display->getSwapchainFormat()),
+  swapchainCreateInfo.sampleCount = 1;
+  swapchainCreateInfo.width = _image_width;
+  swapchainCreateInfo.height = _image_height;
+  swapchainCreateInfo.faceCount = 1;
+  swapchainCreateInfo.arraySize = 1;
+  swapchainCreateInfo.mipCount = 1;
 
   if (xrCreateSwapchain(display->session, &swapchainCreateInfo, &swapchain) !=
       XR_SUCCESS) {
@@ -113,23 +114,30 @@ void OpenXrViewport::writeCompositionLayers(
   projection_view->type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
   projection_view->pose = view.pose;
   projection_view->fov = view.fov;
-  projection_view->subImage = {.swapchain = swapchain};
-  projection_view->subImage.imageRect = {
-      .offset = {0, 0},
-      .extent = {static_cast<int32_t>(_image_width),
-                 static_cast<int32_t>(_image_height)}};
+
+  XrSwapchainSubImage subImage{};
+  subImage.swapchain = swapchain;
+  projection_view->subImage = subImage;
+
+  XrRect2Di imageRect{};
+  imageRect.offset = {0, 0};
+  imageRect.extent = {static_cast<int32_t>(_image_width),
+                      static_cast<int32_t>(_image_height)};
+  projection_view->subImage.imageRect = imageRect;
 }
 
 VkSemaphore OpenXrViewport::_acquireImage(uint32_t* image_index) {
   log_zone;
 
-  XrSwapchainImageAcquireInfo acquireInfo{
-      .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, .next = nullptr};
+  XrSwapchainImageAcquireInfo acquireInfo{};
+  acquireInfo.type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO;
+  acquireInfo.next = nullptr;
 
   xrAcquireSwapchainImage(swapchain, &acquireInfo, image_index);
 
-  XrSwapchainImageWaitInfo waitInfo{.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
-                                    .timeout = XR_INFINITE_DURATION};
+  XrSwapchainImageWaitInfo waitInfo{};
+  waitInfo.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO;
+  waitInfo.timeout = XR_INFINITE_DURATION;
 
   xrWaitSwapchainImage(swapchain, &waitInfo);
 
@@ -139,8 +147,8 @@ VkSemaphore OpenXrViewport::_acquireImage(uint32_t* image_index) {
 void OpenXrViewport::_releaseImage(uint32_t, VkSemaphore) {
   log_zone;
 
-  XrSwapchainImageReleaseInfo release_info{
-      .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
+  XrSwapchainImageReleaseInfo release_info{};
+  release_info.type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO;
 
   xrReleaseSwapchainImage(swapchain, &release_info);
 }

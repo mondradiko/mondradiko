@@ -1,6 +1,9 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#define _USE_MATH_DEFINES  // currently needed for MSVC
+#include <cmath>
+
 #include "core/displays/SdlViewport.h"
 
 #include "core/displays/SdlDisplay.h"
@@ -24,22 +27,26 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
   SDL_Vulkan_GetDrawableSize(display->window, &window_width, &window_height);
 
   // TODO(marceline-cramer) Better queue sharing
-  VkSwapchainCreateInfoKHR swapchain_info{
-      .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-      .surface = display->surface,
-      .minImageCount = display->surface_capabilities.minImageCount,
-      .imageFormat = display->swapchain_format,
-      .imageColorSpace = display->swapchain_color_space,
-      .imageExtent = {.width = static_cast<uint32_t>(window_width),
-                      .height = static_cast<uint32_t>(window_height)},
-      .imageArrayLayers = 1,
-      .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .preTransform = display->surface_capabilities.currentTransform,
-      .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-      .presentMode = display->swapchain_present_mode,
-      .clipped = VK_TRUE,
-      .oldSwapchain = VK_NULL_HANDLE};
+  VkSwapchainCreateInfoKHR swapchain_info{};
+  swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  swapchain_info.surface = display->surface;
+  swapchain_info.minImageCount = display->surface_capabilities.minImageCount;
+  swapchain_info.imageFormat = display->swapchain_format;
+  swapchain_info.imageColorSpace = display->swapchain_color_space;
+
+  VkExtent2D imageExtent{};
+  imageExtent.width = static_cast<uint32_t>(window_width);
+  imageExtent.height = static_cast<uint32_t>(window_height);
+  swapchain_info.imageExtent = imageExtent;
+
+  swapchain_info.imageArrayLayers = 1;
+  swapchain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  swapchain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  swapchain_info.preTransform = display->surface_capabilities.currentTransform;
+  swapchain_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  swapchain_info.presentMode = display->swapchain_present_mode;
+  swapchain_info.clipped = VK_TRUE;
+  swapchain_info.oldSwapchain = VK_NULL_HANDLE;
 
   if (vkCreateSwapchainKHR(gpu->device, &swapchain_info, nullptr, &swapchain) !=
       VK_SUCCESS) {
@@ -65,8 +72,8 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
   on_image_acquire.resize(image_count);
 
   for (uint32_t i = 0; i < on_image_acquire.size(); i++) {
-    VkSemaphoreCreateInfo semaphore_info{
-        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+    VkSemaphoreCreateInfo semaphore_info{};
+    semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
     if (vkCreateSemaphore(gpu->device, &semaphore_info, nullptr,
                           &on_image_acquire[i]) != VK_SUCCESS) {
@@ -160,12 +167,13 @@ void SdlViewport::_releaseImage(uint32_t current_image_index,
                                 VkSemaphore on_render_finished) {
   log_zone;
 
-  VkPresentInfoKHR present_info{.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-                                .waitSemaphoreCount = 1,
-                                .pWaitSemaphores = &on_render_finished,
-                                .swapchainCount = 1,
-                                .pSwapchains = &swapchain,
-                                .pImageIndices = &current_image_index};
+  VkPresentInfoKHR present_info{};
+  present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+  present_info.waitSemaphoreCount = 1;
+  present_info.pWaitSemaphores = &on_render_finished;
+  present_info.swapchainCount = 1;
+  present_info.pSwapchains = &swapchain;
+  present_info.pImageIndices = &current_image_index;
 
   // TODO(marceline-cramer) Better queue management
   vkQueuePresentKHR(gpu->graphics_queue, &present_info);

@@ -6,7 +6,7 @@
 #include <deque>
 #include <memory>
 
-#include "flatbuffers/flatbuffers.h"
+#include "lib/include/flatbuffers_headers.h"
 
 namespace mondradiko {
 

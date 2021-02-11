@@ -50,12 +50,12 @@ UserInterface::UserInterface(GlyphLoader* glyphs, Renderer* renderer)
     std::vector<VkDescriptorSetLayout> set_layouts{
         renderer->getViewportLayout()->getSetLayout()};
 
-    VkPipelineLayoutCreateInfo layoutInfo{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .setLayoutCount = static_cast<uint32_t>(set_layouts.size()),
-        .pSetLayouts = set_layouts.data()};
+    VkPipelineLayoutCreateInfo layout_info{};
+    layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    layout_info.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
+    layout_info.pSetLayouts = set_layouts.data();
 
-    if (vkCreatePipelineLayout(gpu->device, &layoutInfo, nullptr,
+    if (vkCreatePipelineLayout(gpu->device, &layout_info, nullptr,
                                &panel_pipeline_layout) != VK_SUCCESS) {
       log_ftl("Failed to create pipeline layout");
     }
@@ -133,18 +133,23 @@ void UserInterface::render(uint32_t frame_index, VkCommandBuffer command_buffer,
     {
       GraphicsState graphics_state;
 
-      graphics_state.input_assembly_state = {
-          .primitive_topology = GraphicsState::PrimitiveTopology::TriangleStrip,
-          .primitive_restart_enable = GraphicsState::BoolFlag::False};
+      GraphicsState::InputAssemblyState input_assembly_state{};
+      input_assembly_state.primitive_topology =
+          GraphicsState::PrimitiveTopology::TriangleStrip;
+      input_assembly_state.primitive_restart_enable =
+          GraphicsState::BoolFlag::False;
+      graphics_state.input_assembly_state = input_assembly_state;
 
-      graphics_state.rasterization_state = {
-          .polygon_mode = GraphicsState::PolygonMode::Fill,
-          .cull_mode = GraphicsState::CullMode::None};
+      GraphicsState::RasterizatonState rasterization_state{};
+      rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
+      rasterization_state.cull_mode = GraphicsState::CullMode::None;
+      graphics_state.rasterization_state = rasterization_state;
 
-      graphics_state.depth_state = {
-          .test_enable = GraphicsState::BoolFlag::True,
-          .write_enable = GraphicsState::BoolFlag::True,
-          .compare_op = GraphicsState::CompareOp::Less};
+      GraphicsState::DepthState depth_state{};
+      depth_state.test_enable = GraphicsState::BoolFlag::True;
+      depth_state.write_enable = GraphicsState::BoolFlag::True;
+      depth_state.compare_op = GraphicsState::CompareOp::Less;
+      graphics_state.depth_state = depth_state;
 
       panel_pipeline->cmdBind(command_buffer, graphics_state);
     }

@@ -34,25 +34,27 @@ OpenXrDisplay::OpenXrDisplay() {
 
   {
     log_zone_named("Populate debug messenger info");
-
-    debug_messenger_info = XrDebugUtilsMessengerCreateInfoEXT{
-        .type = XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-        .messageSeverities = XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-                             XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                             XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-        .messageTypes = XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                        XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                        XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
-                        XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT,
-        .userCallback = debugCallbackOpenXR};
+    debug_messenger_info = {};
+    debug_messenger_info.type = XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    debug_messenger_info.messageSeverities =
+        XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+        XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+        XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    debug_messenger_info.messageTypes =
+        XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+        XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+        XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
+        XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT;
+    debug_messenger_info.userCallback = debugCallbackOpenXR;
   }
 
   {
     log_zone_named("Create instance");
 
-    XrApplicationInfo appInfo{.applicationVersion = XR_MAKE_VERSION(0, 0, 0),
-                              .engineVersion = MONDRADIKO_OPENXR_VERSION,
-                              .apiVersion = XR_MAKE_VERSION(1, 0, 0)};
+    XrApplicationInfo appInfo{};
+    appInfo.applicationVersion = XR_MAKE_VERSION(0, 0, 0);
+    appInfo.engineVersion = MONDRADIKO_OPENXR_VERSION;
+    appInfo.apiVersion = XR_MAKE_VERSION(1, 0, 0);
 
     snprintf(appInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE,
              "Mondradiko Client");
@@ -62,12 +64,13 @@ OpenXrDisplay::OpenXrDisplay() {
                                         XR_EXT_DEBUG_UTILS_EXTENSION_NAME};
 
     // TODO(marceline-cramer) Validation layers
-    XrInstanceCreateInfo instance_info{
-        .type = XR_TYPE_INSTANCE_CREATE_INFO,
-        .applicationInfo = appInfo,
-        .enabledApiLayerCount = 0,
-        .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
-        .enabledExtensionNames = extensions.data()};
+    XrInstanceCreateInfo instance_info{};
+    instance_info.type = XR_TYPE_INSTANCE_CREATE_INFO;
+    instance_info.applicationInfo = appInfo;
+    instance_info.enabledApiLayerCount = 0;
+    instance_info.enabledExtensionCount =
+        static_cast<uint32_t>(extensions.size());
+    instance_info.enabledExtensionNames = extensions.data();
 
     XrResult result = xrCreateInstance(&instance_info, &instance);
 
@@ -107,9 +110,9 @@ OpenXrDisplay::OpenXrDisplay() {
   {
     log_zone_named("Find system");
 
-    XrSystemGetInfo systemInfo{
-        .type = XR_TYPE_SYSTEM_GET_INFO,
-        .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY};
+    XrSystemGetInfo systemInfo{};
+    systemInfo.type = XR_TYPE_SYSTEM_GET_INFO;
+    systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 
     if (xrGetSystem(instance, &systemInfo, &system_id) != XR_SUCCESS) {
       log_ftl("Failed to find HMD.");
@@ -133,27 +136,30 @@ bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
 
   gpu = _gpu;
 
-  XrGraphicsBindingVulkanKHR vulkanBindings{
-      .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
-      .instance = gpu->instance,
-      .physicalDevice = gpu->physical_device,
-      .device = gpu->device,
-      .queueFamilyIndex = gpu->graphics_queue_family};
+  XrGraphicsBindingVulkanKHR vulkanBindings{};
+  vulkanBindings.type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR;
+  vulkanBindings.instance = gpu->instance;
+  vulkanBindings.physicalDevice = gpu->physical_device;
+  vulkanBindings.device = gpu->device;
+  vulkanBindings.queueFamilyIndex = gpu->graphics_queue_family;
 
-  XrSessionCreateInfo createInfo{.type = XR_TYPE_SESSION_CREATE_INFO,
-                                 .next = &vulkanBindings,
-                                 .systemId = system_id};
+  XrSessionCreateInfo createInfo{};
+  createInfo.type = XR_TYPE_SESSION_CREATE_INFO;
+  createInfo.next = &vulkanBindings;
+  createInfo.systemId = system_id;
 
   if (xrCreateSession(instance, &createInfo, &session) != XR_SUCCESS) {
     log_err("Failed to create OpenXR session.");
     return false;
   }
 
-  XrReferenceSpaceCreateInfo stageSpaceCreateInfo{
-      .type = XR_TYPE_REFERENCE_SPACE_CREATE_INFO,
-      .referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE,
-      .poseInReferenceSpace = {.orientation = {0.0, 0.0, 0.0, 1.0},
-                               .position = {0.0, 0.0, 0.0}}};
+  XrReferenceSpaceCreateInfo stageSpaceCreateInfo{};
+  stageSpaceCreateInfo.type = XR_TYPE_REFERENCE_SPACE_CREATE_INFO;
+  stageSpaceCreateInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE;
+  XrPosef pose{};
+  pose.orientation = {0.0, 0.0, 0.0, 1.0};
+  pose.position = {0.0, 0.0, 0.0};
+  stageSpaceCreateInfo.poseInReferenceSpace = pose;
 
   if (xrCreateReferenceSpace(session, &stageSpaceCreateInfo, &stage_space) !=
       XR_SUCCESS) {
@@ -198,9 +204,8 @@ void OpenXrDisplay::destroySession() {
 }
 
 bool OpenXrDisplay::getVulkanRequirements(VulkanRequirements* requirements) {
-  XrGraphicsRequirementsVulkanKHR vulkanRequirements{
-      .type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR};
-
+  XrGraphicsRequirementsVulkanKHR vulkanRequirements{};
+  vulkanRequirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR;
   if (ext_xrGetVulkanGraphicsRequirementsKHR(
           instance, system_id, &vulkanRequirements) != XR_SUCCESS) {
     log_err("Failed to get OpenXR Vulkan requirements.");
@@ -249,7 +254,8 @@ bool OpenXrDisplay::getVulkanDevice(VkInstance vk_instance,
 void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
   log_zone;
 
-  XrEventDataBuffer event{.type = XR_TYPE_EVENT_DATA_BUFFER};
+  XrEventDataBuffer event{};
+  event.type = XR_TYPE_EVENT_DATA_BUFFER;
 
   while (xrPollEvent(instance, &event) == XR_SUCCESS) {
     switch (event.type) {
@@ -264,10 +270,10 @@ void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
           case XR_SESSION_STATE_READY: {
             log_dbg("OpenXR session ready; beginning session.");
 
-            XrSessionBeginInfo beginInfo{
-                .type = XR_TYPE_SESSION_BEGIN_INFO,
-                .primaryViewConfigurationType =
-                    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO};
+            XrSessionBeginInfo beginInfo{};
+            beginInfo.type = XR_TYPE_SESSION_BEGIN_INFO;
+            beginInfo.primaryViewConfigurationType =
+              XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
             xrBeginSession(session, &beginInfo);
             createViewports(poll_info->renderer);
 
@@ -314,7 +320,8 @@ void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
         break;
     }  // switch (event.type)
 
-    event = {.type = XR_TYPE_EVENT_DATA_BUFFER};
+    event = {};
+    event.type = XR_TYPE_EVENT_DATA_BUFFER;
   }
 
   switch (session_state) {
@@ -346,7 +353,8 @@ void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
 void OpenXrDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
   log_zone;
 
-  current_frame_state = {.type = XR_TYPE_FRAME_STATE};
+  current_frame_state = XrFrameState{};
+  current_frame_state.type = XR_TYPE_FRAME_STATE;
 
   xrWaitFrame(session, nullptr, &current_frame_state);
 
@@ -367,13 +375,14 @@ void OpenXrDisplay::acquireViewports(std::vector<Viewport*>* acquired) {
 
   acquired->resize(viewports.size());
 
-  XrViewState view_state{.type = XR_TYPE_VIEW_STATE};
+  XrViewState view_state{};
+  view_state.type = XR_TYPE_VIEW_STATE;
 
-  XrViewLocateInfo locate_info{
-      .type = XR_TYPE_VIEW_LOCATE_INFO,
-      .viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
-      .displayTime = current_frame_state.predictedDisplayTime,
-      .space = stage_space};
+  XrViewLocateInfo locate_info{};
+  locate_info.type = XR_TYPE_VIEW_LOCATE_INFO;
+  locate_info.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+  locate_info.displayTime = current_frame_state.predictedDisplayTime;
+  locate_info.space = stage_space;
 
   std::vector<XrView> views(viewports.size());
   uint32_t view_count = viewports.size();
@@ -388,8 +397,8 @@ void OpenXrDisplay::acquireViewports(std::vector<Viewport*>* acquired) {
 
 void OpenXrDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
   XrCompositionLayerBaseHeader* layer = nullptr;
-  XrCompositionLayerProjection projection_layer{
-      .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION};
+  XrCompositionLayerProjection projection_layer{};
+  projection_layer.type = XR_TYPE_COMPOSITION_LAYER_PROJECTION;
   std::vector<XrCompositionLayerProjectionView> projection_views;
 
   if (frame_info->should_render) {
@@ -405,12 +414,12 @@ void OpenXrDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
     projection_layer.views = projection_views.data();
   }
 
-  XrFrameEndInfo endInfo{
-      .type = XR_TYPE_FRAME_END_INFO,
-      .displayTime = current_frame_state.predictedDisplayTime,
-      .environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
-      .layerCount = static_cast<uint32_t>((layer == nullptr) ? 0 : 1),
-      .layers = &layer};
+  XrFrameEndInfo endInfo{};
+  endInfo.type = XR_TYPE_FRAME_END_INFO;
+  endInfo.displayTime = current_frame_state.predictedDisplayTime;
+  endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+  endInfo.layerCount = static_cast<uint32_t>((layer == nullptr) ? 0 : 1);
+  endInfo.layers = &layer;
 
   xrEndFrame(session, &endInfo);
 }

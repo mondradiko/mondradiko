@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "assets/common/AssetTypes.h"
-#include "flatbuffers/flatbuffers.h"
+#include "lib/include/flatbuffers_headers.h"
 #include "types/assets/Registry_generated.h"
 #include "types/assets/SerializedAsset_generated.h"
 

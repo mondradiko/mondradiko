@@ -31,7 +31,7 @@ void signalHandler(int signum) {
   return;
 }
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
   }

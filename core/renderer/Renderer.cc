@@ -31,57 +31,67 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
   {
     log_zone_named("Create render pass");
 
-    VkAttachmentDescription swapchain_attachment_description{
-        .format = display->getSwapchainFormat(),
-        .samples = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout = display->getFinalLayout()};
+    VkAttachmentDescription swapchain_attachment_description{};
+    swapchain_attachment_description.format = display->getSwapchainFormat();
+    swapchain_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
+    swapchain_attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    swapchain_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    swapchain_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    swapchain_attachment_description.finalLayout = display->getFinalLayout();
 
-    VkAttachmentDescription depth_attachment_description{
-        .format = display->getDepthFormat(),
-        .samples = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+    VkAttachmentDescription depth_attachment_description{};
+    depth_attachment_description.format = display->getDepthFormat();
+    depth_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
+    depth_attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depth_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depth_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depth_attachment_description.finalLayout =
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference swapchain_attachment_reference{
-        .attachment = 0, .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+    VkAttachmentReference swapchain_attachment_reference{};
+    swapchain_attachment_reference.attachment = 0;
+    swapchain_attachment_reference.layout =
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference depth_attachment_reference{
-        .attachment = 1,
-        .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+    VkAttachmentReference depth_attachment_reference{};
+    depth_attachment_reference.attachment = 1;
+    depth_attachment_reference.layout =
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     std::vector<VkAttachmentDescription> attachments = {
         swapchain_attachment_description, depth_attachment_description};
 
-    VkSubpassDescription composite_subpass_description{
-        .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-        .colorAttachmentCount = 1,
-        .pColorAttachments = &swapchain_attachment_reference,
-        .pDepthStencilAttachment = &depth_attachment_reference};
+    VkSubpassDescription composite_subpass_description{};
+    composite_subpass_description.pipelineBindPoint =
+        VK_PIPELINE_BIND_POINT_GRAPHICS;
+    composite_subpass_description.colorAttachmentCount = 1;
+    composite_subpass_description.pColorAttachments =
+        &swapchain_attachment_reference;
+    composite_subpass_description.pDepthStencilAttachment =
+        &depth_attachment_reference;
 
-    VkSubpassDependency swapchain_dependency = {
-        .srcSubpass = VK_SUBPASS_EXTERNAL,
-        .dstSubpass = 0,
-        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .srcAccessMask = 0,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        .dependencyFlags = 0};
+    VkSubpassDependency swapchain_dependency{};
+    swapchain_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    swapchain_dependency.dstSubpass = 0;
+    swapchain_dependency.srcStageMask =
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    swapchain_dependency.dstStageMask =
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    swapchain_dependency.srcAccessMask = 0;
+    swapchain_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    swapchain_dependency.dependencyFlags = 0;
 
-    VkRenderPassCreateInfo compositePassCreateInfo{
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = (uint32_t)attachments.size(),
-        .pAttachments = attachments.data(),
-        .subpassCount = 1,
-        .pSubpasses = &composite_subpass_description,
-        .dependencyCount = 1,
-        .pDependencies = &swapchain_dependency};
+    VkRenderPassCreateInfo composite_pass_create_info{};
+    composite_pass_create_info.sType =
+        VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    composite_pass_create_info.attachmentCount = (uint32_t)attachments.size();
+    composite_pass_create_info.pAttachments = attachments.data();
+    composite_pass_create_info.subpassCount = 1;
+    composite_pass_create_info.pSubpasses = &composite_subpass_description;
+    composite_pass_create_info.dependencyCount = 1;
+    composite_pass_create_info.pDependencies = &swapchain_dependency;
 
-    if (vkCreateRenderPass(gpu->device, &compositePassCreateInfo, nullptr,
+    if (vkCreateRenderPass(gpu->device, &composite_pass_create_info, nullptr,
                            &composite_pass) != VK_SUCCESS) {
       log_ftl("Failed to create Renderer composite render pass.");
     }
@@ -102,29 +112,30 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
     current_frame = 0;
 
     for (auto& frame : frames_in_flight) {
-      VkCommandBufferAllocateInfo alloc_info{
-          .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-          .commandPool = gpu->command_pool,
-          .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          .commandBufferCount = 1};
+      VkCommandBufferAllocateInfo alloc_info{};
+      alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+      alloc_info.commandPool = gpu->command_pool;
+      alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+      alloc_info.commandBufferCount = 1;
 
       if (vkAllocateCommandBuffers(gpu->device, &alloc_info,
                                    &frame.command_buffer) != VK_SUCCESS) {
         log_ftl("Failed to allocate frame command buffers.");
       }
 
-      VkSemaphoreCreateInfo semaphore_info{
-          .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+      VkSemaphoreCreateInfo semaphore_info{};
+      semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
       if (vkCreateSemaphore(gpu->device, &semaphore_info, nullptr,
                             &frame.on_render_finished) != VK_SUCCESS) {
         log_ftl("Failed to create frame render finished semaphore.");
       }
 
-      VkFenceCreateInfo fenceInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-                                  .flags = VK_FENCE_CREATE_SIGNALED_BIT};
+      VkFenceCreateInfo fence_info{};
+      fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+      fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-      if (vkCreateFence(gpu->device, &fenceInfo, nullptr, &frame.is_in_use) !=
+      if (vkCreateFence(gpu->device, &fence_info, nullptr, &frame.is_in_use) !=
           VK_SUCCESS) {
         log_ftl("Failed to create frame fence.");
       }
@@ -238,11 +249,11 @@ void Renderer::renderFrame() {
   {
     log_zone_named("Begin command buffers");
 
-    VkCommandBufferBeginInfo beginInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT};
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-    vkBeginCommandBuffer(frame.command_buffer, &beginInfo);
+    vkBeginCommandBuffer(frame.command_buffer, &begin_info);
   }
 
   {
