@@ -17,6 +17,7 @@
 #include "core/world/World.h"
 #include "core/world/WorldEventSorter.h"
 #include "log/log.h"
+#include "types/build_config.h"
 
 // The using statement is fine because
 // this is the main entrypoint
@@ -32,6 +33,10 @@ void signalHandler(int signum) {
 }
 
 int main(int argc, char* argv[]) {
+  log_msg_fmt("%s server version %s", MONDRADIKO_NAME, MONDRADIKO_VERSION);
+  log_msg_fmt("%s", MONDRADIKO_COPYRIGHT);
+  log_msg_fmt("%s", MONDRADIKO_LICENSE);
+
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
   }

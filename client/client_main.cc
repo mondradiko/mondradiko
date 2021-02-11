@@ -19,6 +19,7 @@
 #include "core/ui/UserInterface.h"
 #include "core/world/World.h"
 #include "log/log.h"
+#include "types/build_config.h"
 
 // The using statement is fine because
 // this is the main entrypoint
@@ -111,7 +112,9 @@ void spectator_session_run(const char* server_address, int port) {
 }
 
 int main(int argc, char* argv[]) {
-  log_inf("Hello VR!");
+  log_msg_fmt("%s client version %s", MONDRADIKO_NAME, MONDRADIKO_VERSION);
+  log_msg_fmt("%s", MONDRADIKO_COPYRIGHT);
+  log_msg_fmt("%s", MONDRADIKO_LICENSE);
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");

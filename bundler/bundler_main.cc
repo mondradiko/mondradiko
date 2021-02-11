@@ -9,6 +9,7 @@
 #include "bundler/prefab/TextGltfConverter.h"
 #include "bundler/script/WasmConverter.h"
 #include "log/log.h"
+#include "types/build_config.h"
 
 using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 
@@ -18,6 +19,10 @@ void print_usage(const char* arg1) {
 }
 
 int main(int argc, const char* argv[]) {
+  log_msg_fmt("%s bundler version %s", MONDRADIKO_NAME, MONDRADIKO_VERSION);
+  log_msg_fmt("%s", MONDRADIKO_COPYRIGHT);
+  log_msg_fmt("%s", MONDRADIKO_LICENSE);
+
   if (argc != 2) {
     print_usage(argv[0]);
     return 1;
