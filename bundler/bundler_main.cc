@@ -34,7 +34,7 @@ int BundlerArgs::parse(int argc, const char * const argv[]) {
   return -1;
 }
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
   BundlerArgs args;
   int parse_result = args.parse(argc, argv);
   if (parse_result != -1) return parse_result;
