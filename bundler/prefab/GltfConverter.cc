@@ -360,9 +360,9 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
     material_builder.add_metallic_factor(pbr.metallicFactor);
     material_builder.add_roughness_factor(pbr.roughnessFactor);
 
-    assets::AssetId metallic_roughness_texture =
+    assets::AssetId metal_roughness_texture =
         _loadTexture(model, pbr.metallicRoughnessTexture, false);
-    material_builder.add_metallic_roughness_texture(metallic_roughness_texture);
+    material_builder.add_metal_roughness_texture(metal_roughness_texture);
   }
 
   auto material_offset = material_builder.Finish();
@@ -381,11 +381,17 @@ assets::AssetId GltfConverter::_loadTexture(GltfModel model,
                                             GltfTextureInfo texture_info,
                                             bool srgb) const {
   if (texture_info.index == -1) {
-    log_err("Attempting to load null texture");
+    log_err("Attempting to load null texture info");
     return assets::AssetId::NullAsset;
   }
 
   const auto &texture = model.textures[texture_info.index];
+
+  if (texture.source == -1) {
+    log_err("Attempting to load null texture source");
+    return assets::AssetId::NullAsset;
+  }
+
   const auto &image = model.images[texture.source];
 
   // TODO(marceline-cramer) Add sampler support

@@ -16,8 +16,11 @@ class GpuInstance;
 
 struct MaterialUniform {
   glm::vec4 albedo_factor;
-  // glm::vec1 metallic_factor;
-  // glm::vec1 roughness_factor;
+
+  float metallic_factor;
+  float roughness_factor;
+
+  uint32_t has_metal_roughness_texture;
 };
 
 class MaterialAsset : public Asset {
@@ -40,6 +43,7 @@ class MaterialAsset : public Asset {
   GpuInstance* gpu;
 
   AssetHandle<TextureAsset> albedo_texture;
+  AssetHandle<TextureAsset> metal_roughness_texture;
 
   MaterialUniform uniform;
 };

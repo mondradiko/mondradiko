@@ -16,7 +16,7 @@ table MaterialAsset {
   albedo_texture:AssetId;
   metallic_factor:double;
   roughness_factor:double;
-  metallic_roughness_texture:AssetId;
+  metal_roughness_texture:AssetId;
 }
 
 root_type MaterialAsset;
