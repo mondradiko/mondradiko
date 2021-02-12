@@ -346,6 +346,18 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
 
   assets::MaterialAssetBuilder material_builder(fbb);
 
+  {  // Load base material attributes
+    const auto &base = material;
+
+    assets::Vec3 emissive_factor(0.0, 0.0, 0.0);
+    loadVector(&emissive_factor, base.emissiveFactor);
+    material_builder.add_emissive_factor(&emissive_factor);
+
+    assets::AssetId emissive_texture =
+        _loadTexture(model, base.emissiveTexture, false);
+    material_builder.add_emissive_texture(emissive_texture);
+  }
+
   {  // Load PBR
     const auto &pbr = material.pbrMetallicRoughness;
 

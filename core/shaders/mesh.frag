@@ -11,6 +11,9 @@ layout(set = 0, binding = 0) uniform CameraUniform {
 } camera;
 
 layout(set = 1, binding = 0) uniform MaterialUniform {
+  vec3 emissive_factor;
+  bool has_emissive_texture;
+
   vec4 albedo_factor;
 
   // Metallic-roughness model
@@ -20,9 +23,10 @@ layout(set = 1, binding = 0) uniform MaterialUniform {
 } material;
 
 layout(set = 2, binding = 0) uniform sampler2D albedo_texture;
+layout(set = 2, binding = 1) uniform sampler2D emissive_texture;
 
 // Metallic-roughness model
-layout(set = 2, binding = 1) uniform sampler2D metal_roughness_texture;
+layout(set = 2, binding = 2) uniform sampler2D metal_roughness_texture;
 
 layout(set = 3, binding = 0) uniform MeshUniform {
   mat4 model;
@@ -69,7 +73,14 @@ void main() {
   vec3 N = normalize(fragNormal);
   vec3 V = normalize(camera.position - surface_position);
 
-  vec3 surface_luminance = vec3(0.03) * surface_albedo;
+  vec3 surface_luminance = vec3(0.01) * surface_albedo;
+
+  vec3 surface_emissive = material.emissive_factor;
+  if (material.has_emissive_texture) {
+    surface_emissive *= texture(emissive_texture, fragTexCoord).rgb;
+  }
+
+  surface_luminance += surface_emissive;
 
   vec3 F0 = vec3(0.04);
   F0 = mix(F0, surface_albedo, surface_metallic);
@@ -101,10 +112,11 @@ void main() {
     surface_luminance += (kD * surface_albedo / PI + specular) * radiance * NdotL;
   }
 
-  vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
-  vec3 gamma_correct = pow(tone_mapped, vec3(1.0/2.2));
+  // TODO(marceline-cramer): Fix PBR so that tone mapping doesn't make JPEG bad
+  // vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
+  // vec3 gamma_correct = pow(tone_mapped, vec3(1.0/2.2));
 
-  outColor = vec4(gamma_correct, 1.0);
+  outColor = vec4(surface_luminance, 1.0);
 }
 
 

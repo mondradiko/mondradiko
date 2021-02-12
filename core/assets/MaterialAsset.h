@@ -15,6 +15,9 @@ class GpuDescriptorSet;
 class GpuInstance;
 
 struct MaterialUniform {
+  glm::vec3 emissive_factor;
+  uint32_t has_emissive_texture;
+
   glm::vec4 albedo_factor;
 
   float metallic_factor;
@@ -43,6 +46,7 @@ class MaterialAsset : public Asset {
   GpuInstance* gpu;
 
   AssetHandle<TextureAsset> albedo_texture;
+  AssetHandle<TextureAsset> emissive_texture;
   AssetHandle<TextureAsset> metal_roughness_texture;
 
   MaterialUniform uniform;
