@@ -21,8 +21,8 @@ bool Filesystem::loadAssetBundle(const std::filesystem::path& bundle_root) {
   assets::AssetBundle* asset_bundle = new assets::AssetBundle(bundle_root);
   auto result = asset_bundle->loadRegistry("registry.bin");
   if (result != assets::AssetResult::Success) {
-    log_err(assets::getAssetResultString(result));
-    log_err("Failed to load asset bundle registry.");
+    const char* error_string = assets::getAssetResultString(result);
+    log_err_fmt("Failed to load asset bundle registry: %s", error_string);
     delete asset_bundle;
     return false;
   }
