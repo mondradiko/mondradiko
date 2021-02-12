@@ -72,7 +72,8 @@ void run(const ServerArgs& args) {
 
   World world(&fs, nullptr);
   WorldEventSorter world_event_sorter(&world);
-  NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
+  NetworkServer server(&fs, &world_event_sorter, args.server_ip.c_str(),
+                       args.server_port);
 
   world.initializePrefabs();
 
