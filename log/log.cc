@@ -24,11 +24,11 @@ const char* getLogPrefix(LogLevel level) {
     case LogLevel::Zone:
       return "\x1b[33m[ZNE ";
     case LogLevel::Info:
-      return "\x1b[36m[INF ";
+      return "\x1b[94m[INF ";
     case LogLevel::Debug:
       return "\x1b[32m[DBG ";
     case LogLevel::Message:
-      return "\x1b[00m[MSG ";
+      return "\x1b[96m[MSG ";
     case LogLevel::Warn:
       return "\x1b[33m[WRN ";
     case LogLevel::Error:
