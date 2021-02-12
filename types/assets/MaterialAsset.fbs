@@ -15,6 +15,7 @@ table MaterialAsset {
   // Metallic-roughness
   albedo_factor:Vec3;
   albedo_texture:AssetId;
+  mask_threshold:double;
   metallic_factor:double;
   roughness_factor:double;
   metal_roughness_texture:AssetId;

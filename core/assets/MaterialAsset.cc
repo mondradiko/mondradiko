@@ -37,9 +37,10 @@ void MaterialAsset::load(const assets::SerializedAsset* asset) {
       emissive_factor->x(), emissive_factor->y(), emissive_factor->z());
 
   const assets::Vec3* albedo_factor = material->albedo_factor();
-  uniform.albedo_factor = glm::vec4(albedo_factor->x(), albedo_factor->y(),
-                                    albedo_factor->z(), 1.0);
+  uniform.albedo_factor =
+      glm::vec3(albedo_factor->x(), albedo_factor->y(), albedo_factor->z());
 
+  uniform.mask_threshold = material->mask_threshold();
   uniform.metallic_factor = material->metallic_factor();
   uniform.roughness_factor = material->roughness_factor();
 }

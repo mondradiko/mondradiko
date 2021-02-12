@@ -365,6 +365,12 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
     loadVector(&albedo_factor, pbr.baseColorFactor);
     material_builder.add_albedo_factor(&albedo_factor);
 
+    if (material.alphaMode == "MASK") {
+      material_builder.add_mask_threshold(material.alphaCutoff);
+    } else {
+      material_builder.add_mask_threshold(-1.0);
+    }
+
     assets::AssetId albedo_texture =
         _loadTexture(model, pbr.baseColorTexture, true);
     material_builder.add_albedo_texture(albedo_texture);
