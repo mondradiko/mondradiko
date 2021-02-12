@@ -4,6 +4,9 @@
 #include <cstring>
 #include <iostream>
 
+#include "CLI/App.hpp"
+#include "CLI/Config.hpp"
+#include "CLI/Formatter.hpp"
 #include "bundler/Bundler.h"
 #include "bundler/prefab/BinaryGltfConverter.h"
 #include "bundler/prefab/TextGltfConverter.h"
@@ -13,25 +16,37 @@
 
 using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 
-void print_usage(const char* arg1) {
-  std::cerr << "Usage:" << std::endl;
-  std::cerr << "  " << arg1 << " bundler-manifest.toml" << std::endl;
+struct BundlerArgs {
+  bool version = false;
+
+  std::string manifest_file;
+
+  int parse(int, const char * const[]);
+};
+
+int BundlerArgs::parse(int argc, const char * const argv[]) {
+  CLI::App app("Mondradiko bundler");
+
+  app.set_version_flag("-v,--version", std::string(MONDRADIKO_VERSION));
+
+  app.add_option("manifest_file", manifest_file, "bundler-manifest.toml")
+    ->required()->check(CLI::ExistingFile);
+
+  CLI11_PARSE(app, argc, argv);
+  return -1;
 }
 
 int main(int argc, const char* argv[]) {
+  BundlerArgs args;
+  int parse_result = args.parse(argc, argv);
+  if (parse_result != -1) return parse_result;
+
   log_msg_fmt("%s bundler version %s", MONDRADIKO_NAME, MONDRADIKO_VERSION);
   log_msg_fmt("%s", MONDRADIKO_COPYRIGHT);
   log_msg_fmt("%s", MONDRADIKO_LICENSE);
 
-  if (argc != 2) {
-    print_usage(argv[0]);
-    return 1;
-  }
-
-  const char* manifest_file = argv[1];
-
   try {
-    Bundler bundler(manifest_file);
+    Bundler bundler(args.manifest_file);
 
     BinaryGltfConverter binary_gltf_converter(&bundler);
     bundler.addConverter("glb", &binary_gltf_converter);
