@@ -42,7 +42,7 @@ struct ClientArgs {
   int parse(int, const char*[]);
 };
 
-int ClientArgs::parse(int argc, const char* argv[]) {
+int ClientArgs::parse(int argc, char* argv[]) {
   CLI::App app("Mondradiko client");
 
   app.add_flag("-v,--version", version, "Print version and exit");
