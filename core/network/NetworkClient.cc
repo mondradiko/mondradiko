@@ -62,7 +62,7 @@ NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
   char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
   server_addr.ToString(szAddr, sizeof(szAddr), true);
   std::string addr_string = szAddr;
-  log_dbg_fmt("Connecting to server at %s", addr_string.c_str());
+  log_msg_fmt("Connecting to server at %s", addr_string.c_str());
 
   SteamNetworkingConfigValue_t callback;
   callback.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
@@ -110,13 +110,13 @@ void NetworkClient::disconnect() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void NetworkClient::onAnnouncement(const protocol::Announcement* announcement) {
-  log_dbg_fmt("Server announcement: %s", announcement->message()->c_str());
+  log_msg_fmt("Server announcement: %s", announcement->message()->c_str());
 }
 
 void NetworkClient::onAssignClientId(
     const protocol::AssignClientId* assign_client_id) {
   client_id = static_cast<ClientId>(assign_client_id->new_id());
-  log_dbg_fmt("Assigned new ID #%d", client_id);
+  log_msg_fmt("Assigned new ID #%d", client_id);
   state = ClientState::Joined;
 }
 
@@ -164,12 +164,12 @@ void NetworkClient::requestJoin() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void NetworkClient::onConnecting(HSteamNetConnection) {
-  log_dbg("Connecting");
+  log_msg("Connecting");
   state = ClientState::Connecting;
 }
 
 void NetworkClient::onConnected(HSteamNetConnection) {
-  log_dbg("Connected");
+  log_msg("Connected");
   requestJoin();
 }
 

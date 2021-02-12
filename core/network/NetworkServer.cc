@@ -41,7 +41,7 @@ NetworkServer::NetworkServer(Filesystem* fs,
 
   sockets = SteamNetworkingSockets();
 
-  log_dbg_fmt("Listening on port %d", server_port);
+  log_msg_fmt("Listening on port %d", server_port);
 
   SteamNetworkingIPAddr address;
   address.Clear();
@@ -132,12 +132,12 @@ void NetworkServer::onJoinRequest(ClientId client_id,
   }
 
   if (check_passed) {
-    log_dbg_fmt("Client joined: %s", join_request->username()->c_str());
+    log_msg_fmt("Client joined: %s", join_request->username()->c_str());
     std::string connect_message =
         "Welcome client #" + std::to_string(client_id);
     sendAnnouncement(connect_message);
   } else {
-    log_dbg_fmt("Client join request denied: %d", client_id);
+    log_msg_fmt("Client join request denied: %d", client_id);
   }
 }
 
@@ -188,7 +188,7 @@ void NetworkServer::setClientId(ClientId new_id) {
 
 void NetworkServer::onConnecting(std::string description,
                                  HSteamNetConnection connection) {
-  log_dbg_fmt("Connection request from %s", description.c_str());
+  log_msg_fmt("Connection request from %s", description.c_str());
 
   if (sockets->AcceptConnection(connection) != k_EResultOK) {
     sockets->CloseConnection(connection, 0, nullptr, false);
@@ -210,17 +210,17 @@ void NetworkServer::onConnected(std::string description,
 
   connections.emplace(new_id, connection);
 
-  log_dbg_fmt("Client #%d connected", new_id);
+  log_msg_fmt("Client #%d connected", new_id);
 }
 
 void NetworkServer::onProblemDetected(std::string description,
                                       HSteamNetConnection connection) {
-  log_dbg("Connection closed: Problem detected locally");
+  log_err("Connection closed: Problem detected locally");
 }
 
 void NetworkServer::onClosedByPeer(std::string description,
                                    HSteamNetConnection connection) {
-  log_dbg("Connection closed: Peer closed connection");
+  log_err("Connection closed: Peer closed connection");
 }
 
 void NetworkServer::onDisconnect(std::string description,
@@ -235,7 +235,7 @@ void NetworkServer::onDisconnect(std::string description,
   }
 
   if (client_id != 0) {
-    log_dbg_fmt("Client #%d disconnected", client_id);
+    log_msg_fmt("Client #%d disconnected", client_id);
     connections.erase(client_id);
   }
 
@@ -271,8 +271,6 @@ void NetworkServer::receiveEvents() {
     if (client_id == 0) continue;
 
     auto event = protocol::GetClientEvent(incoming_msg->GetData());
-
-    log_dbg("Received client event");
 
     switch (event->type()) {
       case protocol::ClientEventType::NoMessage: {
@@ -405,7 +403,7 @@ void NetworkServer::callback_ConnectionStatusChanged(
     }
 
     default: {
-      log_wrn_fmt("Uncaught connection status change %s", description.c_str());
+      log_err_fmt("Uncaught connection status change %s", description.c_str());
       break;
     }
   }

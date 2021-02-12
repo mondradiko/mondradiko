@@ -30,7 +30,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
 
     auto registry_path = bundle_root / registry_name;
 
-    log_dbg_fmt("Opening asset bundle at %s", registry_path.c_str());
+    log_msg_fmt("Opening asset bundle at %s", registry_path.c_str());
 
     if (!std::filesystem::exists(registry_path)) {
       return AssetResult::FileNotFound;
@@ -91,7 +91,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
     log_zone_named("Load lumps");
 
     uint32_t lump_count = registry->lumps()->size();
-    lump_cache.resize(lump_count, { /*.lump=*/ nullptr });
+    lump_cache.resize(lump_count, {/*.lump=*/nullptr});
 
     for (uint32_t lump_index = 0; lump_index < lump_count; lump_index++) {
       const LumpEntry* lump_entry = registry->lumps()->Get(lump_index);

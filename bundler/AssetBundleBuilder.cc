@@ -16,7 +16,7 @@ namespace assets {
 
 AssetBundleBuilder::AssetBundleBuilder(const std::filesystem::path& bundle_root)
     : bundle_root(bundle_root) {
-  log_dbg_fmt("Building asset bundle at %s", bundle_root.c_str());
+  log_msg_fmt("Building asset bundle at %s", bundle_root.c_str());
 }
 
 AssetBundleBuilder::~AssetBundleBuilder() {
