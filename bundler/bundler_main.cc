@@ -17,8 +17,6 @@
 using namespace mondradiko;  // NOLINT using is ok because this is an entrypoint
 
 struct BundlerArgs {
-  bool version = false;
-
   std::string manifest_file;
 
   int parse(int, const char * const[]);
