@@ -22,17 +22,17 @@ std::string formatPath(const std::filesystem::path& file_path) {
 const char* getLogPrefix(LogLevel level) {
   switch (level) {
     case LogLevel::Zone:
-      return "\e[33m[ZNE ";
+      return "\x1b[33m[ZNE ";
     case LogLevel::Info:
-      return "\e[36m[INF ";
+      return "\x1b[36m[INF ";
     case LogLevel::Debug:
-      return "\e[32m[DBG ";
+      return "\x1b[32m[DBG ";
     case LogLevel::Message:
       return "\x1b[00m[MSG ";
     case LogLevel::Warn:
-      return "\e[33m[WRN ";
+      return "\x1b[33m[WRN ";
     case LogLevel::Error:
-      return "\e[33m[ERR ";
+      return "\x1b[33m[ERR ";
     default:
       return "\x1b[31m[FTL ";
   }
