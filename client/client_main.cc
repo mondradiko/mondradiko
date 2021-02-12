@@ -39,10 +39,10 @@ struct ClientArgs {
 
   std::string config_path = "./config.toml";
 
-  int parse(int, char*[]);
+  int parse(int, const char * const[]);
 };
 
-int ClientArgs::parse(int argc, char* argv[]) {
+int ClientArgs::parse(int argc, const char * const argv[]) {
   CLI::App app("Mondradiko client");
 
   app.add_flag("-v,--version", version, "Print version and exit");
