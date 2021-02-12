@@ -3,8 +3,12 @@
 
 #include <csignal>
 #include <iostream>
+#include <memory>
 #include <sstream>
 
+#include "CLI/App.hpp"
+#include "CLI/Config.hpp"
+#include "CLI/Formatter.hpp"
 #include "core/assets/AssetPool.h"
 #include "core/cvars/CVarScope.h"
 #include "core/displays/OpenXrDisplay.h"
@@ -25,22 +29,37 @@
 // this is the main entrypoint
 using namespace mondradiko;  // NOLINT
 
-bool g_interrupted = false;
+struct ClientArgs {
+  bool version = false;
 
-void signalHandler(int signum) {
-  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  std::string server_ip = "127.0.0.1";
+  int server_port = 10555;
 
-  g_interrupted = true;
+  std::vector<std::string> bundle_paths = {"./"};
 
-  return;
+  std::string config_path = "./config.toml";
+
+  int parse(int, const char*[]);
+};
+
+int ClientArgs::parse(int argc, const char* argv[]) {
+  CLI::App app("Mondradiko client");
+
+  app.add_flag("-v,--version", version, "Print version and exit");
+  app.add_option("-s,--server", server_ip, "Domain server IP", true);
+  app.add_option("-p,--port", server_port, "Domain server port", true);
+  app.add_option("-b,--bundle", bundle_paths, "Paths to asset bundles", true);
+  app.add_option("-c,--config", config_path, "Path to config file", true);
+
+  CLI11_PARSE(app, argc, argv);
+  return -1;
 }
 
-void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
-  if (!display->createSession(gpu)) {
-    log_ftl("Failed to create display session!");
-  }
+bool g_interrupted = false;
 
-  auto config = fs->loadToml("./config.toml");
+void run(const ClientArgs& args) {
+  Filesystem fs;
+  auto config = fs.loadToml(args.config_path);
 
   CVarScope cvars;
   GlyphLoader::initCVars(&cvars);
@@ -48,10 +67,22 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   NetworkClient::initCVars(&cvars);
   cvars.loadConfig(config);
 
-  GlyphLoader glyphs(&cvars, gpu);
-  World world(fs, gpu);
+  for (auto bundle : args.bundle_paths) {
+    fs.loadAssetBundle(bundle);
+  }
 
-  Renderer renderer(&cvars, display, gpu);
+  std::unique_ptr<DisplayInterface> display;
+  display = std::make_unique<SdlDisplay>();
+
+  GpuInstance gpu(display.get());
+  if (!display->createSession(&gpu)) {
+    log_ftl("Failed to create display session!");
+  }
+
+  GlyphLoader glyphs(&cvars, &gpu);
+  World world(&fs, &gpu);
+
+  Renderer renderer(&cvars, display.get(), &gpu);
   MeshPass mesh_pass(&renderer, &world);
   OverlayPass overlay_pass(cvars.getChild("renderer"), &glyphs, &renderer,
                            &world);
@@ -62,7 +93,8 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   UserInterface ui(&glyphs, &renderer);
   renderer.addRenderPass(&ui);
 
-  NetworkClient client(&cvars, fs, &world, "127.0.0.1", 10555);
+  NetworkClient client(&cvars, &fs, &world, args.server_ip.c_str(),
+                       args.server_port);
 
   while (!g_interrupted) {
     DisplayPollEventsInfo poll_info;
@@ -91,30 +123,22 @@ void session_loop(Filesystem* fs, DisplayInterface* display, GpuInstance* gpu) {
   display->destroySession();
 }
 
-void player_session_run(const char* server_address, int port) {
-  Filesystem fs;
-  fs.loadAssetBundle("../test-folder/");
-
-  OpenXrDisplay display;
-  GpuInstance gpu(&display);
-
-  session_loop(&fs, &display, &gpu);
+void signalHandler(int signum) {
+  std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
+  g_interrupted = true;
+  return;
 }
 
-void spectator_session_run(const char* server_address, int port) {
-  Filesystem fs;
-  fs.loadAssetBundle("./");
+int main(int argc, const char* argv[]) {
+  ClientArgs args;
+  int parse_result = args.parse(argc, argv);
+  if (parse_result != -1) return parse_result;
 
-  SdlDisplay display;
-  GpuInstance gpu(&display);
-
-  session_loop(&fs, &display, &gpu);
-}
-
-int main(int argc, char* argv[]) {
   log_msg_fmt("%s client version %s", MONDRADIKO_NAME, MONDRADIKO_VERSION);
   log_msg_fmt("%s", MONDRADIKO_COPYRIGHT);
   log_msg_fmt("%s", MONDRADIKO_LICENSE);
+
+  if (args.version) return 0;
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
@@ -125,8 +149,7 @@ int main(int argc, char* argv[]) {
   }
 
   try {
-    // player_session_run("127.0.0.1", 10555);
-    spectator_session_run("127.0.0.1", 10555);
+    run(args);
   } catch (const std::exception& e) {
     log_err_fmt("Mondradiko player session failed with message: %s", e.what());
     return 1;

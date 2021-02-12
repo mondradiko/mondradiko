@@ -1,6 +1,9 @@
 # Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+# Submodule CMake dependencies
+add_subdirectory(CLI11)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(OPENXR REQUIRED openxr)
@@ -84,7 +87,3 @@ if(NOT WASMTIME)
 endif()
 
 target_link_libraries(mondradiko-lib PUBLIC ${WASMTIME})
-
-# Add CLI11
-add_subdirectory(CLI11)
-target_link_libraries(mondradiko-lib PUBLIC CLI11::CLI11)

@@ -6,6 +6,9 @@
 #include <iostream>
 #include <memory>
 
+#include "CLI/App.hpp"
+#include "CLI/Config.hpp"
+#include "CLI/Formatter.hpp"
 #include "core/assets/AssetPool.h"
 #include "core/cvars/CVarScope.h"
 #include "core/cvars/FloatCVar.h"
@@ -23,19 +26,108 @@
 // this is the main entrypoint
 using namespace mondradiko;  // NOLINT
 
+struct ServerArgs {
+  bool version = false;
+
+  std::string server_ip = "127.0.0.1";
+  int server_port = 10555;
+
+  std::vector<std::string> bundle_paths = {"./"};
+
+  std::string config_path = "./config.toml";
+
+  int parse(int, const char*[]);
+};
+
+int ServerArgs::parse(int argc, const char* argv[]) {
+  CLI::App app("Mondradiko client");
+
+  app.add_flag("-v,--version", version, "Print version and exit");
+  app.add_option("-s,--server", server_ip, "Domain server IP", true);
+  app.add_option("-p,--port", server_port, "Domain server port", true);
+  app.add_option("-b,--bundle", bundle_paths, "Paths to asset bundles", true);
+  app.add_option("-c,--config", config_path, "Path to config file", true);
+
+  CLI11_PARSE(app, argc, argv);
+  return -1;
+}
+
 bool g_interrupted = false;
+
+void run(const ServerArgs& args) {
+  Filesystem fs;
+  auto config = fs.loadToml(args.config_path);
+
+  CVarScope cvars;
+
+  CVarScope* server_cvars = cvars.addChild("server");
+  server_cvars->addValue<FloatCVar>("max_tps", 1.0, 100.0);
+  server_cvars->addValue<FloatCVar>("update_rate", 0.1, 20.0);
+
+  cvars.loadConfig(config);
+
+  for (auto bundle : args.bundle_paths) {
+    fs.loadAssetBundle(bundle);
+  }
+
+  World world(&fs, nullptr);
+  WorldEventSorter world_event_sorter(&world);
+  NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
+
+  world.initializePrefabs();
+
+  const double min_frame_time = 1.0 / server_cvars->get<FloatCVar>("max_tps");
+  const double min_update_time =
+      1.0 / server_cvars->get<FloatCVar>("update_rate");
+
+  using clock = std::chrono::high_resolution_clock;
+  std::chrono::time_point last_frame = clock::now();
+  std::chrono::time_point last_update = clock::now();
+
+  while (!g_interrupted) {
+    if (!world.update()) break;
+
+    auto current_time = clock::now();
+
+    if (std::chrono::duration<double, std::chrono::seconds::period>(
+            current_time - last_update)
+            .count() > min_update_time) {
+      server.updateWorld();
+      last_update = current_time;
+    }
+
+    server.update();
+
+    while (true) {
+      current_time = clock::now();
+      auto time_elapsed =
+          std::chrono::duration<double, std::chrono::seconds::period>(
+              current_time - last_frame)
+              .count();
+
+      if (time_elapsed >= min_frame_time) break;
+    }
+
+    last_frame = current_time;
+  }
+}
 
 void signalHandler(int signum) {
   std::cout << "Interrupt signal (" << signum << ") received." << std::endl;
   g_interrupted = true;
-
   return;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
+  ServerArgs args;
+  int parse_result = args.parse(argc, argv);
+  if (parse_result != -1) return parse_result;
+
   log_msg_fmt("%s server version %s", MONDRADIKO_NAME, MONDRADIKO_VERSION);
   log_msg_fmt("%s", MONDRADIKO_COPYRIGHT);
   log_msg_fmt("%s", MONDRADIKO_LICENSE);
+
+  if (args.version) return 0;
 
   if (signal(SIGTERM, signalHandler) == SIG_ERR) {
     log_wrn("Can't catch SIGTERM");
@@ -46,62 +138,9 @@ int main(int argc, char* argv[]) {
   }
 
   try {
-    Filesystem fs;
-    fs.loadAssetBundle("./");
-
-    auto config = fs.loadToml("config.toml");
-
-    CVarScope cvars;
-
-    CVarScope* server_cvars = cvars.addChild("server");
-    server_cvars->addValue<FloatCVar>("max_tps", 1.0, 100.0);
-    server_cvars->addValue<FloatCVar>("update_rate", 0.1, 20.0);
-
-    cvars.loadConfig(config);
-
-    World world(&fs, nullptr);
-    WorldEventSorter world_event_sorter(&world);
-    NetworkServer server(&fs, &world_event_sorter, "127.0.0.1", 10555);
-
-    world.initializePrefabs();
-
-    const double min_frame_time = 1.0 / server_cvars->get<FloatCVar>("max_tps");
-    const double min_update_time =
-        1.0 / server_cvars->get<FloatCVar>("update_rate");
-
-    using clock = std::chrono::high_resolution_clock;
-    std::chrono::time_point last_frame = clock::now();
-    std::chrono::time_point last_update = clock::now();
-
-    while (!g_interrupted) {
-      if (!world.update()) break;
-
-      auto current_time = clock::now();
-
-      if (std::chrono::duration<double, std::chrono::seconds::period>(
-              current_time - last_update)
-              .count() > min_update_time) {
-        server.updateWorld();
-        last_update = current_time;
-      }
-
-      server.update();
-
-      while (true) {
-        current_time = clock::now();
-        auto time_elapsed =
-            std::chrono::duration<double, std::chrono::seconds::period>(
-                current_time - last_frame)
-                .count();
-
-        if (time_elapsed >= min_frame_time) break;
-      }
-
-      last_frame = current_time;
-    }
+    run(args);
   } catch (const std::exception& e) {
-    log_err("Mondradiko server failed with message:");
-    log_err(e.what());
+    log_err_fmt("Mondradiko server failed with message: %s", e.what());
     return 1;
   }
 

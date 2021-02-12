@@ -3,3 +3,4 @@
 
 add_executable(mondradiko-server server_main.cc)
 target_link_libraries(mondradiko-server mondradiko-core)
+target_link_libraries(mondradiko-server CLI11::CLI11)
