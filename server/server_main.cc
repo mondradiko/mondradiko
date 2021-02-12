@@ -1,7 +1,7 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include <chrono>
+#include <chrono> // NOLINT [build/c++11]
 #include <csignal>
 #include <iostream>
 #include <memory>
@@ -36,11 +36,11 @@ struct ServerArgs {
 
   std::string config_path = "./config.toml";
 
-  int parse(int, const char*[]);
+  int parse(int, const char * const[]);
 };
 
-int ServerArgs::parse(int argc, const char* argv[]) {
-  CLI::App app("Mondradiko client");
+int ServerArgs::parse(int argc, const char * const argv[]) {
+  CLI::App app("Mondradiko server");
 
   app.add_flag("-v,--version", version, "Print version and exit");
   app.add_option("-s,--server", server_ip, "Domain server IP", true);
@@ -119,7 +119,7 @@ void signalHandler(int signum) {
   return;
 }
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
   ServerArgs args;
   int parse_result = args.parse(argc, argv);
   if (parse_result != -1) return parse_result;
