@@ -30,6 +30,7 @@ class Renderer {
   void destroyFrameData();
 
   void renderFrame();
+  void addPassToPhase(RenderPhase, RenderPass*);
 
   GpuInstance* getGpu() { return gpu; }
   GpuDescriptorSetLayout* getViewportLayout() { return viewport_layout; }
@@ -54,6 +55,11 @@ class Renderer {
 
     GpuDescriptorPool* descriptor_pool;
     GpuVector* viewports;
+
+    using PassList = std::vector<RenderPass*>;
+    static constexpr size_t PhaseNum = static_cast<size_t>(RenderPhase::MAX);
+    using PhaseList = std::array<PassList, PhaseNum>;
+    PhaseList phases;
   };
 
   uint32_t current_frame = 0;

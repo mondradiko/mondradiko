@@ -42,9 +42,12 @@ class MeshPass : public RenderPass {
   // RenderPass implementation
   void createFrameData(uint32_t) final;
   void destroyFrameData() final;
-  void allocateDescriptors(uint32_t, GpuDescriptorPool*) final;
-  void preRender(uint32_t, VkCommandBuffer) final {}
-  void render(uint32_t, VkCommandBuffer, const GpuDescriptorSet*) final;
+
+  void beginFrame(uint32_t, GpuDescriptorPool*) final;
+  void render(RenderPhase, VkCommandBuffer) final {}
+  void renderViewport(RenderPhase, VkCommandBuffer,
+                      const GpuDescriptorSet*) final;
+  void endFrame() final {}
 
  private:
   GpuInstance* gpu;
@@ -83,6 +86,7 @@ class MeshPass : public RenderPass {
   };
 
   std::vector<FrameData> frame_data;
+  uint32_t current_frame;
 };
 
 }  // namespace mondradiko

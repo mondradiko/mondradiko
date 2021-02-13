@@ -209,6 +209,48 @@ void Renderer::renderFrame() {
     log_zone_named("Clean up last frame");
 
     frame.descriptor_pool->reset();
+
+    for (auto& phase : frame.phases) {
+      phase.clear();
+    }
+  }
+
+  GpuDescriptorSet* viewport_descriptor;
+
+  {
+    log_zone_named("Begin frame");
+
+    viewport_descriptor = frame.descriptor_pool->allocate(viewport_layout);
+    viewport_descriptor->updateDynamicBuffer(0, frame.viewports);
+
+    for (auto& render_pass : render_passes) {
+      render_pass->beginFrame(current_frame, frame.descriptor_pool);
+    }
+  }
+
+  {
+    log_zone_named("Begin command buffers");
+
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(frame.command_buffer, &begin_info);
+  }
+
+  const size_t viewport_phase = static_cast<size_t>(RenderPhase::Forward);
+  size_t phase_idx = 0;
+
+  {
+    log_zone_named("Render pre-viewport");
+
+    for (phase_idx = 0; phase_idx < viewport_phase; phase_idx++) {
+      auto& phase_passes = frame.phases[phase_idx];
+      RenderPhase phase = static_cast<RenderPhase>(phase_idx);
+      for (auto& pass : phase_passes) {
+        pass->render(phase, frame.command_buffer);
+      }
+    }
   }
 
   std::vector<Viewport*> viewports;
@@ -233,39 +275,8 @@ void Renderer::renderFrame() {
     }
   }
 
-  GpuDescriptorSet* viewport_descriptor;
-
   {
-    log_zone_named("Allocate descriptors");
-
-    viewport_descriptor = frame.descriptor_pool->allocate(viewport_layout);
-    viewport_descriptor->updateDynamicBuffer(0, frame.viewports);
-
-    for (auto& render_pass : render_passes) {
-      render_pass->allocateDescriptors(current_frame, frame.descriptor_pool);
-    }
-  }
-
-  {
-    log_zone_named("Begin command buffers");
-
-    VkCommandBufferBeginInfo begin_info{};
-    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    vkBeginCommandBuffer(frame.command_buffer, &begin_info);
-  }
-
-  {
-    log_zone_named("Run pre-render commands");
-
-    for (auto& render_pass : render_passes) {
-      render_pass->preRender(current_frame, frame.command_buffer);
-    }
-  }
-
-  {
-    log_zone_named("Render frame");
+    log_zone_named("Render viewports");
 
     for (uint32_t viewport_index = 0; viewport_index < viewports.size();
          viewport_index++) {
@@ -274,9 +285,14 @@ void Renderer::renderFrame() {
       viewports[viewport_index]->beginRenderPass(frame.command_buffer,
                                                  composite_pass);
 
-      for (auto& render_pass : render_passes) {
-        render_pass->render(current_frame, frame.command_buffer,
-                            viewport_descriptor);
+      for (phase_idx = viewport_phase; phase_idx < frame.phases.size();
+           phase_idx++) {
+        auto& phase_passes = frame.phases[phase_idx];
+        RenderPhase phase = static_cast<RenderPhase>(phase_idx);
+        for (auto& pass : phase_passes) {
+          pass->renderViewport(phase, frame.command_buffer,
+                               viewport_descriptor);
+        }
       }
 
       vkCmdEndRenderPass(frame.command_buffer);
@@ -336,6 +352,11 @@ void Renderer::renderFrame() {
       viewports[viewportIndex]->release(frame.on_render_finished);
     }
   }
+}
+
+void Renderer::addPassToPhase(RenderPhase phase, RenderPass* pass) {
+  auto& frame = frames_in_flight[current_frame];
+  frame.phases[static_cast<size_t>(phase)].push_back(pass);
 }
 
 }  // namespace mondradiko

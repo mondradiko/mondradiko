@@ -107,25 +107,22 @@ void UserInterface::destroyFrameData() {
   }
 }
 
-void UserInterface::allocateDescriptors(uint32_t frame_index,
-                                        GpuDescriptorPool* descriptor_pool) {
+void UserInterface::beginFrame(uint32_t frame_index,
+                               GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  auto& frame = frame_data[frame_index];
+  renderer->addPassToPhase(RenderPhase::Forward, this);
+
+  current_frame = frame_index;
+  auto& frame = frame_data[current_frame];
 }
 
-void UserInterface::preRender(uint32_t frame_index,
-                              VkCommandBuffer command_buffer) {
+void UserInterface::renderViewport(
+    RenderPhase phase, VkCommandBuffer command_buffer,
+    const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 
-  auto& frame = frame_data[frame_index];
-}
-
-void UserInterface::render(uint32_t frame_index, VkCommandBuffer command_buffer,
-                           const GpuDescriptorSet* viewport_descriptor) {
-  log_zone;
-
-  auto& frame = frame_data[frame_index];
+  auto& frame = frame_data[current_frame];
 
   {
     log_zone_named("Render panels");

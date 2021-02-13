@@ -160,11 +160,14 @@ void MeshPass::destroyFrameData() {
   }
 }
 
-void MeshPass::allocateDescriptors(uint32_t frame_index,
-                                   GpuDescriptorPool* descriptor_pool) {
+void MeshPass::beginFrame(uint32_t frame_index,
+                          GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  auto& frame = frame_data[frame_index];
+  renderer->addPassToPhase(RenderPhase::Forward, this);
+
+  current_frame = frame_index;
+  auto& frame = frame_data[current_frame];
 
   uint32_t light_count;
 
@@ -262,11 +265,11 @@ void MeshPass::allocateDescriptors(uint32_t frame_index,
   }
 }
 
-void MeshPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
-                      const GpuDescriptorSet* viewport_descriptor) {
+void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
+                              const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 
-  auto& frame = frame_data[frame_index];
+  auto& frame = frame_data[current_frame];
 
   {
     GraphicsState graphics_state;
