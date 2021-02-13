@@ -17,6 +17,7 @@ layout(set = 1, binding = 0) uniform MaterialUniform {
   float mask_threshold;
   float metallic_factor;
   float roughness_factor;
+  float normal_map_scale;
 
   bool is_unlit;
   bool enable_blend;
@@ -26,9 +27,10 @@ layout(set = 1, binding = 0) uniform MaterialUniform {
 
 layout(set = 2, binding = 0) uniform sampler2D albedo_texture;
 layout(set = 2, binding = 1) uniform sampler2D emissive_texture;
+layout(set = 2, binding = 2) uniform sampler2D normal_map_texture;
 
 // Metallic-roughness model
-layout(set = 2, binding = 2) uniform sampler2D metal_roughness_texture;
+layout(set = 2, binding = 3) uniform sampler2D metal_roughness_texture;
 
 layout(set = 3, binding = 0) uniform MeshUniform {
   mat4 model;
@@ -47,7 +49,8 @@ layout(set = 3, binding = 1) buffer readonly LightUniforms {
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 fragNormal;
-layout(location = 3) in vec3 fragPosition;
+layout(location = 3) in vec3 fragTangent;
+layout(location = 4) in vec3 fragPosition;
 
 layout(location = 0) out vec4 outColor;
 
@@ -57,6 +60,23 @@ float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 fresnelSchlick(float cosTheta, vec3 F0);
+
+vec3 getNormal() {
+  if (material.normal_map_scale > 0.0) {
+    vec3 sampled_normal = texture(normal_map_texture, fragTexCoord).rgb * 2 - 1;
+    sampled_normal = normalize(sampled_normal);
+    sampled_normal *= vec3(material.normal_map_scale, material.normal_map_scale, 1.0);
+
+    vec3 N = normalize(fragNormal);
+    vec3 T = normalize(fragTangent);
+    vec3 B = cross(T, N);
+
+    mat3 tangent_space = mat3(T, B, N);
+    return tangent_space * sampled_normal;
+  } else {
+    return normalize(fragNormal);
+  }
+}
 
 void main() {
   if (material.enable_blend) {
@@ -94,7 +114,7 @@ void main() {
   }
 
   vec3 surface_position = fragPosition;
-  vec3 N = normalize(fragNormal);
+  vec3 N = getNormal();
   vec3 V = normalize(camera.position - surface_position);
 
   vec3 surface_luminance = vec3(0.05) * surface_albedo;

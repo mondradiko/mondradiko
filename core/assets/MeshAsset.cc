@@ -5,11 +5,11 @@
 
 #include <vector>
 
-#include "types/assets/MeshAsset_generated.h"
 #include "core/assets/Asset.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
+#include "types/assets/MeshAsset_generated.h"
 
 namespace mondradiko {
 
@@ -26,6 +26,7 @@ void MeshAsset::load(const assets::SerializedAsset* asset) {
     vertices[i].tex_coord = assets::Vec2ToGlm(vertex->tex_coord());
     vertices[i].color = assets::Vec3ToGlm(vertex->color());
     vertices[i].normal = assets::Vec3ToGlm(vertex->normal());
+    vertices[i].tangent = assets::Vec3ToGlm(vertex->tangent());
   }
 
   for (uint32_t i = 0; i < indices.size(); i++) {

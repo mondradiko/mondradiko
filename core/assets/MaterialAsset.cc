@@ -24,6 +24,14 @@ void MaterialAsset::load(const assets::SerializedAsset* asset) {
     uniform.has_emissive_texture = 0;
   }
 
+  if (material->normal_map_texture() != AssetId::NullAsset) {
+    normal_map_texture =
+        asset_pool->load<TextureAsset>(material->normal_map_texture());
+    uniform.normal_map_scale = material->normal_map_scale();
+  } else {
+    uniform.normal_map_scale = -1.0;
+  }
+
   if (material->metal_roughness_texture() != AssetId::NullAsset) {
     metal_roughness_texture =
         asset_pool->load<TextureAsset>(material->metal_roughness_texture());
@@ -68,11 +76,18 @@ void MaterialAsset::updateTextureDescriptor(
     descriptor->updateImage(1, albedo_texture->getImage());
   }
 
-  if (uniform.has_metal_roughness_texture) {
-    descriptor->updateImage(2, metal_roughness_texture->getImage());
+  if (uniform.normal_map_scale > 0.0) {
+    descriptor->updateImage(2, normal_map_texture->getImage());
   } else {
     // TODO(marceline-cramer) Standard dummy textures for missing slots
     descriptor->updateImage(2, albedo_texture->getImage());
+  }
+
+  if (uniform.has_metal_roughness_texture) {
+    descriptor->updateImage(3, metal_roughness_texture->getImage());
+  } else {
+    // TODO(marceline-cramer) Standard dummy textures for missing slots
+    descriptor->updateImage(3, albedo_texture->getImage());
   }
 }
 

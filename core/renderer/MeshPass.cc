@@ -70,6 +70,7 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
     texture_layout->addCombinedImageSampler(texture_sampler);
     texture_layout->addCombinedImageSampler(texture_sampler);
     texture_layout->addCombinedImageSampler(texture_sampler);
+    texture_layout->addCombinedImageSampler(texture_sampler);
 
     mesh_layout = new GpuDescriptorSetLayout(gpu);
     mesh_layout->addDynamicUniformBuffer(sizeof(MeshUniform));

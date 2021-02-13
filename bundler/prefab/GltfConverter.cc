@@ -3,6 +3,7 @@
 
 #include "bundler/prefab/GltfConverter.h"
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -230,6 +231,13 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
     GltfAccessor norm_accessor(model, attributes.find("NORMAL")->second);
     GltfAccessor tex_accessor(model, attributes.find("TEXCOORD_0")->second);
 
+    std::unique_ptr<GltfAccessor> tan_accessor;
+    assets::Vec3 tangent_vec(0.0, 1.0, 0.0);
+    if (attributes.find("TANGENT") != primitive.attributes.end()) {
+      tan_accessor = std::make_unique<GltfAccessor>(
+          model, attributes.find("TANGENT")->second);
+    }
+
     for (size_t v = 0; v < pos_accessor.size(); v++) {
       const float *position_raw = pos_accessor.get<float>(v);
       const float *normal_raw = norm_accessor.get<float>(v);
@@ -243,14 +251,24 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
       glm::vec3 normal = glm::normalize(
           glm::vec3(normal_raw[0], normal_raw[1], normal_raw[2]));
 
+      if (tan_accessor) {
+        const float *tangent_raw = tan_accessor->get<float>(v);
+
+        // Normalize the tangent
+        glm::vec3 tangent = glm::normalize(
+            glm::vec3(tangent_raw[0], tangent_raw[1], tangent_raw[2]));
+        tangent_vec = assets::Vec3(tangent.x, tangent.y, tangent.z);
+      }
+
       assets::Vec3 position_vec(position.x, position.y, position.z);
       assets::Vec3 normal_vec(normal.x, normal.y, normal.z);
+
       // TODO(marceline-cramer) Read mesh vertex colors
       assets::Vec3 color_vec(1.0, 1.0, 1.0);
       assets::Vec2 tex_coord_vec(tex_coord[0], tex_coord[1]);
 
-      assets::MeshVertex vertex(position_vec, normal_vec, color_vec,
-                                tex_coord_vec);
+      assets::MeshVertex vertex(position_vec, normal_vec, tangent_vec,
+                                color_vec, tex_coord_vec);
       vertices.push_back(vertex);
     }
   }
@@ -370,6 +388,16 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
     assets::AssetId emissive_texture =
         _loadTexture(model, base.emissiveTexture, false);
     material_builder.add_emissive_texture(emissive_texture);
+
+    material_builder.add_normal_map_scale(base.normalTexture.scale);
+
+    if (base.normalTexture.index != -1) {
+      assets::AssetId normal_map_texture =
+          _loadImage(model.images[base.normalTexture.index], false);
+      material_builder.add_normal_map_texture(normal_map_texture);
+    } else {
+      material_builder.add_normal_map_texture(assets::AssetId::NullAsset);
+    }
   }
 
   {  // Load PBR

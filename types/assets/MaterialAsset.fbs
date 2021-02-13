@@ -6,11 +6,13 @@ include "types.fbs";
 namespace mondradiko.assets;
 
 table MaterialAsset {
-  /*normal_texture:AssetId;
-  occlusion_texture:AssetId;*/
+  /*occlusion_texture:AssetId;*/
 
   emissive_factor:Vec3;
   emissive_texture:AssetId;
+
+  normal_map_scale:float;
+  normal_map_texture:AssetId;
 
   // Metallic-roughness
   albedo_factor:Vec4;

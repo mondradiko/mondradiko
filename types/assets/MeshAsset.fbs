@@ -8,6 +8,7 @@ namespace mondradiko.assets;
 struct MeshVertex {
   position:Vec3;
   normal:Vec3;
+  tangent:Vec3;
   color:Vec3;
   tex_coord:Vec2;
 }

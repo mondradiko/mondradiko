@@ -21,6 +21,7 @@ struct MaterialUniform {
   float mask_threshold;
   float metallic_factor;
   float roughness_factor;
+  float normal_map_scale;
 
   uint32_t is_unlit;
   uint32_t enable_blend;
@@ -49,6 +50,7 @@ class MaterialAsset : public Asset {
 
   AssetHandle<TextureAsset> albedo_texture;
   AssetHandle<TextureAsset> emissive_texture;
+  AssetHandle<TextureAsset> normal_map_texture;
   AssetHandle<TextureAsset> metal_roughness_texture;
 
   MaterialUniform uniform;

@@ -20,23 +20,25 @@ class GpuBuffer;
 struct MeshVertex {
   glm::vec3 position;
   glm::vec3 normal;
+  glm::vec3 tangent;
   glm::vec3 color;
   glm::vec2 tex_coord;
 
   static GpuPipeline::VertexBindings getVertexBindings() {
     // VkVertexInputBindingDescription{binding, stride, inputRate}
     return {
-      { 0, sizeof(MeshVertex), VK_VERTEX_INPUT_RATE_VERTEX },
+        {0, sizeof(MeshVertex), VK_VERTEX_INPUT_RATE_VERTEX},
     };
   }
 
   static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
     // VkVertexInputAttributeDescription{location, binding, format, offset}
     return {
-      { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, position) },
-      { 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, normal) },
-      { 2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, color) },
-      { 3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(MeshVertex, tex_coord) },
+        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, position)},
+        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, normal)},
+        {2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, tangent)},
+        {3, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, color)},
+        {4, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(MeshVertex, tex_coord)},
     };
   }
 };
