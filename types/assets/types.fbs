@@ -39,6 +39,13 @@ struct Vec3 {
   z:double;
 }
 
+struct Vec4 {
+  x:double;
+  y:double;
+  z:double;
+  w:double;
+}
+
 struct Quaternion {
   w:double;
   x:double;

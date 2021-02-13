@@ -214,6 +214,10 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
   std::vector<assets::MeshVertex> vertices;
   std::vector<uint32_t> indices;
 
+  if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
+    log_ftl("GLTF primitive must be triangle list");
+  }
+
   const auto &attributes = primitive.attributes;
 
   if (attributes.find("POSITION") == primitive.attributes.end()) {
@@ -330,13 +334,22 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
   }
 }
 
-// Helper function to load vectors
+// Helper functions to load vectors
 // TODO(marceline-cramer) Move this into a helper file
 void loadVector(assets::Vec3 *dst, const std::vector<double> &src) {
   if (src.size() >= 3) {
     dst->mutate_x(src[0]);
     dst->mutate_y(src[1]);
     dst->mutate_z(src[2]);
+  }
+}
+
+void loadVector(assets::Vec4 *dst, const std::vector<double> &src) {
+  if (src.size() >= 4) {
+    dst->mutate_x(src[0]);
+    dst->mutate_y(src[1]);
+    dst->mutate_z(src[2]);
+    dst->mutate_w(src[3]);
   }
 }
 
@@ -361,14 +374,16 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
   {  // Load PBR
     const auto &pbr = material.pbrMetallicRoughness;
 
-    assets::Vec3 albedo_factor(1.0, 1.0, 1.0);
+    assets::Vec4 albedo_factor(1.0, 1.0, 1.0, 1.0);
     loadVector(&albedo_factor, pbr.baseColorFactor);
     material_builder.add_albedo_factor(&albedo_factor);
 
+    material_builder.add_mask_threshold(-1.0);
+
     if (material.alphaMode == "MASK") {
       material_builder.add_mask_threshold(material.alphaCutoff);
-    } else {
-      material_builder.add_mask_threshold(-1.0);
+    } else if (material.alphaMode != "OPAQUE") {
+      log_err_fmt("Unsupported alpha mode %s", material.alphaMode.c_str());
     }
 
     assets::AssetId albedo_texture =

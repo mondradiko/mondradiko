@@ -14,7 +14,7 @@ layout(set = 1, binding = 0) uniform MaterialUniform {
   vec3 emissive_factor;
   bool has_emissive_texture;
 
-  vec3 albedo_factor;
+  vec4 albedo_factor;
   float mask_threshold;
 
   // Metallic-roughness model
@@ -59,13 +59,16 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0);
 
 void main() {
 
-  vec3 surface_albedo = material.albedo_factor;
+  vec3 surface_albedo = material.albedo_factor.rgb;
 
   {
     vec4 sampled_albedo = texture(albedo_texture, fragTexCoord);
 
     if (material.mask_threshold > 0.0) {
-      if (sampled_albedo.a < material.mask_threshold) discard;
+      if ((sampled_albedo.a * material.albedo_factor.a) <=
+           material.mask_threshold) {
+        discard;
+      }
     }
 
     surface_albedo *= sampled_albedo.rgb;
