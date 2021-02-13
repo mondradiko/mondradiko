@@ -41,11 +41,17 @@ NetworkServer::NetworkServer(Filesystem* fs,
 
   sockets = SteamNetworkingSockets();
 
-  log_msg_fmt("Listening on port %d", server_port);
-
   SteamNetworkingIPAddr address;
   address.Clear();
+  if (!address.ParseString(server_address)) {
+    log_ftl_fmt("Failed to parse server address %s", server_address);
+  }
   address.m_port = server_port;
+
+  char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
+  address.ToString(szAddr, sizeof(szAddr), true);
+  std::string addr_string = szAddr;
+  log_msg_fmt("Listening on %s", addr_string.c_str());
 
   SteamNetworkingConfigValue_t callback;
   callback.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
@@ -54,7 +60,7 @@ NetworkServer::NetworkServer(Filesystem* fs,
   listen_socket = sockets->CreateListenSocketIP(address, 1, &callback);
 
   if (listen_socket == k_HSteamListenSocket_Invalid) {
-    log_ftl_fmt("Failed to listen at port %d", server_port);
+    log_ftl_fmt("Failed to listen on %s", addr_string.c_str());
   }
 
   poll_group = sockets->CreatePollGroup();
