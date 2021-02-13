@@ -20,6 +20,13 @@ class GpuImage {
   void writeData(const void*);
   void transitionLayout(VkImageLayout);
 
+  VkImageLayout getLayout() const { return layout; }
+
+  VkImageView getView() const { return view; }
+
+ private:
+  GpuInstance* gpu;
+
   VkFormat format;
   VkImageLayout layout;
   uint32_t width;
@@ -27,11 +34,7 @@ class GpuImage {
   VmaAllocation allocation = nullptr;
   VmaAllocationInfo allocation_info;
   VkImage image = VK_NULL_HANDLE;
-
   VkImageView view = VK_NULL_HANDLE;
-
- private:
-  GpuInstance* gpu;
 
   void createView();
 };

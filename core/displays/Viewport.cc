@@ -84,8 +84,8 @@ void Viewport::_createImages() {
       log_ftl("Failed to create swapchain image view.");
     }
 
-    std::array<VkImageView, 2> framebuffer_attachments = {_images[i].image_view,
-                                                          _depth_image->view};
+    std::array<VkImageView, 2> framebuffer_attachments = {
+        _images[i].image_view, _depth_image->getView()};
 
     VkFramebufferCreateInfo framebuffer_info{};
     framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

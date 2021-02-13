@@ -12,16 +12,22 @@ namespace mondradiko {
 GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
                    uint32_t height, VkImageUsageFlags image_usage_flags,
                    VmaMemoryUsage memory_usage)
-    : format(format),
+    : gpu(gpu),
+      format(format),
       layout(VK_IMAGE_LAYOUT_UNDEFINED),
-      width(height),
-      height(height),
-      gpu(gpu) {
+      width(width),
+      height(height) {
   VkImageCreateInfo imageCreateInfo{};
   imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
   imageCreateInfo.format = format;
-  imageCreateInfo.extent = VkExtent3D{ width, height, 1 };
+
+  VkExtent3D image_extent{};
+  image_extent.width = width;
+  image_extent.height = height;
+  image_extent.depth = 1;
+  imageCreateInfo.extent = image_extent;
+
   imageCreateInfo.mipLevels = 1;
   imageCreateInfo.arrayLayers = 1;
   imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -68,8 +74,17 @@ void GpuImage::writeData(const void* src) {
   imageSubresource.layerCount = 1;
   region.imageSubresource = imageSubresource;
 
-  region.imageOffset = {0, 0, 0};
-  region.imageExtent = {width, height, 1};
+  VkOffset3D image_offset{};
+  image_offset.x = 0;
+  image_offset.y = 0;
+  image_offset.z = 0;
+  region.imageOffset = image_offset;
+
+  VkExtent3D image_extent{};
+  image_extent.width = width;
+  image_extent.height = height;
+  image_extent.depth = 1;
+  region.imageExtent = image_extent;
 
   vkCmdCopyBufferToImage(commandBuffer, stage.getBuffer(), image, layout, 1,
                          &region);
