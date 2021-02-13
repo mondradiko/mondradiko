@@ -30,7 +30,7 @@ class GltfConverter : public ConverterInterface {
   assets::AssetId _loadPrimitive(GltfModel, GltfPrimitive, glm::vec3) const;
   assets::AssetId _loadMaterial(GltfModel, GltfMaterial) const;
   assets::AssetId _loadTexture(GltfModel, GltfTextureInfo, bool) const;
-  assets::AssetId _loadImage(GltfModel, GltfImage, bool) const;
+  assets::AssetId _loadImage(GltfImage, bool) const;
 };
 
 }  // namespace mondradiko

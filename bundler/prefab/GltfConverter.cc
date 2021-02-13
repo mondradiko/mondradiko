@@ -17,10 +17,9 @@ GltfConverter::GltfConverter(Bundler *bundler) : _bundler(bundler) {}
 GltfConverter::AssetOffset GltfConverter::_loadModel(AssetBuilder *fbb,
                                                      GltfModel model) const {
   std::vector<uint32_t> children;
-
   for (const auto &scene : model.scenes) {
-    auto scene_id = _loadScene(model, scene);
-    children.push_back(static_cast<uint32_t>(scene_id));
+    auto child_id = _loadScene(model, scene);
+    children.push_back(static_cast<uint32_t>(child_id));
   }
 
   auto children_offset = fbb->CreateVector(children);
@@ -47,11 +46,8 @@ assets::AssetId GltfConverter::_loadScene(GltfModel model,
 
   for (auto node_index : scene.nodes) {
     const tinygltf::Node &node = model.nodes[node_index];
-    // TODO(marceline-cramer) Load everything else
-    if (node.mesh > -1) {
-      auto child_id = _loadNode(model, node, glm::vec3(1.0, 1.0, 1.0));
-      children.push_back(static_cast<uint32_t>(child_id));
-    }
+    auto child_id = _loadNode(model, node, glm::vec3(1.0, 1.0, 1.0));
+    children.push_back(static_cast<uint32_t>(child_id));
   }
 
   auto children_offset = fbb.CreateVector(children);
@@ -97,9 +93,8 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
     node_orientation = glm::quat(1.0, 0.0, 0.0, 0.0);
   }
 
+  // Create mesh
   if (node.mesh != -1) {
-    log_inf("Creating mesh");
-
     const auto &mesh = model.meshes[node.mesh];
 
     for (const auto &primitive : mesh.primitives) {
@@ -135,15 +130,11 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
       auto asset_offset = asset.Finish();
 
       assets::AssetId asset_id = _bundler->addAsset(&fbb, asset_offset);
-      log_dbg_fmt("Added primitive prefab 0x%0dx", mesh_id);
-
       children.push_back(static_cast<uint32_t>(asset_id));
     }
   }
 
-  {
-    log_inf("Creating childen");
-
+  {  // Load children
     for (auto child_index : node.children) {
       const auto &child_node = model.nodes[child_index];
       assets::AssetId child_id = _loadNode(model, child_node, node_scale);
@@ -151,9 +142,7 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
     }
   }
 
-  {
-    log_inf("Creating prefab");
-
+  {  // Create prefab
     flatbuffers::FlatBufferBuilder fbb;
 
     auto children_offset = fbb.CreateVector(children);
@@ -168,7 +157,6 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
     auto asset_offset = asset.Finish();
 
     assets::AssetId prefab_id = _bundler->addAsset(&fbb, asset_offset);
-    log_dbg_fmt("Added node prefab 0x%0dx", prefab_id);
     return prefab_id;
   }
 }
@@ -237,9 +225,7 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
     log_ftl("GLTF primtive must have indices");
   }
 
-  {
-    log_inf("Loading vertices");
-
+  {  // Load vertices
     GltfAccessor pos_accessor(model, attributes.find("POSITION")->second);
     GltfAccessor norm_accessor(model, attributes.find("NORMAL")->second);
     GltfAccessor tex_accessor(model, attributes.find("TEXCOORD_0")->second);
@@ -269,9 +255,7 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
     }
   }
 
-  {
-    log_inf("Loading indices");
-
+  {  // Load indices
     const tinygltf::Accessor &accessor =
         model.accessors[primitive.indices > -1 ? primitive.indices : 0];
     const tinygltf::BufferView &bufferView =
@@ -310,9 +294,7 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
     }
   }
 
-  {
-    log_inf("Writing primitive mesh data");
-
+  {  // Write primitive data
     flatbuffers::FlatBufferBuilder fbb;
 
     auto vertices_offset = fbb.CreateVectorOfStructs(vertices);
@@ -329,7 +311,6 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
     auto asset_offset = asset.Finish();
 
     assets::AssetId mesh_id = _bundler->addAsset(&fbb, asset_offset);
-    log_dbg_fmt("Added primitive mesh 0x%0dx", mesh_id);
     return mesh_id;
   }
 }
@@ -406,7 +387,6 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
   auto asset_offset = asset_builder.Finish();
 
   assets::AssetId asset_id = _bundler->addAsset(&fbb, asset_offset);
-  log_dbg_fmt("Added material asset: 0x%0dx", asset_id);
   return asset_id;
 }
 
@@ -429,11 +409,10 @@ assets::AssetId GltfConverter::_loadTexture(GltfModel model,
 
   // TODO(marceline-cramer) Add sampler support
 
-  return _loadImage(model, image, srgb);
+  return _loadImage(image, srgb);
 }
 
-assets::AssetId GltfConverter::_loadImage(GltfModel model, GltfImage image,
-                                          bool srgb) const {
+assets::AssetId GltfConverter::_loadImage(GltfImage image, bool srgb) const {
   flatbuffers::FlatBufferBuilder fbb;
 
   log_inf("Loading GLTF image");
