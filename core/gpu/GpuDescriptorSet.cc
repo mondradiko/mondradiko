@@ -56,6 +56,8 @@ void GpuDescriptorSet::updateDynamicBuffer(uint32_t binding,
   descriptor_writes.pBufferInfo = &buffer_info;
 
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
+
+  dynamic_offset_granularity[binding] = buffer->getGranularity();
 }
 
 void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,

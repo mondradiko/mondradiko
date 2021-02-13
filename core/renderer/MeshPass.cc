@@ -192,10 +192,11 @@ void MeshPass::allocateDescriptors(uint32_t frame_index,
 
   std::vector<MeshUniform> frame_meshes;
 
-  frame.commands.clear();
-
   auto mesh_renderers =
       world->registry.view<MeshRendererComponent, TransformComponent>();
+
+  frame.commands.clear();
+  frame.commands.reserve(mesh_renderers.size());
 
   for (auto e : mesh_renderers) {
     auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
@@ -205,7 +206,7 @@ void MeshPass::allocateDescriptors(uint32_t frame_index,
 
     {  // Write material uniform
       const auto& material_asset = mesh_renderer.getMaterialAsset();
-      const auto iter = material_assets.find(material_asset.getId());
+      auto iter = material_assets.find(material_asset.getId());
 
       if (iter != material_assets.end()) {
         cmd.material_idx = iter->second;
@@ -213,7 +214,8 @@ void MeshPass::allocateDescriptors(uint32_t frame_index,
       } else {
         cmd.material_idx = frame_materials.size();
         material_assets.emplace(material_asset.getId(), cmd.material_idx);
-        frame_materials.push_back(material_asset->getUniform());
+        MaterialUniform uniform = material_asset->getUniform();
+        frame_materials.push_back(uniform);
 
         cmd.textures_descriptor = descriptor_pool->allocate(texture_layout);
         material_asset->updateTextureDescriptor(cmd.textures_descriptor);
@@ -277,7 +279,7 @@ void MeshPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
 
     GraphicsState::RasterizatonState rasterization_state{};
     rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-    rasterization_state.cull_mode = GraphicsState::CullMode::Back;
+    rasterization_state.cull_mode = GraphicsState::CullMode::None;
     graphics_state.rasterization_state = rasterization_state;
 
     GraphicsState::DepthState depth_state{};
