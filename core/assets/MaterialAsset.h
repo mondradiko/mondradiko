@@ -15,15 +15,16 @@ class GpuDescriptorSet;
 class GpuInstance;
 
 struct MaterialUniform {
-  glm::vec3 emissive_factor;
-  uint32_t has_emissive_texture;
-
+  glm::vec4 emissive_factor;
   glm::vec4 albedo_factor;
-  float mask_threshold;
 
+  float mask_threshold;
   float metallic_factor;
   float roughness_factor;
 
+  uint32_t is_unlit;
+  uint32_t enable_blend;
+  uint32_t has_emissive_texture;
   uint32_t has_metal_roughness_texture;
 };
 

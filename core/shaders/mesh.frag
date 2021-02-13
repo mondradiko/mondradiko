@@ -12,14 +12,15 @@ layout(set = 0, binding = 0) uniform CameraUniform {
 
 layout(set = 1, binding = 0) uniform MaterialUniform {
   vec3 emissive_factor;
-  bool has_emissive_texture;
-
   vec4 albedo_factor;
-  float mask_threshold;
 
-  // Metallic-roughness model
+  float mask_threshold;
   float metallic_factor;
   float roughness_factor;
+
+  bool is_unlit;
+  bool enable_blend;
+  bool has_emissive_texture;
   bool has_metal_roughness_texture;
 } material;
 
@@ -58,6 +59,10 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 fresnelSchlick(float cosTheta, vec3 F0);
 
 void main() {
+  if (material.enable_blend) {
+    outColor = vec4(1.0, 0.0, 1.0, 1.0);
+    return;
+  }
 
   vec3 surface_albedo = material.albedo_factor.rgb;
 
@@ -74,6 +79,11 @@ void main() {
     surface_albedo *= sampled_albedo.rgb;
   }
 
+  if (material.is_unlit) {
+    outColor = vec4(surface_albedo, 1.0);
+    return;
+  }
+
   float surface_metallic = material.metallic_factor;
   float surface_roughness = material.roughness_factor;
 
@@ -87,7 +97,7 @@ void main() {
   vec3 N = normalize(fragNormal);
   vec3 V = normalize(camera.position - surface_position);
 
-  vec3 surface_luminance = vec3(0.01) * surface_albedo;
+  vec3 surface_luminance = vec3(0.05) * surface_albedo;
 
   vec3 surface_emissive = material.emissive_factor;
   if (material.has_emissive_texture) {
@@ -127,10 +137,10 @@ void main() {
   }
 
   // TODO(marceline-cramer): Fix PBR so that tone mapping doesn't make JPEG bad
-  // vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
-  // vec3 gamma_correct = pow(tone_mapped, vec3(1.0/2.2));
+  vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
+  vec3 gamma_correct = pow(tone_mapped, vec3(1.0/2.2));
 
-  outColor = vec4(surface_luminance, 1.0);
+  outColor = vec4(gamma_correct, 1.0);
 }
 
 

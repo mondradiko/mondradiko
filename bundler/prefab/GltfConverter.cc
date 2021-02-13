@@ -343,6 +343,26 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
   {  // Load base material attributes
     const auto &base = material;
 
+    if (base.alphaMode == "MASK") {
+      material_builder.add_mask_threshold(base.alphaCutoff);
+      material_builder.add_enable_blend(false);
+    } else if (base.alphaMode == "BLEND") {
+      material_builder.add_mask_threshold(-1.0);
+      material_builder.add_enable_blend(true);
+    } else if (base.alphaMode == "OPAQUE") {
+      material_builder.add_mask_threshold(-1.0);
+      material_builder.add_enable_blend(false);
+    } else {
+      log_ftl_fmt("Unsupported alpha mode %s", base.alphaMode.c_str());
+    }
+
+    if (material.extensions.find("KHR_materials_unlit") !=
+        material.extensions.end()) {
+      material_builder.add_is_unlit(true);
+    } else {
+      material_builder.add_is_unlit(false);
+    }
+
     assets::Vec3 emissive_factor(0.0, 0.0, 0.0);
     loadVector(&emissive_factor, base.emissiveFactor);
     material_builder.add_emissive_factor(&emissive_factor);
@@ -358,14 +378,6 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
     assets::Vec4 albedo_factor(1.0, 1.0, 1.0, 1.0);
     loadVector(&albedo_factor, pbr.baseColorFactor);
     material_builder.add_albedo_factor(&albedo_factor);
-
-    material_builder.add_mask_threshold(-1.0);
-
-    if (material.alphaMode == "MASK") {
-      material_builder.add_mask_threshold(material.alphaCutoff);
-    } else if (material.alphaMode != "OPAQUE") {
-      log_err_fmt("Unsupported alpha mode %s", material.alphaMode.c_str());
-    }
 
     assets::AssetId albedo_texture =
         _loadTexture(model, pbr.baseColorTexture, true);

@@ -32,9 +32,21 @@ void MaterialAsset::load(const assets::SerializedAsset* asset) {
     uniform.has_metal_roughness_texture = 0;
   }
 
+  if (material->is_unlit()) {
+    uniform.is_unlit = 1;
+  } else {
+    uniform.is_unlit = 0;
+  }
+
+  if (material->enable_blend()) {
+    uniform.enable_blend = 1;
+  } else {
+    uniform.enable_blend = 0;
+  }
+
   const assets::Vec3* emissive_factor = material->emissive_factor();
-  uniform.emissive_factor = glm::vec3(
-      emissive_factor->x(), emissive_factor->y(), emissive_factor->z());
+  uniform.emissive_factor = glm::vec4(
+      emissive_factor->x(), emissive_factor->y(), emissive_factor->z(), 1.0);
 
   const assets::Vec4* albedo_factor = material->albedo_factor();
   uniform.albedo_factor = glm::vec4(albedo_factor->x(), albedo_factor->y(),
