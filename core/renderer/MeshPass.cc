@@ -66,17 +66,17 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
     log_zone_named("Create set layouts");
 
     material_layout = new GpuDescriptorSetLayout(gpu);
-    material_layout->addDynamicUniformBuffer(sizeof(MaterialUniform));
+    material_layout->addStorageBuffer(sizeof(MaterialUniform));
+
+    mesh_layout = new GpuDescriptorSetLayout(gpu);
+    mesh_layout->addStorageBuffer(sizeof(MeshUniform));
+    mesh_layout->addStorageBuffer(sizeof(PointLightUniform));
 
     texture_layout = new GpuDescriptorSetLayout(gpu);
     texture_layout->addCombinedImageSampler(texture_sampler);
     texture_layout->addCombinedImageSampler(texture_sampler);
     texture_layout->addCombinedImageSampler(texture_sampler);
     texture_layout->addCombinedImageSampler(texture_sampler);
-
-    mesh_layout = new GpuDescriptorSetLayout(gpu);
-    mesh_layout->addDynamicUniformBuffer(sizeof(MeshUniform));
-    mesh_layout->addStorageBuffer(sizeof(PointLightUniform));
   }
 
   {
@@ -84,8 +84,8 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
 
     std::vector<VkDescriptorSetLayout> set_layouts{
         renderer->getViewportLayout()->getSetLayout(),
-        material_layout->getSetLayout(), texture_layout->getSetLayout(),
-        mesh_layout->getSetLayout()};
+        material_layout->getSetLayout(), mesh_layout->getSetLayout(),
+        texture_layout->getSetLayout()};
 
     VkPipelineLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -132,6 +132,29 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
         renderer->getForwardSubpass(), forward_vertex_shader,
         forward_fragment_shader, vertex_bindings, attribute_descriptions);
   }
+
+  {
+    log_zone_named("Initialize asset types");
+
+    AssetPool* asset_pool = world->getAssetPool();
+    asset_pool->initializeAssetType<MaterialAsset>(asset_pool, gpu);
+    asset_pool->initializeAssetType<MeshAsset>(this);
+    asset_pool->initializeAssetType<TextureAsset>(this);
+  }
+
+  {
+    log_zone_named("Create mesh data pools");
+
+    size_t vertex_pool_size = 1024 * 1024 * sizeof(MeshVertex);
+    size_t index_pool_size = 1024 * 1024 * sizeof(MeshIndex);
+
+    vertex_pool = new GpuBuffer(
+        gpu, vertex_pool_size,
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    index_pool = new GpuBuffer(
+        gpu, index_pool_size,
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+  }
 }
 
 MeshPass::~MeshPass() {
@@ -139,6 +162,8 @@ MeshPass::~MeshPass() {
 
   if (texture_sampler != VK_NULL_HANDLE)
     vkDestroySampler(gpu->device, texture_sampler, nullptr);
+  if (vertex_pool != nullptr) delete vertex_pool;
+  if (index_pool != nullptr) delete index_pool;
   if (forward_pipeline != nullptr) delete forward_pipeline;
   if (depth_pipeline != nullptr) delete depth_pipeline;
   if (depth_vertex_shader != nullptr) delete depth_vertex_shader;
@@ -152,6 +177,20 @@ MeshPass::~MeshPass() {
   if (mesh_layout != nullptr) delete mesh_layout;
 }
 
+size_t MeshPass::allocateVertices(size_t vertex_num) {
+  // TODO(marceline-cramer) Proper pool allocation
+  size_t vertex_offset = first_available_vertex;
+  first_available_vertex += vertex_num;
+  return vertex_offset;
+}
+
+size_t MeshPass::allocateIndices(size_t index_num) {
+  // TODO(marceline-cramer) Proper pool allocation
+  size_t index_offset = first_available_index;
+  first_available_index += index_num;
+  return index_offset;
+}
+
 void MeshPass::createFrameData(uint32_t frame_count) {
   log_zone;
 
@@ -159,10 +198,10 @@ void MeshPass::createFrameData(uint32_t frame_count) {
 
   for (auto& frame : frame_data) {
     frame.material_buffer = new GpuVector(gpu, sizeof(MaterialUniform),
-                                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+                                          VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 
     frame.mesh_buffer = new GpuVector(gpu, sizeof(MeshUniform),
-                                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+                                      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 
     frame.point_lights = new GpuVector(gpu, sizeof(PointLightUniform),
                                        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
@@ -228,16 +267,18 @@ void MeshPass::beginFrame(uint32_t frame_index,
 
     MeshRenderCommand cmd;
 
+    uint32_t material_idx;
+
     {  // Write material uniform
       const auto& material_asset = mesh_renderer.getMaterialAsset();
       auto iter = material_assets.find(material_asset.getId());
 
       if (iter != material_assets.end()) {
-        cmd.material_idx = iter->second;
+        material_idx = iter->second;
         cmd.textures_descriptor = frame_textures[iter->second];
       } else {
-        cmd.material_idx = frame_materials.size();
-        material_assets.emplace(material_asset.getId(), cmd.material_idx);
+        material_idx = frame_materials.size();
+        material_assets.emplace(material_asset.getId(), material_idx);
         MaterialUniform uniform = material_asset->getUniform();
         frame_materials.push_back(uniform);
 
@@ -253,18 +294,24 @@ void MeshPass::beginFrame(uint32_t frame_index,
       MeshUniform mesh_uniform;
       mesh_uniform.model = transform.getWorldTransform();
       mesh_uniform.light_count = light_count;
+      mesh_uniform.material_idx = material_idx;
 
       cmd.mesh_idx = frame_meshes.size();
       frame_meshes.push_back(mesh_uniform);
     }
 
     {  // Write mesh asset
-      cmd.mesh_asset = mesh_renderer.getMeshAsset();
+      const auto& mesh_asset = mesh_renderer.getMeshAsset();
+
+      cmd.vertex_offset = mesh_asset->getVertexOffset();
+      cmd.index_offset = mesh_asset->getIndexOffset();
+      cmd.index_num = mesh_asset->getIndexNum();
     }
 
     {  // Filter out transparent meshes from depth pass
-      const auto& uniform = frame_materials[cmd.material_idx];
-      if (uniform.enable_blend != 0 || uniform.mask_threshold > 0.0) {
+      const auto& uniform = frame_materials[material_idx];
+      // if (uniform.enable_blend != 0 || uniform.mask_threshold > 0.0) {
+      if (uniform.enable_blend != 0) {
         cmd.skip_depth = true;
       } else {
         cmd.skip_depth = false;
@@ -274,24 +321,20 @@ void MeshPass::beginFrame(uint32_t frame_index,
     frame.commands.push_back(cmd);
   }
 
-  if (frame_materials.size() > 0) {
-    for (uint32_t i = 0; i < frame_materials.size(); i++) {
-      frame.material_buffer->writeElement(i, frame_materials[i]);
-    }
-
-    frame.material_descriptor = descriptor_pool->allocate(material_layout);
-    frame.material_descriptor->updateDynamicBuffer(0, frame.material_buffer);
+  for (uint32_t i = 0; i < frame_materials.size(); i++) {
+    frame.material_buffer->writeElement(i, frame_materials[i]);
   }
 
-  if (frame_meshes.size() > 0) {
-    for (uint32_t i = 0; i < frame_meshes.size(); i++) {
-      frame.mesh_buffer->writeElement(i, frame_meshes[i]);
-    }
+  frame.material_descriptor = descriptor_pool->allocate(material_layout);
+  frame.material_descriptor->updateStorageBuffer(0, frame.material_buffer);
 
-    frame.mesh_descriptor = descriptor_pool->allocate(mesh_layout);
-    frame.mesh_descriptor->updateDynamicBuffer(0, frame.mesh_buffer);
-    frame.mesh_descriptor->updateStorageBuffer(1, frame.point_lights);
+  for (uint32_t i = 0; i < frame_meshes.size(); i++) {
+    frame.mesh_buffer->writeElement(i, frame_meshes[i]);
   }
+
+  frame.mesh_descriptor = descriptor_pool->allocate(mesh_layout);
+  frame.mesh_descriptor->updateStorageBuffer(0, frame.mesh_buffer);
+  frame.mesh_descriptor->updateStorageBuffer(1, frame.point_lights);
 }
 
 void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
@@ -331,8 +374,8 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
       GraphicsState::DepthState depth_state{};
       depth_state.test_enable = GraphicsState::BoolFlag::True;
       // TODO(marceline-cramer) Mask in depth pass and use Equal test
-      depth_state.write_enable = GraphicsState::BoolFlag::True;
-      depth_state.compare_op = GraphicsState::CompareOp::LessOrEqual;
+      depth_state.write_enable = GraphicsState::BoolFlag::False;
+      depth_state.compare_op = GraphicsState::CompareOp::Equal;
       graphics_state.depth_state = depth_state;
     }
 
@@ -341,28 +384,26 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
   viewport_descriptor->cmdBind(command_buffer, pipeline_layout, 0);
+  frame.material_descriptor->cmdBind(command_buffer, pipeline_layout, 1);
+  frame.mesh_descriptor->cmdBind(command_buffer, pipeline_layout, 2);
+
+  VkBuffer vertex_buffers[] = {vertex_pool->getBuffer()};
+  VkDeviceSize offsets[] = {0};
+  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+  vkCmdBindIndexBuffer(command_buffer, index_pool->getBuffer(), 0,
+                       VK_INDEX_TYPE_UINT32);
 
   for (auto& cmd : frame.commands) {
     if (phase == RenderPhase::Depth && cmd.skip_depth) continue;
 
     log_zone_named("Render mesh");
 
-    frame.material_descriptor->updateDynamicOffset(0, cmd.material_idx);
-    frame.material_descriptor->cmdBind(command_buffer, pipeline_layout, 1);
+    if (phase == RenderPhase::Forward) {
+      cmd.textures_descriptor->cmdBind(command_buffer, pipeline_layout, 3);
+    }
 
-    cmd.textures_descriptor->cmdBind(command_buffer, pipeline_layout, 2);
-
-    frame.mesh_descriptor->updateDynamicOffset(0, cmd.mesh_idx);
-    frame.mesh_descriptor->cmdBind(command_buffer, pipeline_layout, 3);
-
-    const auto& mesh_asset = cmd.mesh_asset;
-
-    VkBuffer vertex_buffers[] = {mesh_asset->vertex_buffer->getBuffer()};
-    VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-    vkCmdBindIndexBuffer(command_buffer, mesh_asset->index_buffer->getBuffer(),
-                         0, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(command_buffer, mesh_asset->index_count, 1, 0, 0, 0);
+    vkCmdDrawIndexed(command_buffer, cmd.index_num, 1, cmd.index_offset,
+                     cmd.vertex_offset, cmd.mesh_idx);
   }
 }
 

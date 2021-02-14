@@ -9,21 +9,21 @@ namespace mondradiko {
 
 // Forward declarations
 class GpuImage;
-class GpuInstance;
+class MeshPass;
 
 class TextureAsset : public Asset {
  public:
   DECL_ASSET_TYPE(assets::AssetType::TextureAsset);
 
   // Asset lifetime implementation
-  explicit TextureAsset(GpuInstance* gpu) : gpu(gpu) {}
+  explicit TextureAsset(MeshPass* mesh_pass) : mesh_pass(mesh_pass) {}
   void load(const assets::SerializedAsset*) final;
   ~TextureAsset();
 
   GpuImage* getImage() const { return image; }
 
  private:
-  GpuInstance* gpu;
+  MeshPass* mesh_pass;
 
   GpuImage* image = nullptr;
 };

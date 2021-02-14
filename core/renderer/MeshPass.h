@@ -29,7 +29,12 @@ class World;
 
 struct MeshUniform {
   glm::mat4 model;
-  alignas(16) uint32_t light_count;
+  uint32_t light_count;
+  uint32_t material_idx;
+
+  // Padding for buffer alignment
+  uint32_t pad1;
+  uint32_t pad2;
 };
 
 class MeshPass : public RenderPass {
@@ -38,6 +43,14 @@ class MeshPass : public RenderPass {
 
   MeshPass(Renderer*, World*);
   ~MeshPass();
+
+  Renderer* getRenderer() { return renderer; }
+
+  size_t allocateVertices(size_t);
+  size_t allocateIndices(size_t);
+
+  GpuBuffer* getVertexPool() { return vertex_pool; }
+  GpuBuffer* getIndexPool() { return index_pool; }
 
   // RenderPass implementation
   void createFrameData(uint32_t) final;
@@ -69,14 +82,20 @@ class MeshPass : public RenderPass {
 
   VkSampler texture_sampler = VK_NULL_HANDLE;
 
+  GpuBuffer* vertex_pool = nullptr;
+  GpuBuffer* index_pool = nullptr;
+  size_t first_available_vertex = 0;
+  size_t first_available_index = 0;
+
   struct MeshRenderCommand {
     uint32_t mesh_idx;
-    uint32_t material_idx;
     GpuDescriptorSet* textures_descriptor;
 
     bool skip_depth;
 
-    AssetHandle<MeshAsset> mesh_asset;
+    uint32_t vertex_offset;
+    uint32_t index_offset;
+    uint32_t index_num;
   };
 
   struct FrameData {

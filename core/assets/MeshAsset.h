@@ -16,6 +16,7 @@ namespace mondradiko {
 // Forward declarations
 class GpuInstance;
 class GpuBuffer;
+class MeshPass;
 
 struct MeshVertex {
   glm::vec3 position;
@@ -50,16 +51,19 @@ class MeshAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::MeshAsset);
 
   // Asset lifetime implementation
-  explicit MeshAsset(GpuInstance* gpu) : gpu(gpu) {}
+  explicit MeshAsset(MeshPass* mesh_pass) : mesh_pass(mesh_pass) {}
   void load(const assets::SerializedAsset*) final;
-  ~MeshAsset();
 
-  GpuBuffer* vertex_buffer = nullptr;
-  GpuBuffer* index_buffer = nullptr;
-  size_t index_count = 0;
+  size_t getVertexOffset() const { return vertex_offset; }
+  size_t getIndexOffset() const { return index_offset; }
+  size_t getIndexNum() const { return index_num; }
 
  private:
-  GpuInstance* gpu;
+  MeshPass* mesh_pass;
+
+  size_t vertex_offset = 0;
+  size_t index_offset = 0;
+  size_t index_num = 0;
 };
 
 }  // namespace mondradiko

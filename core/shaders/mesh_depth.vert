@@ -10,13 +10,22 @@ layout(set = 0, binding = 0) uniform CameraUniform {
     vec3 position;
 } camera;
 
-layout(set = 3, binding = 0) uniform MeshUniform {
+struct MeshUniform {
   mat4 model;
   uint light_count;
-} mesh;
+  uint material_idx;
+};
+
+layout(set = 2, binding = 0) buffer readonly MeshDescriptor {
+  MeshUniform meshes[];
+} meshes;
 
 layout(location = 0) in vec3 vertPosition;
+layout(location = 1) in vec3 vertNormal;
+layout(location = 2) in vec3 vertTangent;
+layout(location = 3) in vec3 vertColor;
+layout(location = 4) in vec2 vertTexCoord;
 
 void main() {
-  gl_Position = camera.projection * camera.view * mesh.model * vec4(vertPosition, 1.0);
+  gl_Position = camera.projection * camera.view * meshes.meshes[gl_InstanceIndex].model * vec4(vertPosition, 1.0);
 }

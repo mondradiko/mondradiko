@@ -10,7 +10,7 @@ layout(set = 0, binding = 0) uniform CameraUniform {
     vec3 position;
 } camera;
 
-layout(set = 1, binding = 0) uniform MaterialUniform {
+struct MaterialUniform {
   vec3 emissive_factor;
   vec4 albedo_factor;
 
@@ -23,34 +23,42 @@ layout(set = 1, binding = 0) uniform MaterialUniform {
   bool enable_blend;
   bool has_emissive_texture;
   bool has_metal_roughness_texture;
-} material;
+};
 
-layout(set = 2, binding = 0) uniform sampler2D albedo_texture;
-layout(set = 2, binding = 1) uniform sampler2D emissive_texture;
-layout(set = 2, binding = 2) uniform sampler2D normal_map_texture;
+layout(set = 1, binding = 0) buffer readonly MaterialDescriptor {
+  MaterialUniform materials[];
+} materials;
 
-// Metallic-roughness model
-layout(set = 2, binding = 3) uniform sampler2D metal_roughness_texture;
-
-layout(set = 3, binding = 0) uniform MeshUniform {
+struct MeshUniform {
   mat4 model;
   uint light_count;
-} mesh;
+  uint material_idx;
+};
+
+layout(set = 2, binding = 0) buffer readonly MeshDescriptor {
+  MeshUniform meshes[];
+} meshes;
 
 struct PointLightUniform {
   vec4 position;
   vec4 intensity;
 };
 
-layout(set = 3, binding = 1) buffer readonly LightUniforms {
+layout(set = 2, binding = 1) buffer readonly LightUniforms {
   PointLightUniform point_lights[];
 } lights;
 
-layout(location = 0) in vec3 fragColor;
-layout(location = 1) in vec2 fragTexCoord;
-layout(location = 2) in vec3 fragNormal;
-layout(location = 3) in vec3 fragTangent;
-layout(location = 4) in vec3 fragPosition;
+layout(set = 3, binding = 0) uniform sampler2D albedo_texture;
+layout(set = 3, binding = 1) uniform sampler2D emissive_texture;
+layout(set = 3, binding = 2) uniform sampler2D normal_map_texture;
+layout(set = 3, binding = 3) uniform sampler2D metal_roughness_texture;
+
+layout(location = 0) flat in uint fragMesh;
+layout(location = 1) in vec3 fragColor;
+layout(location = 2) in vec2 fragTexCoord;
+layout(location = 3) in vec3 fragNormal;
+layout(location = 4) in vec3 fragTangent;
+layout(location = 5) in vec3 fragPosition;
 
 layout(location = 0) out vec4 outColor;
 
@@ -61,11 +69,11 @@ float GeometrySchlickGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 fresnelSchlick(float cosTheta, vec3 F0);
 
-vec3 getNormal() {
+vec3 getNormal(in MaterialUniform material) {
   if (material.normal_map_scale > 0.0) {
     vec3 sampled_normal = texture(normal_map_texture, fragTexCoord).rgb * 2 - 1;
     sampled_normal = normalize(sampled_normal);
-    sampled_normal *= vec3(material.normal_map_scale, material.normal_map_scale, 1.0);
+    sampled_normal *= vec3(vec2(material.normal_map_scale), 1.0);
 
     vec3 N = normalize(fragNormal);
     vec3 T = normalize(fragTangent);
@@ -79,10 +87,13 @@ vec3 getNormal() {
 }
 
 void main() {
-  /*if (material.enable_blend) {
+  MeshUniform mesh = meshes.meshes[fragMesh];
+  MaterialUniform material = materials.materials[mesh.material_idx];
+
+  if (material.enable_blend) {
     outColor = vec4(1.0, 0.0, 1.0, 1.0);
     return;
-  }*/
+  }
 
   vec3 surface_albedo = material.albedo_factor.rgb;
 
@@ -95,9 +106,6 @@ void main() {
         discard;
       }
     }
-
-    outColor = vec4(sampled_albedo.rgb, 1.0);
-    return;
 
     surface_albedo *= sampled_albedo.rgb;
   }
@@ -117,17 +125,29 @@ void main() {
   }
 
   vec3 surface_position = fragPosition;
-  vec3 N = getNormal();
+  vec3 N = getNormal(material);
   vec3 V = normalize(camera.position - surface_position);
 
-  vec3 surface_luminance = vec3(0.05) * surface_albedo;
-
-  vec3 surface_emissive = material.emissive_factor;
+  /*vec3 surface_emissive = material.emissive_factor;
   if (material.has_emissive_texture) {
     surface_emissive *= texture(emissive_texture, fragTexCoord).rgb;
   }
 
-  surface_luminance += surface_emissive;
+  surface_luminance += surface_emissive;*/
+
+  /*vec3 surface_luminance = surface_albedo;
+
+  for (uint i = 0; i < mesh.light_count; i++) {
+    vec3 light_position = lights.point_lights[i].position.xyz - surface_position;
+    vec3 light_intensity = lights.point_lights[i].intensity.rgb;
+    vec3 radiance = light_intensity / dot(light_position, light_position);
+
+    vec3 L = normalize(light_position);
+
+    surface_luminance += radiance * surface_albedo * max(dot(N, L), 0.0);
+  }*/
+
+  vec3 surface_luminance = vec3(0.05) * surface_albedo;
 
   vec3 F0 = vec3(0.04);
   F0 = mix(F0, surface_albedo, surface_metallic);
@@ -135,11 +155,13 @@ void main() {
   for (uint i = 0; i < mesh.light_count; i++) {
     vec3 light_position = lights.point_lights[i].position.xyz - surface_position;
     vec3 light_intensity = lights.point_lights[i].intensity.rgb;
+    vec3 radiance = light_intensity / dot(light_position, light_position);
+
+    // Bad light culling
+    // if (dot(radiance, radiance) < 0.1) continue;
 
     vec3 L = normalize(light_position);
     vec3 H = normalize(V + L);
-    float light_distance = length(light_position);
-    vec3 radiance = light_intensity / (light_distance * light_distance);
 
     // Cook-Torrance BRDF
     // TODO(marceline-cramer): All of the PBR math here is wrong; please fix
