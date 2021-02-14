@@ -7,45 +7,34 @@
 #include <vector>
 
 #include "core/assets/PrefabAsset.h"
-#include "core/assets/ScriptAsset.h"
-#include "core/assets/TextureAsset.h"
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/PointLightComponent.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/filesystem/Filesystem.h"
-#include "core/gpu/GpuInstance.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "log/log.h"
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 
-World::World(Filesystem* fs, GpuInstance* gpu)
-    : fs(fs), gpu(gpu), asset_pool(fs) {
+World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
+    : asset_pool(asset_pool), fs(fs), scripts(scripts) {
   log_zone;
 
-  asset_pool.initializeAssetType<MaterialAsset>(&asset_pool, gpu);
-  asset_pool.initializeAssetType<MeshAsset>(gpu);
-  asset_pool.initializeAssetType<PrefabAsset>(&asset_pool);
-  asset_pool.initializeAssetType<ScriptAsset>(&scripts);
-  asset_pool.initializeAssetType<TextureAsset>(gpu);
+  asset_pool->initializeAssetType<PrefabAsset>(asset_pool);
 
-  scripts.linkComponentApis(this);
+  scripts->linkComponentApis(this);
 }
 
-World::~World() {
-  log_zone;
-  registry.clear();
-  asset_pool.unloadAll();
-}
+World::~World() { log_zone; }
 
 void World::initializePrefabs() {
   std::vector<AssetId> prefabs;
   fs->getInitialPrefabs(prefabs);
 
   for (auto prefab_id : prefabs) {
-    auto prefab = asset_pool.load<PrefabAsset>(prefab_id);
+    auto prefab = asset_pool->load<PrefabAsset>(prefab_id);
     prefab->instantiate(&registry);
   }
 
@@ -191,7 +180,7 @@ bool World::update() {
     }
   }
 
-  scripts.update(registry, &asset_pool);
+  scripts->update(registry, asset_pool);
 
   log_frame_mark;
   return true;
@@ -248,10 +237,10 @@ void World::updateComponents(
     if (registry.has<ComponentType>(id)) {
       ComponentType& handle = registry.get<ComponentType>(id);
       handle.writeData(component);
-      handle.refresh(&asset_pool);
+      handle.refresh(asset_pool);
     } else {
       ComponentType& handle = registry.emplace<ComponentType>(id, component);
-      handle.refresh(&asset_pool);
+      handle.refresh(asset_pool);
     }
   }
 }

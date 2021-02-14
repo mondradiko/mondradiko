@@ -6,6 +6,7 @@
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuImage.h"
+#include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuPipeline.h"
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GraphicsState.h"

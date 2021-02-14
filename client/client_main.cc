@@ -79,10 +79,12 @@ void run(const ClientArgs& args) {
     log_ftl("Failed to create display session!");
   }
 
-  GlyphLoader glyphs(&cvars, &gpu);
-  World world(&fs, &gpu);
+  AssetPool asset_pool(&fs);
+  ScriptEnvironment scripts;
+  World world(&asset_pool, &fs, &scripts);
 
   Renderer renderer(&cvars, display.get(), &gpu);
+  GlyphLoader glyphs(&cvars, &renderer);
   MeshPass mesh_pass(&renderer, &world);
   OverlayPass overlay_pass(cvars.getChild("renderer"), &glyphs, &renderer,
                            &world);
