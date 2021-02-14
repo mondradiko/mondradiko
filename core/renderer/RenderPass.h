@@ -14,7 +14,7 @@ class GpuDescriptorSet;
 enum class RenderPhase : size_t {
   Pre = 0,  // Create this frame's data, cache previous frame data, etc.
   // Skin,       // Frustrum cull and skin meshes
-  // Depth,  // Depth prepass for faster culling in forward pass
+  Depth,  // Depth prepass for faster culling in forward pass
   // Shadow,     // Render scene to shadow maps
   // Occlusion,  // After depth pyramid is generated, do occlusion culling
   Forward,  // Shade geometry

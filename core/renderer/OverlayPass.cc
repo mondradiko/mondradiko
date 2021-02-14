@@ -99,10 +99,10 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
     auto vertex_bindings = DebugDrawVertex::getVertexBindings();
     auto attribute_descriptions = DebugDrawVertex::getAttributeDescriptions();
 
-    debug_pipeline = new GpuPipeline(gpu, debug_pipeline_layout,
-                                     renderer->getCompositePass(), 0,
-                                     debug_vertex_shader, debug_fragment_shader,
-                                     vertex_bindings, attribute_descriptions);
+    debug_pipeline = new GpuPipeline(
+        gpu, debug_pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getForwardSubpass(), debug_vertex_shader,
+        debug_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 
   {
@@ -112,9 +112,9 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
     auto attribute_descriptions = GlyphInstance::getAttributeDescriptions();
 
     glyph_pipeline = new GpuPipeline(
-        gpu, glyph_pipeline_layout, renderer->getCompositePass(), 0,
-        glyphs->getVertexShader(), glyphs->getFragmentShader(), vertex_bindings,
-        attribute_descriptions);
+        gpu, glyph_pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getForwardSubpass(), glyphs->getVertexShader(),
+        glyphs->getFragmentShader(), vertex_bindings, attribute_descriptions);
   }
 }
 

@@ -89,7 +89,7 @@ void Viewport::_createImages() {
 
     VkFramebufferCreateInfo framebuffer_info{};
     framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebuffer_info.renderPass = renderer->getCompositePass();
+    framebuffer_info.renderPass = renderer->getViewportRenderPass();
     framebuffer_info.attachmentCount = framebuffer_attachments.size();
     framebuffer_info.pAttachments = framebuffer_attachments.data();
     framebuffer_info.width = _image_width;

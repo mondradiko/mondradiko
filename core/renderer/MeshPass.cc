@@ -23,8 +23,10 @@
 #include "core/renderer/Renderer.h"
 #include "core/world/World.h"
 #include "log/log.h"
-#include "shaders/mesh.frag.h"
-#include "shaders/mesh.vert.h"
+#include "shaders/mesh_depth.frag.h"
+#include "shaders/mesh_depth.vert.h"
+#include "shaders/mesh_forward.frag.h"
+#include "shaders/mesh_forward.vert.h"
 
 namespace mondradiko {
 
@@ -99,22 +101,36 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
   {
     log_zone_named("Create shaders");
 
-    vertex_shader = new GpuShader(gpu, VK_SHADER_STAGE_VERTEX_BIT,
-                                  shaders_mesh_vert, sizeof(shaders_mesh_vert));
-    fragment_shader =
-        new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_mesh_frag,
-                      sizeof(shaders_mesh_frag));
+    depth_vertex_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_mesh_depth_vert,
+                      sizeof(shaders_mesh_depth_vert));
+    depth_fragment_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT,
+                      shaders_mesh_depth_frag, sizeof(shaders_mesh_depth_frag));
+
+    forward_vertex_shader = new GpuShader(gpu, VK_SHADER_STAGE_VERTEX_BIT,
+                                          shaders_mesh_forward_vert,
+                                          sizeof(shaders_mesh_forward_vert));
+    forward_fragment_shader = new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT,
+                                            shaders_mesh_forward_frag,
+                                            sizeof(shaders_mesh_forward_frag));
   }
 
   {
-    log_zone_named("Create pipeline");
+    log_zone_named("Create pipelines");
 
     auto vertex_bindings = MeshVertex::getVertexBindings();
     auto attribute_descriptions = MeshVertex::getAttributeDescriptions();
 
-    pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getCompositePass(), 0, vertex_shader,
-        fragment_shader, vertex_bindings, attribute_descriptions);
+    depth_pipeline = new GpuPipeline(
+        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getDepthSubpass(), depth_vertex_shader, depth_fragment_shader,
+        vertex_bindings, attribute_descriptions);
+
+    forward_pipeline = new GpuPipeline(
+        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getForwardSubpass(), forward_vertex_shader,
+        forward_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 }
 
@@ -123,9 +139,12 @@ MeshPass::~MeshPass() {
 
   if (texture_sampler != VK_NULL_HANDLE)
     vkDestroySampler(gpu->device, texture_sampler, nullptr);
-  if (pipeline != nullptr) delete pipeline;
-  if (vertex_shader != nullptr) delete vertex_shader;
-  if (fragment_shader != nullptr) delete fragment_shader;
+  if (forward_pipeline != nullptr) delete forward_pipeline;
+  if (depth_pipeline != nullptr) delete depth_pipeline;
+  if (depth_vertex_shader != nullptr) delete depth_vertex_shader;
+  if (depth_fragment_shader != nullptr) delete depth_fragment_shader;
+  if (forward_vertex_shader != nullptr) delete forward_vertex_shader;
+  if (forward_fragment_shader != nullptr) delete forward_fragment_shader;
   if (pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, pipeline_layout, nullptr);
   if (material_layout != nullptr) delete material_layout;
@@ -164,6 +183,7 @@ void MeshPass::beginFrame(uint32_t frame_index,
                           GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
+  renderer->addPassToPhase(RenderPhase::Depth, this);
   renderer->addPassToPhase(RenderPhase::Forward, this);
 
   current_frame = frame_index;
@@ -242,6 +262,15 @@ void MeshPass::beginFrame(uint32_t frame_index,
       cmd.mesh_asset = mesh_renderer.getMeshAsset();
     }
 
+    {  // Filter out transparent meshes from depth pass
+      const auto& uniform = frame_materials[cmd.material_idx];
+      if (uniform.enable_blend != 0 || uniform.mask_threshold > 0.0) {
+        cmd.skip_depth = true;
+      } else {
+        cmd.skip_depth = false;
+      }
+    }
+
     frame.commands.push_back(cmd);
   }
 
@@ -286,19 +315,36 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
     rasterization_state.cull_mode = GraphicsState::CullMode::None;
     graphics_state.rasterization_state = rasterization_state;
 
-    GraphicsState::DepthState depth_state{};
-    depth_state.test_enable = GraphicsState::BoolFlag::True;
-    depth_state.write_enable = GraphicsState::BoolFlag::True;
-    depth_state.compare_op = GraphicsState::CompareOp::Less;
-    graphics_state.depth_state = depth_state;
+    GpuPipeline* current_pipeline;
 
-    pipeline->cmdBind(command_buffer, graphics_state);
+    if (phase == RenderPhase::Depth) {
+      current_pipeline = depth_pipeline;
+
+      GraphicsState::DepthState depth_state{};
+      depth_state.test_enable = GraphicsState::BoolFlag::True;
+      depth_state.write_enable = GraphicsState::BoolFlag::True;
+      depth_state.compare_op = GraphicsState::CompareOp::Less;
+      graphics_state.depth_state = depth_state;
+    } else {
+      current_pipeline = forward_pipeline;
+
+      GraphicsState::DepthState depth_state{};
+      depth_state.test_enable = GraphicsState::BoolFlag::True;
+      // TODO(marceline-cramer) Mask in depth pass and use Equal test
+      depth_state.write_enable = GraphicsState::BoolFlag::True;
+      depth_state.compare_op = GraphicsState::CompareOp::LessOrEqual;
+      graphics_state.depth_state = depth_state;
+    }
+
+    current_pipeline->cmdBind(command_buffer, graphics_state);
   }
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
   viewport_descriptor->cmdBind(command_buffer, pipeline_layout, 0);
 
   for (auto& cmd : frame.commands) {
+    if (phase == RenderPhase::Depth && cmd.skip_depth) continue;
+
     log_zone_named("Render mesh");
 
     frame.material_descriptor->updateDynamicOffset(0, cmd.material_idx);

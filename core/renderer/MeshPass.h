@@ -54,15 +54,18 @@ class MeshPass : public RenderPass {
   Renderer* renderer;
   World* world;
 
-  GpuShader* vertex_shader = nullptr;
-  GpuShader* fragment_shader = nullptr;
+  GpuShader* depth_vertex_shader = nullptr;
+  GpuShader* depth_fragment_shader = nullptr;
+  GpuShader* forward_vertex_shader = nullptr;
+  GpuShader* forward_fragment_shader = nullptr;
 
   GpuDescriptorSetLayout* material_layout;
   GpuDescriptorSetLayout* texture_layout;
   GpuDescriptorSetLayout* mesh_layout;
 
   VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
-  GpuPipeline* pipeline = nullptr;
+  GpuPipeline* depth_pipeline = nullptr;
+  GpuPipeline* forward_pipeline = nullptr;
 
   VkSampler texture_sampler = VK_NULL_HANDLE;
 
@@ -70,6 +73,8 @@ class MeshPass : public RenderPass {
     uint32_t mesh_idx;
     uint32_t material_idx;
     GpuDescriptorSet* textures_descriptor;
+
+    bool skip_depth;
 
     AssetHandle<MeshAsset> mesh_asset;
   };

@@ -67,10 +67,10 @@ UserInterface::UserInterface(GlyphLoader* glyphs, Renderer* renderer)
     GpuPipeline::VertexBindings vertex_bindings;
     GpuPipeline::AttributeDescriptions attribute_descriptions;
 
-    panel_pipeline = new GpuPipeline(gpu, panel_pipeline_layout,
-                                     renderer->getCompositePass(), 0,
-                                     panel_vertex_shader, panel_fragment_shader,
-                                     vertex_bindings, attribute_descriptions);
+    panel_pipeline = new GpuPipeline(
+        gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getForwardSubpass(), panel_vertex_shader,
+        panel_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 }
 

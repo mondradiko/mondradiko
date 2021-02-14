@@ -34,14 +34,18 @@ class Renderer {
 
   GpuInstance* getGpu() { return gpu; }
   GpuDescriptorSetLayout* getViewportLayout() { return viewport_layout; }
-  VkRenderPass getCompositePass() const { return composite_pass; }
+
+  // TODO(marceline-cramer) Wrapper class for subpass manipulation
+  VkRenderPass getViewportRenderPass() const { return render_pass; }
+  uint32_t getDepthSubpass() { return 0; }
+  uint32_t getForwardSubpass() { return 1; }
 
  private:
   const CVarScope* cvars;
   DisplayInterface* display;
   GpuInstance* gpu;
 
-  VkRenderPass composite_pass = VK_NULL_HANDLE;
+  VkRenderPass render_pass = VK_NULL_HANDLE;
 
   GpuDescriptorSetLayout* viewport_layout = nullptr;
 
@@ -57,7 +61,7 @@ class Renderer {
     GpuVector* viewports;
 
     using PassList = std::vector<RenderPass*>;
-    static constexpr size_t PhaseNum = static_cast<size_t>(RenderPhase::MAX);
+    static constexpr auto PhaseNum = static_cast<size_t>(RenderPhase::MAX);
     using PhaseList = std::array<PassList, PhaseNum>;
     PhaseList phases;
   };

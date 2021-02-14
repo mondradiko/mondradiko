@@ -79,10 +79,10 @@ vec3 getNormal() {
 }
 
 void main() {
-  if (material.enable_blend) {
+  /*if (material.enable_blend) {
     outColor = vec4(1.0, 0.0, 1.0, 1.0);
     return;
-  }
+  }*/
 
   vec3 surface_albedo = material.albedo_factor.rgb;
 
@@ -95,6 +95,9 @@ void main() {
         discard;
       }
     }
+
+    outColor = vec4(sampled_albedo.rgb, 1.0);
+    return;
 
     surface_albedo *= sampled_albedo.rgb;
   }
