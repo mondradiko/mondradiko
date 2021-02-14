@@ -54,44 +54,6 @@ GpuImage::~GpuImage() {
   if (allocation != nullptr) vmaDestroyImage(gpu->allocator, image, allocation);
 }
 
-void GpuImage::writeData(const void* src) {
-  // TODO(marceline-cramer) This function is bad, please replace
-  // Consider a streaming job system for all static GPU assets
-  GpuBuffer stage(gpu, allocation_info.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-  stage.writeData(src);
-
-  VkCommandBuffer commandBuffer = gpu->beginSingleTimeCommands();
-
-  VkBufferImageCopy region{};
-  region.bufferOffset = 0;
-  region.bufferRowLength = 0;
-  region.bufferImageHeight = 0;
-
-  VkImageSubresourceLayers imageSubresource{};
-  imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  imageSubresource.mipLevel = 0;
-  imageSubresource.baseArrayLayer = 0;
-  imageSubresource.layerCount = 1;
-  region.imageSubresource = imageSubresource;
-
-  VkOffset3D image_offset{};
-  image_offset.x = 0;
-  image_offset.y = 0;
-  image_offset.z = 0;
-  region.imageOffset = image_offset;
-
-  VkExtent3D image_extent{};
-  image_extent.width = width;
-  image_extent.height = height;
-  image_extent.depth = 1;
-  region.imageExtent = image_extent;
-
-  vkCmdCopyBufferToImage(commandBuffer, stage.getBuffer(), image, layout, 1,
-                         &region);
-
-  gpu->endSingleTimeCommands(commandBuffer);
-}
-
 void GpuImage::transitionLayout(VkImageLayout targetLayout) {
   VkImageMemoryBarrier barrier{};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;

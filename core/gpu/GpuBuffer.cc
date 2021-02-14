@@ -39,7 +39,8 @@ void GpuBuffer::reserve(size_t target_size) {
   bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
   VmaAllocationCreateInfo allocationCreateInfo{};
-  allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+  if (memory_usage == VMA_MEMORY_USAGE_CPU_TO_GPU)
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
   allocationCreateInfo.usage = memory_usage;
 
   if (vmaCreateBuffer(gpu->allocator, &bufferInfo, &allocationCreateInfo,
@@ -48,12 +49,6 @@ void GpuBuffer::reserve(size_t target_size) {
   }
 
   buffer_size = target_size;
-}
-
-void GpuBuffer::writeData(const void* src) {
-  // TODO(marceline-cramer) This function is bad, please replace
-  // Consider a streaming job system for all static GPU assets
-  memcpy(allocation_info.pMappedData, src, allocation_info.size);
 }
 
 }  // namespace mondradiko

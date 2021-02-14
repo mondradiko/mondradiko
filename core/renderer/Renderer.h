@@ -14,8 +14,10 @@ namespace mondradiko {
 // Forward declarations
 class CVarScope;
 class DisplayInterface;
+class GpuBuffer;
 class GpuDescriptorPool;
 class GpuDescriptorSetLayout;
+class GpuImage;
 class GpuInstance;
 class GpuVector;
 
@@ -31,6 +33,10 @@ class Renderer {
 
   void renderFrame();
   void addPassToPhase(RenderPhase, RenderPass*);
+
+  // TODO(marceline-cramer) TransferWorker
+  void transferDataToBuffer(GpuBuffer*, size_t, const void*, size_t);
+  void transferDataToImage(GpuImage*, const void*);
 
   GpuInstance* getGpu() { return gpu; }
   GpuDescriptorSetLayout* getViewportLayout() { return viewport_layout; }

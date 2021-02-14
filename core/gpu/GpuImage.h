@@ -17,12 +17,14 @@ class GpuImage {
            VmaMemoryUsage);
   ~GpuImage();
 
-  void writeData(const void*);
   void transitionLayout(VkImageLayout);
 
   VkImageLayout getLayout() const { return layout; }
-
+  VkImage getImage() const { return image; }
   VkImageView getView() const { return view; }
+  uint32_t getWidth() const { return width; }
+  uint32_t getHeight() const { return height; }
+  size_t getSize() const { return allocation_info.size; }
 
  private:
   GpuInstance* gpu;

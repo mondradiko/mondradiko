@@ -9,6 +9,7 @@
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
+#include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuVector.h"
 #include "core/renderer/OverlayPass.h"
@@ -93,7 +94,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
       pre_dep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
       pre_dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
       pre_dep.srcAccessMask = 0;
-      pre_dep.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      pre_dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
       dependencies.push_back(pre_dep);
     }
 
@@ -213,6 +214,115 @@ void Renderer::destroyFrameData() {
 
   render_passes.clear();
   frames_in_flight.clear();
+}
+
+void Renderer::transferDataToBuffer(GpuBuffer* dst, size_t offset,
+                                    const void* src, size_t size) {
+  log_zone;
+
+  // TODO(marceline-cramer) Yikes
+
+  VkBufferCreateInfo bufferInfo{};
+  bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  bufferInfo.size = size;
+  bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+  VmaAllocationCreateInfo allocationCreateInfo{};
+  allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+  allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+
+  VkBuffer buffer;
+  VmaAllocation allocation;
+  VmaAllocationInfo allocation_info;
+
+  if (vmaCreateBuffer(gpu->allocator, &bufferInfo, &allocationCreateInfo,
+                      &buffer, &allocation, &allocation_info) != VK_SUCCESS) {
+    log_ftl("Failed to allocate Vulkan buffer.");
+  }
+
+  memcpy(allocation_info.pMappedData, src, allocation_info.size);
+
+  VkCommandBuffer command_buffer = gpu->beginSingleTimeCommands();
+  VkBufferCopy buffer_copy{};
+  buffer_copy.srcOffset = 0;
+  buffer_copy.dstOffset = offset;
+  buffer_copy.size = size;
+  vkCmdCopyBuffer(command_buffer, buffer, dst->getBuffer(), 1, &buffer_copy);
+  gpu->endSingleTimeCommands(command_buffer);
+
+  // TODO(marceline-cramer) Dedicated transfer queue
+  {  // TODO(marceline-cramer) Also yikes
+    log_zone_named("Pipeline stall");
+    vkQueueWaitIdle(gpu->graphics_queue);
+  }
+  vmaDestroyBuffer(gpu->allocator, buffer, allocation);
+}
+
+void Renderer::transferDataToImage(GpuImage* dst, const void* src) {
+  log_zone;
+
+  // TODO(marceline-cramer) Yikes
+
+  size_t size = dst->getSize();
+
+  VkBufferCreateInfo bufferInfo{};
+  bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  bufferInfo.size = size;
+  bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+  VmaAllocationCreateInfo allocationCreateInfo{};
+  allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+  allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+
+  VkBuffer buffer;
+  VmaAllocation allocation;
+  VmaAllocationInfo allocation_info;
+
+  if (vmaCreateBuffer(gpu->allocator, &bufferInfo, &allocationCreateInfo,
+                      &buffer, &allocation, &allocation_info) != VK_SUCCESS) {
+    log_ftl("Failed to allocate Vulkan buffer");
+  }
+
+  memcpy(allocation_info.pMappedData, src, allocation_info.size);
+
+  VkCommandBuffer commandBuffer = gpu->beginSingleTimeCommands();
+
+  VkBufferImageCopy region{};
+  region.bufferOffset = 0;
+  region.bufferRowLength = 0;
+  region.bufferImageHeight = 0;
+
+  VkImageSubresourceLayers imageSubresource{};
+  imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  imageSubresource.mipLevel = 0;
+  imageSubresource.baseArrayLayer = 0;
+  imageSubresource.layerCount = 1;
+  region.imageSubresource = imageSubresource;
+
+  VkOffset3D image_offset{};
+  image_offset.x = 0;
+  image_offset.y = 0;
+  image_offset.z = 0;
+  region.imageOffset = image_offset;
+
+  VkExtent3D image_extent{};
+  image_extent.width = dst->getWidth();
+  image_extent.height = dst->getHeight();
+  image_extent.depth = 1;
+  region.imageExtent = image_extent;
+
+  vkCmdCopyBufferToImage(commandBuffer, buffer, dst->getImage(),
+                         dst->getLayout(), 1, &region);
+
+  gpu->endSingleTimeCommands(commandBuffer);
+
+  {  // TODO(marceline-cramer) Yup, this is still bad
+    log_zone_named("Pipeline stall");
+    vkQueueWaitIdle(gpu->graphics_queue);
+  }
+  vmaDestroyBuffer(gpu->allocator, buffer, allocation);
 }
 
 void Renderer::renderFrame() {

@@ -15,14 +15,11 @@ class GpuBuffer {
   GpuBuffer(GpuInstance* gpu, size_t initial_size,
             VkBufferUsageFlags buffer_usage_flags)
       : GpuBuffer(gpu, initial_size, buffer_usage_flags,
-                  VMA_MEMORY_USAGE_CPU_TO_GPU) {}
+                  VMA_MEMORY_USAGE_GPU_ONLY) {}
   ~GpuBuffer();
 
   VkBuffer getBuffer() const { return buffer; }
   size_t getBufferSize() const { return buffer_size; }
-
-  // TODO(marceline-cramer) Get rid of this method
-  void writeData(const void*);
 
  protected:
   GpuBuffer(GpuInstance*, size_t, VkBufferUsageFlags, VmaMemoryUsage);
