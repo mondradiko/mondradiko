@@ -52,6 +52,8 @@ void MaterialAsset::load(const assets::SerializedAsset* asset) {
     uniform.enable_blend = 0;
   }
 
+  double_sided = material->is_double_sided();
+
   const assets::Vec3* emissive_factor = material->emissive_factor();
   uniform.emissive_factor = glm::vec4(
       emissive_factor->x(), emissive_factor->y(), emissive_factor->z(), 1.0);

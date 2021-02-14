@@ -98,6 +98,10 @@ class MeshPass : public RenderPass {
     uint32_t index_num;
   };
 
+  // Helper function to render meshes
+  using MeshRenderCommandList = std::vector<MeshRenderCommand>;
+  void executeMeshCommands(VkCommandBuffer, const MeshRenderCommandList&, bool);
+
   struct FrameData {
     GpuVector* material_buffer = nullptr;
     GpuVector* mesh_buffer = nullptr;
@@ -106,7 +110,8 @@ class MeshPass : public RenderPass {
     GpuDescriptorSet* material_descriptor;
     GpuDescriptorSet* mesh_descriptor;
 
-    std::vector<MeshRenderCommand> commands;
+    MeshRenderCommandList single_sided;
+    MeshRenderCommandList double_sided;
   };
 
   std::vector<FrameData> frame_data;

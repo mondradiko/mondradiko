@@ -17,6 +17,7 @@ table MaterialAsset {
   // Metallic-roughness
   albedo_factor:Vec4;
   albedo_texture:AssetId;
+  is_double_sided:bool;
   is_unlit:bool;
   enable_blend:bool;
   mask_threshold:float;

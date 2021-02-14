@@ -99,14 +99,6 @@ void main() {
 
   {
     vec4 sampled_albedo = texture(albedo_texture, fragTexCoord);
-
-    if (material.mask_threshold > 0.0) {
-      if ((sampled_albedo.a * material.albedo_factor.a) <=
-           material.mask_threshold) {
-        discard;
-      }
-    }
-
     surface_albedo *= sampled_albedo.rgb;
   }
 

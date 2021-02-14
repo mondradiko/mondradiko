@@ -258,19 +258,27 @@ void MeshPass::beginFrame(uint32_t frame_index,
   auto mesh_renderers =
       world->registry.view<MeshRendererComponent, TransformComponent>();
 
-  frame.commands.clear();
-  frame.commands.reserve(mesh_renderers.size());
+  frame.single_sided.clear();
+  frame.double_sided.clear();
 
   for (auto e : mesh_renderers) {
     auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
     if (!mesh_renderer.isLoaded()) continue;
 
     MeshRenderCommand cmd;
+    MeshRenderCommandList* target_commands;
 
     uint32_t material_idx;
 
     {  // Write material uniform
       const auto& material_asset = mesh_renderer.getMaterialAsset();
+
+      if (material_asset->isDoubleSided()) {
+        target_commands = &frame.double_sided;
+      } else {
+        target_commands = &frame.single_sided;
+      }
+
       auto iter = material_assets.find(material_asset.getId());
 
       if (iter != material_assets.end()) {
@@ -310,7 +318,6 @@ void MeshPass::beginFrame(uint32_t frame_index,
 
     {  // Filter out transparent meshes from depth pass
       const auto& uniform = frame_materials[material_idx];
-      // if (uniform.enable_blend != 0 || uniform.mask_threshold > 0.0) {
       if (uniform.enable_blend != 0) {
         cmd.skip_depth = true;
       } else {
@@ -318,7 +325,7 @@ void MeshPass::beginFrame(uint32_t frame_index,
       }
     }
 
-    frame.commands.push_back(cmd);
+    target_commands->push_back(cmd);
   }
 
   for (uint32_t i = 0; i < frame_materials.size(); i++) {
@@ -342,44 +349,40 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
   log_zone;
 
   auto& frame = frame_data[current_frame];
+  GraphicsState graphics_state;
+  GpuPipeline* current_pipeline;
+  bool enable_depth_skip;
 
-  {
-    GraphicsState graphics_state;
+  GraphicsState::InputAssemblyState input_assembly_state{};
+  input_assembly_state.primitive_topology =
+      GraphicsState::PrimitiveTopology::TriangleList;
+  input_assembly_state.primitive_restart_enable =
+      GraphicsState::BoolFlag::False;
+  graphics_state.input_assembly_state = input_assembly_state;
 
-    GraphicsState::InputAssemblyState input_assembly_state{};
-    input_assembly_state.primitive_topology =
-        GraphicsState::PrimitiveTopology::TriangleList;
-    input_assembly_state.primitive_restart_enable =
-        GraphicsState::BoolFlag::False;
-    graphics_state.input_assembly_state = input_assembly_state;
+  GraphicsState::RasterizatonState rasterization_state{};
+  rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
+  rasterization_state.cull_mode = GraphicsState::CullMode::Back;
+  graphics_state.rasterization_state = rasterization_state;
 
-    GraphicsState::RasterizatonState rasterization_state{};
-    rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-    rasterization_state.cull_mode = GraphicsState::CullMode::None;
-    graphics_state.rasterization_state = rasterization_state;
+  if (phase == RenderPhase::Depth) {
+    current_pipeline = depth_pipeline;
+    enable_depth_skip = true;
 
-    GpuPipeline* current_pipeline;
+    GraphicsState::DepthState depth_state{};
+    depth_state.test_enable = GraphicsState::BoolFlag::True;
+    depth_state.write_enable = GraphicsState::BoolFlag::True;
+    depth_state.compare_op = GraphicsState::CompareOp::Less;
+    graphics_state.depth_state = depth_state;
+  } else {
+    current_pipeline = forward_pipeline;
+    enable_depth_skip = false;
 
-    if (phase == RenderPhase::Depth) {
-      current_pipeline = depth_pipeline;
-
-      GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::True;
-      depth_state.write_enable = GraphicsState::BoolFlag::True;
-      depth_state.compare_op = GraphicsState::CompareOp::Less;
-      graphics_state.depth_state = depth_state;
-    } else {
-      current_pipeline = forward_pipeline;
-
-      GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::True;
-      // TODO(marceline-cramer) Mask in depth pass and use Equal test
-      depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Equal;
-      graphics_state.depth_state = depth_state;
-    }
-
-    current_pipeline->cmdBind(command_buffer, graphics_state);
+    GraphicsState::DepthState depth_state{};
+    depth_state.test_enable = GraphicsState::BoolFlag::True;
+    depth_state.write_enable = GraphicsState::BoolFlag::False;
+    depth_state.compare_op = GraphicsState::CompareOp::Equal;
+    graphics_state.depth_state = depth_state;
   }
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
@@ -393,8 +396,20 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
   vkCmdBindIndexBuffer(command_buffer, index_pool->getBuffer(), 0,
                        VK_INDEX_TYPE_UINT32);
 
-  for (auto& cmd : frame.commands) {
-    if (phase == RenderPhase::Depth && cmd.skip_depth) continue;
+  current_pipeline->cmdBind(command_buffer, graphics_state);
+  executeMeshCommands(command_buffer, frame.single_sided, enable_depth_skip);
+
+  graphics_state.rasterization_state.cull_mode = GraphicsState::CullMode::None;
+  current_pipeline->cmdBind(command_buffer, graphics_state);
+  executeMeshCommands(command_buffer, frame.double_sided, enable_depth_skip);
+}
+
+// Helper function to actually render meshes
+void MeshPass::executeMeshCommands(VkCommandBuffer command_buffer,
+                                   const MeshRenderCommandList& commands,
+                                   bool enable_depth_skip) {
+  for (const auto& cmd : commands) {
+    if (enable_depth_skip && cmd.skip_depth) continue;
 
     log_zone_named("Render mesh");
 

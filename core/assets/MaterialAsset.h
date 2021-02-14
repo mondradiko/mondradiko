@@ -42,11 +42,14 @@ class MaterialAsset : public Asset {
   bool isLoaded() const final { return albedo_texture.isLoaded(); }
 
   const MaterialUniform& getUniform() const { return uniform; }
+  bool isDoubleSided() const { return double_sided; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;
 
  private:
   AssetPool* asset_pool;
   GpuInstance* gpu;
+
+  bool double_sided;
 
   AssetHandle<TextureAsset> albedo_texture;
   AssetHandle<TextureAsset> emissive_texture;

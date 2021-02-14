@@ -361,6 +361,8 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
   {  // Load base material attributes
     const auto &base = material;
 
+    material_builder.add_is_double_sided(base.doubleSided);
+
     if (base.alphaMode == "MASK") {
       material_builder.add_mask_threshold(base.alphaCutoff);
       material_builder.add_enable_blend(false);
