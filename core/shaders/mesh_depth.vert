@@ -10,6 +10,25 @@ layout(set = 0, binding = 0) uniform CameraUniform {
     vec3 position;
 } camera;
 
+struct MaterialUniform {
+  vec3 emissive_factor;
+  vec4 albedo_factor;
+
+  float mask_threshold;
+  float metallic_factor;
+  float roughness_factor;
+  float normal_map_scale;
+
+  bool is_unlit;
+  bool enable_blend;
+  bool has_emissive_texture;
+  bool has_metal_roughness_texture;
+};
+
+layout(set = 1, binding = 0) buffer readonly MaterialDescriptor {
+  MaterialUniform materials[];
+} materials;
+
 struct MeshUniform {
   mat4 model;
   uint light_count;
@@ -26,6 +45,17 @@ layout(location = 2) in vec3 vertTangent;
 layout(location = 3) in vec3 vertColor;
 layout(location = 4) in vec2 vertTexCoord;
 
+layout(location = 0) out float fragMask;
+layout(location = 1) out vec2 fragTexCoord;
+layout(location = 2) out float fragAlphaFactor;
+
 void main() {
-  gl_Position = camera.projection * camera.view * meshes.meshes[gl_InstanceIndex].model * vec4(vertPosition, 1.0);
+  MeshUniform mesh = meshes.meshes[gl_InstanceIndex];
+
+  gl_Position = camera.projection * camera.view * mesh.model * vec4(vertPosition, 1.0);
+
+  MaterialUniform material = materials.materials[mesh.material_idx];
+  fragMask = material.mask_threshold;
+  fragTexCoord = vertTexCoord;
+  fragAlphaFactor = material.albedo_factor.a;
 }

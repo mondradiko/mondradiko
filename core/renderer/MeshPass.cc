@@ -398,9 +398,7 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
 
     log_zone_named("Render mesh");
 
-    if (phase == RenderPhase::Forward) {
-      cmd.textures_descriptor->cmdBind(command_buffer, pipeline_layout, 3);
-    }
+    cmd.textures_descriptor->cmdBind(command_buffer, pipeline_layout, 3);
 
     vkCmdDrawIndexed(command_buffer, cmd.index_num, 1, cmd.index_offset,
                      cmd.vertex_offset, cmd.mesh_idx);
