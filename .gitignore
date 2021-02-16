@@ -5,6 +5,9 @@ test-folder/
 docs/Gemfile.lock
 docs/_site/
 
+# Various development files
 .cache/
 .ccls-cache/
 **.h.gch
+**/__pycache__/
+**.pyc
