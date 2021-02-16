@@ -16,7 +16,7 @@ def preamble(summary):
 
 
 class Codegen:
-    """Base class for generating files containing methods."""
+    """Base class for generating classdef wrappers."""
 
     def __init__(self, output_file, component_name):
         self.output_file = output_file
