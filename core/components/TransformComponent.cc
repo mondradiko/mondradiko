@@ -34,7 +34,7 @@ wasm_trap_t* TransformComponent::getPosition(const wasm_val_t args[],
 
 wasm_trap_t* TransformComponent::setPosition(const wasm_val_t args[],
                                              wasm_val_t results[]) {
-  _data.mutable_position().mutate_x(args[0].of.f64);
+  _data.mutable_position().mutate_x(args[1].of.f64);
   _data.mutable_position().mutate_y(args[2].of.f64);
   _data.mutable_position().mutate_z(args[3].of.f64);
   return nullptr;
