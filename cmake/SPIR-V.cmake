@@ -3,7 +3,7 @@
 
 include(FindMondradikoDependency)
 
-find_program(GLSLANGVALIDATOR_COMMAND glslangValidator) # HINTS ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/tools ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/tools)
+find_program(GLSLANGVALIDATOR_COMMAND glslangValidator)
 if(NOT GLSLANGVALIDATOR_COMMAND)
 	message(FATAL_ERROR "glslangValidator required - source maintained at https://github.com/KhronosGroup/glslang")
 endif()

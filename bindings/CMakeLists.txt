@@ -1,6 +1,7 @@
 # Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+# CI support for specifying an exact Python3_EXECUTABLE via environment var
 set(Python3_EXECUTABLE $ENV{Python3_EXECUTABLE})
 if (Python3_EXECUTABLE)
   message(STATUS "Using Python3_EXECUTABLE = ${Python3_EXECUTABLE}")

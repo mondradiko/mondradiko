@@ -3,7 +3,7 @@
 
 include(FindMondradikoDependency)
 
-find_program(FLATC_COMMAND flatc PATH_SUFFIXES flatbuffers) # HINTS ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/tools ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/tools)
+find_program(FLATC_COMMAND flatc PATH_SUFFIXES flatbuffers)
 if(NOT FLATC_COMMAND)
   message(STATUS "CMAKE_PROGRAM_PATH == ${CMAKE_PROGRAM_PATH}")
   message(FATAL_ERROR "flatc required - source maintained at https://github.com/google/flatbuffers")

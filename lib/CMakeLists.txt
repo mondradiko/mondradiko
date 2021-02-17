@@ -21,28 +21,10 @@ find_mondradiko_dependency(
   FALLBACK VCPKG "xxHash" VCPKG_MODULES xxHash::xxhash
 )
 
-# support use of inline / submodule based msdfgen
-# (note: user needs to manually install zlib, freetype and openssl in this case)
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/msdfgen)
-  message(STATUS "@local[msdfgen]: ${CMAKE_CURRENT_SOURCE_DIR}/msdfgen")
-  if (WIN32)
-    # TODO(humbletim) - figure how to collapse these into generic find_packages
-    set(ZLIB_INCLUDE_DIR ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/include)
-    set(ZLIB_LIBRARY ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/lib/zlib.lib)
-    #find_mondradiko_dependency(mondradiko::freetype VCPKG "freetype" VCPKG_MODULES Freetype::Freetype)
-    set(FREETYPE_LIBRARY ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/lib/freetype.lib)
-    set(FREETYPE_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/include)
-    set(OPENSSL_ROOT_DIR ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows)
-  endif()
-  add_subdirectory(msdfgen)
-  add_library(mondradiko::msdfgen INTERFACE IMPORTED)
-  set_property(TARGET mondradiko::msdfgen PROPERTY INTERFACE_LINK_LIBRARIES msdfgen::msdfgen msdfgen::msdfgen-ext)
-else()
-  find_mondradiko_dependency(
-    mondradiko::msdfgen
-    VCPKG "msdfgen" VCPKG_MODULES msdfgen::msdfgen msdfgen::msdfgen-ext
-  )
-endif()
+find_mondradiko_dependency(
+  mondradiko::msdfgen
+  VCPKG "msdfgen" VCPKG_MODULES msdfgen::msdfgen msdfgen::msdfgen-ext
+)
 
 find_mondradiko_dependency(
   mondradiko::gamenetworkingsockets
