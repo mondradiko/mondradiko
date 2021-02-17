@@ -7,8 +7,7 @@ name = "Transform"
 
   [methods.getPosition]
   brief = "Retrieves the position of this Transform."
-  params = []
-  return = "Vec3"
+  return = ["double", "double", "double"]
 
   [methods.setPosition]
   brief = "Sets the position of this Transform."
