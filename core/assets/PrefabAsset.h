@@ -13,6 +13,7 @@ namespace mondradiko {
 
 // Forward declarations
 class AssetPool;
+class ScriptEnvironment;
 class TransformComponent;
 
 class PrefabAsset : public Asset {
@@ -24,7 +25,7 @@ class PrefabAsset : public Asset {
   void load(const assets::SerializedAsset*) final;
   ~PrefabAsset();
 
-  EntityId instantiate(EntityRegistry*) const;
+  EntityId instantiate(EntityRegistry*, ScriptEnvironment*) const;
 
  private:
   AssetPool* asset_pool;
