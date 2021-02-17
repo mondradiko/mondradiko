@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "core/scripting/ComponentScript.h"
 #include "core/scripting/ScriptEnvironment.h"
-#include "core/scripting/ScriptInstance.h"
 #include "types/assets/ScriptAsset_generated.h"
 
 namespace mondradiko {
@@ -73,8 +73,8 @@ ScriptAsset::~ScriptAsset() {
   if (script_module) wasm_module_delete(script_module);
 }
 
-ScriptInstance* ScriptAsset::createInstance() const {
-  ScriptInstance* instance = new ScriptInstance(scripts, script_module);
+ComponentScript* ScriptAsset::createInstance() const {
+  ComponentScript* instance = new ComponentScript(scripts, script_module);
   return instance;
 }
 

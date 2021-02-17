@@ -9,7 +9,7 @@
 namespace mondradiko {
 
 // Forward declarations
-class ScriptInstance;
+class ComponentScript;
 
 class ScriptComponent {
  public:
@@ -20,7 +20,7 @@ class ScriptComponent {
   friend class ScriptEnvironment;
 
   AssetHandle<ScriptAsset> script_asset;
-  ScriptInstance* script_instance;
+  ComponentScript* script_instance;
 };
 
 }  // namespace mondradiko

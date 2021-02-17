@@ -105,7 +105,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
 
       // TODO(marceline-cramer) Register callbacks under their exported names
       wasm_func_t* update_func = wasm_extern_as_func(instance_externs.data[1]);
-      addCallback("update", update_func);
+      _addCallback("update", update_func);
     }
   }
 }
@@ -114,32 +114,24 @@ ScriptInstance::~ScriptInstance() {
   if (module_instance) wasm_instance_delete(module_instance);
 }
 
-void ScriptInstance::addCallback(const std::string& callback_name,
-                                 wasm_func_t* callback) {
+void ScriptInstance::_addCallback(const std::string& callback_name,
+                                  wasm_func_t* callback) {
   callbacks.emplace(callback_name, callback);
 }
 
-void ScriptInstance::runCallback(const std::string& callback_name,
-                                 EntityId instance_id) {
+bool ScriptInstance::_hasCallback(const std::string& callback_name) {
+  return callbacks.find(callback_name) != callbacks.end();
+}
+
+wasm_func_t* ScriptInstance::_getCallback(const std::string& callback_name) {
   auto iter = callbacks.find(callback_name);
 
   if (iter == callbacks.end()) {
-    log_err_fmt("Attempted to call missing callback %s", callback_name.c_str());
-    return;
+    log_err_fmt("Attempted to get missing callback %s", callback_name.c_str());
+    return nullptr;
   }
 
-  wasmtime_error_t* module_error = nullptr;
-  wasm_trap_t* module_trap = nullptr;
-
-  wasm_val_t self_param;
-  self_param.kind = WASM_I32;
-  self_param.of.i32 = instance_id;
-
-  module_error = wasmtime_func_call(iter->second, &self_param, 1, nullptr, 0,
-                                    &module_trap);
-  if (scripts->handleError(module_error, module_trap)) {
-    log_err_fmt("Error while running callback %s", callback_name.c_str());
-  }
+  return iter->second;
 }
 
 }  // namespace mondradiko

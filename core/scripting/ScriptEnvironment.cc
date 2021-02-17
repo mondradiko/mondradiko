@@ -9,6 +9,7 @@
 #include "core/assets/ScriptAsset.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
+#include "core/scripting/ComponentScript.h"
 #include "core/scripting/ScriptInstance.h"
 #include "log/log.h"
 
@@ -104,8 +105,7 @@ void ScriptEnvironment::update(EntityRegistry* registry,
 
     if (!script.getScriptAsset()) continue;
 
-    ScriptInstance* script_instance = script.script_instance;
-    script_instance->runCallback("update", e);
+    script.script_instance->update(e);
   }
 }
 

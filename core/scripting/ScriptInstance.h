@@ -40,20 +40,18 @@ class ScriptInstance {
   ScriptInstance(ScriptEnvironment*, wasm_module_t*);
   ~ScriptInstance();
 
+protected:
+  ScriptEnvironment* scripts;
+
   // TODO(marceline-cramer) Make observers in ScriptEnvironment for events
   // TODO(marceline-cramer) Define entrypoint classes and their sizes
   // TODO(marceline-cramer) Dynamic ScriptInstance Wasm allocation
   // TODO(marceline-cramer) Pass EntityIds to scripts
-  void addCallback(const std::string&, wasm_func_t*);
-  bool hasCallback(const std::string&);
-  void runCallback(const std::string&, EntityId);
+  void _addCallback(const std::string&, wasm_func_t*);
+  bool _hasCallback(const std::string&);
+  wasm_func_t* _getCallback(const std::string&);
 
-  // TODO(marceline-cramer) Actually update instance data
-  void updateData(const uint8_t*, size_t) {}
-
- private:
-  ScriptEnvironment* scripts;
-
+private:
   wasm_instance_t* module_instance = nullptr;
   std::unordered_map<std::string, wasm_func_t*> callbacks;
 };

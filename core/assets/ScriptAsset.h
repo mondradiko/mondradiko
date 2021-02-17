@@ -12,8 +12,8 @@
 namespace mondradiko {
 
 // Forward declarations
+class ComponentScript;
 class ScriptEnvironment;
-class ScriptInstance;
 
 class ScriptAsset : public Asset {
  public:
@@ -24,7 +24,7 @@ class ScriptAsset : public Asset {
   void load(const assets::SerializedAsset*) final;
   ~ScriptAsset();
 
-  ScriptInstance* createInstance() const;
+  ComponentScript* createInstance() const;
 
  private:
   ScriptEnvironment* scripts;
