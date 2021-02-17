@@ -1,9 +1,11 @@
 [submodule "tracy"]
 	path = lib/tracy
 	url = https://github.com/wolfpld/tracy
-[submodule "lib/msdfgen"]
-	path = lib/msdfgen
-	url = https://github.com/Chlumsky/msdfgen
-[submodule "lib/CLI11"]
-	path = lib/CLI11
-	url = https://github.com/CLIUtils/CLI11
+
+[submodule "vcpkg"]
+	path = vcpkg
+	url = https://github.com/Microsoft/vcpkg.git
+
+[submodule "bindings/toml"]
+	path = bindings/toml
+	url = https://github.com/uiri/toml.git

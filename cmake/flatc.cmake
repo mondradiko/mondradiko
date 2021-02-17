@@ -1,10 +1,15 @@
 # Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-find_program(FLATC_COMMAND flatc)
+include(FindMondradikoDependency)
+
+find_program(FLATC_COMMAND flatc PATH_SUFFIXES flatbuffers) # HINTS ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/tools ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/tools)
 if(NOT FLATC_COMMAND)
+  message(STATUS "CMAKE_PROGRAM_PATH == ${CMAKE_PROGRAM_PATH}")
   message(FATAL_ERROR "flatc required - source maintained at https://github.com/google/flatbuffers")
 endif()
+
+message(STATUS ">>> FLATC_COMMAND ${FLATC_COMMAND}")
 
 #
 # Generate a flatbuffers header file. Returns the header.

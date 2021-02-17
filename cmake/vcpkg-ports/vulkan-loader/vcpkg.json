@@ -1,0 +1,9 @@
+{
+  "name": "vulkan-loader",
+  "version-string": "1.2.162",
+  "description": "Vulkan ICD desktop loader for Windows, Linux, and MacOS.",
+  "homepage": "https://github.com/Kronos/Vulkan-Loader",
+  "dependencies": [
+    "vulkan-headers"
+  ]
+}

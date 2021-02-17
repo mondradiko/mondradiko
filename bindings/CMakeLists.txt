@@ -1,7 +1,13 @@
 # Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-find_package(Python3 REQUIRED)
+set(Python3_EXECUTABLE $ENV{Python3_EXECUTABLE})
+if (Python3_EXECUTABLE)
+  message(STATUS "Using Python3_EXECUTABLE = ${Python3_EXECUTABLE}")
+else()
+  find_package(Python3 3.6 REQUIRED)
+endif()
+
 set(GENERATE_BINDING_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_binding.py")
 
 #
@@ -45,4 +51,5 @@ api_bindings(SCRIPT_LINKERS
 
 add_library(mondradiko-api-components OBJECT ${SCRIPT_LINKERS})
 # TODO(marceline-cramer): Don't expose third-party dependencies to the public interface
+add_dependencies(mondradiko-api-components mondradiko-types)
 target_link_libraries(mondradiko-api-components mondradiko-lib)
