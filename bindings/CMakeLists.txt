@@ -4,6 +4,13 @@
 find_package(Python3 REQUIRED)
 set(GENERATE_CLASS_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_class.py")
 
+# Regenerate class wrappers when generator scripts are modified
+set(CLASSDEF_GENERATOR_SCRIPTS
+  "${CMAKE_CURRENT_SOURCE_DIR}/codegen.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cpp_binding.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/wasm_linker.py"
+)
+
 #
 # Generate wrapper code for a class definition. Returns the generated file.
 #
@@ -17,7 +24,7 @@ function(wrap_class ret GENERATOR EXTENSION CLASSDEF)
   add_custom_command(
     OUTPUT ${OUTFILE}
     COMMAND ${Python3_EXECUTABLE} ${GENERATE_CLASS_SCRIPT} ${GENERATOR} ${CLASSDEF} ${OUTFILE}
-    DEPENDS ${CLASSDEF} ${GENERATE_CLASS_SCRIPT})
+  DEPENDS ${CLASSDEF} ${GENERATE_CLASS_SCRIPT} ${CLASSDEF_GENERATOR_SCRIPTS})
 
   set(${ret} "${OUTFILE}" PARENT_SCOPE)
 endfunction(wrap_class)
