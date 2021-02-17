@@ -20,6 +20,11 @@ void ScriptAsset::load(const assets::SerializedAsset* asset) {
     return;
   }
 
+  if (script->data()->size() == 0) {
+    log_err("Script asset has no contents");
+    return;
+  }
+
   // TODO(Turtle1331) free wasmtime memory as early as possible
 
   wasmtime_error_t* module_error = nullptr;
@@ -38,7 +43,13 @@ void ScriptAsset::load(const assets::SerializedAsset* asset) {
 
     case assets::ScriptType::WasmText: {
       wasm_byte_vec_t translated_data;
-      wasmtime_wat2wasm(&module_data, &translated_data);
+
+      module_error = wasmtime_wat2wasm(&module_data, &translated_data);
+
+      if (module_error != nullptr) {
+        break;
+      }
+
       module_error = wasmtime_module_new(scripts->getEngine(), &translated_data,
                                          &script_module);
       wasm_byte_vec_delete(&translated_data);
