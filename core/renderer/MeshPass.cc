@@ -163,11 +163,10 @@ void MeshPass::allocateDescriptors(uint32_t frame_index,
 
   auto& frame = frame_data[frame_index];
 
-  uint32_t light_count;
+  std::vector<PointLightUniform> point_light_uniforms;
 
   {
     auto point_lights = world->registry.view<PointLightComponent>();
-    std::vector<PointLightUniform> point_light_uniforms;
 
     for (auto e : point_lights) {
       auto& point_light = point_lights.get(e);
@@ -176,10 +175,25 @@ void MeshPass::allocateDescriptors(uint32_t frame_index,
       point_light.getUniform(&uniform);
       point_light_uniforms.push_back(uniform);
     }
+  }
 
-    light_count = point_light_uniforms.size();
+  {
+    auto point_lights =
+        world->registry.view<PointLightComponent, TransformComponent>();
 
-    for (uint32_t i = 0; i < light_count; i++) {
+    for (auto e : point_lights) {
+      auto& point_light = point_lights.get<PointLightComponent>(e);
+      auto& transform = point_lights.get<TransformComponent>(e);
+
+      PointLightUniform uniform;
+      point_light.getUniform(&uniform);
+      uniform.position = transform.getWorldTransform() * uniform.position;
+      point_light_uniforms.push_back(uniform);
+    }
+  }
+
+  {
+    for (uint32_t i = 0; i < point_light_uniforms.size(); i++) {
       frame.point_lights->writeElement(i, point_light_uniforms[i]);
     }
   }
@@ -224,7 +238,7 @@ void MeshPass::allocateDescriptors(uint32_t frame_index,
 
       MeshUniform mesh_uniform;
       mesh_uniform.model = transform.getWorldTransform();
-      mesh_uniform.light_count = light_count;
+      mesh_uniform.light_count = point_light_uniforms.size();
 
       cmd.mesh_idx = frame_meshes.size();
       frame_meshes.push_back(mesh_uniform);
