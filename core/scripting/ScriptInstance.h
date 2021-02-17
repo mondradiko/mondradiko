@@ -27,6 +27,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "core/world/Entity.h"
 #include "lib/include/wasm_headers.h"
 
 namespace mondradiko {
@@ -45,7 +46,7 @@ class ScriptInstance {
   // TODO(marceline-cramer) Pass EntityIds to scripts
   void addCallback(const std::string&, wasm_func_t*);
   bool hasCallback(const std::string&);
-  void runCallback(const std::string&);
+  void runCallback(const std::string&, EntityId);
 
   // TODO(marceline-cramer) Actually update instance data
   void updateData(const uint8_t*, size_t) {}

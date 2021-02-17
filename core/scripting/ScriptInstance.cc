@@ -99,12 +99,12 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
         const wasm_name_t* callback_name = wasm_exporttype_name(exported_type);
       }*/
 
-      if (instance_externs.size < 1) {
+      if (instance_externs.size < 2) {
         log_ftl("Script module has no exports");
       }
 
       // TODO(marceline-cramer) Register callbacks under their exported names
-      wasm_func_t* update_func = wasm_extern_as_func(instance_externs.data[0]);
+      wasm_func_t* update_func = wasm_extern_as_func(instance_externs.data[1]);
       addCallback("update", update_func);
     }
   }
@@ -119,7 +119,8 @@ void ScriptInstance::addCallback(const std::string& callback_name,
   callbacks.emplace(callback_name, callback);
 }
 
-void ScriptInstance::runCallback(const std::string& callback_name) {
+void ScriptInstance::runCallback(const std::string& callback_name,
+                                 EntityId instance_id) {
   auto iter = callbacks.find(callback_name);
 
   if (iter == callbacks.end()) {
@@ -130,8 +131,12 @@ void ScriptInstance::runCallback(const std::string& callback_name) {
   wasmtime_error_t* module_error = nullptr;
   wasm_trap_t* module_trap = nullptr;
 
-  module_error =
-      wasmtime_func_call(iter->second, nullptr, 0, nullptr, 0, &module_trap);
+  wasm_val_t self_param;
+  self_param.kind = WASM_I32;
+  self_param.of.i32 = instance_id;
+
+  module_error = wasmtime_func_call(iter->second, &self_param, 1, nullptr, 0,
+                                    &module_trap);
   if (scripts->handleError(module_error, module_trap)) {
     log_err_fmt("Error while running callback %s", callback_name.c_str());
   }

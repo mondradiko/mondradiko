@@ -46,7 +46,7 @@ void World::initializePrefabs() {
 
   for (auto prefab_id : prefabs) {
     auto prefab = asset_pool.load<PrefabAsset>(prefab_id);
-    prefab->instantiate(&registry);
+    prefab->instantiate(&registry, &scripts);
   }
 
   {
@@ -191,7 +191,7 @@ bool World::update() {
     }
   }
 
-  scripts.update(registry, &asset_pool);
+  scripts.update(&registry, &asset_pool);
 
   log_frame_mark;
   return true;
