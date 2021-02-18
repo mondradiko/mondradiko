@@ -10,6 +10,15 @@
 
 namespace mondradiko {
 
+assets::Vec3 getVec3(const toml::value& src_array) {
+  auto src = src_array.as_array();
+  assets::Vec3 dst;
+  dst.mutate_x(src[0].as_floating());
+  dst.mutate_y(src[1].as_floating());
+  dst.mutate_z(src[2].as_floating());
+  return dst;
+}
+
 assets::AssetId PrefabBuilder::buildPrefab(Bundler* bundler,
                                            const toml::table& prefab) {
   ConverterInterface::AssetBuilder fbb;
@@ -30,17 +39,20 @@ assets::AssetId PrefabBuilder::buildPrefab(Bundler* bundler,
   prefab_builder.add_script(script_offset);
 
   if (prefab.find("point_light") != prefab.end()) {
-    // TODO(marceline-cramer) Load these from the TOML
-    assets::Vec3 position(0.0, 0.0, 0.0);
-    assets::Vec3 intensity(100.0, 0.0, 100.0);
+    auto point_light_table = prefab.at("point_light").as_table();
+
+    assets::Vec3 position = getVec3(point_light_table.at("position"));
+    assets::Vec3 intensity = getVec3(point_light_table.at("intensity"));
 
     assets::PointLightPrefab point_light(position, intensity);
     prefab_builder.add_point_light(&point_light);
   }
 
   if (prefab.find("transform") != prefab.end()) {
-    // TODO(marceline-cramer) Load these from the TOML
-    assets::Vec3 position(0.0, 0.0, 0.0);
+    auto transform_table = prefab.at("transform").as_table();
+    assets::Vec3 position = getVec3(transform_table.at("position"));
+
+    // TODO(marceline-cramer) Load this from the TOML
     assets::Quaternion orientation(1.0, 0.0, 0.0, 0.0);
 
     assets::TransformPrefab transform(position, orientation);
