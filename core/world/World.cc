@@ -131,7 +131,7 @@ void World::onUpdateScripts(const protocol::UpdateScripts* update_scripts) {}
 // Helper methods
 ///////////////////////////////////////////////////////////////////////////////
 
-bool World::update() {
+bool World::update(double dt) {
   log_zone;
 
   {
@@ -191,7 +191,7 @@ bool World::update() {
     }
   }
 
-  scripts.update(&registry, &asset_pool);
+  scripts.update(&registry, &asset_pool, dt);
 
   log_frame_mark;
   return true;

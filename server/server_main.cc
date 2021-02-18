@@ -1,7 +1,7 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include <chrono> // NOLINT [build/c++11]
+#include <chrono>  // NOLINT [build/c++11]
 #include <csignal>
 #include <iostream>
 #include <memory>
@@ -36,10 +36,10 @@ struct ServerArgs {
 
   std::string config_path = "./config.toml";
 
-  int parse(int, const char * const[]);
+  int parse(int, const char* const[]);
 };
 
-int ServerArgs::parse(int argc, const char * const argv[]) {
+int ServerArgs::parse(int argc, const char* const argv[]) {
   CLI::App app("Mondradiko server");
 
   app.add_flag("-v,--version", version, "Print version and exit");
@@ -86,8 +86,6 @@ void run(const ServerArgs& args) {
   std::chrono::time_point last_update = clock::now();
 
   while (!g_interrupted) {
-    if (!world.update()) break;
-
     auto current_time = clock::now();
 
     if (std::chrono::duration<double, std::chrono::seconds::period>(
@@ -99,15 +97,18 @@ void run(const ServerArgs& args) {
 
     server.update();
 
+    double dt;
+
     while (true) {
       current_time = clock::now();
-      auto time_elapsed =
-          std::chrono::duration<double, std::chrono::seconds::period>(
-              current_time - last_frame)
-              .count();
+      dt = std::chrono::duration<double, std::chrono::seconds::period>(
+               current_time - last_frame)
+               .count();
 
-      if (time_elapsed >= min_frame_time) break;
+      if (dt >= min_frame_time) break;
     }
+
+    if (!world.update(dt)) break;
 
     last_frame = current_time;
   }

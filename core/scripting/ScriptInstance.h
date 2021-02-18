@@ -40,7 +40,7 @@ class ScriptInstance {
   ScriptInstance(ScriptEnvironment*, wasm_module_t*);
   ~ScriptInstance();
 
-protected:
+ protected:
   ScriptEnvironment* scripts;
 
   // TODO(marceline-cramer) Make observers in ScriptEnvironment for events
@@ -49,9 +49,10 @@ protected:
   // TODO(marceline-cramer) Pass EntityIds to scripts
   void _addCallback(const std::string&, wasm_func_t*);
   bool _hasCallback(const std::string&);
-  wasm_func_t* _getCallback(const std::string&);
+  void _runCallback(const std::string&, const wasm_val_t*, size_t, wasm_val_t*,
+                    size_t);
 
-private:
+ private:
   wasm_instance_t* module_instance = nullptr;
   std::unordered_map<std::string, wasm_func_t*> callbacks;
 };

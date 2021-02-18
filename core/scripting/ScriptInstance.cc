@@ -129,15 +129,23 @@ bool ScriptInstance::_hasCallback(const std::string& callback_name) {
   return callbacks.find(callback_name) != callbacks.end();
 }
 
-wasm_func_t* ScriptInstance::_getCallback(const std::string& callback_name) {
+void ScriptInstance::_runCallback(const std::string& callback_name,
+                                  const wasm_val_t* args, size_t arg_num,
+                                  wasm_val_t* results, size_t result_num) {
   auto iter = callbacks.find(callback_name);
 
   if (iter == callbacks.end()) {
-    log_err_fmt("Attempted to get missing callback %s", callback_name.c_str());
-    return nullptr;
+    log_err_fmt("Attempted to run missing callback %s", callback_name.c_str());
   }
 
-  return iter->second;
+  wasmtime_error_t* module_error = nullptr;
+  wasm_trap_t* module_trap = nullptr;
+
+  module_error = wasmtime_func_call(iter->second, args, arg_num, results,
+                                    result_num, &module_trap);
+  if (scripts->handleError(module_error, module_trap)) {
+    log_err_fmt("Error while running callback %s", callback_name.c_str());
+  }
 }
 
 }  // namespace mondradiko

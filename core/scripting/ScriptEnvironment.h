@@ -23,7 +23,7 @@ class ScriptEnvironment {
 
   void linkUiApis(UserInterface*);
   void linkComponentApis(World*);
-  void update(EntityRegistry*, AssetPool*);
+  void update(EntityRegistry*, AssetPool*, double);
 
   wasm_engine_t* getEngine() { return engine; }
   wasm_store_t* getStore() { return store; }

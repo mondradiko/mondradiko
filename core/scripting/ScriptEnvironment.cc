@@ -96,8 +96,8 @@ void ScriptEnvironment::linkComponentApis(World* world) {
   linkComponentApi<TransformComponent>(this, world);
 }
 
-void ScriptEnvironment::update(EntityRegistry* registry,
-                               AssetPool* asset_pool) {
+void ScriptEnvironment::update(EntityRegistry* registry, AssetPool* asset_pool,
+                               double dt) {
   auto script_view = registry->view<ScriptComponent>();
 
   for (auto& e : script_view) {
@@ -105,7 +105,7 @@ void ScriptEnvironment::update(EntityRegistry* registry,
 
     if (!script.getScriptAsset()) continue;
 
-    script.script_instance->update(e);
+    script.script_instance->update(e, dt);
   }
 }
 

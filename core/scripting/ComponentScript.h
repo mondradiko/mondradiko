@@ -12,13 +12,12 @@ class ComponentScript : public ScriptInstance {
  public:
   ComponentScript(ScriptEnvironment*, wasm_module_t*);
 
-  void update(EntityId);
+  void update(EntityId, double);
 
   // TODO(marceline-cramer) Actually update instance data
   void updateData(const uint8_t*, size_t) {}
 
  private:
-  wasm_func_t* update_func = nullptr;
 };
 
 }  // namespace mondradiko

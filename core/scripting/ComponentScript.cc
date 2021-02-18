@@ -3,33 +3,30 @@
 
 #include "core/scripting/ComponentScript.h"
 
+#include <array>
+
 #include "core/scripting/ScriptEnvironment.h"
 
 namespace mondradiko {
 
 ComponentScript::ComponentScript(ScriptEnvironment* scripts,
                                  wasm_module_t* module)
-    : ScriptInstance(scripts, module) {
-  if (_hasCallback("update")) {
-    update_func = _getCallback("update");
-  }
-}
+    : ScriptInstance(scripts, module) {}
 
-void ComponentScript::update(EntityId self_id) {
-  if (update_func == nullptr) return;
+void ComponentScript::update(EntityId self_id, double dt) {
+  if (!_hasCallback("update")) return;
 
-  wasmtime_error_t* module_error = nullptr;
-  wasm_trap_t* module_trap = nullptr;
+  std::array<wasm_val_t, 2> args;
 
-  wasm_val_t self_param;
-  self_param.kind = WASM_I32;
-  self_param.of.i32 = self_id;
+  auto& self_arg = args[0];
+  self_arg.kind = WASM_I32;
+  self_arg.of.i32 = self_id;
 
-  module_error =
-      wasmtime_func_call(update_func, &self_param, 1, nullptr, 0, &module_trap);
-  if (scripts->handleError(module_error, module_trap)) {
-    log_err_fmt("Error while running update()");
-  }
+  auto& dt_arg = args[1];
+  dt_arg.kind = WASM_F64;
+  dt_arg.of.f64 = dt;
+
+  _runCallback("update", args.data(), args.size(), nullptr, 0);
 }
 
 }  // namespace mondradiko
