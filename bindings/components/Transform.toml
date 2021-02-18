@@ -5,9 +5,17 @@ name = "Transform"
 
 [methods]
 
-  [methods.getPosition]
-  brief = "Retrieves the position of this Transform."
-  return = ["double", "double", "double"]
+  [methods.getX]
+  brief = "Retrieves the X coordinate of this Transform."
+  return = ["double"]
+
+  [methods.getY]
+  brief = "Retrieves the Y coordinate of this Transform."
+  return = ["double"]
+
+  [methods.getZ]
+  brief = "Retrieves the Z coordinate of this Transform."
+  return = ["double"]
 
   [methods.setPosition]
   brief = "Sets the position of this Transform."

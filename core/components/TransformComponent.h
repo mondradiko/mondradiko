@@ -62,8 +62,10 @@ class TransformComponent : public Component<protocol::TransformComponent> {
   // Scripting methods
   //
 
-  // Takes nothing, returns three f64s
-  wasm_trap_t* getPosition(const wasm_val_t[], wasm_val_t[]);
+  // Takes nothing, returns one f64
+  wasm_trap_t* getX(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getY(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getZ(const wasm_val_t[], wasm_val_t[]);
   // Takes three f64s, returns nothing
   wasm_trap_t* setPosition(const wasm_val_t[], wasm_val_t[]);
 };
