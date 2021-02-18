@@ -7,17 +7,29 @@ on: [push, pull_request]
 
 jobs:
   build:
+    strategy:
+        matrix:
+          include:
+            - use_pkgconfig: ON
+            # - use_pkgconfig: OFF
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
 
+      - name: cached vcpkg runtime
+        if: runner.os == 'Linux'
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-${{ hashFiles('vcpkg/.git/HEAD') }}
+          path: vcpkg/vcpkg
+
       - name: Compile
         shell: bash
         run: |
           mkdir builddir
           pushd builddir
-          cmake -GNinja ..
+          cmake -GNinja .. -DUSE_PKGCONFIG=${{ matrix.use_pkgconfig }}
           ninja
           popd
