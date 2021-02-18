@@ -11,7 +11,7 @@ target_link_directories(wasmtime INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_L
 if (WIN32)
   target_link_libraries(wasmtime INTERFACE wasmtime.dll.lib)
 else()
-  target_link_libraries(wasmtime INTERFACE libwasmtime.so)
+  target_link_libraries(wasmtime INTERFACE libwasmtime.so dl)
 endif()
 
 install(
