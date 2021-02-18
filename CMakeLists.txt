@@ -18,10 +18,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   list(APPEND CMAKE_CXX_FLAGS -Wno-nullability-completeness)
 endif()
 
-# if (WIN32 AND MSVC_VERSION GREATER_EQUAL "1900")
-#   add_compile_options("/std:c++latest")
-# endif()
-
 include(SPIR-V)
 include(flatc)
 

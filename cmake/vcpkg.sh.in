@@ -1,0 +1,12 @@
+#!/bin/bash
+set -ea
+
+# helper script that invokes vcpkg/vcpkg.exe preset with arguments
+# to use custom ports, triplets, and installation overrides
+
+@VCPKG_EXEC@ \
+  --x-install-root=@VCPKG_INSTALL_ROOT@ \
+  --overlay-triplets=@VCPKG_OVERLAY_TRIPLETS@ \
+  --overlay-ports=@VCPKG_OVERLAY_PORTS@ \
+  --triplet=@VCPKG_DEFAULT_TRIPLET@ \
+  $*

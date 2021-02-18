@@ -3,9 +3,8 @@
 ### Unified dependency locator (pkg-config + vcpkg)
 #
 # this helper function finds and registers a package as _opts_ALIAS:
-#   given -DUSE_VCPKG=ON (or empty PKG arg) -- by delegating to VCPKG lookup
-#   given -DUSE_VCPKG=OFF -- by first checking pkg-config for a match and then
-#     automatically falling back to VCPKG
+#   when -DUSE_PKGCONFIG=ON it will first check pkg-config for a match and then
+#     automatically fall back to VCPKG
 #
 # TODO(humbletim) maybe also support "git submodule" overrides too so that all
 #   three strategies can be specified together (submodule, pkg-config, vcpkg)
@@ -13,7 +12,7 @@
 # find_mondradiko_dependency(
 #   <internal alias>
 #   PKG <pkg-name> PKG_MODULES <pkg-config module spec(s)>
-#   FALLBACK VCPKG <vcpkg-name> VCPKG_MODULES <vcpkg module names>
+#   FALLBACK VCPKG <vcpkg-name> [VCPKG_INSTALL <vcpkg install name>] VCPKG_MODULES <vcpkg module names>
 # )
 #
 # example:
@@ -25,63 +24,90 @@
 # ... then to reference the dep's includes + libs requires just one line:
 # target_link_libraries(<target_name> PUBLIC mondradiko::xxhash)
 #
+
+function(_find_or_install_package_vcpkg _opts_ALIAS _opts_VCPKG _opts_VCPKG_INSTALL)
+  if (NOT TARGET ${_opts_ALIAS})
+    find_package_vcpkg(${_opts_ALIAS} ${_opts_VCPKG} ${ARGN})
+    if (NOT TARGET ${_opts_ALIAS})
+      message(STATUS "(vcpkg[${_opts_PKG}]): attempting to autoinstall... \"${_opts_VCPKG}\" as \"${_opts_VCPKG_INSTALL}\"")
+      mondradiko_execute_vcpkg(install ${_opts_VCPKG_INSTALL})
+      find_package_vcpkg(${_opts_ALIAS} ${_opts_VCPKG} REQUIRED ${ARGN})
+      if (NOT TARGET ${_opts_ALIAS})
+        message(FATAL_ERROR "unable to find/install package via VCPKG: ${_opts_VCPKG}")
+      endif()
+    endif()
+  endif()
+endfunction()
+
 function(find_mondradiko_dependency _opts_ALIAS)
-    set(options FALLBACK)
-    set(oneValueArgs VCPKG PKG)
+    set(options "") #FALLBACK)
+    set(oneValueArgs VCPKG VCPKG_INSTALL PKG)
     set(multiValueArgs PKG_MODULES VCPKG_MODULES)
     cmake_parse_arguments(_opts "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})  
-    if (WIN32 OR NOT _opts_PKG OR USE_VCPKG)
-      find_package_vcpkg(${_opts_ALIAS} ${_opts_VCPKG} ${_opts_VCPKG_MODULES})
-    else()
-      set(_opts_args "")
-      if (NOT _opts_FALLBACK)
-        list(APPEND _opts_args REQUIRED)
-      endif()
+    if (NOT _opts_VCPKG_INSTALL)
+      set(_opts_VCPKG_INSTALL ${_opts_VCPKG})
+    endif()
+    if (TARGET ${_opts_ALIAS})
+      message(STATUS "[find_mondradiko_dependency target already defined: ${_opts_ALIAS}]")
+      return()
+    endif()
+    if (NOT _opts_PKG OR WIN32 OR NOT USE_PKGCONFIG)
+      _find_or_install_package_vcpkg(${_opts_ALIAS} ${_opts_VCPKG} ${_opts_VCPKG_INSTALL} ${_opts_VCPKG_MODULES})
+      return()
+    endif()
+    if (ON)
+      set(_opts_args QUIET)
       list(APPEND _opts_args ${_opts_PKG_MODULES})
-      find_package_pkgconfig(${_opts_ALIAS} ${_opts_PKG} ${_opts_args})
+      find_package_pkgconfig(${_opts_ALIAS} ${_opts_PKG} QUIET ${_opts_args})
+      if (TARGET ${_opts_ALIAS})
+        message(STATUS "target created from pkg-config: ${_opts_ALIAS}")
+      endif()
+
       if (NOT TARGET ${_opts_ALIAS})
-        if (_opts_FALLBACK)
-          message(STATUS "(pkg-config[${_opts_PKG}]): fallilng back to VCPKG...")
+        if (_opts_VCPKG)
+          #message(STATUS "(pkg-config[${_opts_PKG}]): falling back to VCPKG... \"${_opts_VCPKG}\"")
           unset(${_opts_PKG}_FOUND CACHE)
-          find_package_vcpkg(${_opts_ALIAS} ${_opts_VCPKG} ${_opts_VCPKG_MODULES})
+          _find_or_install_package_vcpkg(${_opts_ALIAS} ${_opts_VCPKG} ${_opts_VCPKG_INSTALL} ${_opts_VCPKG_MODULES})
+        else()
+          message(FATAL_ERROR "unable to find/install package VCPKG: ${_opts_VCPKG}")
         endif()
       endif()
       # message(STATUS "calling pkg_check_modules ${_opts_PKG} ${_opts_REQUIRED}")
+    endif()
+    if (NOT TARGET ${_opts_ALIAS})
+      message(FATAL_ERROR "ERROR LOCATING DEPENDENCY ${_opts_ALIAS} ${_opts_PKG} ${_opts_VCPKG}")
     endif()
 endfunction()
 
 
 ### VCPKG LOOKUP
 
-if (WIN32)
-  set(_find_triplet "x64-windows")
-endif()
-if (UNIX)
-  set(_find_triplet "x64-linux")
-endif()
-
-# enable find_program() to locate utilities installed to vcpkg_installed/tools/
-list(APPEND CMAKE_PREFIX_PATH 
-  "${CMAKE_BINARY_DIR}/vcpkg_installed/${_find_triplet}/tools"
-)
-
-if (NOT WIN32)
-  find_package(PkgConfig REQUIRED)
-endif()
-
-# find_package_vcpkg(<alias> <vcpkg-name> <vcpkg-modules>)
+# find_package_vcpkg(<alias> [REQUIRED] <vcpkg-name> <vcpkg-modules>)
 # ... finds a previous installed VCPKG package and registers as _opts_ALIAS
 # eg: find_package_vcpkg(mondradiko::sdl2 sdl2 SDL2::SDL2)
 function(find_package_vcpkg _opts_ALIAS _opts_VCPKG)
-  find_package(${_opts_VCPKG} CONFIG REQUIRED HINTS ${CMAKE_BINARY_DIR}/vcpkg_installed/${_find_triplet}/share/${opts_VCPKG}) # NAMES ${opts_VCPKG} )
+  cmake_parse_arguments(_opts "REQUIRED;QUIET" "" "" ${ARGN})
+  #message(STATUS "find_package_vcpkg -- unparsed: ${_opts_UNPARSED_ARGUMENTS} REQUIRED=${_opts_REQUIRED}")
+  set(_ARGS "")
+  if (_opts_REQUIRED)
+    list(APPEND _ARGS REQUIRED)
+  endif()
+  if (_opts_QUIET)
+    list(APPEND _ARGS QUIET)
+  endif()
+  find_package(${_opts_VCPKG} CONFIG ${_ARGS} HINTS ${VCPKG_INSTALL_TRIPLETROOT}/share/${opts_VCPKG}) # NAMES ${opts_VCPKG} )
   if (NOT ${_opts_VCPKG}_FOUND)
-    message(FATAL_ERROR "(vcpkg[${_opts_VCPKG}]): NOT FOUND ${_opts_ALIAS} ${CMAKE_BINARY_DIR}/vcpkg_installed/${_find_triplet}/share/${opts_VCPKG}")
+    if (_REQUIRED)
+      message(FATAL_ERROR "(vcpkg[${_opts_VCPKG}]): NOT FOUND ${_opts_ALIAS}")
+    else()
+      message(STATUS "(vcpkg[${_opts_VCPKG}]): NOT FOUND ${_opts_ALIAS}")
+    endif()
   else()
     if (NOT TARGET ${_opts_ALIAS})
       message(STATUS "@vcpkg: ${_opts_ALIAS}")
       add_library(${_opts_ALIAS} INTERFACE IMPORTED)
-      set_property(TARGET ${_opts_ALIAS} PROPERTY INTERFACE_LINK_LIBRARIES ${ARGN})
-      set_property(TARGET ${_opts_ALIAS} PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/vcpkg_installed/${_find_triplet}/include)
+      set_property(TARGET ${_opts_ALIAS} PROPERTY INTERFACE_LINK_LIBRARIES ${_opts_UNPARSED_ARGUMENTS})
+      set_property(TARGET ${_opts_ALIAS} PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${VCPKG_INSTALL_TRIPLETROOT}/include)
     else()
       message(STATUS "(vcpkg): ${_opts_ALIAS} already exists... not redefining")
     endif()
@@ -91,13 +117,17 @@ endfunction()
 
 ### PKG-CONFIG LOOKUP
 
+if (NOT WIN32)
+  find_package(PkgConfig REQUIRED)
+endif()
+
 # find_package_pkgconfig(<alias> <pkg-name> <pkg-modules>)
 # ... finds a previously installed pkg-config mod and registers as _opts_ALIAS
 # eg: find_package_pkgconfig(mondradiko::sdl2 SDL2 sdl2)
 function(find_package_pkgconfig _opts_ALIAS _opts_PKG)
   # message(STATUS "find_package_pkgconfig(${_opts_ALIAS} ${_opts_PKG} ${ARGN})")
   #list(PREPEND ARGN QUIET)
-  pkg_check_modules(${_opts_PKG} ${ARGN})
+  pkg_check_modules(${_opts_PKG} QUIET ${ARGN})
   
   if (_pkgconfig_error)
     message(STATUS "(pkg-config[${_opts_PKG}]): NOT FOUND ${_opts_ALIAS} ${_pkgconfig_error}")
@@ -135,11 +165,11 @@ endfunction()
 # can build an application .exe in Debug mode and simply hit F5 to start
 # debugging it (without first having to manually shuffle DLLs around).
 function(mondradiko_instrument_exe_runtime_dlls TARGET_NAME)
-  if (USE_VCPKG AND WIN32)
+  if (WIN32)
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
       COMMAND powershell -noprofile -executionpolicy Bypass -file "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/msbuild/applocal.ps1"
           -targetBinary $<TARGET_FILE:${TARGET_NAME}>
-          -installedDir "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/bin"
+          -installedDir "${VCPKG_INSTALL_TRIPLETROOT}/bin"
           -OutVariable out
     )
   endif()
