@@ -106,8 +106,8 @@ function(find_package_vcpkg _opts_ALIAS _opts_VCPKG)
     if (NOT TARGET ${_opts_ALIAS})
       message(STATUS "@vcpkg: ${_opts_ALIAS}")
       add_library(${_opts_ALIAS} INTERFACE IMPORTED)
-      set_property(TARGET ${_opts_ALIAS} PROPERTY INTERFACE_LINK_LIBRARIES ${_opts_UNPARSED_ARGUMENTS})
-      set_property(TARGET ${_opts_ALIAS} PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${VCPKG_INSTALL_TRIPLETROOT}/include)
+      set_property(TARGET ${_opts_ALIAS} PROPERTY INTERFACE_LINK_LIBRARIES "${_opts_UNPARSED_ARGUMENTS}")
+      set_property(TARGET ${_opts_ALIAS} PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${VCPKG_INSTALL_TRIPLETROOT}/include")
     else()
       message(STATUS "(vcpkg): ${_opts_ALIAS} already exists... not redefining")
     endif()
@@ -117,7 +117,7 @@ endfunction()
 
 ### PKG-CONFIG LOOKUP
 
-if (NOT WIN32)
+if (USE_PKGCONFIG AND NOT WIN32)
   find_package(PkgConfig REQUIRED)
 endif()
 

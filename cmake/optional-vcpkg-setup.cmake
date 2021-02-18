@@ -39,8 +39,6 @@ function(mondradiko_bootstrap_vcpkg)
   list(APPEND CMAKE_PREFIX_PATH
     "${VCPKG_INSTALL_TRIPLETROOT}/tools"
     "${VCPKG_INSTALL_TRIPLETROOT}/share"
-    "${VCPKG_INSTALL_TRIPLETROOT}/lib"
-    "${VCPKG_INSTALL_TRIPLETROOT}/include"
   )
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} PARENT_SCOPE)
 
