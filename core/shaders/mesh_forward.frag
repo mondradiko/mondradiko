@@ -175,9 +175,8 @@ void main() {
 
   // TODO(marceline-cramer): Fix PBR so that tone mapping doesn't make JPEG bad
   vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
-  vec3 gamma_correct = pow(tone_mapped, vec3(1.0/2.2));
 
-  outColor = vec4(gamma_correct, 1.0);
+  outColor = vec4(tone_mapped, 1.0);
 }
 
 
