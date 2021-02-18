@@ -10,8 +10,8 @@ jobs:
     strategy:
         matrix:
           include:
-            - use_pkgconfig: ON
-            # - use_pkgconfig: OFF
+            - extra_cmake_args: "-DUSE_PKGCONFIG=ON"
+            - extra_cmake_args: "-DUSE_PKGCONFIG=OFF"
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
@@ -22,7 +22,8 @@ jobs:
         if: runner.os == 'Linux'
         uses: actions/cache@v2
         with:
-          key: ${{ runner.os }}-${{ hashFiles('vcpkg/.git/HEAD') }}
+          key: ${{ runner.os }}-${{ hashFiles('.git/modules/vcpkg/HEAD') }}
+          restore-keys: ${{ runner.os }}-${{ hashFiles('vcpkg/.git/HEAD') }}
           path: vcpkg/vcpkg
 
       - name: Compile
@@ -30,6 +31,6 @@ jobs:
         run: |
           mkdir builddir
           pushd builddir
-          cmake -GNinja .. -DUSE_PKGCONFIG=${{ matrix.use_pkgconfig }}
+          cmake -GNinja .. ${{ matrix.extra_cmake_args }}
           ninja
           popd
