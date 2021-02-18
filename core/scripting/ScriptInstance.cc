@@ -81,31 +81,37 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
     {
       log_zone_named("Get module exports");
 
+      wasm_exporttype_vec_t export_types;
       wasm_extern_vec_t instance_externs;
+      wasm_module_exports(script_module, &export_types);
       wasm_instance_exports(module_instance, &instance_externs);
 
-      /*for (uint32_t i = 0; i < instance_externs.size; i++) {
-        const wasm_extern_t* exported = instance_externs.data[i];
-
-        wasm_externkind_t exported_kind = wasm_extern_kind(exported);
-
-        wasm_name_t export_name;
-        wasm_exporttype_t* export_type =
-            wasm_exporttype_new(&export_name, exported);
-
-        // TODO(marceline-cramer) Handle other kinds of exports
-        if (exported_kind == WASM_EXTERN_FUNC) {
-        }
-        const wasm_name_t* callback_name = wasm_exporttype_name(exported_type);
-      }*/
-
-      if (instance_externs.size < 2) {
-        log_ftl("Script module has no exports");
+      if (export_types.size != instance_externs.size) {
+        wasm_extern_vec_delete(&instance_externs);
+        wasm_exporttype_vec_delete(&export_types);
+        log_ftl("Mismatch between export_types.size and instance_externs.size");
       }
 
-      // TODO(marceline-cramer) Register callbacks under their exported names
-      wasm_func_t* update_func = wasm_extern_as_func(instance_externs.data[1]);
-      _addCallback("update", update_func);
+      for (uint32_t i = 0; i < instance_externs.size; i++) {
+        wasm_exporttype_t* export_type = export_types.data[i];
+        const wasm_name_t* export_name = wasm_exporttype_name(export_type);
+
+        wasm_extern_t* exported = instance_externs.data[i];
+        wasm_externkind_t extern_kind = wasm_extern_kind(exported);
+
+        // TODO(marceline-cramer) Handle other kinds of exports
+        if (extern_kind == WASM_EXTERN_FUNC) {
+          wasm_func_t* callback = wasm_extern_as_func(exported);
+          _addCallback(export_name->data, callback);
+          log_inf_fmt("Imported callback %s", export_name->data);
+        }
+      }
+
+      // TODO(marceline-cramer): Wasmtime-friendly function export handling
+      // FIXME(marceline-cramer): This is a memory leak to keep funcs reffed
+      // wasm_extern_vec_delete(&instance_externs);
+
+      wasm_exporttype_vec_delete(&export_types);
     }
   }
 }
