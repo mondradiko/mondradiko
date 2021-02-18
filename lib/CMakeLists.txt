@@ -29,7 +29,7 @@ endif()
 find_mondradiko_dependency(
   mondradiko::sdl2
   PKG "SDL2" PKG_MODULES sdl2>=2.0.6
-  VCPKG "SDL2" VCPKG_MODULES SDL2::SDL2main ${_SDL_SDL}
+  VCPKG "SDL2" VCPKG_INSTALL "sdl2[vulkan]" VCPKG_MODULES SDL2::SDL2main ${_SDL_SDL}
 )
 
 find_mondradiko_dependency(
@@ -50,7 +50,7 @@ find_mondradiko_dependency(
 
 find_mondradiko_dependency(
   mondradiko::wasmtime
-  VCPKG "wasmtime" VCPKG_MODULES wasmtime::wasmtime
+  VCPKG "wasmtime" VCPKG_INSTALL "wasmtime-prebuilt" VCPKG_MODULES wasmtime::wasmtime
 )
 
 find_mondradiko_dependency(

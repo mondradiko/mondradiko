@@ -29,7 +29,7 @@ function(_find_or_install_package_vcpkg _opts_ALIAS _opts_VCPKG _opts_VCPKG_INST
   if (NOT TARGET ${_opts_ALIAS})
     find_package_vcpkg(${_opts_ALIAS} ${_opts_VCPKG} ${ARGN})
     if (NOT TARGET ${_opts_ALIAS})
-      message(STATUS "(vcpkg[${_opts_PKG}]): attempting to autoinstall... \"${_opts_VCPKG}\" as \"${_opts_VCPKG_INSTALL}\"")
+      message(STATUS "(vcpkg[${_opts_VCPKG}]): attempting to autoinstall... \"${_opts_VCPKG}\" as \"${_opts_VCPKG_INSTALL}\"")
       mondradiko_execute_vcpkg(install ${_opts_VCPKG_INSTALL})
       find_package_vcpkg(${_opts_ALIAS} ${_opts_VCPKG} REQUIRED ${ARGN})
       if (NOT TARGET ${_opts_ALIAS})
