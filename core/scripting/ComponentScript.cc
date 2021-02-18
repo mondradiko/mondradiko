@@ -14,7 +14,10 @@ ComponentScript::ComponentScript(ScriptEnvironment* scripts,
     : ScriptInstance(scripts, module) {}
 
 void ComponentScript::update(EntityId self_id, double dt) {
-  if (!_hasCallback("update")) return;
+  if (!_hasCallback("update")) {
+    log_wrn("Skipping update");
+    return;
+  }
 
   std::array<wasm_val_t, 2> args;
 
