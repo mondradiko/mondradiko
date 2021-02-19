@@ -48,30 +48,6 @@ void World::initializePrefabs() {
     auto prefab = asset_pool.load<PrefabAsset>(prefab_id);
     prefab->instantiate(&registry, &scripts);
   }
-
-  {
-    auto point_light = registry.create();
-    registry.emplace<PointLightComponent>(point_light, -10.0, 1.5, 0.0, 10.0,
-                                          1.0, 1.0);
-  }
-
-  {
-    auto point_light = registry.create();
-    registry.emplace<PointLightComponent>(point_light, 10.0, 1.5, 0.0, 1.0,
-                                          10.0, 1.0);
-  }
-
-  {
-    auto point_light = registry.create();
-    registry.emplace<PointLightComponent>(point_light, 0.0, 1.5, -1.0, 1.0, 1.0,
-                                          10.0);
-  }
-
-  {
-    auto point_light = registry.create();
-    registry.emplace<PointLightComponent>(point_light, 0.0, 1.5, 1.0, 1.0, 10.0,
-                                          10.0);
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
