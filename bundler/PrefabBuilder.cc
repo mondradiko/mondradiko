@@ -55,8 +55,8 @@ assets::AssetId PrefabBuilder::buildPrefab(Bundler* bundler,
     // TODO(marceline-cramer) Load this from the TOML
     assets::Quaternion orientation(1.0, 0.0, 0.0, 0.0);
 
-    assets::TransformPrefab transform(position, orientation);
-    prefab_builder.add_transform(&transform);
+    assets::TransformPrefab transform_builder(position, orientation);
+    prefab_builder.add_transform(&transform_builder);
   }
 
   auto prefab_offset = prefab_builder.Finish();
