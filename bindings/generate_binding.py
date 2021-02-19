@@ -5,6 +5,10 @@
 It currently only supports C++, but will eventually support other targets."""
 
 import sys
+import os
+# add local toml submodule to the python system path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'toml'))
+
 from email.utils import formatdate
 import toml
 

@@ -1,0 +1,30 @@
+{
+  "name": "mondradiko-deps",
+  "version-string": "0.0.0",
+  "description": "portfile for managing Mondradiko VCPKG dependencies as a set",
+  "homepage": "https://github.com/mondradiko/mondradiko",
+  "dependencies": [
+    "vulkan-sdk",
+    "glslang",
+    "flatbuffers",
+    "openxr-loader",
+    {
+      "name": "sdl2",
+      "features": [ "vulkan" ]
+    },
+    "xxhash",
+    "lz4",
+    "gamenetworkingsockets",
+    "glm",
+    "msdfgen",
+    "freetype",
+    "wasmtime-prebuilt",
+    "cli11"
+  ],
+  "features": {
+      "validation": {
+        "description": "mondradiko-deps including vulkan validation",
+        "dependencies": [ "vulkan-validation" ]
+      }
+  }
+}

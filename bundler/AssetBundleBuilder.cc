@@ -149,7 +149,7 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
   fbb.Finish(registry_builder.Finish());
 
   auto registry_path = bundle_root / registry_name;
-  std::ofstream registry_file(registry_path.c_str());
+  std::ofstream registry_file(registry_path.c_str(), std::ofstream::binary);
   registry_file.write(reinterpret_cast<char*>(fbb.GetBufferPointer()),
                       fbb.GetSize());
   registry_file.close();

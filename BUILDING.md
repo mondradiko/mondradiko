@@ -1,99 +1,102 @@
 # Building
 
-Unfortunately, Mondradiko has not been built for Windows or Oculus Quest yet, but it will be soon!
+Mondradiko can currently be built on Windows x64 or Linux x64 (Oculus Quest support coming soon!)
 
-## Python
-
-Python 3 is required, along with the following libraries:
-
-- [`toml`](https://pypi.org/project/toml/)
-
-All of the above can be installed with the following `pip` command:
-```bash
-$ pip install toml
-```
-
-## Linux
-
-### Debian
-
-Install dependencies from packages:
-
-```bash
-sudo apt install libsdl2-dev liblz4-dev libvulkan-dev \
-                 cmake ninja-build build-essential glslang-tools \
-                 libzstd-dev libfreetype6-dev \
-                 libprotobuf-dev protobuf-compiler libssl-dev \
-                 libgl1-mesa-dev libx11-xcb-dev libxcb-dri2-0-dev \
-                 libxcb-glx0-dev libxcb-icccm4-dev libxcb-keysyms1-dev \
-                 libxcb-randr0-dev libxrandr-dev libxxf86vm-dev \
-                 mesa-common-dev
-```
-
-The following dependencies must be built from source:
-
-- [xxHash](#xxhash-linux)
-- [GameNetworkingSockets]((#gamenetworkingsockets-linux))
-- [OpenXR SDK](#openxr-sdk-linux)
-- [Flatbuffers](#flatbuffers-linux)
-
-### Compiling
+## Quick Start (assumes you have a modern CMake, Ninja and C++17 dev environment)
 
 ```bash
 git clone --recurse-submodules https://github.com/mondradiko/mondradiko
+cd mondradiko
 mkdir builddir
 cd builddir
-cmake -GNinja ..
+cmake .. -G Ninja
 ninja
 ```
 
-## Building Dependencies From Source
+## Setting up a Windows development environment
 
-Because not all dependencies are available prebuilt for all operating systems
-or Linux distributions, some dependencies will need to be built from source.
+### Option 1: Manual tool installation
 
-### xxHash (Linux)
+Required tools (note: links are to individual downloads -- to install everything at once see below):
+* [Visual Studio 2019 Community Edition](https://visualstudio.microsoft.com/vs/community/) or similar
+  - if installing via GUI be sure to check the box to include the "Desktop development with C++" workflow.
+* [CMake](https://cmake.org/download/) version 3.19 or later
+* [Python](https://www.python.org/downloads/windows/) version 3.6 or later
+* [Git](https://gitforwindows.org) version 2.2 or later
+* [Ninja](https://github.com/ninja-build/ninja/releases) version 1.10 or later
 
+### Option 2: "One step" tool installation via Chocolatey:
+1. Install [Chocolatey](https://chocolatey.org/install) Package Manager
+2. From a Windows Command Prompt run:
+```cmd
+choco install -y visualstudio2019community visualstudio2019-workload-nativedesktop cmake python3 git ninja
+```
+Currently the above command will install these latest versions:
+* visualstudio2019community 16.8.5.0
+* visualstudio2019-workload-nativedesktop 1.0.0
+* cmake 3.19.4
+* python3 3.9.1
+* git 2.30.1
+* ninja 1.10.2
+
+### Recommended Windows Development Prompt
+In the Windows Start Menu search for and then launch the "x64 Native Tools Command Prompt" (provided by Visual Studio 2019)
+  - This will open a Command Prompt pre-configured with the x64 MSVC compiler and related tools in your PATH
+    which helps simplify CMake invocations to find and select the right architecture/toolset automatically.
+  - (pro tip) you can then "upgrade" the prompt inline into a Git for Windows Bash shell by running `bash --login`
+
+## Verifying your development environment
+Check tool versions from the command prompt:
+- `cmake --version`
+- `python3 --version`
+- `cl.exe` (MSVC compiler)
+- `ninja --version`
+
+## Setting up a Linux (Debian) development environment
+
+Use `apt` to install the essentials needed for building Mondradiko:
 ```bash
-git clone https://github.com/Cyan4973/xxHash
-cd xxHash
-make
-sudo make install
+sudo apt install git cmake ninja-build build-essential libwayland-dev libxrandr-dev
 ```
 
-### GameNetworkingSockets (Linux)
+(then see above for cloning the source and building with ninja)
 
-[Download and extract the latest release tarball.](https://github.com/ValveSoftware/GameNetworkingSockets/releases)
+## Clone and then build using Visual Studio IDE (Windows only)
 
-```bash
-# Once inside the repo...
-mkdir build
-cd build
-cmake -GNinja -DGAMENETWORKINGSOCKETS_BUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release ..
-ninja
-sudo ninja install
+From a Windows CMD prompt:
+
+```cmd
+git clone --recurse-submodules https://github.com/mondradiko/mondradiko
+cd mondradiko
+mkdir builddir
+cd builddir
+cmake .. -G "Visual Studio 16 2019" -A x64 -Thost=x64
+' you can then open the generated Mondradiko.sln from within the Visual Studio IDE
 ```
 
-### OpenXR SDK (Linux)
+## Test driving your custom builds
+*draft notes from discord*
 
+From within your `builddir`:
+
+1. Verify the settings in `config.toml` (you may need to adjust the font path, for example)
+  - warning: config.toml gets overwritten if re-running CMake
+2. Generate an Asset Bundle; to use the Sponza example:
 ```bash
-git clone https://github.com/KhronosGroup/OpenXR-SDK
-cd OpenXR-SDK
-mkdir build
-cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
-ninja
-sudo ninja install
+git clone https://github.com/mondradiko/mondradiko-examples.git
+./bundler/mondradiko-bundler ./mondradiko-examples/v0/Sponza
+# upon successful generation you should see registry.bin + lump_????.bin files created
+```
+3. Launch the Mondradiko Server:
+```bash
+# note: best to do this from a separate prompt
+./server/mondradiko-server
 ```
 
-### Flatbuffers (Linux)
-
+4. Launch the Mondradiko Client:
 ```bash
-git clone https://github.com/google/flatbuffers
-cd flatbuffers
-mkdir build
-cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
-ninja
-sudo ninja install
+./client/mondradiko-client
 ```
+
+*note: if built using Visual Studio IDE you might need to add `Release` to the above paths:
+eg: `./bundler/Release/mondradiko-bundler`*

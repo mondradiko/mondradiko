@@ -7,17 +7,30 @@ on: [push, pull_request]
 
 jobs:
   build:
+    strategy:
+        matrix:
+          include:
+            - extra_cmake_args: "-DUSE_PKGCONFIG=ON"
+            - extra_cmake_args: "-DUSE_PKGCONFIG=OFF"
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
 
+      - name: cached vcpkg runtime
+        if: runner.os == 'Linux'
+        uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-${{ hashFiles('.git/modules/vcpkg/HEAD') }}
+          restore-keys: ${{ runner.os }}-${{ hashFiles('vcpkg/.git/HEAD') }}
+          path: vcpkg/vcpkg
+
       - name: Compile
         shell: bash
         run: |
           mkdir builddir
           pushd builddir
-          cmake -GNinja ..
+          cmake -GNinja .. ${{ matrix.extra_cmake_args }}
           ninja
           popd
