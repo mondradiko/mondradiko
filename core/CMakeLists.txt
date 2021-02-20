@@ -51,6 +51,7 @@ set(MONDRADIKO_CORE_SRC
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
   renderer/Renderer.cc
+  scripting/ComponentScript.cc
   scripting/ScriptEnvironment.cc
   scripting/ScriptInstance.cc
   network/NetworkClient.cc

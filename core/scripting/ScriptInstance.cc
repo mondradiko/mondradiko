@@ -81,31 +81,40 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
     {
       log_zone_named("Get module exports");
 
+      wasm_exporttype_vec_t export_types;
       wasm_extern_vec_t instance_externs;
+      wasm_module_exports(script_module, &export_types);
       wasm_instance_exports(module_instance, &instance_externs);
 
-      /*for (uint32_t i = 0; i < instance_externs.size; i++) {
-        const wasm_extern_t* exported = instance_externs.data[i];
-
-        wasm_externkind_t exported_kind = wasm_extern_kind(exported);
-
-        wasm_name_t export_name;
-        wasm_exporttype_t* export_type =
-            wasm_exporttype_new(&export_name, exported);
-
-        // TODO(marceline-cramer) Handle other kinds of exports
-        if (exported_kind == WASM_EXTERN_FUNC) {
-        }
-        const wasm_name_t* callback_name = wasm_exporttype_name(exported_type);
-      }*/
-
-      if (instance_externs.size < 1) {
-        log_ftl("Script module has no exports");
+      if (export_types.size != instance_externs.size) {
+        wasm_extern_vec_delete(&instance_externs);
+        wasm_exporttype_vec_delete(&export_types);
+        log_ftl("Mismatch between export_types.size and instance_externs.size");
       }
 
-      // TODO(marceline-cramer) Register callbacks under their exported names
-      wasm_func_t* update_func = wasm_extern_as_func(instance_externs.data[0]);
-      addCallback("update", update_func);
+      for (uint32_t i = 0; i < instance_externs.size; i++) {
+        wasm_exporttype_t* export_type = export_types.data[i];
+        const wasm_name_t* export_name = wasm_exporttype_name(export_type);
+
+        wasm_extern_t* exported = instance_externs.data[i];
+        wasm_externkind_t extern_kind = wasm_extern_kind(exported);
+
+        // TODO(marceline-cramer) Handle other kinds of exports
+        if (extern_kind == WASM_EXTERN_FUNC) {
+          wasm_func_t* callback = wasm_extern_as_func(exported);
+          _addCallback(export_name->data, callback);
+
+          log_inf_fmt("Imported callback %s", export_name->data);
+          log_inf_fmt("Param arity: %zu", wasm_func_param_arity(callback));
+          log_inf_fmt("Result arity: %zu", wasm_func_result_arity(callback));
+        }
+      }
+
+      // TODO(marceline-cramer): Wasmtime-friendly function export handling
+      // FIXME(marceline-cramer): This is a memory leak to keep funcs reffed
+      // wasm_extern_vec_delete(&instance_externs);
+
+      wasm_exporttype_vec_delete(&export_types);
     }
   }
 }
@@ -114,24 +123,29 @@ ScriptInstance::~ScriptInstance() {
   if (module_instance) wasm_instance_delete(module_instance);
 }
 
-void ScriptInstance::addCallback(const std::string& callback_name,
-                                 wasm_func_t* callback) {
+void ScriptInstance::_addCallback(const std::string& callback_name,
+                                  wasm_func_t* callback) {
   callbacks.emplace(callback_name, callback);
 }
 
-void ScriptInstance::runCallback(const std::string& callback_name) {
+bool ScriptInstance::_hasCallback(const std::string& callback_name) {
+  return callbacks.find(callback_name) != callbacks.end();
+}
+
+void ScriptInstance::_runCallback(const std::string& callback_name,
+                                  const wasm_val_t* args, size_t arg_num,
+                                  wasm_val_t* results, size_t result_num) {
   auto iter = callbacks.find(callback_name);
 
   if (iter == callbacks.end()) {
-    log_err_fmt("Attempted to call missing callback %s", callback_name.c_str());
-    return;
+    log_err_fmt("Attempted to run missing callback %s", callback_name.c_str());
   }
 
   wasmtime_error_t* module_error = nullptr;
   wasm_trap_t* module_trap = nullptr;
 
-  module_error =
-      wasmtime_func_call(iter->second, nullptr, 0, nullptr, 0, &module_trap);
+  module_error = wasmtime_func_call(iter->second, args, arg_num, results,
+                                    result_num, &module_trap);
   if (scripts->handleError(module_error, module_trap)) {
     log_err_fmt("Error while running callback %s", callback_name.c_str());
   }

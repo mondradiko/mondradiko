@@ -9,46 +9,62 @@ else()
   find_package(Python3 3.6 REQUIRED)
 endif()
 
-set(GENERATE_BINDING_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_binding.py")
+set(GENERATE_CLASS_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_class.py")
+
+# Regenerate class wrappers when generator scripts are modified
+set(CLASSDEF_GENERATOR_SCRIPTS
+  "${CMAKE_CURRENT_SOURCE_DIR}/codegen.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cpp_binding.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/wasm_linker.py"
+)
 
 #
-# Generate API bindings for a component. Returns the generated linker.
+# Generate wrapper code for a class definition. Returns the generated file.
 #
-function(api_binding ret BINDING)
-  get_filename_component(BASEDIR ${BINDING} DIRECTORY)
-  get_filename_component(BASENAME ${BINDING} NAME_WE)
+function(wrap_class ret GENERATOR EXTENSION CLASSDEF)
+  get_filename_component(BASEDIR ${CLASSDEF} DIRECTORY)
+  get_filename_component(BASENAME ${CLASSDEF} NAME_WE)
   set(OUTPUTDIR "${CMAKE_CURRENT_BINARY_DIR}/${BASEDIR}")
-  set(LINKER "${OUTPUTDIR}/${BASENAME}_linker.cc")
-  set(CPP_BINDING "${OUTPUTDIR}/${BASENAME}.h")
-  set(BINDING "${CMAKE_CURRENT_SOURCE_DIR}/${BINDING}")
+  set(OUTFILE "${OUTPUTDIR}/${BASENAME}${EXTENSION}")
+  set(CLASSDEF "${CMAKE_CURRENT_SOURCE_DIR}/${CLASSDEF}")
 
   add_custom_command(
-    OUTPUT ${LINKER}
-    COMMAND ${Python3_EXECUTABLE} ${GENERATE_BINDING_SCRIPT} ${BINDING} ${LINKER} ${CPP_BINDING}
-    DEPENDS ${BINDING} ${GENERATE_BINDING_SCRIPT})
+    OUTPUT ${OUTFILE}
+    COMMAND ${Python3_EXECUTABLE} ${GENERATE_CLASS_SCRIPT} ${GENERATOR} ${CLASSDEF} ${OUTFILE}
+  DEPENDS ${CLASSDEF} ${GENERATE_CLASS_SCRIPT} ${CLASSDEF_GENERATOR_SCRIPTS})
 
-  set(${ret} "${LINKER}" PARENT_SCOPE)
-endfunction(api_binding)
+  set(${ret} "${OUTFILE}" PARENT_SCOPE)
+endfunction(wrap_class)
 
 #
-# Generates API bindings. Returns the script linker source files.
+# Generates multiple class definition wrappers. Returns the generated files.
 #
-function(api_bindings ret BINDINGS)
+function(wrap_classes ret GENERATOR CLASSDEFS)
 
-  foreach(BINDING ${BINDINGS})
-    api_binding(HEADER ${BINDING})
-    list(APPEND SCRIPT_LINKER_SRC ${HEADER})
+  if(${GENERATOR} STREQUAL "wasm-linker")
+    set(EXTENSION "_linker.cc")
+  elseif(${GENERATOR} STREQUAL "cpp-binding")
+    set(EXTENSION ".h")
+  else()
+    message(FATAL_ERROR "Unrecognized generator " ${GENERATOR})
+  endif()
+
+  foreach(CLASSDEF ${CLASSDEFS})
+    wrap_class(OUTFILE ${GENERATOR} ${EXTENSION} ${CLASSDEF})
+    list(APPEND OUTFILES ${OUTFILE})
   endforeach()
 
-  set(${ret} ${SCRIPT_LINKER_SRC} PARENT_SCOPE)
-endfunction(api_bindings)
+  set(${ret} ${OUTFILES} PARENT_SCOPE)
+endfunction(wrap_classes)
 
 # Create components/ binary directory
 add_subdirectory(components)
 
-api_bindings(SCRIPT_LINKERS
+set(COMPONENT_CLASSDEFS
   components/Transform.toml
 )
+
+wrap_classes(SCRIPT_LINKERS "wasm-linker" ${COMPONENT_CLASSDEFS})
 
 add_library(mondradiko-api-components OBJECT ${SCRIPT_LINKERS})
 # TODO(marceline-cramer): Don't expose third-party dependencies to the public interface

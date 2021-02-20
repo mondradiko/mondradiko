@@ -41,7 +41,7 @@ class World {
   //
   // Helper methods
   //
-  bool update();
+  bool update(double);
   void processEvent(const protocol::WorldEvent*);
 
   template <class ComponentType, class ProtocolComponentType>

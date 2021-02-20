@@ -14,6 +14,9 @@
 
 namespace mondradiko {
 
+// Forward declarations
+class PrefabBuilder;
+
 class Bundler {
  public:
   explicit Bundler(const std::filesystem::path&);
@@ -22,6 +25,7 @@ class Bundler {
   assets::AssetId addAsset(ConverterInterface::AssetBuilder*,
                            ConverterInterface::AssetOffset);
   void addConverter(std::string, const ConverterInterface*);
+  assets::AssetId getAssetByAlias(const std::string&);
   void bundle();
 
  private:
@@ -32,8 +36,10 @@ class Bundler {
   toml::value manifest;
 
   assets::AssetBundleBuilder* bundle_builder = nullptr;
+  PrefabBuilder* prefab_builder = nullptr;
 
   std::map<std::string, const ConverterInterface*> converters;
+  std::map<std::string, assets::AssetId> asset_aliases;
 };
 
 }  // namespace mondradiko

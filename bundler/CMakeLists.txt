@@ -9,6 +9,7 @@ set(BUNDLER_SRC
   AssetBundleBuilder.cc
   bundler_main.cc
   Bundler.cc
+  PrefabBuilder.cc
 )
 
 include(FindMondradikoDependency)
