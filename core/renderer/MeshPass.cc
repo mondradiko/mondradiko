@@ -169,25 +169,16 @@ void MeshPass::allocateDescriptors(uint32_t frame_index,
     auto point_lights = world->registry.view<PointLightComponent>();
 
     for (auto e : point_lights) {
-      auto& point_light = point_lights.get(e);
-
-      PointLightUniform uniform;
-      point_light.getUniform(&uniform);
-      point_light_uniforms.push_back(uniform);
-    }
-  }
-
-  {
-    auto point_lights =
-        world->registry.view<PointLightComponent, TransformComponent>();
-
-    for (auto e : point_lights) {
       auto& point_light = point_lights.get<PointLightComponent>(e);
-      auto& transform = point_lights.get<TransformComponent>(e);
 
       PointLightUniform uniform;
       point_light.getUniform(&uniform);
-      uniform.position = transform.getWorldTransform() * uniform.position;
+
+      if (world->registry.has<TransformComponent>(e)) {
+        auto& transform = world->registry.get<TransformComponent>(e);
+        uniform.position = transform.getWorldTransform() * uniform.position;
+      }
+
       point_light_uniforms.push_back(uniform);
     }
   }
