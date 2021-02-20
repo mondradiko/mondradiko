@@ -64,25 +64,32 @@ layout(location = 0) out vec4 outColor;
 
 const float PI = 3.14159265359;
 
-float D_GGX(float NoH, float a) {
+float D_GGX(float NoH, float roughness) {
+  float a = roughness * roughness;
   float a2 = a * a;
-  float f = (NoH * a2 - NoH) * NoH + 1.0;
+  float NoH2 = NoH * NoH;
+  float f = NoH2 * (a2 - 1.0) + 1.0;
   return a2 / (PI * f * f);
 }
 
+float g1(float NoV, float roughness, float k) {
+	float denom = NoV * (1.0 - k) + k;
+	return NoV / denom;
+}
+
+float G_SmithGGXCorrelated(float NoV, float NoL, float roughness) {
+  float r = roughness + 1.0;
+	float k = (r * r) / 8.0;
+
+  float g1l = g1(NoV, roughness, k);
+	float g1v = g1(NoL, roughness, k);
+
+	return g1l * g1v;
+}
+
 vec3 F_Schlick(float u, vec3 f0) {
-  return f0 + (vec3(1.0) - f0) * pow(1.0 - u, 5.0);
-}
-
-float V_SmithGGXCorrelated(float NoV, float NoL, float a) {
-  float a2 = a * a;
-  float GGXL = NoV * sqrt((-NoL * a2 + NoL) * NoL + a2);
-  float GGXV = NoL * sqrt((-NoV * a2 + NoV) * NoV + a2);
-  return 0.5 / (GGXV + GGXL);
-}
-
-float Fd_Lambert() {
-  return 1.0 / PI;
+  float f = pow(1.0 - u, 5.0);
+  return f + f0 * (1.0 - f);
 }
 
 vec3 BRDF(vec3 l,         // Normalized light direction
@@ -92,32 +99,37 @@ vec3 BRDF(vec3 l,         // Normalized light direction
           float metallic, // Surface metallic
           float p_rough   // Perceptual (artist-defined) surface roughness
 ) {
-  // Props to the Google Filament team for sharing their wonderful PBR math!
-
-  vec3 h    = normalize(v + l);
-
-  float NoL = clamp(dot(n, l), 0.0, 1.0);
-  float NoV = abs(dot(n, v)) + 1e-5;
-  float NoH = clamp(dot(n, h), 0.0, 1.0);
-  float LoH = clamp(dot(l, h), 0.0, 1.0);
+  vec3  h   = normalize(v + l);
+  float NoL = max(dot(n, l), 0.0);
+  float NoV = max(dot(n, v), 0.0);
+  float NoH = max(dot(n, h), 0.0);
+  float LoH = max(dot(l, h), 0.0);
 
   // Map perceptual roughness to real roughness
   float roughness = p_rough * p_rough;
 
-  float a = NoH * roughness;
-  vec3 f0 = vec3(0.04);   // Default to 4% reflectance at normal incidence
-
-  float D = D_GGX(NoH, a);
-  float V = V_SmithGGXCorrelated(NoV, NoL, roughness);
-  vec3  F = F_Schlick(LoH, f0);
+  // Calculate reflectance at surface incidence
+  vec3 f0 = mix(vec3(0.04), albedo, metallic);
 
   // Specular BRDF
-  vec3 Fr = (D * V) * F;
+  float D = D_GGX(NoH, roughness);
+  float G = G_SmithGGXCorrelated(NoV, NoL, roughness);
+  vec3  F = F_Schlick(LoH, f0);
+
+  vec3 numerator    = (D * G) * F;
+  float denominator = 4.0 * NoV * NoL;
+
+  vec3 Fr = numerator / max(denominator, 0.01);
 
   // Diffuse BRDF
-  vec3 Fd = albedo * Fd_Lambert();
+  vec3 diffuse_fresnel = (vec3(1.0) - F_Schlick(NoL, f0)) *
+                         (vec3(1.0) - F_Schlick(NoV, f0));
+  vec3 lambertian = albedo / PI;
 
-  return Fr + Fd;
+  vec3 Fd = diffuse_fresnel * lambertian;
+
+  // TODO(marceline-cramer): Multiple scattering
+  return (Fr + Fd) * NoL;
 }
 
 vec3 getNormal(in MaterialUniform material) {
@@ -191,6 +203,5 @@ void main() {
 
   // TODO(marceline-cramer): Fix PBR so that tone mapping doesn't make JPEG bad
   vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
-
   outColor = vec4(tone_mapped, 1.0);
 }
