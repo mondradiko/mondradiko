@@ -64,16 +64,67 @@ layout(location = 0) out vec4 outColor;
 
 const float PI = 3.14159265359;
 
-float DistributionGGX(vec3 N, vec3 H, float roughness);
-float GeometrySchlickGGX(float NdotV, float roughness);
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-vec3 fresnelSchlick(float cosTheta, vec3 F0);
+float D_GGX(float NoH, float a) {
+  float a2 = a * a;
+  float f = (NoH * a2 - NoH) * NoH + 1.0;
+  return a2 / (PI * f * f);
+}
+
+vec3 F_Schlick(float u, vec3 f0) {
+  return f0 + (vec3(1.0) - f0) * pow(1.0 - u, 5.0);
+}
+
+float V_SmithGGXCorrelated(float NoV, float NoL, float a) {
+  float a2 = a * a;
+  float GGXL = NoV * sqrt((-NoL * a2 + NoL) * NoL + a2);
+  float GGXV = NoL * sqrt((-NoV * a2 + NoV) * NoV + a2);
+  return 0.5 / (GGXV + GGXL);
+}
+
+float Fd_Lambert() {
+  return 1.0 / PI;
+}
+
+vec3 BRDF(vec3 l,         // Normalized light direction
+          vec3 n,         // Normalized surface normal
+          vec3 v,         // Normalized view direction
+          vec3 albedo,    // Surface albedo
+          float metallic, // Surface metallic
+          float p_rough   // Perceptual (artist-defined) surface roughness
+) {
+  // Props to the Google Filament team for sharing their wonderful PBR math!
+
+  vec3 h    = normalize(v + l);
+
+  float NoL = clamp(dot(n, l), 0.0, 1.0);
+  float NoV = abs(dot(n, v)) + 1e-5;
+  float NoH = clamp(dot(n, h), 0.0, 1.0);
+  float LoH = clamp(dot(l, h), 0.0, 1.0);
+
+  // Map perceptual roughness to real roughness
+  float roughness = p_rough * p_rough;
+
+  float a = NoH * roughness;
+  vec3 f0 = vec3(0.04);   // Default to 4% reflectance at normal incidence
+
+  float D = D_GGX(NoH, a);
+  float V = V_SmithGGXCorrelated(NoV, NoL, roughness);
+  vec3  F = F_Schlick(LoH, f0);
+
+  // Specular BRDF
+  vec3 Fr = (D * V) * F;
+
+  // Diffuse BRDF
+  vec3 Fd = albedo * Fd_Lambert();
+
+  return Fr + Fd;
+}
 
 vec3 getNormal(in MaterialUniform material) {
   if (material.normal_map_scale > 0.0) {
     vec3 sampled_normal = texture(normal_map_texture, fragTexCoord).rgb * 2 - 1;
-    sampled_normal = normalize(sampled_normal);
     sampled_normal *= vec3(vec2(material.normal_map_scale), 1.0);
+    sampled_normal = normalize(sampled_normal);
 
     vec3 N = normalize(fragNormal);
     vec3 T = normalize(fragTangent);
@@ -86,6 +137,15 @@ vec3 getNormal(in MaterialUniform material) {
   }
 }
 
+vec3 getAlbedo(in MaterialUniform material) {
+  vec3 surface_albedo = material.albedo_factor.rgb;
+
+  vec4 sampled_albedo = texture(albedo_texture, fragTexCoord);
+  surface_albedo *= sampled_albedo.rgb;
+
+  return surface_albedo;
+}
+
 void main() {
   MeshUniform mesh = meshes.meshes[fragMesh];
   MaterialUniform material = materials.materials[mesh.material_idx];
@@ -95,12 +155,7 @@ void main() {
     return;
   }
 
-  vec3 surface_albedo = material.albedo_factor.rgb;
-
-  {
-    vec4 sampled_albedo = texture(albedo_texture, fragTexCoord);
-    surface_albedo *= sampled_albedo.rgb;
-  }
+  vec3 surface_albedo = getAlbedo(material);
 
   if (material.is_unlit) {
     outColor = vec4(surface_albedo, 1.0);
@@ -120,102 +175,22 @@ void main() {
   vec3 N = getNormal(material);
   vec3 V = normalize(camera.position - surface_position);
 
-  /*vec3 surface_emissive = material.emissive_factor;
-  if (material.has_emissive_texture) {
-    surface_emissive *= texture(emissive_texture, fragTexCoord).rgb;
-  }
-
-  surface_luminance += surface_emissive;*/
-
-  /*vec3 surface_luminance = surface_albedo;
-
-  for (uint i = 0; i < mesh.light_count; i++) {
-    vec3 light_position = lights.point_lights[i].position.xyz - surface_position;
-    vec3 light_intensity = lights.point_lights[i].intensity.rgb;
-    vec3 radiance = light_intensity / dot(light_position, light_position);
-
-    vec3 L = normalize(light_position);
-
-    surface_luminance += radiance * surface_albedo * max(dot(N, L), 0.0);
-  }*/
-
   vec3 surface_luminance = vec3(0.05) * surface_albedo;
 
-  vec3 F0 = vec3(0.04);
-  F0 = mix(F0, surface_albedo, surface_metallic);
-
   for (uint i = 0; i < mesh.light_count; i++) {
     vec3 light_position = lights.point_lights[i].position.xyz - surface_position;
     vec3 light_intensity = lights.point_lights[i].intensity.rgb;
+    vec3 light_direction = normalize(light_position);
     vec3 radiance = light_intensity / dot(light_position, light_position);
 
-    // Bad light culling
-    // if (dot(radiance, radiance) < 0.1) continue;
+    vec3 reflected = BRDF(light_direction, N, V,
+                          surface_albedo, surface_metallic, surface_roughness);
 
-    vec3 L = normalize(light_position);
-    vec3 H = normalize(V + L);
-
-    // Cook-Torrance BRDF
-    // TODO(marceline-cramer): All of the PBR math here is wrong; please fix
-    float NDF = DistributionGGX(N, H, surface_roughness);
-    float G = GeometrySmith(N, V, L, surface_roughness);
-    vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
-
-    vec3 kS = F;
-    vec3 kD = vec3(1.0) - kS;
-    kD *= 1.0 - surface_metallic;
-
-    vec3 numerator = NDF * G * F;
-    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-    vec3 specular = numerator / max(denominator, 0.001);
-
-    float NdotL = max(dot(N, L), 0.0);
-    surface_luminance += (kD * surface_albedo / PI + specular) * radiance * NdotL;
+    surface_luminance += radiance * reflected;
   }
 
   // TODO(marceline-cramer): Fix PBR so that tone mapping doesn't make JPEG bad
   vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
 
   outColor = vec4(tone_mapped, 1.0);
-}
-
-
-float DistributionGGX(vec3 N, vec3 H, float roughness)
-{
-    float a      = roughness*roughness;
-    float a2     = a*a;
-    float NdotH  = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
-
-    float num   = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
-
-    return num / denom;
-}
-
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
-
-    float num   = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-
-    return num / denom;
-}
-
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
-
-    return ggx1 * ggx2;
-}
-
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
-{
-    return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
