@@ -1,0 +1,12 @@
+{
+  "name": "vulkan-validation",
+  "version-string": "1.2.162",
+  "description": "Khronos official Vulkan validation layers for Windows, Linux, Android, and MacOS.",
+  "homepage": "https://github.com/Kronos/Vulkan-ValidationLayers",
+  "dependencies": [
+    "vulkan-headers",
+    "glslang",
+    "spirv-headers",
+    "spirv-tools"
+  ]
+}

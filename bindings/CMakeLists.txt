@@ -1,7 +1,14 @@
 # Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-find_package(Python3 REQUIRED)
+# CI support for specifying an exact Python3_EXECUTABLE via environment var
+set(Python3_EXECUTABLE $ENV{Python3_EXECUTABLE})
+if (Python3_EXECUTABLE)
+  message(STATUS "Using Python3_EXECUTABLE = ${Python3_EXECUTABLE}")
+else()
+  find_package(Python3 3.6 REQUIRED)
+endif()
+
 set(GENERATE_CLASS_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_class.py")
 
 # Regenerate class wrappers when generator scripts are modified
@@ -61,4 +68,5 @@ wrap_classes(SCRIPT_LINKERS "wasm-linker" ${COMPONENT_CLASSDEFS})
 
 add_library(mondradiko-api-components OBJECT ${SCRIPT_LINKERS})
 # TODO(marceline-cramer): Don't expose third-party dependencies to the public interface
+add_dependencies(mondradiko-api-components mondradiko-types)
 target_link_libraries(mondradiko-api-components mondradiko-lib)

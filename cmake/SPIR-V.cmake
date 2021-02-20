@@ -1,11 +1,14 @@
 # Copyright 2019, Collabora, Ltd.
 # SPDX-License-Identifier: BSL-1.0
 
-find_program(GLSLANGVALIDATOR_COMMAND
-	glslangValidator)
+include(FindMondradikoDependency)
+
+find_program(GLSLANGVALIDATOR_COMMAND glslangValidator)
 if(NOT GLSLANGVALIDATOR_COMMAND)
 	message(FATAL_ERROR "glslangValidator required - source maintained at https://github.com/KhronosGroup/glslang")
 endif()
+
+message(STATUS ">>> GLSLANGVALIDATOR_COMMAND ${GLSLANGVALIDATOR_COMMAND}")
 
 #
 # Generate a SPIR-V header file, with the given var name. Returns the header.

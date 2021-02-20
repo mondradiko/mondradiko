@@ -24,9 +24,9 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
   source_root = manifest_path.parent_path();
   bundle_root = "./";
 
-  log_dbg_fmt("Bundler manifest: %s", manifest_path.c_str());
-  log_dbg_fmt("Bundler source dir: %s", source_root.c_str());
-  log_dbg_fmt("Bundler bundle dir: %s", bundle_root.c_str());
+  log_dbg_fmt("Bundler manifest: %s", manifest_path.string().c_str());
+  log_dbg_fmt("Bundler source dir: %s", source_root.string().c_str());
+  log_dbg_fmt("Bundler bundle dir: %s", bundle_root.string().c_str());
 
   bundle_builder = new assets::AssetBundleBuilder(bundle_root);
   prefab_builder = new PrefabBuilder;
