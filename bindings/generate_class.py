@@ -7,6 +7,11 @@ corresponding C++ headers, but will eventually support other languages and
 runtimes."""
 
 import sys
+import os
+
+# add local toml submodule to the python system path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'toml'))
+
 import toml
 
 from cpp_binding import CppBinding

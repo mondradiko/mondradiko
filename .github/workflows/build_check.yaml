@@ -10,7 +10,7 @@ jobs:
     strategy:
         matrix:
           include:
-            - extra_cmake_args: "-DUSE_PKGCONFIG=ON"
+            # - extra_cmake_args: "-DUSE_PKGCONFIG=ON"
             - extra_cmake_args: "-DUSE_PKGCONFIG=OFF"
     runs-on: self-hosted
     steps:

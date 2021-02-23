@@ -40,6 +40,13 @@ function(mondradiko_bootstrap_vcpkg)
     "${VCPKG_INSTALL_TRIPLETROOT}/tools"
     "${VCPKG_INSTALL_TRIPLETROOT}/share"
   )
+  if (NOT USE_PKGCONFIG)
+    list(APPEND CMAKE_PREFIX_PATH
+      "${VCPKG_INSTALL_TRIPLETROOT}/lib"
+      "${VCPKG_INSTALL_TRIPLETROOT}/bin"
+      "${VCPKG_INSTALL_TRIPLETROOT}/include"
+    )
+  endif()
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} PARENT_SCOPE)
 
   if(WIN32)

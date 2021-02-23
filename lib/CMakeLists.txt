@@ -39,6 +39,18 @@ find_mondradiko_dependency(
 )
 
 find_mondradiko_dependency(
+  mondradiko::freetype
+  PKG "freetype2" PKG_MODULES freetype
+  VCPKG "freetype" VCPKG_MODULES freetype
+)
+
+# msdfgen looks for Freetype::Freetype, but VCPKG provides it as just "freetype"
+if (TARGET freetype AND NOT TARGET Freetype::Freetype)
+  message(STATUS "aliasing Freetype::Freetype => freetype")
+  add_library(Freetype::Freetype ALIAS freetype)
+endif()
+
+find_mondradiko_dependency(
   mondradiko::msdfgen
   VCPKG "msdfgen" VCPKG_MODULES msdfgen::msdfgen msdfgen::msdfgen-ext
 )
