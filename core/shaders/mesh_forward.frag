@@ -97,16 +97,13 @@ vec3 BRDF(vec3 l,         // Normalized light direction
           vec3 v,         // Normalized view direction
           vec3 albedo,    // Surface albedo
           float metallic, // Surface metallic
-          float p_rough   // Perceptual (artist-defined) surface roughness
+          float roughness // Surface roughness
 ) {
   vec3  h   = normalize(v + l);
   float NoL = max(dot(n, l), 0.0);
   float NoV = max(dot(n, v), 0.0);
   float NoH = max(dot(n, h), 0.0);
   float LoH = max(dot(l, h), 0.0);
-
-  // Map perceptual roughness to real roughness
-  float roughness = p_rough * p_rough;
 
   // Calculate reflectance at surface incidence
   vec3 f0 = mix(vec3(0.04), albedo, metallic);
