@@ -13,8 +13,8 @@ class GpuInstance;
 
 class GpuImage {
  public:
-  GpuImage(GpuInstance*, VkFormat, uint32_t, uint32_t, VkImageUsageFlags,
-           VmaMemoryUsage);
+  GpuImage(GpuInstance*, VkFormat, uint32_t, uint32_t, uint32_t,
+           VkImageUsageFlags, VmaMemoryUsage);
   ~GpuImage();
 
   void transitionLayout(VkImageLayout);
@@ -33,6 +33,7 @@ class GpuImage {
   VkImageLayout layout;
   uint32_t width;
   uint32_t height;
+  uint32_t level_num;
   VmaAllocation allocation = nullptr;
   VmaAllocationInfo allocation_info;
   VkImage image = VK_NULL_HANDLE;

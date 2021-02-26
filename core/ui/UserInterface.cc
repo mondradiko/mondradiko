@@ -94,7 +94,7 @@ void UserInterface::createFrameData(uint32_t frame_count) {
 
   for (auto& frame : frame_data) {
     frame.panel_atlas = new GpuImage(
-        gpu, VK_FORMAT_R8G8B8A8_SRGB, 256, 256,
+        gpu, VK_FORMAT_R8G8B8A8_SRGB, 256, 256, 1,
         VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         VMA_MEMORY_USAGE_GPU_ONLY);
   }

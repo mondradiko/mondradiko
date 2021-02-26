@@ -10,13 +10,15 @@
 namespace mondradiko {
 
 GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
-                   uint32_t height, VkImageUsageFlags image_usage_flags,
+                   uint32_t height, uint32_t level_num,
+                   VkImageUsageFlags image_usage_flags,
                    VmaMemoryUsage memory_usage)
     : gpu(gpu),
       format(format),
       layout(VK_IMAGE_LAYOUT_UNDEFINED),
       width(width),
-      height(height) {
+      height(height),
+      level_num(level_num) {
   VkImageCreateInfo imageCreateInfo{};
   imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -28,7 +30,7 @@ GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
   image_extent.depth = 1;
   imageCreateInfo.extent = image_extent;
 
-  imageCreateInfo.mipLevels = 1;
+  imageCreateInfo.mipLevels = level_num;
   imageCreateInfo.arrayLayers = 1;
   imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
   imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -66,7 +68,7 @@ void GpuImage::transitionLayout(VkImageLayout targetLayout) {
   VkImageSubresourceRange subresourceRange{};
   subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
   subresourceRange.baseMipLevel = 0;
-  subresourceRange.levelCount = 1;
+  subresourceRange.levelCount = level_num;
   subresourceRange.baseArrayLayer = 0;
   subresourceRange.layerCount = 1;
   barrier.subresourceRange = subresourceRange;
@@ -126,7 +128,7 @@ void GpuImage::createView() {
   VkImageSubresourceRange subresourceRange{};
   subresourceRange.aspectMask = aspect_mask;
   subresourceRange.baseMipLevel = 0;
-  subresourceRange.levelCount = 1;
+  subresourceRange.levelCount = level_num;
   subresourceRange.baseArrayLayer = 0;
   subresourceRange.layerCount = 1;
   viewInfo.subresourceRange = subresourceRange;

@@ -35,7 +35,7 @@ void TextureAsset::load(const assets::SerializedAsset* asset) {
 
   image =
       new GpuImage(mesh_pass->getRenderer()->getGpu(), texture_format,
-                   texture->width(), texture->height(),
+                   texture->width(), texture->height(), 1,
                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                    VMA_MEMORY_USAGE_GPU_ONLY);
 

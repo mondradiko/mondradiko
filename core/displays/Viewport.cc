@@ -54,7 +54,7 @@ void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
 
 void Viewport::_createImages() {
   _depth_image = new GpuImage(
-      gpu, display->getDepthFormat(), _image_width, _image_height,
+      gpu, display->getDepthFormat(), _image_width, _image_height, 1,
       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
   for (uint32_t i = 0; i < _images.size(); i++) {
