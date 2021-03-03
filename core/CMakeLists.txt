@@ -53,6 +53,7 @@ set(MONDRADIKO_CORE_SRC
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
   renderer/Renderer.cc
+  scripting/ComponentScript.cc
   scripting/ScriptEnvironment.cc
   scripting/ScriptInstance.cc
   network/NetworkClient.cc
@@ -69,4 +70,3 @@ add_library(mondradiko-core STATIC $<TARGET_OBJECTS:mondradiko-api-components> $
 target_link_libraries(mondradiko-core mondradiko-assets)
 target_link_libraries(mondradiko-core mondradiko-log)
 target_link_libraries(mondradiko-core mondradiko-lib)
-target_link_libraries(mondradiko-core mondradiko-types)

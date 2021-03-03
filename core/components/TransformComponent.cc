@@ -24,17 +24,30 @@ glm::mat4 TransformComponent::getLocalTransform() {
   return transform;
 }
 
-wasm_trap_t* TransformComponent::getPosition(const wasm_val_t args[],
-                                             wasm_val_t results[]) {
-  results[0].of.i64 = _data.position().x();
-  results[1].of.i64 = _data.position().y();
-  results[2].of.i64 = _data.position().z();
+wasm_trap_t* TransformComponent::getX(const wasm_val_t args[],
+                                      wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.f64 = _data.position().x();
+  return nullptr;
+}
+
+wasm_trap_t* TransformComponent::getY(const wasm_val_t args[],
+                                      wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.f64 = _data.position().y();
+  return nullptr;
+}
+
+wasm_trap_t* TransformComponent::getZ(const wasm_val_t args[],
+                                      wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.f64 = _data.position().z();
   return nullptr;
 }
 
 wasm_trap_t* TransformComponent::setPosition(const wasm_val_t args[],
                                              wasm_val_t results[]) {
-  _data.mutable_position().mutate_x(args[0].of.f64);
+  _data.mutable_position().mutate_x(args[1].of.f64);
   _data.mutable_position().mutate_y(args[2].of.f64);
   _data.mutable_position().mutate_z(args[3].of.f64);
   return nullptr;

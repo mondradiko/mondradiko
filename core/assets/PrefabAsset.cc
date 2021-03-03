@@ -6,7 +6,9 @@
 #include <memory>
 
 #include "core/components/MeshRendererComponent.h"
+#include "core/components/PointLightComponent.h"
 #include "core/components/TransformComponent.h"
+#include "core/scripting/ScriptEnvironment.h"
 
 namespace mondradiko {
 
@@ -37,28 +39,31 @@ PrefabAsset::~PrefabAsset() {
   if (prefab != nullptr) delete prefab;
 }
 
-EntityId PrefabAsset::instantiate(EntityRegistry* registry) const {
+EntityId PrefabAsset::instantiate(EntityRegistry* registry,
+                                  ScriptEnvironment* scripts) const {
   EntityId self_id = registry->create();
 
   initComponent<MeshRendererComponent>(registry, self_id,
                                        prefab->mesh_renderer);
+  initComponent<PointLightComponent>(registry, self_id, prefab->point_light);
   initComponent<TransformComponent>(registry, self_id, prefab->transform);
 
   for (auto& child : children) {
     if (!child) continue;
 
     // TODO(marceline-cramer) Child transforms
-    EntityId child_id = child->instantiate(registry);
+    EntityId child_id = child->instantiate(registry, scripts);
 
     if (prefab->transform && registry->has<TransformComponent>(child_id)) {
       registry->get<TransformComponent>(child_id).setParent(self_id);
     }
   }
 
-  // TODO(marceline-cramer) ScriptPrefab
-  // Update an entity's script to initialize the ScriptComponent
-  /*scripts.updateScript(registry, &asset_pool, test_entity, 0x55715294,
-     nullptr, static_cast<size_t>(0));*/
+  if (prefab->script) {
+    // Update an entity's script to initialize the ScriptComponent
+    scripts->updateScript(registry, asset_pool, self_id, prefab->script->script,
+                          nullptr, static_cast<size_t>(0));
+  }
 
   return self_id;
 }

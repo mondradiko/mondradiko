@@ -24,7 +24,7 @@ class ScriptEnvironment {
   void initializeAssets(AssetPool*);
   void linkUiApis(UserInterface*);
   void linkComponentApis(World*);
-  void update(EntityRegistry&, AssetPool*);
+  void update(EntityRegistry*, AssetPool*, double);
 
   wasm_engine_t* getEngine() { return engine; }
   wasm_store_t* getStore() { return store; }
@@ -41,7 +41,7 @@ class ScriptEnvironment {
    * @param data_size The length in bytes of the data.
    *
    */
-  void updateScript(EntityRegistry&, AssetPool*, EntityId, AssetId,
+  void updateScript(EntityRegistry*, AssetPool*, EntityId, AssetId,
                     const uint8_t*, size_t);
 
   /**

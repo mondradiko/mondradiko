@@ -228,23 +228,28 @@ void MeshPass::beginFrame(uint32_t frame_index,
   current_frame = frame_index;
   auto& frame = frame_data[current_frame];
 
-  uint32_t light_count;
+  std::vector<PointLightUniform> point_light_uniforms;
 
   {
     auto point_lights = world->registry.view<PointLightComponent>();
-    std::vector<PointLightUniform> point_light_uniforms;
 
     for (auto e : point_lights) {
-      auto& point_light = point_lights.get(e);
+      auto& point_light = point_lights.get<PointLightComponent>(e);
 
       PointLightUniform uniform;
       point_light.getUniform(&uniform);
+
+      if (world->registry.has<TransformComponent>(e)) {
+        auto& transform = world->registry.get<TransformComponent>(e);
+        uniform.position = transform.getWorldTransform() * uniform.position;
+      }
+
       point_light_uniforms.push_back(uniform);
     }
+  }
 
-    light_count = point_light_uniforms.size();
-
-    for (uint32_t i = 0; i < light_count; i++) {
+  {
+    for (uint32_t i = 0; i < point_light_uniforms.size(); i++) {
       frame.point_lights->writeElement(i, point_light_uniforms[i]);
     }
   }
@@ -301,7 +306,7 @@ void MeshPass::beginFrame(uint32_t frame_index,
 
       MeshUniform mesh_uniform;
       mesh_uniform.model = transform.getWorldTransform();
-      mesh_uniform.light_count = light_count;
+      mesh_uniform.light_count = point_light_uniforms.size();
       mesh_uniform.material_idx = material_idx;
 
       cmd.mesh_idx = frame_meshes.size();

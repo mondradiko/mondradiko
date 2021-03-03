@@ -1,7 +1,9 @@
 # Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
+cmake_minimum_required(VERSION 3.18)
 
-cmake_minimum_required(VERSION 3.13)
+include(cmake/prelude.cmake)
+
 project(Mondradiko VERSION 0.0.0)
 set(Mondradiko_COPYRIGHT "Copyright (c) 2020-2021 the Mondradiko contributors.")
 set(Mondradiko_LICENSE "SPDX-License-Identifier: LGPL-3.0-or-later")
@@ -11,7 +13,11 @@ option(TRACY_ENABLE "Enable Tracy profiling." OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+message(STATUS "CMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID}")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  list(APPEND CMAKE_CXX_FLAGS -Wno-nullability-completeness)
+endif()
+
 include(SPIR-V)
 include(flatc)
 
@@ -20,8 +26,10 @@ if(${TRACY_ENABLE})
   add_compile_definitions(TRACY_ENABLE)
 endif()
 
-# Copy runtime config into binary folder
-configure_file(example-config.toml config.toml COPYONLY)
+if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/config.toml)
+  # Copy runtime config into binary folder
+  configure_file(example-config.toml config.toml COPYONLY)
+endif()
 
 # Let all parts of the source base access each other's headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
@@ -30,7 +38,9 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 add_subdirectory(lib)
 
-add_compile_options(-Wall)
+if (NOT WIN32)
+  add_compile_options(-Wall)
+endif()
 
 add_subdirectory(log)
 add_subdirectory(types)

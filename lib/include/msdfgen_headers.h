@@ -6,5 +6,5 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include <lib/msdfgen/msdfgen-ext.h>
-#include <lib/msdfgen/msdfgen.h>
+#include <msdfgen/msdfgen-ext.h>
+#include <msdfgen/msdfgen.h>

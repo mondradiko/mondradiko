@@ -27,4 +27,10 @@ flatc_schemas(PROTOCOL_HEADERS
   protocol/types.fbs
 )
 
-add_library(mondradiko-types INTERFACE ${ASSET_HEADERS} ${PROTOCOL_HEADERS})
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.19.0")
+  # see: https://cmake.org/cmake/help/v3.19/command/add_library.html#interface-libraries
+  add_library(mondradiko-types INTERFACE ${ASSET_HEADERS} ${PROTOCOL_HEADERS})
+else()
+  add_library(mondradiko-types STATIC ${ASSET_HEADERS} ${PROTOCOL_HEADERS})
+  set_target_properties(mondradiko-types PROPERTIES LINKER_LANGUAGE CXX)
+endif()

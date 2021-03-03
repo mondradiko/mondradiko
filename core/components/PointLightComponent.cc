@@ -12,6 +12,7 @@ void PointLightComponent::getUniform(PointLightUniform* uniform) {
   uniform->position.x = _data.position().x();
   uniform->position.y = _data.position().y();
   uniform->position.z = _data.position().z();
+  uniform->position.w = 1.0;
 
   uniform->intensity.r = _data.intensity().x();
   uniform->intensity.g = _data.intensity().y();

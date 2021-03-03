@@ -143,12 +143,14 @@ bool GpuInstance::checkValidationLayerSupport() {
 
     for (const auto& layer_properties : available_layers) {
       if (strcmp(layer_name, layer_properties.layerName) == 0) {
+        log_msg_fmt("layer_found %s", layer_name);
         layer_found = true;
         break;
       }
     }
 
     if (!layer_found) {
+      log_msg_fmt("!layer_found %s", layer_name);
       return false;
     }
   }
