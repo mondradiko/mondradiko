@@ -6,17 +6,24 @@ include "types.fbs";
 namespace mondradiko.assets;
 
 table MaterialAsset {
-  /*normal_texture:AssetId;
-  occlusion_texture:AssetId;
+  /*occlusion_texture:AssetId;*/
+
   emissive_factor:Vec3;
-  emissive_texture:AssetId;*/
+  emissive_texture:AssetId;
+
+  normal_map_scale:float;
+  normal_map_texture:AssetId;
 
   // Metallic-roughness
-  albedo_factor:Vec3;
+  albedo_factor:Vec4;
   albedo_texture:AssetId;
-  metallic_factor:double;
-  roughness_factor:double;
-  metallic_roughness_texture:AssetId;
+  is_double_sided:bool;
+  is_unlit:bool;
+  enable_blend:bool;
+  mask_threshold:float;
+  metallic_factor:float;
+  roughness_factor:float;
+  metal_roughness_texture:AssetId;
 }
 
 root_type MaterialAsset;

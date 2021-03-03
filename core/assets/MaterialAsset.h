@@ -15,9 +15,18 @@ class GpuDescriptorSet;
 class GpuInstance;
 
 struct MaterialUniform {
+  glm::vec4 emissive_factor;
   glm::vec4 albedo_factor;
-  // glm::vec1 metallic_factor;
-  // glm::vec1 roughness_factor;
+
+  float mask_threshold;
+  float metallic_factor;
+  float roughness_factor;
+  float normal_map_scale;
+
+  uint32_t is_unlit;
+  uint32_t enable_blend;
+  uint32_t has_emissive_texture;
+  uint32_t has_metal_roughness_texture;
 };
 
 class MaterialAsset : public Asset {
@@ -33,13 +42,19 @@ class MaterialAsset : public Asset {
   bool isLoaded() const final { return albedo_texture.isLoaded(); }
 
   const MaterialUniform& getUniform() const { return uniform; }
+  bool isDoubleSided() const { return double_sided; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;
 
  private:
   AssetPool* asset_pool;
   GpuInstance* gpu;
 
+  bool double_sided;
+
   AssetHandle<TextureAsset> albedo_texture;
+  AssetHandle<TextureAsset> emissive_texture;
+  AssetHandle<TextureAsset> normal_map_texture;
+  AssetHandle<TextureAsset> metal_roughness_texture;
 
   MaterialUniform uniform;
 };

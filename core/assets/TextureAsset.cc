@@ -5,6 +5,8 @@
 
 #include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
+#include "core/renderer/MeshPass.h"
+#include "core/renderer/Renderer.h"
 #include "log/log.h"
 #include "types/assets/TextureAsset_generated.h"
 
@@ -32,12 +34,13 @@ void TextureAsset::load(const assets::SerializedAsset* asset) {
   }
 
   image =
-      new GpuImage(gpu, texture_format, texture->width(), texture->height(),
+      new GpuImage(mesh_pass->getRenderer()->getGpu(), texture_format,
+                   texture->width(), texture->height(), 1,
                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                    VMA_MEMORY_USAGE_GPU_ONLY);
 
   image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  image->writeData(texture->data()->data());
+  mesh_pass->getRenderer()->transferDataToImage(image, texture->data()->data());
   image->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 

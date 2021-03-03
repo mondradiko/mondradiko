@@ -29,15 +29,15 @@ struct DebugDrawVertex {
   static GpuPipeline::VertexBindings getVertexBindings() {
     // VkVertexInputBindingDescription{binding, stride, inputRate}
     return {
-      { 0, sizeof(DebugDrawVertex), VK_VERTEX_INPUT_RATE_VERTEX },
+        {0, sizeof(DebugDrawVertex), VK_VERTEX_INPUT_RATE_VERTEX},
     };
   }
 
   static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
     // VkVertexInputAttributeDescription{location, binding, format, offset}
     return {
-      { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DebugDrawVertex, position) },
-      { 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DebugDrawVertex, color) },
+        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DebugDrawVertex, position)},
+        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DebugDrawVertex, color)},
     };
   }
 };
@@ -54,9 +54,11 @@ class OverlayPass : public RenderPass {
   // RenderPass implementation
   void createFrameData(uint32_t) final;
   void destroyFrameData() final;
-  void allocateDescriptors(uint32_t, GpuDescriptorPool*) final;
-  void preRender(uint32_t, VkCommandBuffer) final {}
-  void render(uint32_t, VkCommandBuffer, const GpuDescriptorSet*) final;
+  void beginFrame(uint32_t, GpuDescriptorPool*) final;
+  void render(RenderPhase, VkCommandBuffer) final {}
+  void renderViewport(RenderPhase, VkCommandBuffer,
+                      const GpuDescriptorSet*) final;
+  void endFrame() final {}
 
  private:
   const CVarScope* cvars;
@@ -87,6 +89,7 @@ class OverlayPass : public RenderPass {
   };
 
   std::vector<FrameData> frame_data;
+  uint32_t current_frame;
 };
 
 }  // namespace mondradiko

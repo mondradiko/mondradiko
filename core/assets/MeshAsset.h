@@ -16,27 +16,30 @@ namespace mondradiko {
 // Forward declarations
 class GpuInstance;
 class GpuBuffer;
+class MeshPass;
 
 struct MeshVertex {
   glm::vec3 position;
   glm::vec3 normal;
+  glm::vec3 tangent;
   glm::vec3 color;
   glm::vec2 tex_coord;
 
   static GpuPipeline::VertexBindings getVertexBindings() {
     // VkVertexInputBindingDescription{binding, stride, inputRate}
     return {
-      { 0, sizeof(MeshVertex), VK_VERTEX_INPUT_RATE_VERTEX },
+        {0, sizeof(MeshVertex), VK_VERTEX_INPUT_RATE_VERTEX},
     };
   }
 
   static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
     // VkVertexInputAttributeDescription{location, binding, format, offset}
     return {
-      { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, position) },
-      { 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, normal) },
-      { 2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, color) },
-      { 3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(MeshVertex, tex_coord) },
+        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, position)},
+        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, normal)},
+        {2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, tangent)},
+        {3, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MeshVertex, color)},
+        {4, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(MeshVertex, tex_coord)},
     };
   }
 };
@@ -48,16 +51,19 @@ class MeshAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::MeshAsset);
 
   // Asset lifetime implementation
-  explicit MeshAsset(GpuInstance* gpu) : gpu(gpu) {}
+  explicit MeshAsset(MeshPass* mesh_pass) : mesh_pass(mesh_pass) {}
   void load(const assets::SerializedAsset*) final;
-  ~MeshAsset();
 
-  GpuBuffer* vertex_buffer = nullptr;
-  GpuBuffer* index_buffer = nullptr;
-  size_t index_count = 0;
+  size_t getVertexOffset() const { return vertex_offset; }
+  size_t getIndexOffset() const { return index_offset; }
+  size_t getIndexNum() const { return index_num; }
 
  private:
-  GpuInstance* gpu;
+  MeshPass* mesh_pass;
+
+  size_t vertex_offset = 0;
+  size_t index_offset = 0;
+  size_t index_num = 0;
 };
 
 }  // namespace mondradiko

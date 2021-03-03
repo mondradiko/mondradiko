@@ -21,6 +21,7 @@ class ScriptEnvironment {
   ScriptEnvironment();
   ~ScriptEnvironment();
 
+  void initializeAssets(AssetPool*);
   void linkUiApis(UserInterface*);
   void linkComponentApis(World*);
   void update(EntityRegistry*, AssetPool*, double);

@@ -82,6 +82,12 @@ ScriptEnvironment::~ScriptEnvironment() {
   if (engine) wasm_engine_delete(engine);
 }
 
+void ScriptEnvironment::initializeAssets(AssetPool* asset_pool) {
+  log_zone;
+
+  asset_pool->initializeAssetType<ScriptAsset>(this);
+}
+
 void ScriptEnvironment::linkUiApis(UserInterface* ui) {
   // TODO(marceline-cramer) UI API
 }

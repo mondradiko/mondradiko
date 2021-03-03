@@ -13,7 +13,9 @@
 #include "core/cvars/StringCVar.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuImage.h"
+#include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuShader.h"
+#include "core/renderer/Renderer.h"
 #include "log/log.h"
 #include "shaders/glyph.frag.h"
 #include "shaders/glyph.vert.h"
@@ -29,8 +31,10 @@ void GlyphLoader::initCVars(CVarScope* cvars) {
   glyphs->addValue<FloatCVar>("sdf_range", 1.0, 8.0);
 }
 
-GlyphLoader::GlyphLoader(const CVarScope* _cvars, GpuInstance* gpu)
-    : cvars(_cvars->getChild("glyphs")), gpu(gpu) {
+GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
+    : cvars(_cvars->getChild("glyphs")),
+      gpu(renderer->getGpu()),
+      renderer(renderer) {
   FT_Error error = FT_Init_FreeType(&freetype);
   if (error) {
     log_ftl("Failed to initialize FreeType");
@@ -120,13 +124,14 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, GpuInstance* gpu)
   }
 
   atlas_image =
-      new GpuImage(gpu, VK_FORMAT_R8G8B8A8_UNORM, atlas_width, atlas_height,
+      new GpuImage(gpu, VK_FORMAT_R8G8B8A8_UNORM, atlas_width, atlas_height, 1,
                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                    VMA_MEMORY_USAGE_GPU_ONLY);
 
   std::vector<GlyphUniform> glyph_data(glyph_rects.size());
-  glyph_buffer = new GpuBuffer(gpu, glyph_data.size() * sizeof(glyph_data[0]),
-                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+  glyph_buffer = new GpuBuffer(
+      gpu, glyph_data.size() * sizeof(glyph_data[0]),
+      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
   unsigned char* atlas_data = new unsigned char[atlas_width * atlas_height * 4];
 
@@ -180,11 +185,12 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, GpuInstance* gpu)
   }
 
   atlas_image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  atlas_image->writeData(atlas_data);
+  renderer->transferDataToImage(atlas_image, atlas_data);
   atlas_image->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   delete[] atlas_data;
 
-  glyph_buffer->writeData(glyph_data.data());
+  renderer->transferDataToBuffer(glyph_buffer, 0, glyph_data.data(),
+                                 glyph_data.size());
 
   {
     log_zone_named("Create SDF sampler");

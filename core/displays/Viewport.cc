@@ -54,7 +54,7 @@ void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
 
 void Viewport::_createImages() {
   _depth_image = new GpuImage(
-      gpu, display->getDepthFormat(), _image_width, _image_height,
+      gpu, display->getDepthFormat(), _image_width, _image_height, 1,
       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 
   for (uint32_t i = 0; i < _images.size(); i++) {
@@ -84,12 +84,12 @@ void Viewport::_createImages() {
       log_ftl("Failed to create swapchain image view.");
     }
 
-    std::array<VkImageView, 2> framebuffer_attachments = {_images[i].image_view,
-                                                          _depth_image->view};
+    std::array<VkImageView, 2> framebuffer_attachments = {
+        _images[i].image_view, _depth_image->getView()};
 
     VkFramebufferCreateInfo framebuffer_info{};
     framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebuffer_info.renderPass = renderer->getCompositePass();
+    framebuffer_info.renderPass = renderer->getViewportRenderPass();
     framebuffer_info.attachmentCount = framebuffer_attachments.size();
     framebuffer_info.pAttachments = framebuffer_attachments.data();
     framebuffer_info.width = _image_width;

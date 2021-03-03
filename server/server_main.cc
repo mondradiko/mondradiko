@@ -70,7 +70,9 @@ void run(const ServerArgs& args) {
     fs.loadAssetBundle(bundle);
   }
 
-  World world(&fs, nullptr);
+  AssetPool asset_pool(&fs);
+  ScriptEnvironment scripts;
+  World world(&asset_pool, &fs, &scripts);
   WorldEventSorter world_event_sorter(&world);
   NetworkServer server(&fs, &world_event_sorter, args.server_ip.c_str(),
                        args.server_port);

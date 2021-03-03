@@ -14,8 +14,10 @@ namespace mondradiko {
 // Forward declarations
 class CVarScope;
 class DisplayInterface;
+class GpuBuffer;
 class GpuDescriptorPool;
 class GpuDescriptorSetLayout;
+class GpuImage;
 class GpuInstance;
 class GpuVector;
 
@@ -30,17 +32,26 @@ class Renderer {
   void destroyFrameData();
 
   void renderFrame();
+  void addPassToPhase(RenderPhase, RenderPass*);
+
+  // TODO(marceline-cramer) TransferWorker
+  void transferDataToBuffer(GpuBuffer*, size_t, const void*, size_t);
+  void transferDataToImage(GpuImage*, const void*);
 
   GpuInstance* getGpu() { return gpu; }
   GpuDescriptorSetLayout* getViewportLayout() { return viewport_layout; }
-  VkRenderPass getCompositePass() const { return composite_pass; }
+
+  // TODO(marceline-cramer) Wrapper class for subpass manipulation
+  VkRenderPass getViewportRenderPass() const { return render_pass; }
+  uint32_t getDepthSubpass() { return 0; }
+  uint32_t getForwardSubpass() { return 1; }
 
  private:
   const CVarScope* cvars;
   DisplayInterface* display;
   GpuInstance* gpu;
 
-  VkRenderPass composite_pass = VK_NULL_HANDLE;
+  VkRenderPass render_pass = VK_NULL_HANDLE;
 
   GpuDescriptorSetLayout* viewport_layout = nullptr;
 
@@ -54,6 +65,11 @@ class Renderer {
 
     GpuDescriptorPool* descriptor_pool;
     GpuVector* viewports;
+
+    using PassList = std::vector<RenderPass*>;
+    static constexpr auto PhaseNum = static_cast<size_t>(RenderPhase::MAX);
+    using PhaseList = std::array<PassList, PhaseNum>;
+    PhaseList phases;
   };
 
   uint32_t current_frame = 0;

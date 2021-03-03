@@ -14,7 +14,6 @@ namespace mondradiko {
 
 // Forward declarations
 class Filesystem;
-class GpuInstance;
 
 namespace protocol {
 struct WorldEvent;
@@ -26,10 +25,12 @@ struct UpdateScripts;
 
 class World {
  public:
-  World(Filesystem*, GpuInstance*);
+  World(AssetPool*, Filesystem*, ScriptEnvironment*);
   ~World();
 
   void initializePrefabs();
+
+  AssetPool* getAssetPool() { return asset_pool; }
 
   //
   // World event callbacks
@@ -49,13 +50,12 @@ class World {
       const flatbuffers::Vector<EntityId>*,
       const flatbuffers::Vector<const ProtocolComponentType*>*);
 
-  Filesystem* fs;
-  GpuInstance* gpu;
-
   // private:
+  AssetPool* asset_pool;
+  Filesystem* fs;
+  ScriptEnvironment* scripts;
+
   EntityRegistry registry;
-  AssetPool asset_pool;
-  ScriptEnvironment scripts;
 };
 
 }  // namespace mondradiko

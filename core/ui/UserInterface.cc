@@ -6,6 +6,7 @@
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuImage.h"
+#include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuPipeline.h"
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GraphicsState.h"
@@ -67,10 +68,10 @@ UserInterface::UserInterface(GlyphLoader* glyphs, Renderer* renderer)
     GpuPipeline::VertexBindings vertex_bindings;
     GpuPipeline::AttributeDescriptions attribute_descriptions;
 
-    panel_pipeline = new GpuPipeline(gpu, panel_pipeline_layout,
-                                     renderer->getCompositePass(), 0,
-                                     panel_vertex_shader, panel_fragment_shader,
-                                     vertex_bindings, attribute_descriptions);
+    panel_pipeline = new GpuPipeline(
+        gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getForwardSubpass(), panel_vertex_shader,
+        panel_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 }
 
@@ -93,7 +94,7 @@ void UserInterface::createFrameData(uint32_t frame_count) {
 
   for (auto& frame : frame_data) {
     frame.panel_atlas = new GpuImage(
-        gpu, VK_FORMAT_R8G8B8A8_SRGB, 256, 256,
+        gpu, VK_FORMAT_R8G8B8A8_SRGB, 256, 256, 1,
         VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         VMA_MEMORY_USAGE_GPU_ONLY);
   }
@@ -107,25 +108,22 @@ void UserInterface::destroyFrameData() {
   }
 }
 
-void UserInterface::allocateDescriptors(uint32_t frame_index,
-                                        GpuDescriptorPool* descriptor_pool) {
+void UserInterface::beginFrame(uint32_t frame_index,
+                               GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  auto& frame = frame_data[frame_index];
+  renderer->addPassToPhase(RenderPhase::Forward, this);
+
+  current_frame = frame_index;
+  auto& frame = frame_data[current_frame];
 }
 
-void UserInterface::preRender(uint32_t frame_index,
-                              VkCommandBuffer command_buffer) {
+void UserInterface::renderViewport(
+    RenderPhase phase, VkCommandBuffer command_buffer,
+    const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 
-  auto& frame = frame_data[frame_index];
-}
-
-void UserInterface::render(uint32_t frame_index, VkCommandBuffer command_buffer,
-                           const GpuDescriptorSet* viewport_descriptor) {
-  log_zone;
-
-  auto& frame = frame_data[frame_index];
+  auto& frame = frame_data[current_frame];
 
   {
     log_zone_named("Render panels");

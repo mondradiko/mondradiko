@@ -10,19 +10,27 @@
 namespace mondradiko {
 
 GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
-                   uint32_t height, VkImageUsageFlags image_usage_flags,
+                   uint32_t height, uint32_t level_num,
+                   VkImageUsageFlags image_usage_flags,
                    VmaMemoryUsage memory_usage)
-    : format(format),
+    : gpu(gpu),
+      format(format),
       layout(VK_IMAGE_LAYOUT_UNDEFINED),
-      width(height),
+      width(width),
       height(height),
-      gpu(gpu) {
+      level_num(level_num) {
   VkImageCreateInfo imageCreateInfo{};
   imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
   imageCreateInfo.format = format;
-  imageCreateInfo.extent = VkExtent3D{ width, height, 1 };
-  imageCreateInfo.mipLevels = 1;
+
+  VkExtent3D image_extent{};
+  image_extent.width = width;
+  image_extent.height = height;
+  image_extent.depth = 1;
+  imageCreateInfo.extent = image_extent;
+
+  imageCreateInfo.mipLevels = level_num;
   imageCreateInfo.arrayLayers = 1;
   imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
   imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -48,35 +56,6 @@ GpuImage::~GpuImage() {
   if (allocation != nullptr) vmaDestroyImage(gpu->allocator, image, allocation);
 }
 
-void GpuImage::writeData(const void* src) {
-  // TODO(marceline-cramer) This function is bad, please replace
-  // Consider a streaming job system for all static GPU assets
-  GpuBuffer stage(gpu, allocation_info.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-  stage.writeData(src);
-
-  VkCommandBuffer commandBuffer = gpu->beginSingleTimeCommands();
-
-  VkBufferImageCopy region{};
-  region.bufferOffset = 0;
-  region.bufferRowLength = 0;
-  region.bufferImageHeight = 0;
-
-  VkImageSubresourceLayers imageSubresource{};
-  imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  imageSubresource.mipLevel = 0;
-  imageSubresource.baseArrayLayer = 0;
-  imageSubresource.layerCount = 1;
-  region.imageSubresource = imageSubresource;
-
-  region.imageOffset = {0, 0, 0};
-  region.imageExtent = {width, height, 1};
-
-  vkCmdCopyBufferToImage(commandBuffer, stage.getBuffer(), image, layout, 1,
-                         &region);
-
-  gpu->endSingleTimeCommands(commandBuffer);
-}
-
 void GpuImage::transitionLayout(VkImageLayout targetLayout) {
   VkImageMemoryBarrier barrier{};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -89,7 +68,7 @@ void GpuImage::transitionLayout(VkImageLayout targetLayout) {
   VkImageSubresourceRange subresourceRange{};
   subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
   subresourceRange.baseMipLevel = 0;
-  subresourceRange.levelCount = 1;
+  subresourceRange.levelCount = level_num;
   subresourceRange.baseArrayLayer = 0;
   subresourceRange.layerCount = 1;
   barrier.subresourceRange = subresourceRange;
@@ -149,7 +128,7 @@ void GpuImage::createView() {
   VkImageSubresourceRange subresourceRange{};
   subresourceRange.aspectMask = aspect_mask;
   subresourceRange.baseMipLevel = 0;
-  subresourceRange.levelCount = 1;
+  subresourceRange.levelCount = level_num;
   subresourceRange.baseArrayLayer = 0;
   subresourceRange.layerCount = 1;
   viewInfo.subresourceRange = subresourceRange;

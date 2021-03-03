@@ -29,7 +29,12 @@ class World;
 
 struct MeshUniform {
   glm::mat4 model;
-  alignas(16) uint32_t light_count;
+  uint32_t light_count;
+  uint32_t material_idx;
+
+  // Padding for buffer alignment
+  uint32_t pad1;
+  uint32_t pad2;
 };
 
 class MeshPass : public RenderPass {
@@ -39,37 +44,63 @@ class MeshPass : public RenderPass {
   MeshPass(Renderer*, World*);
   ~MeshPass();
 
+  Renderer* getRenderer() { return renderer; }
+
+  size_t allocateVertices(size_t);
+  size_t allocateIndices(size_t);
+
+  GpuBuffer* getVertexPool() { return vertex_pool; }
+  GpuBuffer* getIndexPool() { return index_pool; }
+
   // RenderPass implementation
   void createFrameData(uint32_t) final;
   void destroyFrameData() final;
-  void allocateDescriptors(uint32_t, GpuDescriptorPool*) final;
-  void preRender(uint32_t, VkCommandBuffer) final {}
-  void render(uint32_t, VkCommandBuffer, const GpuDescriptorSet*) final;
+
+  void beginFrame(uint32_t, GpuDescriptorPool*) final;
+  void render(RenderPhase, VkCommandBuffer) final {}
+  void renderViewport(RenderPhase, VkCommandBuffer,
+                      const GpuDescriptorSet*) final;
+  void endFrame() final {}
 
  private:
   GpuInstance* gpu;
   Renderer* renderer;
   World* world;
 
-  GpuShader* vertex_shader = nullptr;
-  GpuShader* fragment_shader = nullptr;
+  GpuShader* depth_vertex_shader = nullptr;
+  GpuShader* depth_fragment_shader = nullptr;
+  GpuShader* forward_vertex_shader = nullptr;
+  GpuShader* forward_fragment_shader = nullptr;
 
   GpuDescriptorSetLayout* material_layout;
   GpuDescriptorSetLayout* texture_layout;
   GpuDescriptorSetLayout* mesh_layout;
 
   VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
-  GpuPipeline* pipeline = nullptr;
+  GpuPipeline* depth_pipeline = nullptr;
+  GpuPipeline* forward_pipeline = nullptr;
 
   VkSampler texture_sampler = VK_NULL_HANDLE;
 
+  GpuBuffer* vertex_pool = nullptr;
+  GpuBuffer* index_pool = nullptr;
+  size_t first_available_vertex = 0;
+  size_t first_available_index = 0;
+
   struct MeshRenderCommand {
     uint32_t mesh_idx;
-    uint32_t material_idx;
     GpuDescriptorSet* textures_descriptor;
 
-    AssetHandle<MeshAsset> mesh_asset;
+    bool skip_depth;
+
+    uint32_t vertex_offset;
+    uint32_t index_offset;
+    uint32_t index_num;
   };
+
+  // Helper function to render meshes
+  using MeshRenderCommandList = std::vector<MeshRenderCommand>;
+  void executeMeshCommands(VkCommandBuffer, const MeshRenderCommandList&, bool);
 
   struct FrameData {
     GpuVector* material_buffer = nullptr;
@@ -79,10 +110,12 @@ class MeshPass : public RenderPass {
     GpuDescriptorSet* material_descriptor;
     GpuDescriptorSet* mesh_descriptor;
 
-    std::vector<MeshRenderCommand> commands;
+    MeshRenderCommandList single_sided;
+    MeshRenderCommandList double_sided;
   };
 
   std::vector<FrameData> frame_data;
+  uint32_t current_frame;
 };
 
 }  // namespace mondradiko

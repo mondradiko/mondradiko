@@ -24,8 +24,7 @@ GpuDescriptorSet::~GpuDescriptorSet() {}
 
 void GpuDescriptorSet::updateBuffer(uint32_t binding, GpuBuffer* buffer) {
   VkDescriptorBufferInfo buffer_info{};
-  buffer_info.buffer = buffer->getBuffer(),
-  buffer_info.offset = 0,
+  buffer_info.buffer = buffer->getBuffer(), buffer_info.offset = 0,
   buffer_info.range = set_layout->getBufferSize(binding);
 
   VkWriteDescriptorSet descriptor_writes{};
@@ -57,6 +56,8 @@ void GpuDescriptorSet::updateDynamicBuffer(uint32_t binding,
   descriptor_writes.pBufferInfo = &buffer_info;
 
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
+
+  dynamic_offset_granularity[binding] = buffer->getGranularity();
 }
 
 void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,
@@ -64,7 +65,7 @@ void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,
   VkDescriptorBufferInfo buffer_info{};
   buffer_info.buffer = buffer->getBuffer();
   buffer_info.offset = 0;
-  buffer_info.range = buffer->getBufferSize();;
+  buffer_info.range = buffer->getBufferSize();
 
   VkWriteDescriptorSet descriptor_writes{};
   descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -80,8 +81,8 @@ void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,
 
 void GpuDescriptorSet::updateImage(uint32_t binding, const GpuImage* image) {
   VkDescriptorImageInfo image_info{};
-  image_info.imageView = image->view;
-  image_info.imageLayout = image->layout;
+  image_info.imageView = image->getView();
+  image_info.imageLayout = image->getLayout();
 
   VkWriteDescriptorSet descriptor_writes{};
   descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

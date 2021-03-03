@@ -99,10 +99,10 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
     auto vertex_bindings = DebugDrawVertex::getVertexBindings();
     auto attribute_descriptions = DebugDrawVertex::getAttributeDescriptions();
 
-    debug_pipeline = new GpuPipeline(gpu, debug_pipeline_layout,
-                                     renderer->getCompositePass(), 0,
-                                     debug_vertex_shader, debug_fragment_shader,
-                                     vertex_bindings, attribute_descriptions);
+    debug_pipeline = new GpuPipeline(
+        gpu, debug_pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getForwardSubpass(), debug_vertex_shader,
+        debug_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 
   {
@@ -112,9 +112,9 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
     auto attribute_descriptions = GlyphInstance::getAttributeDescriptions();
 
     glyph_pipeline = new GpuPipeline(
-        gpu, glyph_pipeline_layout, renderer->getCompositePass(), 0,
-        glyphs->getVertexShader(), glyphs->getFragmentShader(), vertex_bindings,
-        attribute_descriptions);
+        gpu, glyph_pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getForwardSubpass(), glyphs->getVertexShader(),
+        glyphs->getFragmentShader(), vertex_bindings, attribute_descriptions);
   }
 }
 
@@ -157,11 +157,14 @@ void OverlayPass::destroyFrameData() {
   }
 }
 
-void OverlayPass::allocateDescriptors(uint32_t frame_index,
-                                      GpuDescriptorPool* descriptor_pool) {
+void OverlayPass::beginFrame(uint32_t frame_index,
+                             GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  auto& frame = frame_data[frame_index];
+  renderer->addPassToPhase(RenderPhase::Forward, this);
+
+  current_frame = frame_index;
+  auto& frame = frame_data[current_frame];
 
   frame.index_count = 0;
   DebugDrawIndex vertex_count = 0;
@@ -293,11 +296,12 @@ void OverlayPass::allocateDescriptors(uint32_t frame_index,
   }
 }
 
-void OverlayPass::render(uint32_t frame_index, VkCommandBuffer command_buffer,
-                         const GpuDescriptorSet* viewport_descriptor) {
+void OverlayPass::renderViewport(RenderPhase phase,
+                                 VkCommandBuffer command_buffer,
+                                 const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 
-  auto& frame = frame_data[frame_index];
+  auto& frame = frame_data[current_frame];
 
   {
     log_zone_named("Render debug");

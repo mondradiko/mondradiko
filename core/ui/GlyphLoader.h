@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuPipeline.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/msdfgen_headers.h"
@@ -20,6 +19,7 @@ class CVarScope;
 class GpuBuffer;
 class GpuImage;
 class GpuShader;
+class Renderer;
 
 struct GlyphUniform {
   glm::vec2 atlas_coords[4];
@@ -33,15 +33,15 @@ struct GlyphInstance {
   static GpuPipeline::VertexBindings getVertexBindings() {
     // VkVertexInputBindingDescription{binding, stride, inputRate}
     return {
-      { 0, sizeof(GlyphInstance), VK_VERTEX_INPUT_RATE_INSTANCE },
+        {0, sizeof(GlyphInstance), VK_VERTEX_INPUT_RATE_INSTANCE},
     };
   }
 
   static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
     // VkVertexInputAttributeDescription{location, binding, format, offset}
     return {
-      { 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(GlyphInstance, position) },
-      { 1, 0, VK_FORMAT_R32_UINT, offsetof(GlyphInstance, glyph_index) },
+        {0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(GlyphInstance, position)},
+        {1, 0, VK_FORMAT_R32_UINT, offsetof(GlyphInstance, glyph_index)},
     };
   }
 };
@@ -52,7 +52,7 @@ class GlyphLoader {
  public:
   static void initCVars(CVarScope*);
 
-  GlyphLoader(const CVarScope*, GpuInstance*);
+  GlyphLoader(const CVarScope*, Renderer*);
   ~GlyphLoader();
 
   VkSampler getSampler() const { return sdf_sampler; }
@@ -66,6 +66,7 @@ class GlyphLoader {
  private:
   const CVarScope* cvars;
   GpuInstance* gpu;
+  Renderer* renderer;
 
   FT_Library freetype;
   FT_Face font_face;

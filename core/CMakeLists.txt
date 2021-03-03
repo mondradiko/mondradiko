@@ -12,8 +12,10 @@ spirv_shaders(SHADER_HEADERS
   shaders/debug.vert
   shaders/glyph.frag
   shaders/glyph.vert
-  shaders/mesh.frag
-  shaders/mesh.vert
+  shaders/mesh_depth.frag
+  shaders/mesh_depth.vert
+  shaders/mesh_forward.frag
+  shaders/mesh_forward.vert
   shaders/panel.frag
   shaders/panel.vert
 )
