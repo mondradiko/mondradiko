@@ -378,10 +378,13 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
     current_pipeline = forward_pipeline;
     enable_depth_skip = false;
 
+    // TODO(marceline-cramer) Proper blending
+    // Only enabling LessOrEqual and depth write for now because the
+    // test avatar without eyelashes looks creepy as fuck
     GraphicsState::DepthState depth_state{};
     depth_state.test_enable = GraphicsState::BoolFlag::True;
-    depth_state.write_enable = GraphicsState::BoolFlag::False;
-    depth_state.compare_op = GraphicsState::CompareOp::Equal;
+    depth_state.write_enable = GraphicsState::BoolFlag::True;
+    depth_state.compare_op = GraphicsState::CompareOp::LessOrEqual;
     graphics_state.depth_state = depth_state;
   }
 
