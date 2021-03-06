@@ -128,15 +128,22 @@ class WasmLinker(Codegen):
         # Parse parameters
         params = ["self"]
         if "params" in method.keys():
-            params.extend(method["params"])
+            params.extend(method["params"].values())
         self.out.extend(build_valtype_vec("params", params))
 
         # Parse results
         if "return" in method.keys():
-            results = method["return"]
+            return_type = wasm_type(method["return"])
+            self.out.extend([
+                "  wasm_valtype_vec_t results;",
+                f"  wasm_valtype_t* result = {return_type};"
+                "  wasm_valtype_vec_new(&results, 1, &result);",
+                ""])
         else:
-            results = []
-        self.out.extend(build_valtype_vec("results", results))
+            self.out.extend([
+                "  wasm_valtype_vec_t results;",
+                "  wasm_valtype_vec_new_empty(&results);",
+                ""])
 
         # Combine and assemble functype
         self.out.extend([
@@ -161,7 +168,7 @@ class WasmLinker(Codegen):
             "",
 
             # End of namespace
-            "} // namespace mondradiko"
+            "} // namespace mondradiko",
             ""])
 
         # Close linker source file
