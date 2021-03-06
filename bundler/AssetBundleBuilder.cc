@@ -54,6 +54,9 @@ AssetResult AssetBundleBuilder::addAsset(
   uint32_t lump_index = lumps.size() - 1;
 
   if (lumps[lump_index].total_size + asset_size > ASSET_LUMP_MAX_SIZE) {
+    // Now that we're done with this lump, compress it
+    compressLump(&lumps[lump_index]);
+
     LumpToSave new_lump;
     allocateLump(&new_lump);
     lumps.push_back(new_lump);
@@ -85,14 +88,14 @@ AssetResult AssetBundleBuilder::addInitialPrefab(AssetId prefab) {
 }
 
 AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
+  // Compress the last lump we handled
+  compressLump(&lumps.back());
+
   for (uint32_t lump_index = 0; lump_index < lumps.size(); lump_index++) {
     auto& lump = lumps[lump_index];
     auto lump_name = generateLumpName(lump_index);
     auto lump_path = bundle_root / lump_name;
     std::ofstream lump_file(lump_path.c_str(), std::ofstream::binary);
-
-    // TODO(marceline-cramer) Lump compression configuration
-    compressLump(&lump);
 
     lump_file.write(reinterpret_cast<char*>(lump.data), lump.total_size);
 
