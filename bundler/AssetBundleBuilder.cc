@@ -8,6 +8,7 @@
 
 #include "log/log.h"
 #include "lz4frame.h"  // NOLINT
+#include "lz4hc.h"     // NOLINT
 #include "types/assets/Registry_generated.h"
 #include "xxhash.h"  // NOLINT
 
@@ -55,7 +56,7 @@ AssetResult AssetBundleBuilder::addAsset(
 
   if (lumps[lump_index].total_size + asset_size > ASSET_LUMP_MAX_SIZE) {
     // Now that we're done with this lump, compress it
-    compressLump(&lumps[lump_index]);
+    compressLump(&lumps[lump_index], default_compression);
 
     LumpToSave new_lump;
     allocateLump(&new_lump);
@@ -89,7 +90,7 @@ AssetResult AssetBundleBuilder::addInitialPrefab(AssetId prefab) {
 
 AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
   // Compress the last lump we handled
-  compressLump(&lumps.back());
+  compressLump(&lumps.back(), default_compression);
 
   for (uint32_t lump_index = 0; lump_index < lumps.size(); lump_index++) {
     auto& lump = lumps[lump_index];
@@ -167,10 +168,17 @@ void AssetBundleBuilder::allocateLump(LumpToSave* new_lump) {
   new_lump->assets.resize(0);
 }
 
-void AssetBundleBuilder::compressLump(LumpToSave* lump) {
+void AssetBundleBuilder::compressLump(LumpToSave* lump,
+                                      LumpCompressionMethod method) {
   if (lump->compression_method != LumpCompressionMethod::None) {
     log_err("Can't compress lump; lump is already compressed");
     return;
+  }
+
+  if (method == LumpCompressionMethod::None) {
+    return;
+  } else if (method != LumpCompressionMethod::LZ4) {
+    log_ftl("Non-LZ4 compression methods are not yet supported");
   }
 
   // TODO(marceline-cramer) More lump compression types?
@@ -179,7 +187,8 @@ void AssetBundleBuilder::compressLump(LumpToSave* lump) {
   LZ4F_preferences_t preferences;
   memset(&preferences, 0, sizeof(preferences));
   preferences.frameInfo.contentSize = lump->total_size;
-  preferences.compressionLevel = LZ4F_compressionLevel_max();
+  // TODO(marceline-cramer) Custom compression level from bundle manifest
+  preferences.compressionLevel = LZ4HC_CLEVEL_DEFAULT;
   preferences.autoFlush = 1;
   preferences.favorDecSpeed = 1;
 
@@ -198,7 +207,7 @@ void AssetBundleBuilder::compressLump(LumpToSave* lump) {
 
   // TODO(marceline-cramer) Stream out to a file
   delete[] lump->data;
-  lump->compression_method = LumpCompressionMethod::LZ4;
+  lump->compression_method = method;
   lump->total_size = out_size;
   lump->data = compressed_data;
 }

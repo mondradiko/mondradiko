@@ -4,6 +4,7 @@
 #pragma once
 
 #include <filesystem>
+#include <thread>
 #include <unordered_set>
 #include <vector>
 
@@ -20,6 +21,10 @@ class AssetBundleBuilder {
   explicit AssetBundleBuilder(const std::filesystem::path&);
   ~AssetBundleBuilder();
 
+  void setDefaultCompressionMethod(LumpCompressionMethod method) {
+    default_compression = method;
+  }
+
   AssetResult addAsset(AssetId*, flatbuffers::FlatBufferBuilder*,
                        flatbuffers::Offset<SerializedAsset>);
   AssetResult addInitialPrefab(AssetId);
@@ -27,6 +32,8 @@ class AssetBundleBuilder {
 
  private:
   std::filesystem::path bundle_root;
+
+  LumpCompressionMethod default_compression = LumpCompressionMethod::None;
 
   struct AssetToSave {
     AssetId id;
@@ -45,8 +52,8 @@ class AssetBundleBuilder {
   std::unordered_set<AssetId> used_ids;
   std::vector<AssetId> initial_prefabs;
 
-  void allocateLump(LumpToSave*);
-  void compressLump(LumpToSave*);
+  static void allocateLump(LumpToSave*);
+  static void compressLump(LumpToSave*, LumpCompressionMethod);
 };
 
 }  // namespace assets
