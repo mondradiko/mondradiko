@@ -4,6 +4,7 @@
 #pragma once
 
 #include <filesystem>
+#include <thread>
 #include <unordered_set>
 #include <vector>
 
@@ -20,6 +21,10 @@ class AssetBundleBuilder {
   explicit AssetBundleBuilder(const std::filesystem::path&);
   ~AssetBundleBuilder();
 
+  void setDefaultCompressionMethod(LumpCompressionMethod method) {
+    default_compression = method;
+  }
+
   AssetResult addAsset(AssetId*, flatbuffers::FlatBufferBuilder*,
                        flatbuffers::Offset<SerializedAsset>);
   AssetResult addInitialPrefab(AssetId);
@@ -28,25 +33,35 @@ class AssetBundleBuilder {
  private:
   std::filesystem::path bundle_root;
 
+  LumpCompressionMethod default_compression = LumpCompressionMethod::None;
+
   struct AssetToSave {
     AssetId id;
     size_t size;
   };
 
   struct LumpToSave {
-    LumpCompressionMethod compression_method;
     size_t total_size;
     char* data;
 
     std::vector<AssetToSave> assets;
+
+    // Finalized metadata
+    std::thread* finalizer_thread;
+    std::filesystem::path lump_path;
+    LumpCompressionMethod compression_method;
+    LumpHash checksum;
+    LumpHashMethod hash_method;
   };
 
-  std::vector<LumpToSave> lumps;
+  std::vector<LumpToSave*> lumps;
   std::unordered_set<AssetId> used_ids;
   std::vector<AssetId> initial_prefabs;
 
-  void allocateLump(LumpToSave*);
-  void compressLump(LumpToSave*);
+  void launchFinalizer(LumpToSave*);
+  LumpToSave* allocateLump(uint32_t);
+
+  static void finalizeLump(LumpToSave*, LumpCompressionMethod, LumpHashMethod);
 };
 
 }  // namespace assets

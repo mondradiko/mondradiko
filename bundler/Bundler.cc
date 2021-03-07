@@ -32,6 +32,25 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
   prefab_builder = new PrefabBuilder;
 
   manifest = toml::parse(manifest_path);
+
+  {  // Select compression method
+    assets::LumpCompressionMethod compression_method;
+    compression_method = assets::LumpCompressionMethod::None;
+
+    const auto& bundle_table = toml::find<toml::table>(manifest, "bundle");
+
+    auto iter = bundle_table.find("compression");
+    if (iter != bundle_table.end()) {
+      std::string compression_name = iter->second.as_string();
+      if (compression_name == "LZ4") {
+        compression_method = assets::LumpCompressionMethod::LZ4;
+      } else if (compression_name != "none") {
+        log_ftl_fmt("Invalid compression method %s", compression_name.c_str());
+      }
+    }
+
+    bundle_builder->setDefaultCompressionMethod(compression_method);
+  }
 }
 
 Bundler::~Bundler() {
