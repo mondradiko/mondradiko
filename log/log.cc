@@ -6,11 +6,14 @@
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 
 namespace mondradiko {
+
+static std::mutex g_log_lock;
 
 const std::filesystem::path g_root_path =
     std::filesystem::path(__FILE__).parent_path().parent_path();
@@ -43,8 +46,10 @@ void log(const char* file_path, int line, LogLevel level, const char* message) {
   std::ostringstream header;
   header << prefix << formatPath(file_path) << ":" << line << "]";
 
+  g_log_lock.lock();
   std::cerr << std::left << std::setw(55) << header.str();
   std::cerr << message << "\x1b[0m" << std::endl;
+  g_log_lock.unlock();
 
   if (level == LogLevel::Fatal) {
     throw std::runtime_error(message);
