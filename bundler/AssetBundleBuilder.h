@@ -41,19 +41,27 @@ class AssetBundleBuilder {
   };
 
   struct LumpToSave {
-    LumpCompressionMethod compression_method;
     size_t total_size;
     char* data;
 
     std::vector<AssetToSave> assets;
+
+    // Finalized metadata
+    std::thread* finalizer_thread;
+    std::filesystem::path lump_path;
+    LumpCompressionMethod compression_method;
+    LumpHash checksum;
+    LumpHashMethod hash_method;
   };
 
-  std::vector<LumpToSave> lumps;
+  std::vector<LumpToSave*> lumps;
   std::unordered_set<AssetId> used_ids;
   std::vector<AssetId> initial_prefabs;
 
-  static void allocateLump(LumpToSave*);
-  static void compressLump(LumpToSave*, LumpCompressionMethod);
+  void launchFinalizer(LumpToSave*);
+  LumpToSave* allocateLump(uint32_t);
+
+  static void finalizeLump(LumpToSave*, LumpCompressionMethod, LumpHashMethod);
 };
 
 }  // namespace assets

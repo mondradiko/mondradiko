@@ -24,7 +24,20 @@ AssetBundleBuilder::~AssetBundleBuilder() {
   log_dbg_fmt("Cleaning up asset bundle %s", bundle_root.c_str());
 
   for (auto& lump : lumps) {
-    delete[] lump.data;
+    if (lump == nullptr) continue;
+
+    if (lump->finalizer_thread != nullptr) {
+      if (lump->finalizer_thread->joinable()) {
+        log_wrn("Joining rogue lump finalizer thread");
+        lump->finalizer_thread->join();
+      }
+
+      delete lump->finalizer_thread;
+    }
+
+    if (lump->data != nullptr) delete[] lump->data;
+
+    delete lump;
   }
 }
 
@@ -49,35 +62,34 @@ AssetResult AssetBundleBuilder::addAsset(
 
   if (lumps.size() == 0) {
     lumps.resize(1);
-    allocateLump(&lumps[0]);
+    lumps[0] = allocateLump(0);
   }
 
   uint32_t lump_index = lumps.size() - 1;
 
-  if (lumps[lump_index].total_size + asset_size > ASSET_LUMP_MAX_SIZE) {
-    // Now that we're done with this lump, compress it
-    compressLump(&lumps[lump_index], default_compression);
+  if (lumps[lump_index]->total_size + asset_size > ASSET_LUMP_MAX_SIZE) {
+    // Now that we're done with this lump, finalize it
+    launchFinalizer(lumps[lump_index]);
 
-    LumpToSave new_lump;
-    allocateLump(&new_lump);
-    lumps.push_back(new_lump);
     lump_index++;
+    LumpToSave* new_lump = allocateLump(lump_index);
+    lumps.push_back(new_lump);
   }
 
-  if (lumps[lump_index].compression_method != LumpCompressionMethod::None) {
-    log_err_fmt("Lump %d has already been compressed", lump_index);
+  if (lumps[lump_index]->finalizer_thread != nullptr) {
+    log_err_fmt("Lump %d has already been finalized", lump_index);
     return AssetResult::BadContents;
   }
 
   AssetToSave new_asset;
   new_asset.id = *id;
   new_asset.size = asset_size;
-  lumps[lump_index].assets.push_back(new_asset);
+  lumps[lump_index]->assets.push_back(new_asset);
 
-  memcpy(lumps[lump_index].data + lumps[lump_index].total_size,
+  memcpy(lumps[lump_index]->data + lumps[lump_index]->total_size,
          fbb->GetBufferPointer(), asset_size);
 
-  lumps[lump_index].total_size += asset_size;
+  lumps[lump_index]->total_size += asset_size;
   used_ids.emplace(*id);
 
   return AssetResult::Success;
@@ -89,19 +101,8 @@ AssetResult AssetBundleBuilder::addInitialPrefab(AssetId prefab) {
 }
 
 AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
-  // Compress the last lump we handled
-  compressLump(&lumps.back(), default_compression);
-
-  for (uint32_t lump_index = 0; lump_index < lumps.size(); lump_index++) {
-    auto& lump = lumps[lump_index];
-    auto lump_name = generateLumpName(lump_index);
-    auto lump_path = bundle_root / lump_name;
-    std::ofstream lump_file(lump_path.c_str(), std::ofstream::binary);
-
-    lump_file.write(reinterpret_cast<char*>(lump.data), lump.total_size);
-
-    lump_file.close();
-  }
+  // Finalize the last lump we handled
+  launchFinalizer(lumps.back());
 
   flatbuffers::FlatBufferBuilder fbb;
 
@@ -110,34 +111,34 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
   for (uint32_t lump_index = 0; lump_index < lumps.size(); lump_index++) {
     auto& lump = lumps[lump_index];
 
-    log_dbg_fmt("Writing lump %d", lump_index);
-    log_dbg_fmt("Lump size: %lu", lump.total_size);
+    if (lump->finalizer_thread == nullptr) {
+      log_wrn_fmt("Finalizing lump %s late", lump->lump_path.c_str());
+      launchFinalizer(lump);
+    }
+
+    if (lump->finalizer_thread->joinable()) {
+      lump->finalizer_thread->join();
+    }
 
     AssetEntry* asset_entries;
     auto assets_offset = fbb.CreateUninitializedVectorOfStructs(
-        lump.assets.size(), &asset_entries);
+        lump->assets.size(), &asset_entries);
 
-    for (uint32_t i = 0; i < lump.assets.size(); i++) {
-      auto& asset = lump.assets[i];
+    for (uint32_t i = 0; i < lump->assets.size(); i++) {
+      auto& asset = lump->assets[i];
       asset_entries[i].mutate_id(asset.id);
       asset_entries[i].mutate_size(asset.size);
     }
 
     LumpEntryBuilder lump_entry(fbb);
 
-    {
-      LumpHash checksum =
-          static_cast<LumpHash>(XXH3_64bits(lump.data, lump.total_size));
-      log_dbg_fmt("Lump has checksum 0x%0lx", checksum);
+    lump_entry.add_file_size(lump->total_size);
+    lump_entry.add_checksum(lump->checksum);
+    lump_entry.add_hash_method(lump->hash_method);
+    lump_entry.add_compression_method(lump->compression_method);
+    lump_entry.add_assets(assets_offset);
 
-      lump_entry.add_file_size(lump.total_size);
-      lump_entry.add_checksum(checksum);
-      lump_entry.add_hash_method(LumpHashMethod::xxHash);
-      lump_entry.add_compression_method(lump.compression_method);
-      lump_entry.add_assets(assets_offset);
-
-      lump_offsets.push_back(lump_entry.Finish());
-    }
+    lump_offsets.push_back(lump_entry.Finish());
   }
 
   auto initial_prefabs_offset = fbb.CreateVector(
@@ -161,55 +162,90 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
   return AssetResult::Success;
 }
 
-void AssetBundleBuilder::allocateLump(LumpToSave* new_lump) {
-  new_lump->compression_method = LumpCompressionMethod::None;
+void AssetBundleBuilder::launchFinalizer(LumpToSave* lump) {
+  if (lump->finalizer_thread != nullptr) {
+    log_err("Attempting to finalize lump twice");
+    return;
+  }
+
+  // TODO(marceline-cramer) Thread pool
+  // TODO(marceline-cramer) Job subsystem
+
+  std::thread* new_thread = new std::thread(
+      finalizeLump, lump, default_compression, LumpHashMethod::xxHash);
+  lump->finalizer_thread = new_thread;
+}
+
+AssetBundleBuilder::LumpToSave* AssetBundleBuilder::allocateLump(
+    uint32_t lump_index) {
+  LumpToSave* new_lump = new LumpToSave;
   new_lump->total_size = 0;
   new_lump->data = new char[ASSET_LUMP_MAX_SIZE];
   new_lump->assets.resize(0);
+  new_lump->finalizer_thread = nullptr;
+  new_lump->lump_path = bundle_root / generateLumpName(lump_index);
+  return new_lump;
 }
 
-void AssetBundleBuilder::compressLump(LumpToSave* lump,
-                                      LumpCompressionMethod method) {
-  if (lump->compression_method != LumpCompressionMethod::None) {
-    log_err("Can't compress lump; lump is already compressed");
-    return;
+void AssetBundleBuilder::finalizeLump(LumpToSave* lump,
+                                      LumpCompressionMethod compression_method,
+                                      LumpHashMethod hash_method) {
+  if (hash_method != LumpHashMethod::xxHash) {
+    log_ftl("Non-xxHash hash methods are not yet supported");
   }
 
-  if (method == LumpCompressionMethod::None) {
-    return;
-  } else if (method != LumpCompressionMethod::LZ4) {
-    log_ftl("Non-LZ4 compression methods are not yet supported");
+  lump->compression_method = compression_method;
+  lump->hash_method = hash_method;
+
+  if (compression_method == LumpCompressionMethod::LZ4) {
+    // TODO(marceline-cramer) More lump compression types?
+    log_dbg("Compressing lump with LZ4");
+
+    LZ4F_preferences_t preferences;
+    memset(&preferences, 0, sizeof(preferences));
+    preferences.frameInfo.contentSize = lump->total_size;
+    // TODO(marceline-cramer) Custom compression level from bundle manifest
+    preferences.compressionLevel = LZ4HC_CLEVEL_DEFAULT;
+    preferences.autoFlush = 1;
+    preferences.favorDecSpeed = 1;
+
+    size_t compressed_size =
+        LZ4F_compressFrameBound(lump->total_size, &preferences);
+    char* compressed_data = new char[compressed_size];
+
+    size_t out_size =
+        LZ4F_compressFrame(compressed_data, compressed_size, lump->data,
+                           lump->total_size, &preferences);
+
+    if (LZ4F_isError(out_size)) {
+      log_err_fmt("LZ4 compression failed: %s", LZ4F_getErrorName(out_size));
+      return;
+    }
+
+    // TODO(marceline-cramer) Stream compression data out to the file
+    delete[] lump->data;
+    lump->total_size = out_size;
+    lump->data = compressed_data;
+  } else if (compression_method != LumpCompressionMethod::None) {
+    log_err("Non-LZ4 compression methods are not yet implemented");
   }
 
-  // TODO(marceline-cramer) More lump compression types?
-  log_dbg("Compressing lump with LZ4");
+  {
+    log_dbg("Hashing lump with xxHash");
 
-  LZ4F_preferences_t preferences;
-  memset(&preferences, 0, sizeof(preferences));
-  preferences.frameInfo.contentSize = lump->total_size;
-  // TODO(marceline-cramer) Custom compression level from bundle manifest
-  preferences.compressionLevel = LZ4HC_CLEVEL_DEFAULT;
-  preferences.autoFlush = 1;
-  preferences.favorDecSpeed = 1;
-
-  size_t compressed_size =
-      LZ4F_compressFrameBound(lump->total_size, &preferences);
-  char* compressed_data = new char[compressed_size];
-
-  size_t out_size =
-      LZ4F_compressFrame(compressed_data, compressed_size, lump->data,
-                         lump->total_size, &preferences);
-
-  if (LZ4F_isError(out_size)) {
-    log_err_fmt("LZ4HC compression failed: %s", LZ4F_getErrorName(out_size));
-    return;
+    LumpHash checksum =
+        static_cast<LumpHash>(XXH3_64bits(lump->data, lump->total_size));
+    log_dbg_fmt("Lump has checksum 0x%0lx", checksum);
+    lump->checksum = checksum;
   }
 
-  // TODO(marceline-cramer) Stream out to a file
-  delete[] lump->data;
-  lump->compression_method = method;
-  lump->total_size = out_size;
-  lump->data = compressed_data;
+  {
+    log_dbg("Writing lump data to file");
+
+    std::ofstream lump_file(lump->lump_path.c_str(), std::ofstream::binary);
+    lump_file.write(reinterpret_cast<char*>(lump->data), lump->total_size);
+    lump_file.close();
+  }
 }
 
 }  // namespace assets
