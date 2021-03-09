@@ -1,7 +1,8 @@
 # Network
 
-## To-Do
+# To-Do
 
+- Flesh out this document
 - Handle unjoined clients
 - Validate events when received
 - VMC support

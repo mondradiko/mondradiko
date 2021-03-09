@@ -1,5 +1,6 @@
 # Console Variables (CVars)
 
-## To-Do
+# To-Do
 
-- EnumCVar
+- EnumCVar class
+- Flesh out this document

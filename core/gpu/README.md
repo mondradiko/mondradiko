@@ -1,7 +1,8 @@
-# GPU
+# GPU Helpers
 
-## To-Do
+# To-Do
 
+- Flesh out this document
 - GpuHeap
 - SPIR-V reflection
 - GpuCommandBuffer
