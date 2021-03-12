@@ -66,7 +66,7 @@ set(COMPONENT_CLASSDEFS
 
 wrap_classes(SCRIPT_LINKERS "wasm-linker" ${COMPONENT_CLASSDEFS})
 
-add_library(mondradiko-api-components OBJECT ${SCRIPT_LINKERS})
+add_library(mondradiko-wasm-linker OBJECT ${SCRIPT_LINKERS})
 # TODO(marceline-cramer): Don't expose third-party dependencies to the public interface
-add_dependencies(mondradiko-api-components mondradiko-types)
-target_link_libraries(mondradiko-api-components mondradiko-lib)
+add_dependencies(mondradiko-wasm-linker mondradiko-types)
+target_link_libraries(mondradiko-wasm-linker mondradiko-lib)

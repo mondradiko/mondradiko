@@ -44,7 +44,7 @@ endif()
 
 add_subdirectory(log)
 add_subdirectory(types)
-add_subdirectory(bindings)
+add_subdirectory(codegen)
 add_subdirectory(core)
 add_subdirectory(client)
 add_subdirectory(server)

@@ -65,7 +65,7 @@ set(MONDRADIKO_CORE_SRC
   world/WorldEventSorter.cc
 )
 
-add_library(mondradiko-core STATIC $<TARGET_OBJECTS:mondradiko-api-components> ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
+add_library(mondradiko-core STATIC $<TARGET_OBJECTS:mondradiko-wasm-linker> ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
 
 target_link_libraries(mondradiko-core mondradiko-lib)
 target_link_libraries(mondradiko-core mondradiko-log)
