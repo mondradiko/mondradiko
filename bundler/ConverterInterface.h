@@ -5,7 +5,7 @@
 
 #include <filesystem>
 
-#include "assets/common/AssetTypes.h"
+#include "types/assets/AssetTypes.h"
 #include "bundler/AssetBundleBuilder.h"
 #include "types/assets/SerializedAsset_generated.h"
 

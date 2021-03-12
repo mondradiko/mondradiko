@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "assets/common/AssetTypes.h"
+#include "types/assets/AssetTypes.h"
 #include "core/filesystem/AssetLump.h"
 
 namespace mondradiko {

@@ -8,8 +8,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include "assets/common/AssetTypes.h"
 #include "lib/include/flatbuffers_headers.h"
+#include "types/assets/AssetTypes.h"
 #include "types/assets/Registry_generated.h"
 #include "types/assets/SerializedAsset_generated.h"
 

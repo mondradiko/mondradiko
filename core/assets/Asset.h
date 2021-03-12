@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "assets/common/AssetTypes.h"
+#include "types/assets/AssetTypes.h"
 #include "types/assets/SerializedAsset_generated.h"
 
 #define DECL_ASSET_TYPE(type) \
