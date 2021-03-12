@@ -3,9 +3,6 @@
 
 #include "core/assets/ScriptAsset.h"
 
-#include <string>
-#include <vector>
-
 #include "core/scripting/ComponentScript.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "types/assets/ScriptAsset_generated.h"

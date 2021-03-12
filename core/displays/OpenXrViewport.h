@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <vector>
-
 #include "core/displays/Viewport.h"
 #include "lib/include/openxr_headers.h"
 

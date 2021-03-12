@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include <vector>
-
 #include "core/displays/Viewport.h"
 #include "lib/include/sdl2_headers.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -38,7 +37,7 @@ class SdlViewport : public Viewport {
 
   VkSwapchainKHR swapchain = VK_NULL_HANDLE;
   uint32_t acquire_image_index = 0;
-  std::vector<VkSemaphore> on_image_acquire;
+  types::vector<VkSemaphore> on_image_acquire;
 
   glm::vec3 camera_position;
   float camera_pan;

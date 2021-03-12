@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include "lib/include/vulkan_headers.h"
+#include "types/containers/string.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -19,8 +18,8 @@ struct VulkanRequirements {
   uint32_t min_api_version;
   uint32_t max_api_version;
 
-  std::vector<std::string> instance_extensions;
-  std::vector<std::string> device_extensions;
+  types::vector<types::string> instance_extensions;
+  types::vector<types::string> device_extensions;
 };
 
 struct DisplayPollEventsInfo {
@@ -49,7 +48,7 @@ class DisplayInterface {
 
   virtual void pollEvents(DisplayPollEventsInfo*) = 0;
   virtual void beginFrame(DisplayBeginFrameInfo*) = 0;
-  virtual void acquireViewports(std::vector<Viewport*>*) = 0;
+  virtual void acquireViewports(types::vector<Viewport*>*) = 0;
   virtual void endFrame(DisplayBeginFrameInfo*) = 0;
 
  private:

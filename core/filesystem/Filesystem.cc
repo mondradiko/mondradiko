@@ -31,22 +31,23 @@ bool Filesystem::loadAssetBundle(const std::filesystem::path& bundle_root) {
   return true;
 }
 
-void Filesystem::getChecksums(std::vector<assets::LumpHash>& local_checksums) {
+void Filesystem::getChecksums(
+    types::vector<assets::LumpHash>& local_checksums) {
   local_checksums.resize(0);
 
   for (auto asset_bundle : asset_bundles) {
-    std::vector<assets::LumpHash> bundle_checksums;
+    types::vector<assets::LumpHash> bundle_checksums;
     asset_bundle->getChecksums(bundle_checksums);
     local_checksums.insert(local_checksums.end(), bundle_checksums.begin(),
                            bundle_checksums.end());
   }
 }
 
-void Filesystem::getInitialPrefabs(std::vector<assets::AssetId>& prefabs) {
+void Filesystem::getInitialPrefabs(types::vector<assets::AssetId>& prefabs) {
   prefabs.resize(0);
 
   for (auto asset_bundle : asset_bundles) {
-    std::vector<assets::AssetId> bundle_prefabs;
+    types::vector<assets::AssetId> bundle_prefabs;
     asset_bundle->getInitialPrefabs(bundle_prefabs);
     prefabs.insert(prefabs.end(), bundle_prefabs.begin(), bundle_prefabs.end());
   }

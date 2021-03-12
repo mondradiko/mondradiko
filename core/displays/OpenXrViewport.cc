@@ -68,7 +68,7 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
 
   uint32_t image_count;
   xrEnumerateSwapchainImages(swapchain, 0, &image_count, nullptr);
-  std::vector<XrSwapchainImageVulkanKHR> vulkan_images(image_count);
+  types::vector<XrSwapchainImageVulkanKHR> vulkan_images(image_count);
   xrEnumerateSwapchainImages(
       swapchain, image_count, &image_count,
       reinterpret_cast<XrSwapchainImageBaseHeader*>(vulkan_images.data()));

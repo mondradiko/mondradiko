@@ -4,7 +4,6 @@
 #include "core/network/NetworkServer.h"
 
 #include <memory>
-#include <string>
 
 #include "core/filesystem/Filesystem.h"
 #include "core/world/World.h"
@@ -34,7 +33,7 @@ NetworkServer::NetworkServer(Filesystem* fs,
 
   SteamDatagramErrMsg err;
   if (!GameNetworkingSockets_Init(nullptr, err)) {
-    std::string message = err;
+    types::string message = err;
     log_ftl_fmt("Failed to initialize SteamNetworkingSockets with error: %s",
                 message.c_str());
   }
@@ -50,7 +49,7 @@ NetworkServer::NetworkServer(Filesystem* fs,
 
   char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
   address.ToString(szAddr, sizeof(szAddr), true);
-  std::string addr_string = szAddr;
+  types::string addr_string = szAddr;
   log_msg_fmt("Listening on %s", addr_string.c_str());
 
   SteamNetworkingConfigValue_t callback;
@@ -114,7 +113,7 @@ void NetworkServer::update() {
 
 void NetworkServer::onJoinRequest(ClientId client_id,
                                   const protocol::JoinRequest* join_request) {
-  std::vector<assets::LumpHash> our_checksums;
+  types::vector<assets::LumpHash> our_checksums;
   fs->getChecksums(our_checksums);
 
   log_dbg("Checking client lump checksums");
@@ -139,7 +138,7 @@ void NetworkServer::onJoinRequest(ClientId client_id,
 
   if (check_passed) {
     log_msg_fmt("Client joined: %s", join_request->username()->c_str());
-    std::string connect_message =
+    types::string connect_message =
         "Welcome client #" + std::to_string(client_id);
     sendAnnouncement(connect_message);
   } else {
@@ -151,7 +150,7 @@ void NetworkServer::onJoinRequest(ClientId client_id,
 // Server event send methods
 ///////////////////////////////////////////////////////////////////////////////
 
-void NetworkServer::sendAnnouncement(std::string message) {
+void NetworkServer::sendAnnouncement(types::string message) {
   flatbuffers::FlatBufferBuilder builder;
   builder.Clear();
 
@@ -192,7 +191,7 @@ void NetworkServer::setClientId(ClientId new_id) {
 // Connection status change callbacks
 ///////////////////////////////////////////////////////////////////////////////
 
-void NetworkServer::onConnecting(std::string description,
+void NetworkServer::onConnecting(types::string description,
                                  HSteamNetConnection connection) {
   log_msg_fmt("Connection request from %s", description.c_str());
 
@@ -202,7 +201,7 @@ void NetworkServer::onConnecting(std::string description,
   }
 }
 
-void NetworkServer::onConnected(std::string description,
+void NetworkServer::onConnected(types::string description,
                                 HSteamNetConnection connection) {
   sockets->SetConnectionPollGroup(connection, poll_group);
 
@@ -219,17 +218,17 @@ void NetworkServer::onConnected(std::string description,
   log_msg_fmt("Client #%d connected", new_id);
 }
 
-void NetworkServer::onProblemDetected(std::string description,
+void NetworkServer::onProblemDetected(types::string description,
                                       HSteamNetConnection connection) {
   log_err("Connection closed: Problem detected locally");
 }
 
-void NetworkServer::onClosedByPeer(std::string description,
+void NetworkServer::onClosedByPeer(types::string description,
                                    HSteamNetConnection connection) {
   log_err("Connection closed: Peer closed connection");
 }
 
-void NetworkServer::onDisconnect(std::string description,
+void NetworkServer::onDisconnect(types::string description,
                                  HSteamNetConnection connection) {
   ClientId client_id = 0;
 
@@ -324,7 +323,7 @@ void NetworkServer::sendEvent(flatbuffers::FlatBufferBuilder& builder,
 }
 
 void NetworkServer::sendQueuedEvents() {
-  std::vector<QueuedEvent> baked_queue;
+  types::vector<QueuedEvent> baked_queue;
   baked_queue.reserve(event_queue.size());
 
   // TODO(marceline-cramer) Avoid duplicating event buffers
@@ -344,7 +343,7 @@ void NetworkServer::sendQueuedEvents() {
 
   event_queue.clear();
 
-  std::vector<SteamNetworkingMessage_t*> outgoing_messages;
+  types::vector<SteamNetworkingMessage_t*> outgoing_messages;
   outgoing_messages.reserve(baked_queue.size());
 
   for (uint32_t i = 0; i < baked_queue.size(); i++) {
@@ -376,7 +375,7 @@ void NetworkServer::callback_ConnectionStatusChanged(
     SteamNetConnectionStatusChangedCallback_t* event) {
   log_zone;
 
-  std::string description = event->m_info.m_szConnectionDescription;
+  types::string description = event->m_info.m_szConnectionDescription;
 
   switch (event->m_info.m_eState) {
     case k_ESteamNetworkingConnectionState_Connecting: {

@@ -1,16 +1,17 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include "core/displays/SdlViewport.h"
+
 #define _USE_MATH_DEFINES  // currently needed for MSVC
 #include <cmath>
-
-#include "core/displays/SdlViewport.h"
 
 #include "core/displays/SdlDisplay.h"
 #include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/renderer/Renderer.h"
 #include "log/log.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -55,7 +56,7 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
 
   uint32_t image_count;
   vkGetSwapchainImagesKHR(gpu->device, swapchain, &image_count, nullptr);
-  std::vector<VkImage> swapchain_images(image_count);
+  types::vector<VkImage> swapchain_images(image_count);
   vkGetSwapchainImagesKHR(gpu->device, swapchain, &image_count,
                           swapchain_images.data());
 

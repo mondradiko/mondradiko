@@ -183,7 +183,7 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
 
   VkPipeline pipeline_object;
 
-  std::vector<VkPipelineShaderStageCreateInfo> shader_stages = {
+  types::vector<VkPipelineShaderStageCreateInfo> shader_stages = {
       vertex_shader->getStageCreateInfo(),
       fragment_shader->getStageCreateInfo()};
 
@@ -250,8 +250,8 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   color_blend_info.attachmentCount = 1;
   color_blend_info.pAttachments = &color_blend_attachment;
 
-  std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
-                                                VK_DYNAMIC_STATE_SCISSOR};
+  types::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
+                                                  VK_DYNAMIC_STATE_SCISSOR};
 
   VkPipelineDynamicStateCreateInfo dynamic_state_info{};
   dynamic_state_info.sType =

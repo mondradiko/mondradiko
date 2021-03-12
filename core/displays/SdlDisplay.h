@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include <vector>
-
 #include "core/displays/DisplayInterface.h"
 #include "lib/include/sdl2_headers.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -34,7 +33,7 @@ class SdlDisplay : public DisplayInterface {
 
   void pollEvents(DisplayPollEventsInfo*) final;
   void beginFrame(DisplayBeginFrameInfo*) final;
-  void acquireViewports(std::vector<Viewport*>*) final;
+  void acquireViewports(types::vector<Viewport*>*) final;
   void endFrame(DisplayBeginFrameInfo*) final;
 
   SDL_Window* window = nullptr;

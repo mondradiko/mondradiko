@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <unordered_map>
-
 #include "core/assets/AssetPool.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/world/Entity.h"

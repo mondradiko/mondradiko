@@ -3,8 +3,6 @@
 
 #include "core/scripting/ScriptInstance.h"
 
-#include <vector>
-
 #include "core/scripting/ScriptEnvironment.h"
 #include "log/log.h"
 
@@ -22,7 +20,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
     wasm_importtype_vec_t required_imports;
     wasm_module_imports(script_module, &required_imports);
 
-    std::vector<wasm_extern_t*> module_imports;
+    types::vector<wasm_extern_t*> module_imports;
 
     for (uint32_t i = 0; i < required_imports.size; i++) {
       const wasm_name_t* import_name =
@@ -30,7 +28,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
 
       // TODO(marceline-cramer) Import other kinds?
 
-      std::string binding_name(import_name->data, import_name->size);
+      types::string binding_name(import_name->data, import_name->size);
       wasm_func_t* binding_func = scripts->getBinding(binding_name);
 
       if (binding_func == nullptr) {
@@ -42,7 +40,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
     }
   }
 
-  std::vector<wasm_extern_t*> module_imports;
+  types::vector<wasm_extern_t*> module_imports;
 
   {
     log_zone_named("Link module imports");
@@ -56,7 +54,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
 
       // TODO(marceline-cramer) Import other kinds?
 
-      std::string binding_name(import_name->data, import_name->size);
+      types::string binding_name(import_name->data, import_name->size);
       wasm_func_t* binding_func = scripts->getBinding(binding_name);
 
       if (binding_func == nullptr) {
@@ -123,16 +121,16 @@ ScriptInstance::~ScriptInstance() {
   if (module_instance) wasm_instance_delete(module_instance);
 }
 
-void ScriptInstance::_addCallback(const std::string& callback_name,
+void ScriptInstance::_addCallback(const types::string& callback_name,
                                   wasm_func_t* callback) {
   callbacks.emplace(callback_name, callback);
 }
 
-bool ScriptInstance::_hasCallback(const std::string& callback_name) {
+bool ScriptInstance::_hasCallback(const types::string& callback_name) {
   return callbacks.find(callback_name) != callbacks.end();
 }
 
-void ScriptInstance::_runCallback(const std::string& callback_name,
+void ScriptInstance::_runCallback(const types::string& callback_name,
                                   const wasm_val_t* args, size_t arg_num,
                                   wasm_val_t* results, size_t result_num) {
   auto iter = callbacks.find(callback_name);

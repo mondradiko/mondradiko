@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include <unordered_map>
-#include <vector>
-
 #include "lib/include/vulkan_headers.h"
+#include "types/containers/unordered_map.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -18,8 +17,9 @@ class GpuShader;
 class GpuPipeline {
  public:
   using StateHash = uint64_t;
-  using VertexBindings = std::vector<VkVertexInputBindingDescription>;
-  using AttributeDescriptions = std::vector<VkVertexInputAttributeDescription>;
+  using VertexBindings = types::vector<VkVertexInputBindingDescription>;
+  using AttributeDescriptions =
+      types::vector<VkVertexInputAttributeDescription>;
 
   GpuPipeline(GpuInstance*, VkPipelineLayout, VkRenderPass, uint32_t,
               const GpuShader*, const GpuShader*, const VertexBindings&,
@@ -42,7 +42,7 @@ class GpuPipeline {
   VertexBindings vertex_bindings;
   AttributeDescriptions attribute_descriptions;
 
-  std::unordered_map<StateHash, VkPipeline> pipelines;
+  types::unordered_map<StateHash, VkPipeline> pipelines;
 };
 
 }  // namespace mondradiko

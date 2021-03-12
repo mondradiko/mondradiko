@@ -4,7 +4,6 @@
 #include "core/world/World.h"
 
 #include <iostream>
-#include <vector>
 
 #include "core/assets/PrefabAsset.h"
 #include "core/components/MeshRendererComponent.h"
@@ -31,7 +30,7 @@ World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
 World::~World() { log_zone; }
 
 void World::initializePrefabs() {
-  std::vector<AssetId> prefabs;
+  types::vector<AssetId> prefabs;
   fs->getInitialPrefabs(prefabs);
 
   for (auto prefab_id : prefabs) {

@@ -3,19 +3,18 @@
 
 #pragma once
 
-#include <string>
-
 #include "core/cvars/CVarValueInterface.h"
+#include "types/containers/string.h"
 
 namespace mondradiko {
 
 class StringCVar : public CVarValueInterface {
  public:
-  const std::string& str() const { return value; }
+  const types::string& str() const { return value; }
   const char* c_str() const { return value.c_str(); }
 
  protected:
-  std::string value;
+  types::string value;
 
   // CVarValueInterface implementation
   bool loadConfig(const toml::value& config) final {

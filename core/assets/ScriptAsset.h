@@ -3,9 +3,6 @@
 
 #pragma once
 
-#include <string>
-#include <unordered_map>
-
 #include "core/assets/AssetPool.h"
 #include "lib/include/wasm_headers.h"
 

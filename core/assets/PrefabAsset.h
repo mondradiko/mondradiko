@@ -3,11 +3,10 @@
 
 #pragma once
 
-#include <vector>
-
 #include "core/assets/AssetHandle.h"
 #include "core/world/Entity.h"
 #include "types/assets/PrefabAsset_generated.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -31,7 +30,7 @@ class PrefabAsset : public Asset {
   AssetPool* asset_pool;
 
   assets::PrefabAssetT* prefab;
-  std::vector<AssetHandle<PrefabAsset>> children;
+  types::vector<AssetHandle<PrefabAsset>> children;
 };
 
 }  // namespace mondradiko

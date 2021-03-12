@@ -8,6 +8,7 @@
 
 #include "log/log.h"
 #include "types/assets/Registry_generated.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace assets {
@@ -22,7 +23,7 @@ AssetBundle::~AssetBundle() {
 }
 
 AssetResult AssetBundle::loadRegistry(const char* registry_name) {
-  std::vector<char> registry_data;
+  types::vector<char> registry_data;
   const Registry* registry = nullptr;
 
   {
@@ -166,7 +167,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
   return AssetResult::Success;
 }
 
-void AssetBundle::getChecksums(std::vector<LumpHash>& checksums) {
+void AssetBundle::getChecksums(types::vector<LumpHash>& checksums) {
   checksums.resize(lump_cache.size());
 
   for (uint32_t i = 0; i < lump_cache.size(); i++) {
@@ -174,7 +175,7 @@ void AssetBundle::getChecksums(std::vector<LumpHash>& checksums) {
   }
 }
 
-void AssetBundle::getInitialPrefabs(std::vector<AssetId>& prefabs) {
+void AssetBundle::getInitialPrefabs(types::vector<AssetId>& prefabs) {
   prefabs = initial_prefabs;
 }
 

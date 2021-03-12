@@ -8,6 +8,8 @@
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 #include "types/build_config.h"
+#include "types/containers/string.h"
+#include "types/containers/vector.h"
 
 #define XR_LOAD_FN_PTR(name, fnPtr)     \
   xrGetInstanceProcAddr(instance, name, \
@@ -15,14 +17,15 @@
 
 namespace mondradiko {
 
-void splitString(std::vector<std::string>* split, const std::string& source) {
+void splitString(types::vector<types::string>* split,
+                 const types::string& source) {
   split->clear();
   uint32_t start_index = 0;
   for (uint32_t end_index = 0; end_index <= source.size(); end_index++) {
     if (source[end_index] == ' ' || source[end_index] == '\0') {
       if (end_index <= start_index) continue;
 
-      std::string token = source.substr(start_index, end_index - start_index);
+      types::string token = source.substr(start_index, end_index - start_index);
       split->push_back(token);
       start_index = end_index + 1;
     }
@@ -60,8 +63,8 @@ OpenXrDisplay::OpenXrDisplay() {
              "Mondradiko Client");
     snprintf(appInfo.engineName, XR_MAX_ENGINE_NAME_SIZE, MONDRADIKO_NAME);
 
-    std::vector<const char*> extensions{XR_KHR_VULKAN_ENABLE_EXTENSION_NAME,
-                                        XR_EXT_DEBUG_UTILS_EXTENSION_NAME};
+    types::vector<const char*> extensions{XR_KHR_VULKAN_ENABLE_EXTENSION_NAME,
+                                          XR_EXT_DEBUG_UTILS_EXTENSION_NAME};
 
     // TODO(marceline-cramer) Validation layers
     XrInstanceCreateInfo instance_info{};
@@ -169,17 +172,17 @@ bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
 
   uint32_t format_count;
   xrEnumerateSwapchainFormats(session, 0, &format_count, nullptr);
-  std::vector<int64_t> format_codes(format_count);
+  types::vector<int64_t> format_codes(format_count);
   xrEnumerateSwapchainFormats(session, format_count, &format_count,
                               format_codes.data());
 
-  std::vector<VkFormat> format_options(format_count);
+  types::vector<VkFormat> format_options(format_count);
   for (uint32_t i = 0; i < format_count; i++) {
     format_options[i] = static_cast<VkFormat>(format_codes[i]);
   }
 
-  std::vector<VkFormat> format_candidates = {VK_FORMAT_R8G8B8A8_SRGB,
-                                             VK_FORMAT_R8G8B8A8_UNORM};
+  types::vector<VkFormat> format_candidates = {VK_FORMAT_R8G8B8A8_SRGB,
+                                               VK_FORMAT_R8G8B8A8_UNORM};
 
   if (!gpu->findFormatFromOptions(&format_options, &format_candidates,
                                   &swapchain_format)) {
@@ -218,21 +221,21 @@ bool OpenXrDisplay::getVulkanRequirements(VulkanRequirements* requirements) {
   uint32_t instance_extensions_length;
   ext_xrGetVulkanInstanceExtensionsKHR(instance, system_id, 0,
                                        &instance_extensions_length, nullptr);
-  std::vector<char> instance_extensions_list(instance_extensions_length);
+  types::vector<char> instance_extensions_list(instance_extensions_length);
   ext_xrGetVulkanInstanceExtensionsKHR(
       instance, system_id, instance_extensions_length,
       &instance_extensions_length, instance_extensions_list.data());
-  std::string instance_extensions_names = instance_extensions_list.data();
+  types::string instance_extensions_names = instance_extensions_list.data();
   splitString(&requirements->instance_extensions, instance_extensions_names);
 
   uint32_t device_extensions_length;
   ext_xrGetVulkanDeviceExtensionsKHR(instance, system_id, 0,
                                      &device_extensions_length, nullptr);
-  std::vector<char> device_extensions_list(device_extensions_length);
+  types::vector<char> device_extensions_list(device_extensions_length);
   ext_xrGetVulkanDeviceExtensionsKHR(
       instance, system_id, device_extensions_length, &device_extensions_length,
       device_extensions_list.data());
-  std::string device_extensions_names = device_extensions_list.data();
+  types::string device_extensions_names = device_extensions_list.data();
   splitString(&requirements->device_extensions, device_extensions_names);
 
   return true;
@@ -370,7 +373,7 @@ void OpenXrDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
   xrBeginFrame(session, nullptr);
 }
 
-void OpenXrDisplay::acquireViewports(std::vector<Viewport*>* acquired) {
+void OpenXrDisplay::acquireViewports(types::vector<Viewport*>* acquired) {
   log_zone;
 
   acquired->resize(viewports.size());
@@ -384,7 +387,7 @@ void OpenXrDisplay::acquireViewports(std::vector<Viewport*>* acquired) {
   locate_info.displayTime = current_frame_state.predictedDisplayTime;
   locate_info.space = stage_space;
 
-  std::vector<XrView> views(viewports.size());
+  types::vector<XrView> views(viewports.size());
   uint32_t view_count = viewports.size();
   xrLocateViews(session, &locate_info, &view_state, view_count, &view_count,
                 views.data());
@@ -399,7 +402,7 @@ void OpenXrDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
   XrCompositionLayerBaseHeader* layer = nullptr;
   XrCompositionLayerProjection projection_layer{};
   projection_layer.type = XR_TYPE_COMPOSITION_LAYER_PROJECTION;
-  std::vector<XrCompositionLayerProjectionView> projection_views;
+  types::vector<XrCompositionLayerProjectionView> projection_views;
 
   if (frame_info->should_render) {
     layer = reinterpret_cast<XrCompositionLayerBaseHeader*>(&projection_layer);
@@ -429,7 +432,7 @@ void OpenXrDisplay::createViewports(Renderer* renderer) {
   xrEnumerateViewConfigurationViews(instance, system_id,
                                     XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
                                     0, &viewport_count, nullptr);
-  std::vector<XrViewConfigurationView> view_configurations(viewport_count);
+  types::vector<XrViewConfigurationView> view_configurations(viewport_count);
   xrEnumerateViewConfigurationViews(
       instance, system_id, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
       viewport_count, &viewport_count, view_configurations.data());

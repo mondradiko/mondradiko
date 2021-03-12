@@ -5,12 +5,12 @@
 
 #include <deque>
 #include <queue>
-#include <vector>
 
 #include "core/cvars/CVarScope.h"
 #include "core/network/NetworkShared.h"
 #include "lib/include/flatbuffers_headers.h"
 #include "lib/include/gamenetworkingsockets_include.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -78,7 +78,7 @@ class NetworkClient {
   ClientId client_id;
 
   struct QueuedEvent {
-    std::vector<uint8_t> data;
+    types::vector<uint8_t> data;
   };
 
   std::deque<QueuedEvent> event_queue;

@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include <vector>
-
 #include "lib/include/vulkan_headers.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -41,8 +40,8 @@ class GpuDescriptorSet {
 
   GpuDescriptorSetLayout* set_layout;
   VkDescriptorSet descriptor_set;
-  std::vector<uint32_t> dynamic_offset_granularity;
-  std::vector<uint32_t> dynamic_offsets;
+  types::vector<uint32_t> dynamic_offset_granularity;
+  types::vector<uint32_t> dynamic_offsets;
 };
 
 }  // namespace mondradiko

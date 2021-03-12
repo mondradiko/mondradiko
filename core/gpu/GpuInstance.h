@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include <vector>
-
 #include "lib/include/vulkan_headers.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -18,9 +17,9 @@ class GpuInstance {
   explicit GpuInstance(DisplayInterface*);
   ~GpuInstance();
 
-  bool findFormatFromOptions(const std::vector<VkFormat>*,
-                             const std::vector<VkFormat>*, VkFormat*);
-  bool findSupportedFormat(const std::vector<VkFormat>*, VkImageTiling,
+  bool findFormatFromOptions(const types::vector<VkFormat>*,
+                             const types::vector<VkFormat>*, VkFormat*);
+  bool findSupportedFormat(const types::vector<VkFormat>*, VkImageTiling,
                            VkFormatFeatureFlags, VkFormat*);
   VkCommandBuffer beginSingleTimeCommands();
   void endSingleTimeCommands(VkCommandBuffer);
@@ -44,7 +43,7 @@ class GpuInstance {
   VmaAllocator allocator = nullptr;
 
  private:
-  const std::vector<const char*> validationLayers = {
+  const types::vector<const char*> validationLayers = {
       "VK_LAYER_KHRONOS_validation"};
 
   bool checkValidationLayerSupport();

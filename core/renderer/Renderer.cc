@@ -32,7 +32,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
   {
     log_zone_named("Create render pass");
 
-    std::vector<VkAttachmentDescription> attachments;
+    types::vector<VkAttachmentDescription> attachments;
 
     {
       VkAttachmentDescription swapchain_desc{};
@@ -66,7 +66,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
     depth_attachment_reference.layout =
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    std::vector<VkSubpassDescription> subpasses;
+    types::vector<VkSubpassDescription> subpasses;
 
     {
       VkSubpassDescription depth_pass{};
@@ -85,7 +85,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
       subpasses.push_back(forward_pass);
     }
 
-    std::vector<VkSubpassDependency> dependencies;
+    types::vector<VkSubpassDependency> dependencies;
 
     {
       VkSubpassDependency pre_dep{};
@@ -389,8 +389,8 @@ void Renderer::renderFrame() {
     }
   }
 
-  std::vector<Viewport*> viewports;
-  std::vector<VkSemaphore> on_viewport_acquire(0);
+  types::vector<Viewport*> viewports;
+  types::vector<VkSemaphore> on_viewport_acquire(0);
   bool viewports_require_signal = false;
 
   {

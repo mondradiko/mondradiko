@@ -4,9 +4,6 @@
 #pragma once
 
 #include <deque>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 #include "core/network/NetworkShared.h"
 #include "core/world/World.h"
@@ -39,7 +36,7 @@ class NetworkServer {
 
   ISteamNetworkingSockets* sockets;
 
-  std::unordered_map<ClientId, HSteamNetConnection> connections;
+  types::unordered_map<ClientId, HSteamNetConnection> connections;
 
   //
   // Client event receive methods
@@ -49,17 +46,17 @@ class NetworkServer {
   //
   // Server event send methods
   //
-  void sendAnnouncement(std::string);
+  void sendAnnouncement(types::string);
   void setClientId(ClientId);
 
   //
   // Connection status change callbacks
   //
-  void onConnecting(std::string, HSteamNetConnection);
-  void onConnected(std::string, HSteamNetConnection);
-  void onProblemDetected(std::string, HSteamNetConnection);
-  void onClosedByPeer(std::string, HSteamNetConnection);
-  void onDisconnect(std::string, HSteamNetConnection);
+  void onConnecting(types::string, HSteamNetConnection);
+  void onConnected(types::string, HSteamNetConnection);
+  void onProblemDetected(types::string, HSteamNetConnection);
+  void onClosedByPeer(types::string, HSteamNetConnection);
+  void onDisconnect(types::string, HSteamNetConnection);
 
   //
   // Helper methods
@@ -77,7 +74,7 @@ class NetworkServer {
 
   struct QueuedEvent {
     ClientId destination;
-    std::vector<uint8_t> data;
+    types::vector<uint8_t> data;
   };
 
   std::deque<QueuedEvent> event_queue;

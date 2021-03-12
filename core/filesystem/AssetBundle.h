@@ -4,11 +4,11 @@
 #pragma once
 
 #include <filesystem>
-#include <unordered_map>
-#include <vector>
 
-#include "types/assets/AssetTypes.h"
 #include "core/filesystem/AssetLump.h"
+#include "types/assets/AssetTypes.h"
+#include "types/containers/unordered_map.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace assets {
@@ -20,15 +20,15 @@ class AssetBundle {
 
   AssetResult loadRegistry(const char*);
 
-  void getChecksums(std::vector<LumpHash>&);
-  void getInitialPrefabs(std::vector<AssetId>&);
+  void getChecksums(types::vector<LumpHash>&);
+  void getInitialPrefabs(types::vector<AssetId>&);
   bool isAssetRegistered(AssetId);
   bool loadAsset(const SerializedAsset**, AssetId);
 
  private:
   std::filesystem::path bundle_root;
 
-  std::vector<AssetId> initial_prefabs;
+  types::vector<AssetId> initial_prefabs;
 
   struct AssetLookupEntry {
     uint32_t lump_index;
@@ -36,7 +36,7 @@ class AssetBundle {
     uint32_t size;
   };
 
-  std::unordered_map<AssetId, AssetLookupEntry> asset_lookup;
+  types::unordered_map<AssetId, AssetLookupEntry> asset_lookup;
 
   struct LumpCacheEntry {
     AssetLump* lump;
@@ -46,7 +46,7 @@ class AssetBundle {
     LumpHash checksum;
   };
 
-  std::vector<LumpCacheEntry> lump_cache;
+  types::vector<LumpCacheEntry> lump_cache;
 };
 
 }  // namespace assets

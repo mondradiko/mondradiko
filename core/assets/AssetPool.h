@@ -3,16 +3,16 @@
 
 #pragma once
 
-#include <string>
+
 #include <type_traits>
-#include <unordered_map>
-#include <vector>
 
 #include "core/assets/Asset.h"
 #include "core/assets/AssetHandle.h"
 #include "core/filesystem/Filesystem.h"
 #include "lib/include/entt_headers.h"
 #include "log/log.h"
+#include "types/containers/unordered_map.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
@@ -114,8 +114,8 @@ class AssetPool {
  private:
   Filesystem* fs;
 
-  std::vector<Asset*> templates;
-  std::unordered_map<AssetId, Asset*> pool;
+  types::vector<Asset*> templates;
+  types::unordered_map<AssetId, Asset*> pool;
 };
 
 }  // namespace mondradiko

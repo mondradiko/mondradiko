@@ -4,11 +4,11 @@
 #include "core/filesystem/AssetLump.h"
 
 #include <fstream>
-#include <vector>
 
 #include "log/log.h"
 #include "lz4frame.h"  // NOLINT
-#include "xxhash.h"    // NOLINT
+#include "types/containers/vector.h"
+#include "xxhash.h"  // NOLINT
 
 namespace mondradiko {
 namespace assets {
@@ -113,7 +113,7 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
       LZ4F_dctx* context;
       LZ4F_createDecompressionContext(&context, LZ4F_VERSION);
 
-      std::vector<char> buffer(ASSET_LOAD_CHUNK_SIZE);
+      types::vector<char> buffer(ASSET_LOAD_CHUNK_SIZE);
 
       {
         lump_file.read(buffer.data(), buffer.size());
