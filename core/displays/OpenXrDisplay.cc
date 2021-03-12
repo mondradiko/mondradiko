@@ -3,8 +3,8 @@
 
 #include "core/displays/OpenXrDisplay.h"
 
-#include "core/common/openxr_validation.h"
 #include "core/displays/OpenXrViewport.h"
+#include "core/displays/openxr_validation.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 #include "types/build_config.h"

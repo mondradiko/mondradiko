@@ -6,8 +6,8 @@
 #include <cstring>
 #include <set>
 
-#include "core/common/vulkan_validation.h"
 #include "core/displays/DisplayInterface.h"
+#include "core/gpu/vulkan_validation.h"
 #include "log/log.h"
 #include "types/build_config.h"
 
