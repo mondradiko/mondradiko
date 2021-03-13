@@ -23,13 +23,11 @@ class AsBinding(Codegen):
 
         self.out.extend([
             preamble("AssemblyScript bindings"),
-            "",
-            "declare namespace mondradiko {"
+            f"@unmanaged declare class {component_name} " + "{"
         ])
 
     def add_method(self, method_name, method):
-        params = [("self", "i32")]
-
+        params = []
         if "param_list" in method.keys():
             for param_name in method["param_list"]:
                 param_type = assemblyscript_type(method["params"][param_name])
@@ -44,22 +42,20 @@ class AsBinding(Codegen):
             f"{param_name}: {type_name}"
             for param_name, type_name in params])
 
-        class_name = f"{self.component_name}Component_{method_name}"
-
         self.out.extend([
-            f"  @external(\"{class_name}\")",
-            f"  function {class_name}({param_list}): {return_type}",
+            f"  @external(\"{self.component_name}Component_{method_name}\")",
+            f"  {method_name}({param_list}): {return_type}",
             ""
         ])
 
     def finish(self):
         self.out.extend([
-            # End of namespace
-            "}  // declare namespace mondradiko",
+            # End of class
+            "}",
             "",
 
             # Export namespace
-            "export default mondradiko;",
+            f"export default {self.component_name};",
             ""
         ])
 
