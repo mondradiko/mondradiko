@@ -15,7 +15,6 @@ set(GENERATE_CLASS_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_class.py")
 set(CLASSDEF_GENERATOR_SCRIPTS
   "${CMAKE_CURRENT_SOURCE_DIR}/as_binding.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/codegen.py"
-  "${CMAKE_CURRENT_SOURCE_DIR}/cpp_binding.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/wasm_linker.py"
 )
 
@@ -44,8 +43,6 @@ function(wrap_classes ret GENERATOR CLASSDEFS)
 
   if(${GENERATOR} STREQUAL "wasm-linker")
     set(EXTENSION "_linker.cc")
-  elseif(${GENERATOR} STREQUAL "cpp-binding")
-    set(EXTENSION ".h")
   elseif(${GENERATOR} STREQUAL "as-binding")
     set(EXTENSION ".d.ts")
   else()
