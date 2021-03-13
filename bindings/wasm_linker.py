@@ -127,8 +127,9 @@ class WasmLinker(Codegen):
 
         # Parse parameters
         params = ["self"]
-        if "params" in method.keys():
-            params.extend(method["params"].values())
+        if "param_list" in method.keys():
+            params.extend([
+                method["params"][param] for param in method["param_list"]])
         self.out.extend(build_valtype_vec("params", params))
 
         # Parse results

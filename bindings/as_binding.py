@@ -30,16 +30,19 @@ class AsBinding(Codegen):
     def add_method(self, method_name, method):
         params = [("self", "i32")]
 
-        if "params" in method.keys():
-            for param in method["params"].keys():
-                params.append((param, assemblyscript_type(method["params"][param])))
+        if "param_list" in method.keys():
+            for param_name in method["param_list"]:
+                param_type = assemblyscript_type(method["params"][param_name])
+                params.append((param_name, param_type))
 
         if "return" in method.keys():
             return_type = assemblyscript_type(method["return"])
         else:
             return_type = "void"
 
-        param_list = ", ".join([f"{param_name}: {type_name}" for param_name, type_name in params])
+        param_list = ", ".join([
+            f"{param_name}: {type_name}"
+            for param_name, type_name in params])
 
         class_name = f"{self.component_name}Component_{method_name}"
 

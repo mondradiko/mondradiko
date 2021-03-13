@@ -19,7 +19,7 @@ name = "Transform"
 
   [methods.setPosition]
   brief = "Sets the position of this Transform."
-  param_order = ["x", "y", "z"]
+  param_list = ["x", "y", "z"]
 
     [methods.setPosition.params]
     x = "double"
