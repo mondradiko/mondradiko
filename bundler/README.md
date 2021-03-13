@@ -49,14 +49,9 @@ initial_prefab = true
 The manifest contains the bundle's settings, the assets it bundles, and a list
 of manually-created prefabs.
 
-### Bundle Settings
-
-### Bundled Assets
-
-### Manual Prefabs
-
 ## To-Do
 
+- Schema definitions with codegen?
 - Move converter classes to dedicated converter/ directory and library
 - Add bundler cache for incremental bundling
 - Write more here about the key parts of the bundler

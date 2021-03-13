@@ -2,9 +2,8 @@
 
 # General Maintenance
 
-- Make specialized log_ftl class
+- Make specialized log_ftl exception class
 - Minimize public members
-- Diagram class inheritance and dependencies with UML
 - Tracy memory profiling
 - Remove stb_image_write
 - Make tinygltf use rapidjson over json.cpp
@@ -13,15 +12,15 @@
 - Make Docker CI environment
 - Make avatar/ subsystem?
 - TEST TEST TEST
+- Remove assets/ directory
+- Put all engine components in different namespaces
 
 # Documentation
 
-- Write style guide
-- Write issue guide
-- Write PR guide
 - Document class interfaces
-- Place in-repo documentation
-- Migrate to-dos to the repo docs
+- Write overviews for every subsystem
+- Flesh out to-dos
+- Add road map to v1.0.0 for every component
 
 ## PR Checklist
 

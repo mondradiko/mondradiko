@@ -50,6 +50,8 @@ class World {
       const flatbuffers::Vector<EntityId>*,
       const flatbuffers::Vector<const ProtocolComponentType*>*);
 
+  // TODO(marceline-cramer) Blech, restore World privacy
+  // Move event callbacks to private
   // private:
   AssetPool* asset_pool;
   Filesystem* fs;
