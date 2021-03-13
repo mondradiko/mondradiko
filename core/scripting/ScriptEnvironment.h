@@ -24,6 +24,7 @@ class ScriptEnvironment {
   void initializeAssets(AssetPool*);
   void linkUiApis(UserInterface*);
   void linkComponentApis(World*);
+  void linkAssemblyScriptEnv();
   void update(EntityRegistry*, AssetPool*, double);
 
   wasm_engine_t* getEngine() { return engine; }
