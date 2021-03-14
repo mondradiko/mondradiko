@@ -11,8 +11,31 @@ enum ScriptType : uint8 {
   WasmBinary
 }
 
+table ScriptMethod {
+  symbol:string;
+  event:string;
+}
+
+table RawScriptClass {
+  methods:[ScriptMethod];
+}
+
+table AssemblyScriptClass {
+  constructor_symbol:string;
+
+  methods:[ScriptMethod];
+}
+
+table ScriptClass {
+  name:string;
+
+  raw:RawScriptClass;
+  assemblyscript:AssemblyScriptClass;
+}
+
 table ScriptAsset {
   type:ScriptType;
+  classes:[ScriptClass];
   data:[ubyte];
 }
 
