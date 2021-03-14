@@ -12,7 +12,8 @@ class BinaryGltfConverter : public GltfConverter {
   explicit BinaryGltfConverter(Bundler* bundler) : GltfConverter(bundler) {}
 
   // ConverterInterface implementation
-  AssetOffset convert(AssetBuilder*, std::filesystem::path) const final;
+  AssetOffset convert(AssetBuilder*, std::filesystem::path,
+                      const toml::value&) const final;
 };
 
 }  // namespace mondradiko

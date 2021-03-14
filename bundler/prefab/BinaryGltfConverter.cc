@@ -10,7 +10,8 @@
 namespace mondradiko {
 
 ConverterInterface::AssetOffset BinaryGltfConverter::convert(
-    AssetBuilder* fbb, std::filesystem::path model_path) const {
+    AssetBuilder* fbb, std::filesystem::path model_path,
+    const toml::value&) const {
   tinygltf::Model gltf_model;
   tinygltf::TinyGLTF gltf_context;
   std::string error;

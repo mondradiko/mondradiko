@@ -11,7 +11,8 @@
 namespace mondradiko {
 
 WasmConverter::AssetOffset WasmConverter::convert(
-    AssetBuilder* fbb, std::filesystem::path wasm_path) const {
+    AssetBuilder* fbb, std::filesystem::path wasm_path,
+    const toml::value&) const {
   std::ifstream script_file(wasm_path);
 
   script_file.seekg(0, std::ios::end);

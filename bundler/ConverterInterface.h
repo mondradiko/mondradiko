@@ -7,6 +7,7 @@
 
 #include "assets/common/AssetTypes.h"
 #include "bundler/AssetBundleBuilder.h"
+#include "lib/include/toml_headers.h"
 #include "types/assets/SerializedAsset_generated.h"
 
 namespace mondradiko {
@@ -22,7 +23,8 @@ class ConverterInterface {
   using AssetOffset = flatbuffers::Offset<assets::SerializedAsset>;
   using AssetBuilder = flatbuffers::FlatBufferBuilder;
 
-  virtual AssetOffset convert(AssetBuilder*, std::filesystem::path) const = 0;
+  virtual AssetOffset convert(AssetBuilder*, std::filesystem::path,
+                              const toml::value&) const = 0;
 };
 
 }  // namespace mondradiko
