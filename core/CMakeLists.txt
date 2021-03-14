@@ -50,6 +50,7 @@ set(MONDRADIKO_CORE_SRC
   gpu/GpuInstance.cc
   gpu/GpuPipeline.cc
   gpu/GpuShader.cc
+  physics/Physics.cc
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
   renderer/Renderer.cc

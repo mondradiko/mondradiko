@@ -67,7 +67,9 @@ set(COMPONENT_CLASSDEFS
 wrap_classes(SCRIPT_LINKERS "wasm-linker" ${COMPONENT_CLASSDEFS})
 wrap_classes(AS_BINDINGS "as-binding" ${COMPONENT_CLASSDEFS})
 
-add_library(mondradiko-as-bindings INTERFACE ${AS_BINDINGS})
+if (NOT WIN32)
+  add_library(mondradiko-as-bindings INTERFACE ${AS_BINDINGS})
+endif()
 
 add_library(mondradiko-api-components OBJECT ${SCRIPT_LINKERS})
 # TODO(marceline-cramer): Don't expose third-party dependencies to the public interface
