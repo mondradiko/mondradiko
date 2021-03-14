@@ -4,12 +4,15 @@
 #pragma once
 
 #include "bundler/ConverterInterface.h"
+#include "wasm.h"      // NOLINT
+#include "wasmtime.h"  // NOLINT
 
 namespace mondradiko {
 
 class WasmConverter : public ConverterInterface {
  public:
-  explicit WasmConverter(Bundler* bundler) : _bundler(bundler) {}
+  explicit WasmConverter(Bundler*);
+  ~WasmConverter();
 
   // ConverterInterface implementation
   AssetOffset convert(AssetBuilder*, std::filesystem::path,
@@ -17,6 +20,9 @@ class WasmConverter : public ConverterInterface {
 
  private:
   Bundler* _bundler;
+
+  wasm_engine_t* engine = nullptr;
+  wasm_store_t* store = nullptr;
 };
 
 }  // namespace mondradiko
