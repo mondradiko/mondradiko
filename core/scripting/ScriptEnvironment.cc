@@ -73,7 +73,6 @@ ScriptEnvironment::ScriptEnvironment() {
   }
 
   {  // Create a function to interrupt the store
-
     wasm_functype_t* interrupt_func_type = wasm_functype_new_0_0();
     interrupt_func = wasmtime_func_new_with_env(store, interrupt_func_type,
                                                 interruptCallback, this,
