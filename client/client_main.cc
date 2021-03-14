@@ -16,7 +16,6 @@
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/network/NetworkClient.h"
-#include "core/physics/Physics.h"
 #include "core/renderer/MeshPass.h"
 #include "core/renderer/OverlayPass.h"
 #include "core/renderer/Renderer.h"
@@ -137,10 +136,7 @@ int main(int argc, char* argv[]) {
   int parse_result = args.parse(argc, argv);
   if (parse_result != -1) return parse_result;
 
-  // TODO(humbletim) just a placeholder for bullet SDK integration testing..
-  Physics physics;
-  log_msg_fmt("%s client version %s (bullet %.2f)",
-    MONDRADIKO_NAME, MONDRADIKO_VERSION, Physics::get_version());
+  log_msg_fmt("%s client version %s", MONDRADIKO_NAME, MONDRADIKO_VERSION);
   log_msg_fmt("%s", MONDRADIKO_COPYRIGHT);
   log_msg_fmt("%s", MONDRADIKO_LICENSE);
 

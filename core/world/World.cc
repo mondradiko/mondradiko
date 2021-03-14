@@ -19,7 +19,7 @@
 namespace mondradiko {
 
 World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
-    : asset_pool(asset_pool), fs(fs), scripts(scripts) {
+    : asset_pool(asset_pool), fs(fs), scripts(scripts), physics(this) {
   log_zone;
 
   asset_pool->initializeAssetType<PrefabAsset>(asset_pool);
@@ -99,6 +99,12 @@ void World::onUpdateScripts(const protocol::UpdateScripts* update_scripts) {}
 
 bool World::update(double dt) {
   log_zone;
+
+  {
+    log_zone_named("Update physics");
+
+    physics.update(dt);
+  }
 
   {
     log_zone_named("Update TransformComponent self-reference");

@@ -3,40 +3,41 @@
 
 #include "core/physics/Physics.h"
 
-// TODO(humbletim) bullet integration testing
-#include <bullet/btBulletDynamicsCommon.h>
-#include <LinearMath/btVector3.h>
-#include <LinearMath/btAlignedObjectArray.h>
-#include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
-#include <BulletSoftBody/btSoftBodyHelpers.h>
-#include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
-
+#include "core/world/World.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
-float Physics::get_version() { return 0.01f * btGetVersion(); }
-
-Physics::Physics() {
+Physics::Physics(World* world) : world(world) {
   log_zone;
 
-  // temporary boilerplate for testing bullet integration
-  auto collisionConfiguration = new btSoftBodyRigidBodyCollisionConfiguration();
-  auto dispatcher = new btCollisionDispatcher(collisionConfiguration);
-  auto broadphase = new btDbvtBroadphase();
-  auto solver = new btSequentialImpulseConstraintSolver;
-  auto dynamicsWorld = new btSoftRigidDynamicsWorld(
-    dispatcher, broadphase, solver, collisionConfiguration);
-  dynamicsWorld->setGravity(btVector3(0, -10, 0));
-  btSoftBodyWorldInfo softBodyWorldInfo;
-  softBodyWorldInfo.m_broadphase = broadphase;
-  softBodyWorldInfo.m_dispatcher = dispatcher;
-  softBodyWorldInfo.m_gravity = dynamicsWorld->getGravity();
-  softBodyWorldInfo.m_sparsesdf.Initialize();
-  log_msg_fmt("Bullet Physics: %.2f %s precision", 0.01f * btGetVersion(),
-    btIsDoublePrecision() ? "double" : "single");
+  broadphase = new btDbvtBroadphase();
+  collision_configuration = new btDefaultCollisionConfiguration();
+  dispatcher = new btCollisionDispatcher(collision_configuration);
+  solver = new btSequentialImpulseConstraintSolver;
+
+  dynamics_world = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver,
+                                               collision_configuration);
+  dynamics_world->setGravity(btVector3(0, -9.8, 0));
+
+  log_inf_fmt("Bullet Physics: %.2f %s precision", 0.01f * btGetVersion(),
+              btIsDoublePrecision() ? "double" : "single");
 }
 
-Physics::~Physics() { log_zone; }
+Physics::~Physics() {
+  log_zone;
+
+  if (dynamics_world != nullptr) delete dynamics_world;
+  if (solver != nullptr) delete solver;
+  if (broadphase != nullptr) delete broadphase;
+  if (dispatcher != nullptr) delete dispatcher;
+  if (collision_configuration != nullptr) delete collision_configuration;
+}
+
+void Physics::update(double dt) {
+  log_zone;
+
+  dynamics_world->stepSimulation(dt);
+}
 
 }  // namespace mondradiko

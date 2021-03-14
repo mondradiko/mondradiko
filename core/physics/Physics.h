@@ -3,16 +3,28 @@
 
 #pragma once
 
-#include <string>
+#include "lib/include/bullet_headers.h"
 
 namespace mondradiko {
 
+// Forward declarations
+class World;
+
 class Physics {
  public:
-  Physics();
+  explicit Physics(World*);
   ~Physics();
 
-  static float get_version();
+  void update(double);
+
+ private:
+  World* world;
+
+  btBroadphaseInterface* broadphase = nullptr;
+  btDefaultCollisionConfiguration* collision_configuration = nullptr;
+  btCollisionDispatcher* dispatcher = nullptr;
+  btSequentialImpulseConstraintSolver* solver = nullptr;
+  btDiscreteDynamicsWorld* dynamics_world = nullptr;
 };
 
 }  // namespace mondradiko
