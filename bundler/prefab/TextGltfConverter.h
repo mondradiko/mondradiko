@@ -13,7 +13,7 @@ class TextGltfConverter : public GltfConverter {
 
   // ConverterInterface implementation
   AssetOffset convert(AssetBuilder*, std::filesystem::path,
-                      const toml::value&) const final;
+                      const toml::table&) const final;
 };
 
 }  // namespace mondradiko

@@ -13,7 +13,7 @@ class WasmConverter : public ConverterInterface {
 
   // ConverterInterface implementation
   AssetOffset convert(AssetBuilder*, std::filesystem::path,
-                      const toml::value&) const final;
+                      const toml::table&) const final;
 
  private:
   Bundler* _bundler;

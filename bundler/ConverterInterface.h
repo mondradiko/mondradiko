@@ -24,7 +24,11 @@ class ConverterInterface {
   using AssetBuilder = flatbuffers::FlatBufferBuilder;
 
   virtual AssetOffset convert(AssetBuilder*, std::filesystem::path,
-                              const toml::value&) const = 0;
+                              const toml::table&) const = 0;
+
+ protected:
+  std::filesystem::path _getAssetPath(std::filesystem::path,
+                                      const toml::table&) const;
 };
 
 }  // namespace mondradiko
