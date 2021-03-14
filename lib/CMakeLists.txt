@@ -38,6 +38,16 @@ find_mondradiko_dependency(
   VCPKG "glm" VCPKG_MODULES glm
 )
 
+add_library(BulletModules INTERFACE IMPORTED)
+set_property(TARGET BulletModules PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${VCPKG_INSTALL_TRIPLETROOT}/include" "${VCPKG_INSTALL_TRIPLETROOT}/include/bullet")
+if (UNIX)
+  # TODO(humbletim) there has gotta be a better way to link Bullet on Linux
+  set_property(TARGET BulletModules PROPERTY INTERFACE_LINK_LIBRARIES -Wl,-Bstatic -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath -Wl,-Bdynamic)
+else()
+  set_property(TARGET BulletModules PROPERTY INTERFACE_LINK_LIBRARIES BulletSoftBody BulletDynamics BulletCollision LinearMath)
+endif()
+find_mondradiko_dependency(mondradiko::bullet VCPKG "Bullet" VCPKG_INSTALL bullet3 VCPKG_MODULES BulletModules)
+
 find_mondradiko_dependency(
   mondradiko::freetype
   PKG "freetype2" PKG_MODULES freetype
@@ -95,6 +105,7 @@ target_link_libraries(mondradiko-lib PUBLIC mondradiko::sdl2)
 target_link_libraries(mondradiko-lib PUBLIC mondradiko::flatbuffers)
 target_link_libraries(mondradiko-lib PUBLIC mondradiko::msdfgen)
 target_link_libraries(mondradiko-lib PUBLIC mondradiko::vulkan)
+target_link_libraries(mondradiko-lib PUBLIC mondradiko::bullet)
 
 if(TRACY_ENABLE)
   if(UNIX)
