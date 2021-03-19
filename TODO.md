@@ -8,6 +8,8 @@
 - Remove stb_image_write
 - Make tinygltf use rapidjson over json.cpp
 - Switch glslangValidator out for glslc
+    - better handling of include directories
+    - better compliance with glsl spec
 - Add Mondradiko to EnTT wiki
 - Make Docker CI environment
 - Make avatar/ subsystem?
