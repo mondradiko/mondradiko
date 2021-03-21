@@ -40,6 +40,7 @@ struct MeshUniform {
 class MeshPass : public RenderPass {
  public:
   static void initCVars(CVarScope*);
+  static void initDummyAssets(AssetPool*);
 
   MeshPass(Renderer*, World*);
   ~MeshPass();

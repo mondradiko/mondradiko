@@ -7,16 +7,21 @@ name = "Transform"
 
   [methods.getX]
   brief = "Retrieves the X coordinate of this Transform."
-  return = ["double"]
+  return = "double"
 
   [methods.getY]
   brief = "Retrieves the Y coordinate of this Transform."
-  return = ["double"]
+  return = "double"
 
   [methods.getZ]
   brief = "Retrieves the Z coordinate of this Transform."
-  return = ["double"]
+  return = "double"
 
   [methods.setPosition]
   brief = "Sets the position of this Transform."
-  params = ["double", "double", "double"]
+  param_list = ["x", "y", "z"]
+
+    [methods.setPosition.params]
+    x = "double"
+    y = "double"
+    z = "double"

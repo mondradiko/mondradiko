@@ -51,6 +51,7 @@ class MeshAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::MeshAsset);
 
   // Asset lifetime implementation
+  MeshAsset() : mesh_pass(nullptr) {}
   explicit MeshAsset(MeshPass* mesh_pass) : mesh_pass(mesh_pass) {}
   void load(const assets::SerializedAsset*) final;
 
