@@ -4,6 +4,7 @@
 #include "bundler/script/WasmConverter.h"
 
 #include <fstream>
+#include <string>
 #include <vector>
 
 #include "bundler/Bundler.h"
