@@ -12,6 +12,9 @@
 namespace mondradiko {
 
 void MaterialAsset::load(const assets::SerializedAsset* asset) {
+  // Skip loading if we initialized as a dummy
+  if (gpu == nullptr) return;
+
   const assets::MaterialAsset* material = asset->material();
 
   albedo_texture = asset_pool->load<TextureAsset>(material->albedo_texture());

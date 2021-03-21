@@ -14,6 +14,9 @@
 namespace mondradiko {
 
 void MeshAsset::load(const assets::SerializedAsset* asset) {
+  // Skip loading if we initialized as a dummy
+  if (mesh_pass == nullptr) return;
+
   const assets::MeshAsset* mesh = asset->mesh();
 
   std::vector<MeshVertex> vertices(mesh->vertices()->size());

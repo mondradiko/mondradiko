@@ -60,6 +60,8 @@ class SdlDisplay : public DisplayInterface {
   double mouse_x;
   double mouse_y;
 
+  double last_frame_time = -1.0;
+
   const Uint8* key_state;
 };
 
