@@ -102,9 +102,10 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
         // TODO(marceline-cramer) Handle other kinds of exports
         if (extern_kind == WASM_EXTERN_FUNC) {
           wasm_func_t* callback = wasm_extern_as_func(exported);
-          _addCallback(export_name->data, callback);
+          std::string callback_name(export_name->data, export_name->size);
+          _addCallback(callback_name, callback);
 
-          log_inf_fmt("Imported callback %s", export_name->data);
+          log_inf_fmt("Imported callback %s", callback_name.c_str());
           log_inf_fmt("Param arity: %zu", wasm_func_param_arity(callback));
           log_inf_fmt("Result arity: %zu", wasm_func_result_arity(callback));
         }
