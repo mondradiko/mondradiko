@@ -7,26 +7,28 @@
 #include <map>
 #include <string>
 
-#include "bundler/AssetBundleBuilder.h"
-#include "bundler/ConverterInterface.h"
+#include "converter/AssetBundleBuilder.h"
+#include "converter/BundlerInterface.h"
+#include "converter/ConverterInterface.h"
 #include "lib/include/toml_headers.h"
 #include "types/assets/SerializedAsset_generated.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 
 // Forward declarations
 class PrefabBuilder;
 
-class Bundler {
+class Bundler : public BundlerInterface {
  public:
   explicit Bundler(const std::filesystem::path&);
   ~Bundler();
 
   assets::AssetId addAsset(ConverterInterface::AssetBuilder*,
-                           ConverterInterface::AssetOffset);
-  void addConverter(std::string, const ConverterInterface*);
-  assets::AssetId getAssetByAlias(const std::string&);
-  void bundle();
+                           ConverterInterface::AssetOffset) final;
+  void addConverter(std::string, const ConverterInterface*) final;
+  assets::AssetId getAssetByAlias(const std::string&) final;
+  void bundle() final;
 
  private:
   std::filesystem::path manifest_path;
@@ -40,6 +42,8 @@ class Bundler {
 
   std::map<std::string, const ConverterInterface*> converters;
   std::map<std::string, assets::AssetId> asset_aliases;
+
+  types::vector<ConverterInterface*> owned_converters;
 };
 
 }  // namespace mondradiko

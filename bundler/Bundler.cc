@@ -5,14 +5,32 @@
 
 #include <string>
 
-#include "bundler/ConverterInterface.h"
-#include "bundler/PrefabBuilder.h"
+#include "converter/ConverterInterface.h"
+#include "converter/PrefabBuilder.h"
+#include "converter/prefab/BinaryGltfConverter.h"
+#include "converter/prefab/TextGltfConverter.h"
+#include "converter/script/WasmConverter.h"
 #include "log/log.h"
 
 namespace mondradiko {
 
 Bundler::Bundler(const std::filesystem::path& _manifest_path)
     : manifest_path(_manifest_path) {
+  {  // Create converters
+    BinaryGltfConverter* binary_gltf_converter = new BinaryGltfConverter(this);
+    owned_converters.push_back(binary_gltf_converter);
+    addConverter("glb", binary_gltf_converter);
+    addConverter("vrm", binary_gltf_converter);
+
+    TextGltfConverter* text_gltf_converter = new TextGltfConverter(this);
+    owned_converters.push_back(text_gltf_converter);
+    addConverter("gltf", text_gltf_converter);
+
+    WasmConverter* wasm_converter = new WasmConverter(this);
+    owned_converters.push_back(wasm_converter);
+    addConverter("wat", wasm_converter);
+  }
+
   if (std::filesystem::is_directory(manifest_path)) {
     manifest_path = manifest_path / "bundler-manifest.toml";
   }
@@ -54,6 +72,10 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
 }
 
 Bundler::~Bundler() {
+  for (auto converter : owned_converters) {
+    delete converter;
+  }
+
   if (bundle_builder != nullptr) delete bundle_builder;
   if (prefab_builder != nullptr) delete prefab_builder;
 }

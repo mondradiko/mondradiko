@@ -5,14 +5,11 @@
 
 #include <filesystem>
 
+#include "converter/AssetBundleBuilder.h"
 #include "types/assets/AssetTypes.h"
-#include "bundler/AssetBundleBuilder.h"
 #include "types/assets/SerializedAsset_generated.h"
 
 namespace mondradiko {
-
-// Forward declarations
-class Bundler;
 
 class ConverterInterface {
  public:

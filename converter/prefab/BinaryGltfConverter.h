@@ -3,13 +3,14 @@
 
 #pragma once
 
-#include "bundler/prefab/GltfConverter.h"
+#include "converter/prefab/GltfConverter.h"
 
 namespace mondradiko {
 
 class BinaryGltfConverter : public GltfConverter {
  public:
-  explicit BinaryGltfConverter(Bundler* bundler) : GltfConverter(bundler) {}
+  explicit BinaryGltfConverter(BundlerInterface* bundler)
+      : GltfConverter(bundler) {}
 
   // ConverterInterface implementation
   AssetOffset convert(AssetBuilder*, std::filesystem::path) const final;

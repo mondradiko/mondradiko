@@ -9,11 +9,11 @@
 namespace mondradiko {
 
 // Forward declarations
-class Bundler;
+class BundlerInterface;
 
 class PrefabBuilder {
  public:
-  assets::AssetId buildPrefab(Bundler*, const toml::table&);
+  assets::AssetId buildPrefab(BundlerInterface*, const toml::table&);
 };
 
 }  // namespace mondradiko
