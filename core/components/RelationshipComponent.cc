@@ -7,6 +7,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 RelationshipComponent::RelationshipComponent(EntityId self_id)
     : _self_id(self_id) {
@@ -91,4 +92,5 @@ void buildUpdateComponents<protocol::RelationshipComponent>(
   update_components->add_relationship(components);
 }
 
+}  // namespace core
 }  // namespace mondradiko

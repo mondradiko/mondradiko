@@ -8,6 +8,7 @@
 #include "types/protocol/RelationshipComponent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 class RelationshipComponent
     : public Component<protocol::RelationshipComponent> {
@@ -30,4 +31,5 @@ class RelationshipComponent
   EntityId _self_id;
 };
 
+}  // namespace core
 }  // namespace mondradiko
