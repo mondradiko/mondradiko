@@ -31,6 +31,7 @@ set(MONDRADIKO_CORE_SRC
   assets/TextureAsset.cc
   components/MeshRendererComponent.cc
   components/PointLightComponent.cc
+  components/RelationshipComponent.cc
   components/ScriptComponent.cc
   components/TransformComponent.cc
   cvars/CVarScope.cc

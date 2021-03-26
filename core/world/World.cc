@@ -9,6 +9,7 @@
 #include "core/assets/PrefabAsset.h"
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/PointLightComponent.h"
+#include "core/components/RelationshipComponent.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/filesystem/Filesystem.h"
@@ -75,6 +76,12 @@ void World::onUpdateComponents(
     case protocol::ComponentType::PointLightComponent: {
       updateComponents<PointLightComponent>(entities,
                                             update_components->point_light());
+      break;
+    }
+
+    case protocol::ComponentType::RelationshipComponent: {
+      updateComponents<RelationshipComponent>(
+          entities, update_components->relationship());
       break;
     }
 
