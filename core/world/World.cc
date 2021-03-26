@@ -5,6 +5,7 @@
 
 #include <deque>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 #include "core/assets/PrefabAsset.h"

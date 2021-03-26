@@ -4,6 +4,7 @@
 #include "bundler/PrefabBuilder.h"
 
 #include <string>
+#include <vector>
 
 #include "bundler/Bundler.h"
 #include "types/assets/PrefabAsset_generated.h"
