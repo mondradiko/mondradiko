@@ -27,7 +27,7 @@
 
 // The using statement is fine because
 // this is the main entrypoint
-using namespace mondradiko;  // NOLINT
+using namespace mondradiko::core;  // NOLINT
 
 struct ClientArgs {
   bool version = false;
