@@ -5,7 +5,10 @@ include "types.fbs";
 
 namespace mondradiko.protocol;
 
-struct TransformComponent {
-  position:Vec3;
-  orientation:Quaternion;
+struct RelationshipComponent {
+  child_num:int;
+  parent:EntityId;
+  first_child:EntityId;
+  prev_child:EntityId;
+  next_child:EntityId;
 }

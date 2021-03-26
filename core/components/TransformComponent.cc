@@ -8,10 +8,6 @@
 namespace mondradiko {
 namespace core {
 
-EntityId TransformComponent::getParent() const {
-  return static_cast<EntityId>(_data.parent());
-}
-
 glm::mat4 TransformComponent::getLocalTransform() {
   auto orientation = _data.orientation();
   auto position = _data.position();
