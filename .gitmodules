@@ -7,5 +7,5 @@
 	url = https://github.com/Microsoft/vcpkg.git
 
 [submodule "bindings/toml"]
-	path = bindings/toml
+	path = codegen/toml
 	url = https://github.com/uiri/toml.git

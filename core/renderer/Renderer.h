@@ -3,13 +3,11 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include "core/assets/AssetPool.h"
 #include "core/renderer/RenderPass.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class CVarScope;
@@ -55,7 +53,7 @@ class Renderer {
 
   GpuDescriptorSetLayout* viewport_layout = nullptr;
 
-  std::vector<RenderPass*> render_passes;
+  types::vector<RenderPass*> render_passes;
 
   struct PipelinedFrameData {
     // TODO(marceline-cramer) Use command pool per frame, per thread
@@ -66,14 +64,15 @@ class Renderer {
     GpuDescriptorPool* descriptor_pool;
     GpuVector* viewports;
 
-    using PassList = std::vector<RenderPass*>;
+    using PassList = types::vector<RenderPass*>;
     static constexpr auto PhaseNum = static_cast<size_t>(RenderPhase::MAX);
     using PhaseList = std::array<PassList, PhaseNum>;
     PhaseList phases;
   };
 
   uint32_t current_frame = 0;
-  std::vector<PipelinedFrameData> frames_in_flight;
+  types::vector<PipelinedFrameData> frames_in_flight;
 };
 
+}  // namespace core
 }  // namespace mondradiko

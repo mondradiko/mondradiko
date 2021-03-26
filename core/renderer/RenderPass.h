@@ -6,6 +6,7 @@
 #include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations;
 class GpuDescriptorPool;
@@ -40,4 +41,5 @@ class RenderPass {
  private:
 };
 
+}  // namespace core
 }  // namespace mondradiko

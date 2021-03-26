@@ -8,6 +8,7 @@
 #include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuDescriptorSet;
@@ -30,4 +31,5 @@ class GpuDescriptorPool {
   std::unordered_set<GpuDescriptorSet*> descriptor_sets;
 };
 
+}  // namespace core
 }  // namespace mondradiko

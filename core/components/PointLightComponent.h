@@ -9,6 +9,7 @@
 #include "types/protocol/PointLightComponent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 struct PointLightUniform {
   glm::vec4 position;
@@ -50,4 +51,5 @@ class PointLightComponent : public Component<protocol::PointLightComponent> {
  private:
 };
 
+}  // namespace core
 }  // namespace mondradiko

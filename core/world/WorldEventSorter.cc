@@ -4,7 +4,6 @@
 #include "core/world/WorldEventSorter.h"
 
 #include <utility>
-#include <vector>
 
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/PointLightComponent.h"
@@ -14,6 +13,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 WorldEventSorter::WorldEventSorter(World* world) : world(world) {}
 
@@ -37,7 +37,7 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
   auto component_view = registry->view<ComponentType>();
 
   // Prepass to find dirty components
-  std::vector<EntityId> entities_data;
+  types::vector<EntityId> entities_data;
   entities_data.reserve(component_view.size());
 
   for (auto& entity : component_view) {
@@ -78,14 +78,14 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
 
 WorldEventSorter::WorldUpdateOffset WorldEventSorter::broadcastGlobalEvents(
     flatbuffers::FlatBufferBuilder& builder) const {
-  std::vector<flatbuffers::Offset<protocol::WorldEvent>> update_offsets;
+  types::vector<flatbuffers::Offset<protocol::WorldEvent>> update_offsets;
 
   for (auto& event : global_events) {
     auto event_offset = protocol::CreateWorldEvent(builder, event.get());
     update_offsets.push_back(event_offset);
   }
 
-  std::vector<flatbuffers::Offset<protocol::WorldEvent>> component_updates = {
+  types::vector<flatbuffers::Offset<protocol::WorldEvent>> component_updates = {
       updateComponents<MeshRendererComponent>(&builder, &world->registry),
       updateComponents<PointLightComponent>(&builder, &world->registry),
       updateComponents<TransformComponent>(&builder, &world->registry)};
@@ -102,4 +102,5 @@ bool WorldEventSorter::isOutOfDate() { return global_events.size() > 0; }
 
 void WorldEventSorter::clearQueue() { global_events.clear(); }
 
+}  // namespace core
 }  // namespace mondradiko

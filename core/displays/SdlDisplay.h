@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include <vector>
-
 #include "core/displays/DisplayInterface.h"
 #include "lib/include/sdl2_headers.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class SdlViewport;
@@ -34,7 +34,7 @@ class SdlDisplay : public DisplayInterface {
 
   void pollEvents(DisplayPollEventsInfo*) final;
   void beginFrame(DisplayBeginFrameInfo*) final;
-  void acquireViewports(std::vector<Viewport*>*) final;
+  void acquireViewports(types::vector<Viewport*>*) final;
   void endFrame(DisplayBeginFrameInfo*) final;
 
   SDL_Window* window = nullptr;
@@ -65,4 +65,5 @@ class SdlDisplay : public DisplayInterface {
   const Uint8* key_state;
 };
 
+}  // namespace core
 }  // namespace mondradiko

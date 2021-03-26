@@ -6,10 +6,11 @@
 #include "core/cvars/CVarValueInterface.h"
 
 namespace mondradiko {
+namespace core {
 
 CVarScope::CVarScope() : parent(nullptr), scope_path("") {}
 
-CVarScope::CVarScope(const CVarScope* parent, const std::string& child_name)
+CVarScope::CVarScope(const CVarScope* parent, const types::string& child_name)
     : parent(parent) {
   scope_path = parent->getValuePath(child_name);
 }
@@ -24,7 +25,7 @@ CVarScope::~CVarScope() {
   }
 }
 
-std::string CVarScope::getValuePath(const std::string& key) const {
+types::string CVarScope::getValuePath(const types::string& key) const {
   if (parent != nullptr) {
     return getScopePath() + "." + key;
   } else {
@@ -32,7 +33,7 @@ std::string CVarScope::getValuePath(const std::string& key) const {
   }
 }
 
-CVarScope* CVarScope::addChild(const std::string& child_name) {
+CVarScope* CVarScope::addChild(const types::string& child_name) {
   if (values.find(child_name) != values.end()) {
     log_ftl_fmt("Child scope %s shadows CVar",
                 getValuePath(child_name).c_str());
@@ -46,7 +47,7 @@ CVarScope* CVarScope::addChild(const std::string& child_name) {
   return child;
 }
 
-const CVarScope* CVarScope::getChild(const std::string& child_name) const {
+const CVarScope* CVarScope::getChild(const types::string& child_name) const {
   auto iter = children.find(child_name);
   if (iter == children.end()) {
     log_ftl_fmt("Child scope %s does not exist",
@@ -93,4 +94,5 @@ void CVarScope::loadConfig(const toml::value& config) {
 
 void CVarScope::saveConfig(toml::value*) {}
 
+}  // namespace core
 }  // namespace mondradiko

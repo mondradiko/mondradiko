@@ -8,12 +8,16 @@
 namespace mondradiko {
 
 // Forward declarations
+namespace protocol {
+struct UpdateComponentsBuilder;
+}  // namespace protocol
+
+namespace core {
+
+// Forward declarations
 class AssetPool;
 class ScriptEnvironment;
 class World;
-namespace protocol {
-struct UpdateComponentsBuilder;
-}
 
 // Forward declare template for UpdateComponents building
 template <class ProtocolComponentType>
@@ -50,4 +54,5 @@ class Component {
   bool dirty = true;
 };
 
+}  // namespace core
 }  // namespace mondradiko

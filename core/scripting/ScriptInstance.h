@@ -24,13 +24,13 @@
 
 #pragma once
 
-#include <string>
-#include <unordered_map>
-
 #include "core/world/Entity.h"
 #include "lib/include/wasm_headers.h"
+#include "types/containers/string.h"
+#include "types/containers/unordered_map.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class ScriptEnvironment;
@@ -47,14 +47,15 @@ class ScriptInstance {
   // TODO(marceline-cramer) Define entrypoint classes and their sizes
   // TODO(marceline-cramer) Dynamic ScriptInstance Wasm allocation
   // TODO(marceline-cramer) Pass EntityIds to scripts
-  void _addCallback(const std::string&, wasm_func_t*);
-  bool _hasCallback(const std::string&);
-  void _runCallback(const std::string&, const wasm_val_t*, size_t, wasm_val_t*,
-                    size_t);
+  void _addCallback(const types::string&, wasm_func_t*);
+  bool _hasCallback(const types::string&);
+  void _runCallback(const types::string&, const wasm_val_t*, size_t,
+                    wasm_val_t*, size_t);
 
  private:
   wasm_instance_t* module_instance = nullptr;
-  std::unordered_map<std::string, wasm_func_t*> callbacks;
+  types::unordered_map<types::string, wasm_func_t*> callbacks;
 };
 
+}  // namespace core
 }  // namespace mondradiko

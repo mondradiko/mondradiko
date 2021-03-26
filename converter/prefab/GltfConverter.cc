@@ -1,19 +1,20 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "bundler/prefab/GltfConverter.h"
+#include "converter/prefab/GltfConverter.h"
 
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-#include "bundler/Bundler.h"
+#include "converter/BundlerInterface.h"
 #include "log/log.h"
 #include "types/assets/PrefabAsset_generated.h"
 
 namespace mondradiko {
+namespace converter {
 
-GltfConverter::GltfConverter(Bundler *bundler) : _bundler(bundler) {}
+GltfConverter::GltfConverter(BundlerInterface *bundler) : _bundler(bundler) {}
 
 GltfConverter::AssetOffset GltfConverter::_loadModel(AssetBuilder *fbb,
                                                      GltfModel model) const {
@@ -509,4 +510,5 @@ assets::AssetId GltfConverter::_loadImage(GltfImage image, bool srgb) const {
   return asset_id;
 }
 
+}  // namespace converter
 }  // namespace mondradiko

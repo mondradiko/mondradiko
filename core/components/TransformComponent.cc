@@ -6,6 +6,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 EntityId TransformComponent::getParent() const {
   return static_cast<EntityId>(_data.parent());
@@ -64,4 +65,5 @@ void buildUpdateComponents<protocol::TransformComponent>(
   update_components->add_transform(components);
 }
 
+}  // namespace core
 }  // namespace mondradiko

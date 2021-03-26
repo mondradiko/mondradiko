@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include <vector>
-
 #include "lib/include/vulkan_headers.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuInstance;
@@ -38,12 +38,13 @@ class GpuDescriptorSetLayout {
  private:
   GpuInstance* gpu;
 
-  std::vector<VkDescriptorSetLayoutBinding> layout_bindings;
-  std::vector<VkSampler> immutable_samplers;
-  std::vector<uint32_t> buffer_sizes;
+  types::vector<VkDescriptorSetLayoutBinding> layout_bindings;
+  types::vector<VkSampler> immutable_samplers;
+  types::vector<uint32_t> buffer_sizes;
   uint32_t dynamic_offset_count = 0;
 
   VkDescriptorSetLayout set_layout = VK_NULL_HANDLE;
 };
 
+}  // namespace core
 }  // namespace mondradiko

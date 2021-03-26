@@ -6,8 +6,6 @@
 #define STB_RECT_PACK_IMPLEMENTATION
 #include <lib/third_party/stb_rect_pack.h>
 
-#include <vector>
-
 #include "core/cvars/CVarScope.h"
 #include "core/cvars/FloatCVar.h"
 #include "core/cvars/StringCVar.h"
@@ -19,8 +17,10 @@
 #include "log/log.h"
 #include "shaders/glyph.frag.h"
 #include "shaders/glyph.vert.h"
+#include "types/containers/string.h"
 
 namespace mondradiko {
+namespace core {
 
 void GlyphLoader::initCVars(CVarScope* cvars) {
   CVarScope* glyphs = cvars->addChild("glyphs");
@@ -52,7 +52,7 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
     log_ftl_fmt("msdfgen failed to adopt font %s", font_path);
   }
 
-  std::vector<msdfgen::unicode_t> characters;
+  types::vector<msdfgen::unicode_t> characters;
 
   for (char c = 33; c <= 126; c++) {
     characters.push_back(c);
@@ -62,8 +62,8 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
   double sdf_border = cvars->get<FloatCVar>("sdf_border");
   double sdf_range = cvars->get<FloatCVar>("sdf_range");
 
-  std::vector<msdfgen::Shape> glyphs(characters.size());
-  std::vector<stbrp_rect> glyph_rects(characters.size());
+  types::vector<msdfgen::Shape> glyphs(characters.size());
+  types::vector<stbrp_rect> glyph_rects(characters.size());
 
   for (uint32_t i = 0; i < glyphs.size(); i++) {
     auto& shape = glyphs[i];
@@ -128,7 +128,7 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                    VMA_MEMORY_USAGE_GPU_ONLY);
 
-  std::vector<GlyphUniform> glyph_data(glyph_rects.size());
+  types::vector<GlyphUniform> glyph_data(glyph_rects.size());
   glyph_buffer = new GpuBuffer(
       gpu, glyph_data.size() * sizeof(glyph_data[0]),
       VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
@@ -242,8 +242,8 @@ GlyphLoader::~GlyphLoader() {
   FT_Done_FreeType(freetype);
 }
 
-void GlyphLoader::drawString(GlyphString* string,
-                             const std::string& text) const {
+void GlyphLoader::drawString(GlyphString* glyph_string,
+                             const types::string& text) const {
   double cursor = 0.0;
 
   for (uint32_t i = 0; i < text.length(); i++) {
@@ -268,9 +268,10 @@ void GlyphLoader::drawString(GlyphString* string,
     glyph.position = glm::vec2(cursor, 0.0);
     glyph.glyph_index = glyph_index;
 
-    string->push_back(glyph);
+    glyph_string->push_back(glyph);
     cursor += 0.25;
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

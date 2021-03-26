@@ -11,12 +11,15 @@
 namespace mondradiko {
 
 // Forward declarations
-struct World;
-
 namespace protocol {
 struct WorldEvent;
 struct WorldEventT;
 }  // namespace protocol
+
+namespace core {
+
+// Forward declarations
+struct World;
 
 class WorldEventSorter {
  public:
@@ -43,4 +46,5 @@ class WorldEventSorter {
   WorldEventQueue global_events;
 };
 
+}  // namespace core
 }  // namespace mondradiko

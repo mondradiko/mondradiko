@@ -9,6 +9,7 @@
 #include "lib/include/glm_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuDescriptorSet;
@@ -60,4 +61,5 @@ class MaterialAsset : public Asset {
   MaterialUniform uniform;
 };
 
+}  // namespace core
 }  // namespace mondradiko

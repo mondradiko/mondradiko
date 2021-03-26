@@ -4,7 +4,6 @@
 #include "core/world/World.h"
 
 #include <iostream>
-#include <vector>
 
 #include "core/assets/PrefabAsset.h"
 #include "core/components/MeshRendererComponent.h"
@@ -17,6 +16,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
     : asset_pool(asset_pool), fs(fs), scripts(scripts) {
@@ -31,7 +31,7 @@ World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
 World::~World() { log_zone; }
 
 void World::initializePrefabs() {
-  std::vector<AssetId> prefabs;
+  types::vector<AssetId> prefabs;
   fs->getInitialPrefabs(prefabs);
 
   for (auto prefab_id : prefabs) {
@@ -222,4 +222,5 @@ void World::updateComponents(
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

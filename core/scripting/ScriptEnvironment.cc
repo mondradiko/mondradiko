@@ -3,9 +3,6 @@
 
 #include "core/scripting/ScriptEnvironment.h"
 
-#include <vector>
-
-#include "bindings/script_linker.h"
 #include "core/assets/ScriptAsset.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
@@ -14,6 +11,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 static wasm_trap_t* interruptCallback(const wasmtime_caller_t* caller,
                                       void* env, const wasm_val_t args[],
@@ -191,10 +189,10 @@ void ScriptEnvironment::updateScript(EntityRegistry* registry,
 }
 
 void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {
-  bindings.emplace(std::string(symbol), func);
+  bindings.emplace(types::string(symbol), func);
 }
 
-wasm_func_t* ScriptEnvironment::getBinding(const std::string& symbol) {
+wasm_func_t* ScriptEnvironment::getBinding(const types::string& symbol) {
   auto iter = bindings.find(symbol);
   if (iter == bindings.end()) return nullptr;
   return iter->second;
@@ -214,10 +212,11 @@ bool ScriptEnvironment::handleError(wasmtime_error_t* error,
     return false;
   }
 
-  std::string error_string(error_message.data, error_message.size);
+  types::string error_string(error_message.data, error_message.size);
   wasm_byte_vec_delete(&error_message);
   log_err_fmt("Wasmtime error thrown: %s", error_string.c_str());
   return true;
 }
 
+}  // namespace core
 }  // namespace mondradiko

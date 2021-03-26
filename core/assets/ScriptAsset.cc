@@ -3,14 +3,12 @@
 
 #include "core/assets/ScriptAsset.h"
 
-#include <string>
-#include <vector>
-
 #include "core/scripting/ComponentScript.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "types/assets/ScriptAsset_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 void ScriptAsset::load(const assets::SerializedAsset* asset) {
   const assets::ScriptAsset* script = asset->script();
@@ -78,4 +76,5 @@ ComponentScript* ScriptAsset::createInstance() const {
   return instance;
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -11,6 +11,7 @@
 #include "types/protocol/TransformComponent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 class TransformComponent : public Component<protocol::TransformComponent> {
  public:
@@ -70,4 +71,5 @@ class TransformComponent : public Component<protocol::TransformComponent> {
   wasm_trap_t* setPosition(const wasm_val_t[], wasm_val_t[]);
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -3,23 +3,22 @@
 
 #include "core/gpu/GpuDescriptorPool.h"
 
-#include <vector>
-
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuDescriptorPool::GpuDescriptorPool(GpuInstance* gpu) : gpu(gpu) {
   // TODO(marceline-cramer) Dynamic pool recreation using set layouts
-  std::vector<VkDescriptorPoolSize> pool_sizes;
+  types::vector<VkDescriptorPoolSize> pool_sizes;
 
-  pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 });
-  pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 });
-  pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 });
-  pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
+  pool_sizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000});
+  pool_sizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000});
+  pool_sizes.push_back({VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000});
+  pool_sizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000});
 
   VkDescriptorPoolCreateInfo create_info{};
   create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -48,7 +47,7 @@ GpuDescriptorSet* GpuDescriptorPool::allocate(GpuDescriptorSetLayout* layout) {
   VkDescriptorSetAllocateInfo alloc_info{};
   alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
   alloc_info.descriptorPool = descriptor_pool,
-  alloc_info.descriptorSetCount = 1,
+  alloc_info.descriptorSetCount = 1;
   alloc_info.pSetLayouts = &vk_set_layout;
 
   if (vkAllocateDescriptorSets(gpu->device, &alloc_info, &vk_set) !=
@@ -73,4 +72,5 @@ void GpuDescriptorPool::reset() {
   descriptor_sets.clear();
 }
 
+}  // namespace core
 }  // namespace mondradiko

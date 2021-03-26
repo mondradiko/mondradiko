@@ -3,15 +3,15 @@
 
 #include "core/assets/MeshAsset.h"
 
-#include <vector>
-
 #include "core/assets/Asset.h"
 #include "core/renderer/MeshPass.h"
 #include "core/renderer/Renderer.h"
 #include "log/log.h"
 #include "types/assets/MeshAsset_generated.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 void MeshAsset::load(const assets::SerializedAsset* asset) {
   // Skip loading if we initialized as a dummy
@@ -19,8 +19,8 @@ void MeshAsset::load(const assets::SerializedAsset* asset) {
 
   const assets::MeshAsset* mesh = asset->mesh();
 
-  std::vector<MeshVertex> vertices(mesh->vertices()->size());
-  std::vector<MeshIndex> indices(mesh->indices()->size());
+  types::vector<MeshVertex> vertices(mesh->vertices()->size());
+  types::vector<MeshIndex> indices(mesh->indices()->size());
 
   for (uint32_t i = 0; i < vertices.size(); i++) {
     const assets::MeshVertex* vertex = mesh->vertices()->Get(i);
@@ -50,4 +50,5 @@ void MeshAsset::load(const assets::SerializedAsset* asset) {
       indices.data(), indices.size() * sizeof(MeshIndex));
 }
 
+}  // namespace core
 }  // namespace mondradiko

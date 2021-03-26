@@ -10,6 +10,7 @@
 #include "types/assets/MaterialAsset_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 void MaterialAsset::load(const assets::SerializedAsset* asset) {
   // Skip loading if we initialized as a dummy
@@ -96,4 +97,5 @@ void MaterialAsset::updateTextureDescriptor(
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

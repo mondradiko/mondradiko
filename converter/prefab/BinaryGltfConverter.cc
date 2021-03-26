@@ -1,13 +1,14 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "bundler/prefab/BinaryGltfConverter.h"
+#include "converter/prefab/BinaryGltfConverter.h"
 
 #include <string>
 
 #include "log/log.h"
 
 namespace mondradiko {
+namespace converter {
 
 ConverterInterface::AssetOffset BinaryGltfConverter::convert(
     AssetBuilder* fbb, std::filesystem::path model_path) const {
@@ -29,4 +30,5 @@ ConverterInterface::AssetOffset BinaryGltfConverter::convert(
   return _loadModel(fbb, gltf_model);
 }
 
+}  // namespace converter
 }  // namespace mondradiko

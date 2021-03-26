@@ -7,6 +7,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 template <class AssetType>
 class AssetHandle {
@@ -89,4 +90,5 @@ class AssetHandle {
   }
 };
 
+}  // namespace core
 }  // namespace mondradiko

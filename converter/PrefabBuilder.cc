@@ -1,14 +1,15 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "bundler/PrefabBuilder.h"
+#include "converter/PrefabBuilder.h"
 
 #include <string>
 
-#include "bundler/Bundler.h"
+#include "converter/BundlerInterface.h"
 #include "types/assets/PrefabAsset_generated.h"
 
 namespace mondradiko {
+namespace converter {
 
 assets::Vec3 getVec3(const toml::value& src_array) {
   auto src = src_array.as_array();
@@ -19,7 +20,7 @@ assets::Vec3 getVec3(const toml::value& src_array) {
   return dst;
 }
 
-assets::AssetId PrefabBuilder::buildPrefab(Bundler* bundler,
+assets::AssetId PrefabBuilder::buildPrefab(BundlerInterface* bundler,
                                            const toml::table& prefab) {
   ConverterInterface::AssetBuilder fbb;
 
@@ -69,4 +70,5 @@ assets::AssetId PrefabBuilder::buildPrefab(Bundler* bundler,
   return bundler->addAsset(&fbb, asset_offset);
 }
 
+}  // namespace converter
 }  // namespace mondradiko
