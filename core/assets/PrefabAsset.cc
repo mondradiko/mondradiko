@@ -15,11 +15,13 @@ namespace core {
 
 // Helper template function to instantiate components
 template <class ComponentType, class PrefabType>
-void initComponent(EntityRegistry* registry, EntityId instance_id,
+void initComponent(AssetPool* asset_pool, EntityRegistry* registry,
+                   EntityId instance_id,
                    const std::unique_ptr<PrefabType>& prefab) {
   if (prefab) {
-    registry->emplace<ComponentType>(
+    auto& c = registry->emplace<ComponentType>(
         instance_id, static_cast<const PrefabType*>(prefab.get()));
+    c.refresh(asset_pool);
   }
 }
 
@@ -44,10 +46,12 @@ EntityId PrefabAsset::instantiate(EntityRegistry* registry,
                                   ScriptEnvironment* scripts) const {
   EntityId self_id = registry->create();
 
-  initComponent<MeshRendererComponent>(registry, self_id,
+  initComponent<MeshRendererComponent>(asset_pool, registry, self_id,
                                        prefab->mesh_renderer);
-  initComponent<PointLightComponent>(registry, self_id, prefab->point_light);
-  initComponent<TransformComponent>(registry, self_id, prefab->transform);
+  initComponent<PointLightComponent>(asset_pool, registry, self_id,
+                                     prefab->point_light);
+  initComponent<TransformComponent>(asset_pool, registry, self_id,
+                                    prefab->transform);
 
   for (auto& child : children) {
     if (!child) continue;

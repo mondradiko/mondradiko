@@ -17,6 +17,7 @@ class TextureAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::TextureAsset);
 
   // Asset lifetime implementation
+  TextureAsset() : mesh_pass(nullptr) {}
   explicit TextureAsset(MeshPass* mesh_pass) : mesh_pass(mesh_pass) {}
   void load(const assets::SerializedAsset*) final;
   ~TextureAsset();

@@ -13,8 +13,8 @@ set(GENERATE_CLASS_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_class.py")
 
 # Regenerate class wrappers when generator scripts are modified
 set(CLASSDEF_GENERATOR_SCRIPTS
+  "${CMAKE_CURRENT_SOURCE_DIR}/as_binding.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/codegen.py"
-  "${CMAKE_CURRENT_SOURCE_DIR}/cpp_binding.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/wasm_linker.py"
 )
 
@@ -43,8 +43,8 @@ function(wrap_classes ret GENERATOR CLASSDEFS)
 
   if(${GENERATOR} STREQUAL "wasm-linker")
     set(EXTENSION "_linker.cc")
-  elseif(${GENERATOR} STREQUAL "cpp-binding")
-    set(EXTENSION ".h")
+  elseif(${GENERATOR} STREQUAL "as-binding")
+    set(EXTENSION ".d.ts")
   else()
     message(FATAL_ERROR "Unrecognized generator " ${GENERATOR})
   endif()
@@ -65,8 +65,13 @@ set(COMPONENT_CLASSDEFS
 )
 
 wrap_classes(SCRIPT_LINKERS "wasm-linker" ${COMPONENT_CLASSDEFS})
+wrap_classes(AS_BINDINGS "as-binding" ${COMPONENT_CLASSDEFS})
+
+add_library(mondradiko-as-bindings INTERFACE ${AS_BINDINGS})
 
 add_library(mondradiko-wasm-linker OBJECT ${SCRIPT_LINKERS})
+
 # TODO(marceline-cramer): Don't expose third-party dependencies to the public interface
 add_dependencies(mondradiko-wasm-linker mondradiko-types)
+# This is needed to include the wasmtime headers
 target_link_libraries(mondradiko-wasm-linker mondradiko-lib)

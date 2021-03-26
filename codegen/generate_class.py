@@ -14,7 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'toml'))
 
 import toml
 
-from cpp_binding import CppBinding
+from as_binding import AsBinding
 from wasm_linker import WasmLinker
 
 
@@ -32,7 +32,7 @@ def main():
     # TODO(marceline-cramer) This code could be more Pythonic
 
     generators = {
-        "cpp-binding": CppBinding,
+        "as-binding": AsBinding,
         "wasm-linker": WasmLinker
     }
 

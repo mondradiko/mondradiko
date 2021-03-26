@@ -22,6 +22,21 @@ static wasm_trap_t* interruptCallback(const wasmtime_caller_t* caller,
   return nullptr;
 }
 
+static wasm_trap_t* abortCallback(const wasmtime_caller_t* caller, void* env,
+                                  const wasm_val_t args[],
+                                  wasm_val_t results[]) {
+  // TODO(marceline-cramer) Parse arguments and print abort info
+  ScriptEnvironment* scripts = reinterpret_cast<ScriptEnvironment*>(env);
+  log_err("AssemblyScript called abort()");
+
+  wasm_message_t message;
+  wasm_name_new_from_string(&message, "AssemblyScript abort()");
+  wasm_trap_t* trap = wasm_trap_new(scripts->getStore(), &message);
+  wasm_name_delete(&message);
+
+  return trap;
+}
+
 // Dummy finalizer needed for wasmtime_func_new_with_env()
 static void interruptCallbackFinalizer(void*) {}
 
@@ -55,15 +70,15 @@ ScriptEnvironment::ScriptEnvironment() {
     log_ftl("Failed to create interrupt handler");
   }
 
-  {
-    // Create a function to interrupt the store
-
+  {  // Create a function to interrupt the store
     wasm_functype_t* interrupt_func_type = wasm_functype_new_0_0();
     interrupt_func = wasmtime_func_new_with_env(store, interrupt_func_type,
                                                 interruptCallback, this,
                                                 interruptCallbackFinalizer);
     wasm_functype_delete(interrupt_func_type);
   }
+
+  linkAssemblyScriptEnv();
 }
 
 ScriptEnvironment::~ScriptEnvironment() {
@@ -98,6 +113,30 @@ void linkComponentApi(ScriptEnvironment* scripts, World* world) {
 
 void ScriptEnvironment::linkComponentApis(World* world) {
   linkComponentApi<TransformComponent>(this, world);
+}
+
+void ScriptEnvironment::linkAssemblyScriptEnv() {
+  log_zone;
+
+  // See: https://www.assemblyscript.org/exports-and-imports.html#imports-2
+
+  {  // Link abort()
+    wasm_valtype_t* ps[] = {wasm_valtype_new_i32(), wasm_valtype_new_i32(),
+                            wasm_valtype_new_i32(), wasm_valtype_new_i32()};
+
+    wasm_valtype_vec_t params, results;
+    wasm_valtype_vec_new(&params, 4, ps);
+    wasm_valtype_vec_new_empty(&results);
+
+    wasm_functype_t* abort_func_type = wasm_functype_new(&params, &results);
+
+    wasm_func_t* abort_func =
+        wasmtime_func_new_with_env(store, abort_func_type, abortCallback, this,
+                                   interruptCallbackFinalizer);
+    wasm_functype_delete(abort_func_type);
+
+    addBinding("abort", abort_func);
+  }
 }
 
 void ScriptEnvironment::update(EntityRegistry* registry, AssetPool* asset_pool,

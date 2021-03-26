@@ -14,6 +14,9 @@ namespace mondradiko {
 namespace core {
 
 void TextureAsset::load(const assets::SerializedAsset* asset) {
+  // Skip loading if we initialized as a dummy
+  if (mesh_pass == nullptr) return;
+
   const assets::TextureAsset* texture = asset->texture();
 
   VkFormat texture_format;

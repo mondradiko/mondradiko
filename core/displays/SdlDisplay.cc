@@ -3,6 +3,8 @@
 
 #include "core/displays/SdlDisplay.h"
 
+#include <chrono>
+
 #include "core/displays/SdlViewport.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
@@ -265,7 +267,28 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
 void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
   log_zone;
 
-  // TODO(marceline-cramer) SDL delta time
+  {
+    log_zone_named("Calculate delta time");
+
+    // TODO(marceline-cramer) Find a better way to do this
+    using clock = std::chrono::high_resolution_clock;
+    static const auto start_time = clock::now();
+    auto elapsed_time = clock::now();
+
+    double current_time =
+        std::chrono::duration<double, std::chrono::seconds::period>(
+            elapsed_time - start_time)
+            .count();
+
+    if (last_frame_time < -1.0) {
+      frame_info->dt = 0.0;
+    } else {
+      frame_info->dt = current_time - last_frame_time;
+    }
+
+    last_frame_time = current_time;
+  }
+
   if (main_viewport != nullptr) {
     if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
       float camera_speed = 0.1;

@@ -35,6 +35,7 @@ class MaterialAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::MaterialAsset);
 
   // Asset lifetime implementation
+  MaterialAsset() : gpu(nullptr) {}
   MaterialAsset(AssetPool* asset_pool, GpuInstance* gpu)
       : asset_pool(asset_pool), gpu(gpu) {}
   void load(const assets::SerializedAsset*) final;

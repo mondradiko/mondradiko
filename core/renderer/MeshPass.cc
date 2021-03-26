@@ -30,6 +30,12 @@ namespace core {
 
 void MeshPass::initCVars(CVarScope* cvars) {}
 
+void MeshPass::initDummyAssets(AssetPool* asset_pool) {
+  asset_pool->initializeAssetType<MaterialAsset>();
+  asset_pool->initializeAssetType<MeshAsset>();
+  asset_pool->initializeAssetType<TextureAsset>();
+}
+
 MeshPass::MeshPass(Renderer* renderer, World* world)
     : gpu(renderer->getGpu()), renderer(renderer), world(world) {
   log_zone;

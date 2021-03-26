@@ -75,27 +75,20 @@ cmake .. -G "Visual Studio 16 2019" -A x64 -Thost=x64
 ```
 
 ## Test driving your custom builds
-*draft notes from discord*
 
 From within your `builddir`:
 
 1. Verify the settings in `config.toml` (you may need to adjust the font path, for example)
   - warning: config.toml gets overwritten if re-running CMake
-2. Generate an Asset Bundle; to use the Sponza example:
+2. Generate an asset bundle; to use the Sponza example:
 ```bash
 git clone https://github.com/mondradiko/mondradiko-examples.git
-./bundler/mondradiko-bundler ./mondradiko-examples/v0/Sponza
+./bundler/mondradiko-bundler ./mondradiko-examples/v0/Sponza/bundler-manifest.toml
 # upon successful generation you should see registry.bin + lump_????.bin files created
 ```
-3. Launch the Mondradiko Server:
+3. Launch a serverless client:
 ```bash
-# note: best to do this from a separate prompt
-./server/mondradiko-server
-```
-
-4. Launch the Mondradiko Client:
-```bash
-./client/mondradiko-client
+./client/mondradiko-client --serverless
 ```
 
 *note: if built using Visual Studio IDE you might need to add `Release` to the above paths:

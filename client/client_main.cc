@@ -32,6 +32,8 @@ using namespace mondradiko::core;  // NOLINT
 struct ClientArgs {
   bool version = false;
 
+  bool serverless = false;
+
   std::string server_ip = "127.0.0.1";
   int server_port = 10555;
 
@@ -46,8 +48,18 @@ int ClientArgs::parse(int argc, const char* const argv[]) {
   CLI::App app("Mondradiko client");
 
   app.add_flag("-v,--version", version, "Print version and exit");
-  app.add_option("-s,--server", server_ip, "Domain server IP", true);
-  app.add_option("-p,--port", server_port, "Domain server port", true);
+
+  CLI::Option* serverless_op =
+      app.add_flag("--serverless", serverless, "Run a serverless world");
+
+  CLI::Option* server_op =
+      app.add_option("-s,--server", server_ip, "Domain server IP", true);
+  server_op->excludes(serverless_op);
+
+  CLI::Option* port_op =
+      app.add_option("-p,--port", server_port, "Domain server port", true);
+  port_op->needs(server_op);
+
   app.add_option("-b,--bundle", bundle_paths, "Paths to asset bundles", true);
   app.add_option("-c,--config", config_path, "Path to config file", true);
 
@@ -80,6 +92,7 @@ void run(const ClientArgs& args) {
   }
 
   AssetPool asset_pool(&fs);
+
   ScriptEnvironment scripts;
   World world(&asset_pool, &fs, &scripts);
 
@@ -95,8 +108,14 @@ void run(const ClientArgs& args) {
   UserInterface ui(&glyphs, &renderer);
   renderer.addRenderPass(&ui);
 
-  NetworkClient client(&cvars, &fs, &world, args.server_ip.c_str(),
-                       args.server_port);
+  std::unique_ptr<NetworkClient> client;
+
+  if (!args.serverless) {
+    client = std::make_unique<NetworkClient>(
+        &cvars, &fs, &world, args.server_ip.c_str(), args.server_port);
+  } else {
+    world.initializePrefabs();
+  }
 
   while (!g_interrupted) {
     DisplayPollEventsInfo poll_info;
@@ -118,7 +137,7 @@ void run(const ClientArgs& args) {
       display->endFrame(&frame_info);
     }
 
-    client.update();
+    if (client) client->update();
   }
 
   renderer.destroyFrameData();
