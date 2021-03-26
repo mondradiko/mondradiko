@@ -17,6 +17,10 @@ RelationshipComponent::RelationshipComponent(EntityId self_id)
   _data.mutate_next_child(static_cast<protocol::EntityId>(self_id));
 }
 
+bool RelationshipComponent::_hasParent() {
+  return static_cast<EntityId>(_data.parent()) != NullEntity;
+}
+
 void RelationshipComponent::_adopt(RelationshipComponent* other, World* world) {
   // Set ourselves as the new parent
   other->_orphan(world);
@@ -54,9 +58,9 @@ void RelationshipComponent::_adopt(RelationshipComponent* other, World* world) {
 }
 
 void RelationshipComponent::_orphan(World* world) {
-  auto parent_id = static_cast<EntityId>(_data.parent());
-  if (parent_id == NullEntity) return;
+  if (!_hasParent()) return;
 
+  auto parent_id = static_cast<EntityId>(_data.parent());
   auto& parent = world->registry.get<RelationshipComponent>(parent_id);
 
   if (_self_id == static_cast<EntityId>(parent._data.first_child())) {

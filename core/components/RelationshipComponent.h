@@ -23,6 +23,7 @@ class RelationshipComponent
   friend class World;
 
   // Helper methods
+  bool _hasParent();
   void _adopt(RelationshipComponent*, World*);
   void _orphan(World*);
 
