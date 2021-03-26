@@ -7,6 +7,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 class FloatCVar : public CVarValueInterface {
  public:
@@ -32,4 +33,5 @@ class FloatCVar : public CVarValueInterface {
   }
 };
 
+}  // namespace core
 }  // namespace mondradiko

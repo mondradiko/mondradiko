@@ -7,6 +7,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
                                wasm_module_t* script_module)
@@ -149,4 +150,5 @@ void ScriptInstance::_runCallback(const types::string& callback_name,
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

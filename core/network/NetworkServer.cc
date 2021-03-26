@@ -14,6 +14,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 // Nasty singleton
 // GameNetworkingSockets doesn't give us a choice here
@@ -414,4 +415,5 @@ void NetworkServer::callback_ConnectionStatusChanged(
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

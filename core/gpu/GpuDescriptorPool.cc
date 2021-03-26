@@ -9,6 +9,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuDescriptorPool::GpuDescriptorPool(GpuInstance* gpu) : gpu(gpu) {
   // TODO(marceline-cramer) Dynamic pool recreation using set layouts
@@ -71,4 +72,5 @@ void GpuDescriptorPool::reset() {
   descriptor_sets.clear();
 }
 
+}  // namespace core
 }  // namespace mondradiko

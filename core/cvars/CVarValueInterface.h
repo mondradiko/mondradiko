@@ -6,6 +6,7 @@
 #include "lib/include/toml_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 class CVarValueInterface {
  public:
@@ -18,4 +19,5 @@ class CVarValueInterface {
  private:
 };
 
+}  // namespace core
 }  // namespace mondradiko

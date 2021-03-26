@@ -7,6 +7,7 @@
 #include "core/world/Entity.h"
 
 namespace mondradiko {
+namespace core {
 
 class ComponentScript : public ScriptInstance {
  public:
@@ -20,4 +21,5 @@ class ComponentScript : public ScriptInstance {
  private:
 };
 
+}  // namespace core
 }  // namespace mondradiko

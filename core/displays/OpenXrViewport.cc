@@ -10,6 +10,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 static glm::mat4 createProjectionFromFOV(const XrFovf fov, const float near_z,
                                          const float far_z) {
@@ -153,4 +154,5 @@ void OpenXrViewport::_releaseImage(uint32_t, VkSemaphore) {
   xrReleaseSwapchainImage(swapchain, &release_info);
 }
 
+}  // namespace core
 }  // namespace mondradiko

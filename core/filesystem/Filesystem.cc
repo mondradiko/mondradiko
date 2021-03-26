@@ -8,6 +8,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 Filesystem::Filesystem() { log_zone; }
 
@@ -18,7 +19,7 @@ Filesystem::~Filesystem() {
 }
 
 bool Filesystem::loadAssetBundle(const std::filesystem::path& bundle_root) {
-  assets::AssetBundle* asset_bundle = new assets::AssetBundle(bundle_root);
+  AssetBundle* asset_bundle = new AssetBundle(bundle_root);
   auto result = asset_bundle->loadRegistry("registry.bin");
   if (result != assets::AssetResult::Success) {
     const char* error_string = assets::getAssetResultString(result);
@@ -70,4 +71,5 @@ toml::value Filesystem::loadToml(const std::filesystem::path& toml_path) {
   return toml::parse(toml_path);
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -17,6 +17,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 void Renderer::initCVars(CVarScope* cvars) {
   CVarScope* renderer = cvars->addChild("renderer");
@@ -499,4 +500,5 @@ void Renderer::addPassToPhase(RenderPhase phase, RenderPass* pass) {
   frame.phases[static_cast<size_t>(phase)].push_back(pass);
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -6,6 +6,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 void MeshRendererComponent::refresh(AssetPool* asset_pool) {
   auto mesh_id = static_cast<AssetId>(_data.mesh_asset());
@@ -26,4 +27,5 @@ void buildUpdateComponents<protocol::MeshRendererComponent>(
   update_components->add_mesh_renderer(components);
 }
 
+}  // namespace core
 }  // namespace mondradiko

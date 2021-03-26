@@ -8,6 +8,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class SdlViewport;
@@ -62,4 +63,5 @@ class SdlDisplay : public DisplayInterface {
   const Uint8* key_state;
 };
 
+}  // namespace core
 }  // namespace mondradiko

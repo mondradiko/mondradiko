@@ -11,6 +11,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 void MeshAsset::load(const assets::SerializedAsset* asset) {
   const assets::MeshAsset* mesh = asset->mesh();
@@ -46,4 +47,5 @@ void MeshAsset::load(const assets::SerializedAsset* asset) {
       indices.data(), indices.size() * sizeof(MeshIndex));
 }
 
+}  // namespace core
 }  // namespace mondradiko

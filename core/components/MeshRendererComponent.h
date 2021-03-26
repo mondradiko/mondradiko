@@ -10,6 +10,7 @@
 #include "types/protocol/MeshRendererComponent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 class MeshRendererComponent
     : public Component<protocol::MeshRendererComponent> {
@@ -44,4 +45,5 @@ class MeshRendererComponent
   AssetHandle<MaterialAsset> material_asset;
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -9,6 +9,7 @@
 #include "types/containers/string.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class CVarValueInterface;
@@ -65,4 +66,5 @@ class CVarScope {
   types::map<KeyType, CVarValueInterface*> values;
 };
 
+}  // namespace core
 }  // namespace mondradiko

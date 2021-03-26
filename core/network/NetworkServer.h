@@ -13,12 +13,15 @@
 namespace mondradiko {
 
 // Forward declarations
-class Filesystem;
-class WorldEventSorter;
-
 namespace protocol {
 struct JoinRequest;
 }  // namespace protocol
+
+namespace core {
+
+// Forward declarations
+class Filesystem;
+class WorldEventSorter;
 
 class NetworkServer {
  public:
@@ -80,4 +83,5 @@ class NetworkServer {
   std::deque<QueuedEvent> event_queue;
 };
 
+}  // namespace core
 }  // namespace mondradiko

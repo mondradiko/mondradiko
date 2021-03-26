@@ -15,13 +15,16 @@
 namespace mondradiko {
 
 // Forward declarations
-class Filesystem;
-class World;
-
 namespace protocol {
 struct Announcement;
 struct AssignClientId;
 }  // namespace protocol
+
+namespace core {
+
+// Forward declarations
+class Filesystem;
+class World;
 
 enum class ClientState { Disconnected, Connecting, Joining, Joined };
 
@@ -84,4 +87,5 @@ class NetworkClient {
   std::deque<QueuedEvent> event_queue;
 };
 
+}  // namespace core
 }  // namespace mondradiko

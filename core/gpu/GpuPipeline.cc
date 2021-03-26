@@ -14,6 +14,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuPipeline::GpuPipeline(GpuInstance* gpu, VkPipelineLayout pipeline_layout,
                          VkRenderPass render_pass, uint32_t subpass_index,
@@ -321,4 +322,5 @@ void GpuPipeline::cmdBind(VkCommandBuffer command_buffer,
   cmdBind(command_buffer, state_hash);
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -16,6 +16,7 @@
                         reinterpret_cast<PFN_xrVoidFunction*>(&fnPtr))
 
 namespace mondradiko {
+namespace core {
 
 void splitString(types::vector<types::string>* split,
                  const types::string& source) {
@@ -444,4 +445,5 @@ void OpenXrDisplay::createViewports(Renderer* renderer) {
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

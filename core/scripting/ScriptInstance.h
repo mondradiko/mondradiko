@@ -30,6 +30,7 @@
 #include "types/containers/unordered_map.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class ScriptEnvironment;
@@ -56,4 +57,5 @@ class ScriptInstance {
   types::unordered_map<types::string, wasm_func_t*> callbacks;
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -20,6 +20,7 @@
 #include "types/containers/string.h"
 
 namespace mondradiko {
+namespace core {
 
 void GlyphLoader::initCVars(CVarScope* cvars) {
   CVarScope* glyphs = cvars->addChild("glyphs");
@@ -272,4 +273,5 @@ void GlyphLoader::drawString(GlyphString* string,
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

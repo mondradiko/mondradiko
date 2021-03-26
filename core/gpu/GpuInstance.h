@@ -7,6 +7,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class DisplayInterface;
@@ -62,4 +63,5 @@ class GpuInstance {
       nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

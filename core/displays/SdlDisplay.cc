@@ -9,6 +9,7 @@
 #include "types/build_config.h"
 
 namespace mondradiko {
+namespace core {
 
 SdlDisplay::SdlDisplay() {
   log_zone;
@@ -312,4 +313,5 @@ void SdlDisplay::acquireViewports(types::vector<Viewport*>* viewports) {
 
 void SdlDisplay::endFrame(DisplayBeginFrameInfo* frame_info) { log_zone; }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -12,6 +12,7 @@
 #include "types/containers/unordered_map.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class CVarScope;
@@ -80,4 +81,5 @@ class GlyphLoader {
   GpuShader* fragment_shader = nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

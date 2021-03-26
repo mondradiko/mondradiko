@@ -10,6 +10,7 @@
 #include "lib/include/glm_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class CVarScope;
@@ -91,4 +92,5 @@ class OverlayPass : public RenderPass {
   uint32_t current_frame;
 };
 
+}  // namespace core
 }  // namespace mondradiko

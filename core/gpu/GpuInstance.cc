@@ -12,6 +12,7 @@
 #include "types/build_config.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
   log_zone;
@@ -336,4 +337,5 @@ void GpuInstance::createAllocator() {
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

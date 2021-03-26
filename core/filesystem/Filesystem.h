@@ -10,6 +10,7 @@
 #include "lib/include/toml_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 class Filesystem {
  public:
@@ -24,7 +25,8 @@ class Filesystem {
   toml::value loadToml(const std::filesystem::path&);
 
  private:
-  types::vector<assets::AssetBundle*> asset_bundles;
+  types::vector<AssetBundle*> asset_bundles;
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -7,6 +7,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GlyphLoader;
@@ -54,4 +55,5 @@ class UserInterface : public RenderPass {
   uint32_t current_frame;
 };
 
+}  // namespace core
 }  // namespace mondradiko

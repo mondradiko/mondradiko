@@ -7,6 +7,7 @@
 #include "types/containers/string.h"
 
 namespace mondradiko {
+namespace core {
 
 class StringCVar : public CVarValueInterface {
  public:
@@ -23,4 +24,5 @@ class StringCVar : public CVarValueInterface {
   }
 };
 
+}  // namespace core
 }  // namespace mondradiko

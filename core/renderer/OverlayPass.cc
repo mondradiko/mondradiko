@@ -22,6 +22,7 @@
 #include "shaders/debug.vert.h"
 
 namespace mondradiko {
+namespace core {
 
 void OverlayPass::initCVars(CVarScope* cvars) {
   CVarScope* debug = cvars->addChild("debug");
@@ -376,4 +377,5 @@ void OverlayPass::renderViewport(RenderPhase phase,
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

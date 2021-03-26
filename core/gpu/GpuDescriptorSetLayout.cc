@@ -7,6 +7,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuDescriptorSetLayout::GpuDescriptorSetLayout(GpuInstance* gpu) : gpu(gpu) {}
 
@@ -78,4 +79,5 @@ VkDescriptorSetLayout GpuDescriptorSetLayout::getSetLayout() {
   return set_layout;
 }
 
+}  // namespace core
 }  // namespace mondradiko

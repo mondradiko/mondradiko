@@ -10,6 +10,7 @@
 #include "types/containers/unordered_map.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class UserInterface;
@@ -87,4 +88,5 @@ class ScriptEnvironment {
   wasm_func_t* interrupt_func = nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

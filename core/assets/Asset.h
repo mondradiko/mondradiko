@@ -10,6 +10,7 @@
   static constexpr assets::AssetType ASSET_TYPE = type;
 
 namespace mondradiko {
+namespace core {
 
 using AssetId = assets::AssetId;
 
@@ -31,4 +32,5 @@ class Asset {
   friend class AssetPool;
 };
 
+}  // namespace core
 }  // namespace mondradiko

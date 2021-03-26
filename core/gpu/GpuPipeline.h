@@ -8,6 +8,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 struct GraphicsState;
@@ -45,4 +46,5 @@ class GpuPipeline {
   types::unordered_map<StateHash, VkPipeline> pipelines;
 };
 
+}  // namespace core
 }  // namespace mondradiko

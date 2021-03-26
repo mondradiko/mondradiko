@@ -7,6 +7,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL
 debugCallbackVulkan(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -32,4 +33,5 @@ debugCallbackVulkan(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
   return VK_FALSE;
 }
 
+}  // namespace core
 }  // namespace mondradiko

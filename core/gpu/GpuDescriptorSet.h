@@ -7,6 +7,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // TODO(marceline-cramer) Named descriptors
 // TODO(marceline-cramer) Reflection
@@ -44,4 +45,5 @@ class GpuDescriptorSet {
   types::vector<uint32_t> dynamic_offsets;
 };
 
+}  // namespace core
 }  // namespace mondradiko

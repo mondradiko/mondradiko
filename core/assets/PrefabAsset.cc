@@ -11,6 +11,7 @@
 #include "core/scripting/ScriptEnvironment.h"
 
 namespace mondradiko {
+namespace core {
 
 // Helper template function to instantiate components
 template <class ComponentType, class PrefabType>
@@ -68,4 +69,5 @@ EntityId PrefabAsset::instantiate(EntityRegistry* registry,
   return self_id;
 }
 
+}  // namespace core
 }  // namespace mondradiko

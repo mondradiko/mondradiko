@@ -11,6 +11,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 static wasm_trap_t* interruptCallback(const wasmtime_caller_t* caller,
                                       void* env, const wasm_val_t args[],
@@ -178,4 +179,5 @@ bool ScriptEnvironment::handleError(wasmtime_error_t* error,
   return true;
 }
 
+}  // namespace core
 }  // namespace mondradiko

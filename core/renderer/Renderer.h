@@ -7,6 +7,7 @@
 #include "core/renderer/RenderPass.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class CVarScope;
@@ -73,4 +74,5 @@ class Renderer {
   types::vector<PipelinedFrameData> frames_in_flight;
 };
 
+}  // namespace core
 }  // namespace mondradiko

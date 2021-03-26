@@ -6,6 +6,7 @@
 #include "core/cvars/CVarValueInterface.h"
 
 namespace mondradiko {
+namespace core {
 
 CVarScope::CVarScope() : parent(nullptr), scope_path("") {}
 
@@ -93,4 +94,5 @@ void CVarScope::loadConfig(const toml::value& config) {
 
 void CVarScope::saveConfig(toml::value*) {}
 
+}  // namespace core
 }  // namespace mondradiko

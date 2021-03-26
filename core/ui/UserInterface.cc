@@ -19,6 +19,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 UserInterface::UserInterface(GlyphLoader* glyphs, Renderer* renderer)
     : glyphs(glyphs), gpu(renderer->getGpu()), renderer(renderer) {
@@ -157,4 +158,5 @@ void UserInterface::renderViewport(
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

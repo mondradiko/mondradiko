@@ -8,6 +8,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class DisplayInterface;
@@ -156,4 +157,5 @@ class Viewport {
   uint32_t _current_image_index = 0;
 };
 
+}  // namespace core
 }  // namespace mondradiko

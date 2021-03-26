@@ -16,6 +16,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
     : asset_pool(asset_pool), fs(fs), scripts(scripts) {
@@ -221,4 +222,5 @@ void World::updateComponents(
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -11,6 +11,7 @@
 #include "types/assets/TextureAsset_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 void TextureAsset::load(const assets::SerializedAsset* asset) {
   const assets::TextureAsset* texture = asset->texture();
@@ -48,4 +49,5 @@ TextureAsset::~TextureAsset() {
   if (image) delete image;
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -7,6 +7,7 @@
 #include "lib/include/openxr_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declaration
 class GpuImage;
@@ -40,4 +41,5 @@ class OpenXrViewport : public Viewport {
   XrView view;
 };
 
+}  // namespace core
 }  // namespace mondradiko

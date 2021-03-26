@@ -13,6 +13,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 WorldEventSorter::WorldEventSorter(World* world) : world(world) {}
 
@@ -101,4 +102,5 @@ bool WorldEventSorter::isOutOfDate() { return global_events.size() > 0; }
 
 void WorldEventSorter::clearQueue() { global_events.clear(); }
 
+}  // namespace core
 }  // namespace mondradiko

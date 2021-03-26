@@ -11,8 +11,6 @@
 namespace mondradiko {
 
 // Forward declarations
-class Filesystem;
-
 namespace protocol {
 struct WorldEvent;
 
@@ -20,6 +18,11 @@ struct SpawnEntity;
 struct UpdateComponents;
 struct UpdateScripts;
 }  // namespace protocol
+
+namespace core {
+
+// Forward declarations
+class Filesystem;
 
 class World {
  public:
@@ -56,4 +59,5 @@ class World {
   EntityRegistry registry;
 };
 
+}  // namespace core
 }  // namespace mondradiko

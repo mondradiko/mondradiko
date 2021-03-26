@@ -10,6 +10,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
                                VkRenderPass render_pass) {
@@ -114,4 +115,5 @@ void Viewport::_destroyImages() {
   _depth_image = nullptr;
 }
 
+}  // namespace core
 }  // namespace mondradiko

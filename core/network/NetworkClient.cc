@@ -15,6 +15,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 void NetworkClient::initCVars(CVarScope* cvars) {
   CVarScope* client = cvars->addChild("client");
@@ -319,4 +320,5 @@ void NetworkClient::callback_ConnectionStatusChanged(
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

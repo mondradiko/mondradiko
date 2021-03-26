@@ -11,7 +11,10 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
-namespace assets {
+namespace core {
+
+// using is ok here because it'd be inconvenient not to use it
+using namespace assets;  // NOLINT
 
 AssetBundle::AssetBundle(const std::filesystem::path& bundle_root)
     : bundle_root(bundle_root) {}
@@ -211,5 +214,5 @@ bool AssetBundle::loadAsset(const SerializedAsset** asset, AssetId id) {
                                      stored_asset.size);
 }
 
-}  // namespace assets
+}  // namespace core
 }  // namespace mondradiko

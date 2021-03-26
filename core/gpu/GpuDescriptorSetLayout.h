@@ -7,6 +7,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuInstance;
@@ -45,4 +46,5 @@ class GpuDescriptorSetLayout {
   VkDescriptorSetLayout set_layout = VK_NULL_HANDLE;
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -15,6 +15,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 template <typename BaseAssetType>
 struct DummyAsset {
@@ -118,4 +119,5 @@ class AssetPool {
   types::unordered_map<AssetId, Asset*> pool;
 };
 
+}  // namespace core
 }  // namespace mondradiko

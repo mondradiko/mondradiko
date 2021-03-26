@@ -8,6 +8,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuImage;
@@ -44,4 +45,5 @@ class SdlViewport : public Viewport {
   float camera_tilt;
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -7,10 +7,12 @@
 #include "core/ui/GlyphLoader.h"
 
 namespace mondradiko {
+namespace core {
 
 UiPanel::UiPanel(GlyphLoader* glyphs, ScriptEnvironment* scripts)
     : glyphs(glyphs), scripts(scripts) {}
 
 UiPanel::~UiPanel() {}
 
+}  // namespace core
 }  // namespace mondradiko

@@ -6,6 +6,7 @@
 #include "core/assets/AssetPool.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuImage;
@@ -28,4 +29,5 @@ class TextureAsset : public Asset {
   GpuImage* image = nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

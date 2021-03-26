@@ -9,6 +9,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class OpenXrViewport;
@@ -76,4 +77,5 @@ class OpenXrDisplay : public DisplayInterface {
       nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

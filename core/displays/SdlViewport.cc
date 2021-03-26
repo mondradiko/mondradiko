@@ -14,6 +14,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
                          Renderer* renderer)
@@ -180,4 +181,5 @@ void SdlViewport::_releaseImage(uint32_t current_image_index,
   vkQueuePresentKHR(gpu->graphics_queue, &present_info);
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -9,6 +9,7 @@
 #include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class AssetPool;
@@ -33,4 +34,5 @@ class PrefabAsset : public Asset {
   types::vector<AssetHandle<PrefabAsset>> children;
 };
 
+}  // namespace core
 }  // namespace mondradiko

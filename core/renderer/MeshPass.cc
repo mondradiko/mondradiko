@@ -26,6 +26,7 @@
 #include "shaders/mesh_forward.vert.h"
 
 namespace mondradiko {
+namespace core {
 
 void MeshPass::initCVars(CVarScope* cvars) {}
 
@@ -425,4 +426,5 @@ void MeshPass::executeMeshCommands(VkCommandBuffer command_buffer,
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko
