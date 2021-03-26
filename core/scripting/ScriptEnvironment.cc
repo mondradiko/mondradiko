@@ -3,7 +3,6 @@
 
 #include "core/scripting/ScriptEnvironment.h"
 
-#include "codegen/script_linker.h"
 #include "core/assets/ScriptAsset.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
