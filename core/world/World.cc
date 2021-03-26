@@ -37,7 +37,7 @@ void World::initializePrefabs() {
 
   for (auto prefab_id : prefabs) {
     auto prefab = asset_pool->load<PrefabAsset>(prefab_id);
-    prefab->instantiate(&registry, scripts);
+    prefab->instantiate(scripts, this);
   }
 }
 
@@ -107,7 +107,7 @@ void World::onUpdateScripts(const protocol::UpdateScripts* update_scripts) {}
 bool World::update(double dt) {
   log_zone;
 
-  {
+  /*{
     log_zone_named("Update TransformComponent self-reference");
 
     auto transform_view = registry.view<TransformComponent>();
@@ -129,7 +129,7 @@ bool World::update(double dt) {
           }
           return false;
         });
-  }
+  }*/
 
   {
     log_zone_named("Transform children under parents");
@@ -139,23 +139,17 @@ bool World::update(double dt) {
     for (auto e : transform_view) {
       TransformComponent& transform = transform_view.get(e);
 
-      auto parent = transform.getParent();
-      glm::mat4 parent_transform;
-      if (parent == NullEntity) {
-        parent_transform = glm::mat4(1.0);
-      } else {
+      auto parent = NullEntity;  // transform.getParent();
+      glm::mat4 parent_transform = glm::mat4(1.0);
+      if (parent != NullEntity) {
         if (!registry.valid(parent)) {
           log_err("Invalid Transform parent ID");
-          continue;
-        }
-
-        if (!registry.has<TransformComponent>(parent)) {
+        } else if (!registry.has<TransformComponent>(parent)) {
           log_err("Transform parent has no Transform");
-          continue;
+        } else {
+          parent_transform =
+              registry.get<TransformComponent>(parent).getWorldTransform();
         }
-
-        parent_transform =
-            registry.get<TransformComponent>(parent).getWorldTransform();
       }
 
       glm::mat4 local_transform = transform.getLocalTransform();

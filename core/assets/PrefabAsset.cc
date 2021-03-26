@@ -7,8 +7,10 @@
 
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/PointLightComponent.h"
+#include "core/components/RelationshipComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ScriptEnvironment.h"
+#include "core/world/World.h"
 
 namespace mondradiko {
 
@@ -41,8 +43,9 @@ PrefabAsset::~PrefabAsset() {
   if (prefab != nullptr) delete prefab;
 }
 
-EntityId PrefabAsset::instantiate(EntityRegistry* registry,
-                                  ScriptEnvironment* scripts) const {
+EntityId PrefabAsset::instantiate(ScriptEnvironment* scripts,
+                                  World* world) const {
+  EntityRegistry* registry = &world->registry;
   EntityId self_id = registry->create();
 
   initComponent<MeshRendererComponent>(asset_pool, registry, self_id,
@@ -52,14 +55,18 @@ EntityId PrefabAsset::instantiate(EntityRegistry* registry,
   initComponent<TransformComponent>(asset_pool, registry, self_id,
                                     prefab->transform);
 
-  for (auto& child : children) {
-    if (!child) continue;
+  if (children.size() > 0) {
+    registry->emplace<RelationshipComponent>(self_id, self_id);
 
-    // TODO(marceline-cramer) Child transforms
-    EntityId child_id = child->instantiate(registry, scripts);
+    for (auto& child : children) {
+      if (!child) continue;
 
-    if (prefab->transform && registry->has<TransformComponent>(child_id)) {
-      registry->get<TransformComponent>(child_id).setParent(self_id);
+      EntityId child_id = child->instantiate(scripts, world);
+      auto& self_rel = registry->get<RelationshipComponent>(self_id);
+      auto& child_rel =
+          registry->get_or_emplace<RelationshipComponent>(child_id, child_id);
+
+      self_rel._adopt(&child_rel, world);
     }
   }
 
