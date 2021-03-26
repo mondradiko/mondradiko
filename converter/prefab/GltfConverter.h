@@ -7,6 +7,7 @@
 #include "lib/include/tinygltf_headers.h"
 
 namespace mondradiko {
+namespace converter {
 
 // Forward declarations
 class BundlerInterface;
@@ -36,4 +37,5 @@ class GltfConverter : public ConverterInterface {
   assets::AssetId _loadImage(GltfImage, bool) const;
 };
 
+}  // namespace converter
 }  // namespace mondradiko

@@ -13,20 +13,24 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace bundler {
+
+// using is ok here because it'd be inconvenient not to use it
+using namespace converter;  // NOLINT
 
 Bundler::Bundler(const std::filesystem::path& _manifest_path)
     : manifest_path(_manifest_path) {
   {  // Create converters
-    BinaryGltfConverter* binary_gltf_converter = new BinaryGltfConverter(this);
+    auto binary_gltf_converter = new BinaryGltfConverter(this);
     owned_converters.push_back(binary_gltf_converter);
     addConverter("glb", binary_gltf_converter);
     addConverter("vrm", binary_gltf_converter);
 
-    TextGltfConverter* text_gltf_converter = new TextGltfConverter(this);
+    auto text_gltf_converter = new TextGltfConverter(this);
     owned_converters.push_back(text_gltf_converter);
     addConverter("gltf", text_gltf_converter);
 
-    WasmConverter* wasm_converter = new WasmConverter(this);
+    auto wasm_converter = new WasmConverter(this);
     owned_converters.push_back(wasm_converter);
     addConverter("wat", wasm_converter);
   }
@@ -46,7 +50,7 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
   log_dbg_fmt("Bundler source dir: %s", source_root.string().c_str());
   log_dbg_fmt("Bundler bundle dir: %s", bundle_root.string().c_str());
 
-  bundle_builder = new assets::AssetBundleBuilder(bundle_root);
+  bundle_builder = new AssetBundleBuilder(bundle_root);
   prefab_builder = new PrefabBuilder;
 
   manifest = toml::parse(manifest_path);
@@ -186,4 +190,5 @@ void Bundler::bundle() {
   bundle_builder->buildBundle("registry.bin");
 }
 
+}  // namespace bundler
 }  // namespace mondradiko

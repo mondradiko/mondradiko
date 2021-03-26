@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace mondradiko {
+namespace converter {
 
 WasmConverter::AssetOffset WasmConverter::convert(
     AssetBuilder* fbb, std::filesystem::path wasm_path) const {
@@ -36,4 +37,5 @@ WasmConverter::AssetOffset WasmConverter::convert(
   return asset_offset;
 }
 
+}  // namespace converter
 }  // namespace mondradiko

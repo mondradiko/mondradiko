@@ -6,6 +6,7 @@
 #include "converter/ConverterInterface.h"
 
 namespace mondradiko {
+namespace converter {
 
 // Forward declarations
 class BundlerInterface;
@@ -21,4 +22,5 @@ class WasmConverter : public ConverterInterface {
   BundlerInterface* _bundler;
 };
 
+}  // namespace converter
 }  // namespace mondradiko

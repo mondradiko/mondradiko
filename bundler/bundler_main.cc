@@ -42,8 +42,7 @@ int main(int argc, char* argv[]) {
   log_msg_fmt("%s", MONDRADIKO_LICENSE);
 
   try {
-    Bundler bundler(args.manifest_file);
-
+    bundler::Bundler bundler(args.manifest_file);
     bundler.bundle();
   } catch (const std::exception& e) {
     log_err_fmt("Mondradiko bundler failed with message: %s", e.what());

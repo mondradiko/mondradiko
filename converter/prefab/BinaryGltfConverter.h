@@ -6,6 +6,7 @@
 #include "converter/prefab/GltfConverter.h"
 
 namespace mondradiko {
+namespace converter {
 
 class BinaryGltfConverter : public GltfConverter {
  public:
@@ -16,4 +17,5 @@ class BinaryGltfConverter : public GltfConverter {
   AssetOffset convert(AssetBuilder*, std::filesystem::path) const final;
 };
 
+}  // namespace converter
 }  // namespace mondradiko

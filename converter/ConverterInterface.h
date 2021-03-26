@@ -10,6 +10,7 @@
 #include "types/assets/SerializedAsset_generated.h"
 
 namespace mondradiko {
+namespace converter {
 
 class ConverterInterface {
  public:
@@ -22,4 +23,5 @@ class ConverterInterface {
   virtual AssetOffset convert(AssetBuilder*, std::filesystem::path) const = 0;
 };
 
+}  // namespace converter
 }  // namespace mondradiko

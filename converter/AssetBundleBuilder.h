@@ -14,29 +14,31 @@
 #include "types/assets/SerializedAsset_generated.h"
 
 namespace mondradiko {
-namespace assets {
+namespace converter {
 
 class AssetBundleBuilder {
  public:
   explicit AssetBundleBuilder(const std::filesystem::path&);
   ~AssetBundleBuilder();
 
-  void setDefaultCompressionMethod(LumpCompressionMethod method) {
+  void setDefaultCompressionMethod(assets::LumpCompressionMethod method) {
     default_compression = method;
   }
 
-  AssetResult addAsset(AssetId*, flatbuffers::FlatBufferBuilder*,
-                       flatbuffers::Offset<SerializedAsset>);
-  AssetResult addInitialPrefab(AssetId);
-  AssetResult buildBundle(const char*);
+  assets::AssetResult addAsset(assets::AssetId*,
+                               flatbuffers::FlatBufferBuilder*,
+                               flatbuffers::Offset<assets::SerializedAsset>);
+  assets::AssetResult addInitialPrefab(assets::AssetId);
+  assets::AssetResult buildBundle(const char*);
 
  private:
   std::filesystem::path bundle_root;
 
-  LumpCompressionMethod default_compression = LumpCompressionMethod::None;
+  assets::LumpCompressionMethod default_compression =
+      assets::LumpCompressionMethod::None;
 
   struct AssetToSave {
-    AssetId id;
+    assets::AssetId id;
     size_t size;
   };
 
@@ -49,20 +51,21 @@ class AssetBundleBuilder {
     // Finalized metadata
     std::thread* finalizer_thread;
     std::filesystem::path lump_path;
-    LumpCompressionMethod compression_method;
-    LumpHash checksum;
-    LumpHashMethod hash_method;
+    assets::LumpCompressionMethod compression_method;
+    assets::LumpHash checksum;
+    assets::LumpHashMethod hash_method;
   };
 
   std::vector<LumpToSave*> lumps;
-  std::unordered_set<AssetId> used_ids;
-  std::vector<AssetId> initial_prefabs;
+  std::unordered_set<assets::AssetId> used_ids;
+  std::vector<assets::AssetId> initial_prefabs;
 
   void launchFinalizer(LumpToSave*);
   LumpToSave* allocateLump(uint32_t);
 
-  static void finalizeLump(LumpToSave*, LumpCompressionMethod, LumpHashMethod);
+  static void finalizeLump(LumpToSave*, assets::LumpCompressionMethod,
+                           assets::LumpHashMethod);
 };
 
-}  // namespace assets
+}  // namespace converter
 }  // namespace mondradiko

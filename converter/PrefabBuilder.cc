@@ -9,6 +9,7 @@
 #include "types/assets/PrefabAsset_generated.h"
 
 namespace mondradiko {
+namespace converter {
 
 assets::Vec3 getVec3(const toml::value& src_array) {
   auto src = src_array.as_array();
@@ -69,4 +70,5 @@ assets::AssetId PrefabBuilder::buildPrefab(BundlerInterface* bundler,
   return bundler->addAsset(&fbb, asset_offset);
 }
 
+}  // namespace converter
 }  // namespace mondradiko

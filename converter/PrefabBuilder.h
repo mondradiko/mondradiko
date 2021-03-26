@@ -7,6 +7,7 @@
 #include "types/assets/SerializedAsset_generated.h"
 
 namespace mondradiko {
+namespace converter {
 
 // Forward declarations
 class BundlerInterface;
@@ -16,4 +17,5 @@ class PrefabBuilder {
   assets::AssetId buildPrefab(BundlerInterface*, const toml::table&);
 };
 
+}  // namespace converter
 }  // namespace mondradiko

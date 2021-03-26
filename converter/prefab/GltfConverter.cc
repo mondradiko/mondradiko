@@ -12,6 +12,7 @@
 #include "types/assets/PrefabAsset_generated.h"
 
 namespace mondradiko {
+namespace converter {
 
 GltfConverter::GltfConverter(BundlerInterface *bundler) : _bundler(bundler) {}
 
@@ -509,4 +510,5 @@ assets::AssetId GltfConverter::_loadImage(GltfImage image, bool srgb) const {
   return asset_id;
 }
 
+}  // namespace converter
 }  // namespace mondradiko

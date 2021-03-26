@@ -11,6 +11,7 @@
 #include "types/assets/SerializedAsset_generated.h"
 
 namespace mondradiko {
+namespace converter {
 
 // Forward declarations
 class PrefabBuilder;
@@ -26,4 +27,5 @@ class BundlerInterface {
   virtual void bundle() = 0;
 };
 
+}  // namespace converter
 }  // namespace mondradiko
