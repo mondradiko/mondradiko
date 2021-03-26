@@ -242,7 +242,7 @@ GlyphLoader::~GlyphLoader() {
   FT_Done_FreeType(freetype);
 }
 
-void GlyphLoader::drawString(GlyphString* string,
+void GlyphLoader::drawString(GlyphString* glyph_string,
                              const types::string& text) const {
   double cursor = 0.0;
 
@@ -268,7 +268,7 @@ void GlyphLoader::drawString(GlyphString* string,
     glyph.position = glm::vec2(cursor, 0.0);
     glyph.glyph_index = glyph_index;
 
-    string->push_back(glyph);
+    glyph_string->push_back(glyph);
     cursor += 0.25;
   }
 }

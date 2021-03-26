@@ -5,6 +5,7 @@
 
 #include "core/scripting/ScriptEnvironment.h"
 #include "log/log.h"
+#include "types/containers/string.h"
 
 namespace mondradiko {
 namespace core {
@@ -101,7 +102,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
         // TODO(marceline-cramer) Handle other kinds of exports
         if (extern_kind == WASM_EXTERN_FUNC) {
           wasm_func_t* callback = wasm_extern_as_func(exported);
-          std::string callback_name(export_name->data, export_name->size);
+          types::string callback_name(export_name->data, export_name->size);
           _addCallback(callback_name, callback);
 
           log_inf_fmt("Imported callback %s", callback_name.c_str());
