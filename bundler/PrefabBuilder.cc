@@ -23,6 +23,20 @@ assets::AssetId PrefabBuilder::buildPrefab(Bundler* bundler,
                                            const toml::table& prefab) {
   ConverterInterface::AssetBuilder fbb;
 
+  std::vector<uint32_t> children;
+
+  auto children_iter = prefab.find("children");
+  if (children_iter != prefab.end()) {
+    auto children_array = children_iter->second.as_array();
+    for (auto child : children_array) {
+      std::string child_alias = child.as_string();
+      assets::AssetId child_id = bundler->getAssetByAlias(child_alias);
+      children.push_back(static_cast<uint32_t>(child_id));
+    }
+  }
+
+  auto children_offset = fbb.CreateVector(children);
+
   // ScriptPrefab is a table, so it needs to be built before PrefabAsset
   flatbuffers::Offset<assets::ScriptPrefab> script_offset;
   if (prefab.find("script") != prefab.end()) {
@@ -36,6 +50,7 @@ assets::AssetId PrefabBuilder::buildPrefab(Bundler* bundler,
   }
 
   assets::PrefabAssetBuilder prefab_builder(fbb);
+  prefab_builder.add_children(children_offset);
   prefab_builder.add_script(script_offset);
 
   if (prefab.find("point_light") != prefab.end()) {
