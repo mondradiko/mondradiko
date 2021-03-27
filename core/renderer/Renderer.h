@@ -44,6 +44,8 @@ class Renderer {
   uint32_t getDepthSubpass() { return 0; }
   uint32_t getForwardSubpass() { return 1; }
 
+  GpuImage* getErrorImage() { return error_image; }
+
  private:
   const CVarScope* cvars;
   DisplayInterface* display;
@@ -72,6 +74,8 @@ class Renderer {
 
   uint32_t current_frame = 0;
   types::vector<PipelinedFrameData> frames_in_flight;
+
+  GpuImage* error_image = nullptr;
 };
 
 }  // namespace core
