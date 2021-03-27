@@ -175,10 +175,35 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
           gpu, sizeof(ViewportUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     }
   }
+
+  {
+    log_zone_named("Create error image");
+
+    int error_width = 4;
+    int error_height = 4;
+
+    // Magenta-and-green checkerboard
+    const uint32_t error_data[] = {
+        0xFF00FFFF, 0xFF00FFFF, 0x00FF00FF, 0x00FF00FF,   // NOLINT
+        0xFF00FFFF, 0xFF00FFFF, 0x00FF00FF, 0x00FF00FF,   // NOLINT
+        0x00FF00FF, 0x00FF00FF, 0xFF00FFFF, 0xFF00FFFF,   // NOLINT
+        0x00FF00FF, 0x00FF00FF, 0xFF00FFFF, 0xFF00FFFF};  // NOLINT
+
+    error_image = new GpuImage(
+        gpu, VK_FORMAT_R8G8B8A8_UNORM, error_width, error_height, 1,
+        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+        VMA_MEMORY_USAGE_GPU_ONLY);
+
+    error_image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    transferDataToImage(error_image, error_data);
+    error_image->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
 }
 
 Renderer::~Renderer() {
   log_zone;
+
+  if (error_image != nullptr) delete error_image;
 
   destroyFrameData();
 

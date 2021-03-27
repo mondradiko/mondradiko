@@ -21,6 +21,7 @@ struct MaterialUniform {
 
   bool is_unlit;
   bool enable_blend;
+  bool has_albedo_texture;
   bool has_emissive_texture;
   bool has_metal_roughness_texture;
 };
@@ -149,8 +150,10 @@ vec3 getNormal(in MaterialUniform material) {
 vec3 getAlbedo(in MaterialUniform material) {
   vec3 surface_albedo = material.albedo_factor.rgb;
 
-  vec4 sampled_albedo = texture(albedo_texture, fragTexCoord);
-  surface_albedo *= sampled_albedo.rgb;
+  if (material.has_albedo_texture) {
+    vec4 sampled_albedo = texture(albedo_texture, fragTexCoord);
+    surface_albedo *= sampled_albedo.rgb;
+  }
 
   return surface_albedo;
 }

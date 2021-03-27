@@ -21,6 +21,7 @@ struct MaterialUniform {
 
   bool is_unlit;
   bool enable_blend;
+  bool has_albedo_texture;
   bool has_emissive_texture;
   bool has_metal_roughness_texture;
 };
