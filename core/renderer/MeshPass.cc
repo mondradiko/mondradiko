@@ -141,7 +141,7 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
     log_zone_named("Initialize asset types");
 
     AssetPool* asset_pool = world->getAssetPool();
-    asset_pool->initializeAssetType<MaterialAsset>(asset_pool, gpu);
+    asset_pool->initializeAssetType<MaterialAsset>(asset_pool, renderer);
     asset_pool->initializeAssetType<MeshAsset>(this);
     asset_pool->initializeAssetType<TextureAsset>(this);
   }
