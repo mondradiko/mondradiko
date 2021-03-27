@@ -20,7 +20,6 @@ class RelationshipComponent
 
  private:
   // Systems allowed to access private members directly
-  friend class PrefabAsset;
   friend class World;
 
   // Helper methods

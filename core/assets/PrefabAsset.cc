@@ -7,7 +7,6 @@
 
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/PointLightComponent.h"
-#include "core/components/RelationshipComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/world/World.h"
@@ -57,17 +56,11 @@ EntityId PrefabAsset::instantiate(ScriptEnvironment* scripts,
                                     prefab->transform);
 
   if (children.size() > 0) {
-    registry->emplace<RelationshipComponent>(self_id, self_id);
-
     for (auto& child : children) {
       if (!child) continue;
 
       EntityId child_id = child->instantiate(scripts, world);
-      auto& self_rel = registry->get<RelationshipComponent>(self_id);
-      auto& child_rel =
-          registry->get_or_emplace<RelationshipComponent>(child_id, child_id);
-
-      self_rel._adopt(&child_rel, world);
+      world->adopt(self_id, child_id);
     }
   }
 
