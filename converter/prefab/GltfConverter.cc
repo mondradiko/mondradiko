@@ -71,35 +71,34 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
                                          glm::vec3 parent_scale) const {
   std::vector<uint32_t> children;
 
-  glm::vec3 node_translation;
-  glm::vec3 node_scale;
-  glm::quat node_orientation;
+  glm::vec3 node_translation = glm::vec3(0.0, 0.0, 0.0);
+  glm::vec3 node_scale = glm::vec3(1.0, 1.0, 1.0);
+  glm::quat node_orientation = glm::quat(1.0, 0.0, 0.0, 0.0);
 
   if (node.translation.size() == 3) {
     node_translation = glm::make_vec3(node.translation.data());
-  } else {
-    node_translation = glm::vec3(0.0, 0.0, 0.0);
   }
 
   if (node.scale.size() == 3) {
     node_scale = glm::make_vec3(node.scale.data());
-  } else {
-    node_scale = glm::vec3(1.0, 1.0, 1.0);
+  }
+
+  if (node.rotation.size() == 4) {
+    node_orientation = glm::make_quat(node.rotation.data());
   }
 
   node_scale *= parent_scale;
 
-  if (node.rotation.size() == 4) {
-    node_orientation = glm::make_quat(node.rotation.data());
-  } else {
-    node_orientation = glm::quat(1.0, 0.0, 0.0, 0.0);
-  }
-
   // Create mesh
-  if (node.mesh != -1) {
+  if (node.mesh >= 0) {
     const auto &mesh = model.meshes[node.mesh];
 
     for (const auto &primitive : mesh.primitives) {
+      if (primitive.material < 0) {
+        log_err("Primitive has no material; skipping");
+        continue;
+      }
+
       assets::AssetId mesh_id = _loadPrimitive(model, primitive, node_scale);
 
       const tinygltf::Material &material = model.materials[primitive.material];
@@ -112,14 +111,8 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
       mesh_renderer.mutate_material(material_id);
 
       assets::TransformPrefab transform;
-      transform.mutable_position().mutate_x(node_translation.x);
-      transform.mutable_position().mutate_y(node_translation.y);
-      transform.mutable_position().mutate_z(node_translation.z);
-
-      transform.mutable_orientation().mutate_w(node_orientation.w);
-      transform.mutable_orientation().mutate_x(node_orientation.x);
-      transform.mutable_orientation().mutate_y(node_orientation.y);
-      transform.mutable_orientation().mutate_z(node_orientation.z);
+      transform.mutable_position() = assets::Vec3(0.0, 0.0, 0.0);
+      transform.mutable_orientation() = assets::Quaternion(1.0, 0.0, 0.0, 0.0);
 
       assets::PrefabAssetBuilder prefab(fbb);
       prefab.add_mesh_renderer(&mesh_renderer);
@@ -149,8 +142,19 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
 
     auto children_offset = fbb.CreateVector(children);
 
+    assets::TransformPrefab transform;
+    transform.mutable_position().mutate_x(node_translation.x);
+    transform.mutable_position().mutate_y(node_translation.y);
+    transform.mutable_position().mutate_z(node_translation.z);
+
+    transform.mutable_orientation().mutate_w(node_orientation.w);
+    transform.mutable_orientation().mutate_x(node_orientation.x);
+    transform.mutable_orientation().mutate_y(node_orientation.y);
+    transform.mutable_orientation().mutate_z(node_orientation.z);
+
     assets::PrefabAssetBuilder prefab_asset(fbb);
     prefab_asset.add_children(children_offset);
+    prefab_asset.add_transform(&transform);
     auto prefab_offset = prefab_asset.Finish();
 
     assets::SerializedAssetBuilder asset(fbb);
@@ -206,25 +210,30 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
 
   if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
     log_ftl("GLTF primitive must be triangle list");
+    return assets::AssetId::NullAsset;
   }
 
   const auto &attributes = primitive.attributes;
 
   if (attributes.find("POSITION") == primitive.attributes.end()) {
-    log_ftl("GLTF primitive must have position attributes");
+    log_err("GLTF primitive must have position attributes");
+    return assets::AssetId::NullAsset;
   }
 
   if (attributes.find("NORMAL") == primitive.attributes.end()) {
-    log_ftl("GLTF primitive must have normal attributes");
+    log_err("GLTF primitive must have normal attributes");
+    return assets::AssetId::NullAsset;
   }
 
   if (attributes.find("TEXCOORD_0") == primitive.attributes.end()) {
-    log_ftl("GLTF primitive must have texture coordinates");
+    log_err("GLTF primitive must have texture coordinates");
+    return assets::AssetId::NullAsset;
   }
 
   // TODO(marceline-cramer) Generate indices if they're not there
   if (primitive.indices <= -1) {
-    log_ftl("GLTF primtive must have indices");
+    log_err("GLTF primitive must have indices");
+    return assets::AssetId::NullAsset;
   }
 
   {  // Load vertices
@@ -394,13 +403,15 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
 
     material_builder.add_normal_map_scale(base.normalTexture.scale);
 
-    if (base.normalTexture.index != -1) {
-      assets::AssetId normal_map_texture =
-          _loadImage(model.images[base.normalTexture.index], false);
-      material_builder.add_normal_map_texture(normal_map_texture);
-    } else {
-      material_builder.add_normal_map_texture(assets::AssetId::NullAsset);
+    assets::AssetId normal_map_texture = assets::AssetId::NullAsset;
+    if (base.normalTexture.index >= 0) {
+      const auto &normal_texture = model.textures[base.normalTexture.index];
+      if (normal_texture.source >= 0) {
+        const auto &normal_image = model.images[normal_texture.source];
+        normal_map_texture = _loadImage(normal_image, false);
+      }
     }
+    material_builder.add_normal_map_texture(normal_map_texture);
   }
 
   {  // Load PBR
@@ -436,14 +447,14 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
 assets::AssetId GltfConverter::_loadTexture(GltfModel model,
                                             GltfTextureInfo texture_info,
                                             bool srgb) const {
-  if (texture_info.index == -1) {
+  if (texture_info.index < 0) {
     log_err("Attempting to load null texture info");
     return assets::AssetId::NullAsset;
   }
 
   const auto &texture = model.textures[texture_info.index];
 
-  if (texture.source == -1) {
+  if (texture.source < 0) {
     log_err("Attempting to load null texture source");
     return assets::AssetId::NullAsset;
   }

@@ -34,6 +34,12 @@ class World {
   AssetPool* getAssetPool() { return asset_pool; }
 
   //
+  // Entity operations
+  //
+  void adopt(EntityId, EntityId);
+  void orphan(EntityId);
+
+  //
   // World event callbacks
   //
   void onSpawnEntity(const protocol::SpawnEntity*);

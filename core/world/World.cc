@@ -45,6 +45,31 @@ void World::initializePrefabs() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Entity operations
+///////////////////////////////////////////////////////////////////////////////
+
+void World::adopt(EntityId parent_id, EntityId child_id) {
+  if (!registry.has<RelationshipComponent>(parent_id)) {
+    registry.emplace<RelationshipComponent>(parent_id, parent_id);
+  }
+
+  if (!registry.has<RelationshipComponent>(child_id)) {
+    registry.emplace<RelationshipComponent>(child_id, child_id);
+  }
+
+  auto& parent = registry.get<RelationshipComponent>(parent_id);
+  auto& child = registry.get<RelationshipComponent>(child_id);
+  parent._adopt(&child, this);
+}
+
+void World::orphan(EntityId child_id) {
+  if (registry.has<RelationshipComponent>(child_id)) {
+    auto& child = registry.get<RelationshipComponent>(child_id);
+    child._orphan(this);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // World event callbacks
 ///////////////////////////////////////////////////////////////////////////////
 
