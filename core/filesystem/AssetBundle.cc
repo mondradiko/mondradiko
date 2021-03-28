@@ -8,9 +8,13 @@
 
 #include "log/log.h"
 #include "types/assets/Registry_generated.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
-namespace assets {
+namespace core {
+
+// using is ok here because it'd be inconvenient not to use it
+using namespace assets;  // NOLINT
 
 AssetBundle::AssetBundle(const std::filesystem::path& bundle_root)
     : bundle_root(bundle_root) {}
@@ -22,7 +26,7 @@ AssetBundle::~AssetBundle() {
 }
 
 AssetResult AssetBundle::loadRegistry(const char* registry_name) {
-  std::vector<char> registry_data;
+  types::vector<char> registry_data;
   const Registry* registry = nullptr;
 
   {
@@ -166,7 +170,7 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
   return AssetResult::Success;
 }
 
-void AssetBundle::getChecksums(std::vector<LumpHash>& checksums) {
+void AssetBundle::getChecksums(types::vector<LumpHash>& checksums) {
   checksums.resize(lump_cache.size());
 
   for (uint32_t i = 0; i < lump_cache.size(); i++) {
@@ -174,7 +178,7 @@ void AssetBundle::getChecksums(std::vector<LumpHash>& checksums) {
   }
 }
 
-void AssetBundle::getInitialPrefabs(std::vector<AssetId>& prefabs) {
+void AssetBundle::getInitialPrefabs(types::vector<AssetId>& prefabs) {
   prefabs = initial_prefabs;
 }
 
@@ -210,5 +214,5 @@ bool AssetBundle::loadAsset(const SerializedAsset** asset, AssetId id) {
                                      stored_asset.size);
 }
 
-}  // namespace assets
+}  // namespace core
 }  // namespace mondradiko

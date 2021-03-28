@@ -4,8 +4,6 @@
 #include "core/network/NetworkClient.h"
 
 #include <sstream>
-#include <string>
-#include <vector>
 
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/StringCVar.h"
@@ -17,6 +15,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 void NetworkClient::initCVars(CVarScope* cvars) {
   CVarScope* client = cvars->addChild("client");
@@ -43,7 +42,7 @@ NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
 
   SteamDatagramErrMsg err;
   if (!GameNetworkingSockets_Init(nullptr, err)) {
-    std::string message = err;
+    types::string message = err;
     log_ftl_fmt("Failed to initialize SteamNetworkingSockets with error: %s",
                 message.c_str());
   }
@@ -61,7 +60,7 @@ NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
 
   char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
   server_addr.ToString(szAddr, sizeof(szAddr), true);
-  std::string addr_string = szAddr;
+  types::string addr_string = szAddr;
   log_msg_fmt("Connecting to server at %s", addr_string.c_str());
 
   SteamNetworkingConfigValue_t callback;
@@ -132,10 +131,10 @@ void NetworkClient::requestJoin() {
       builder.CreateString(cvars->get<StringCVar>("username").str());
 
   // TODO(marceline-cramer) Use strings for hashes
-  std::vector<uint64_t> lump_checksums;
+  types::vector<uint64_t> lump_checksums;
 
   {
-    std::vector<assets::LumpHash> local_checksums;
+    types::vector<assets::LumpHash> local_checksums;
     fs->getChecksums(local_checksums);
     // Convert from internal LumpHash type to protocol uint64
     for (auto& checksum : local_checksums) {
@@ -251,7 +250,7 @@ void NetworkClient::sendEvent(flatbuffers::FlatBufferBuilder& builder) {
 }
 
 void NetworkClient::sendQueuedEvents() {
-  std::vector<SteamNetworkingMessage_t*> outgoing_messages;
+  types::vector<SteamNetworkingMessage_t*> outgoing_messages;
   outgoing_messages.reserve(event_queue.size());
 
   for (uint32_t i = 0; i < event_queue.size(); i++) {
@@ -279,7 +278,7 @@ void NetworkClient::callback_ConnectionStatusChanged(
     SteamNetConnectionStatusChangedCallback_t* event) {
   log_zone;
 
-  std::string description = event->m_info.m_szConnectionDescription;
+  types::string description = event->m_info.m_szConnectionDescription;
 
   switch (event->m_info.m_eState) {
     case k_ESteamNetworkingConnectionState_Connecting: {
@@ -321,4 +320,5 @@ void NetworkClient::callback_ConnectionStatusChanged(
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

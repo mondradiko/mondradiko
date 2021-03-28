@@ -16,7 +16,7 @@
 #include "core/filesystem/Filesystem.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/network/NetworkServer.h"
-#include "core/renderer/Renderer.h"
+#include "core/renderer/MeshPass.h"
 #include "core/world/World.h"
 #include "core/world/WorldEventSorter.h"
 #include "log/log.h"
@@ -24,7 +24,7 @@
 
 // The using statement is fine because
 // this is the main entrypoint
-using namespace mondradiko;  // NOLINT
+using namespace mondradiko::core;  // NOLINT
 
 struct ServerArgs {
   bool version = false;
@@ -71,6 +71,8 @@ void run(const ServerArgs& args) {
   }
 
   AssetPool asset_pool(&fs);
+  MeshPass::initDummyAssets(&asset_pool);
+
   ScriptEnvironment scripts;
   World world(&asset_pool, &fs, &scripts);
   WorldEventSorter world_event_sorter(&world);

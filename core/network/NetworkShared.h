@@ -6,7 +6,9 @@
 #include <cstdint>
 
 namespace mondradiko {
+namespace core {
 
 using ClientId = uint32_t;
 
+}  // namespace core
 }  // namespace mondradiko

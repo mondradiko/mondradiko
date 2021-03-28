@@ -4,13 +4,13 @@
 #pragma once
 
 #include <filesystem>
-#include <vector>
 
 #include "core/assets/Asset.h"
 #include "core/filesystem/AssetBundle.h"
 #include "lib/include/toml_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 class Filesystem {
  public:
@@ -18,14 +18,15 @@ class Filesystem {
   ~Filesystem();
 
   bool loadAssetBundle(const std::filesystem::path&);
-  void getChecksums(std::vector<assets::LumpHash>&);
-  void getInitialPrefabs(std::vector<assets::AssetId>&);
+  void getChecksums(types::vector<assets::LumpHash>&);
+  void getInitialPrefabs(types::vector<assets::AssetId>&);
   bool loadAsset(const assets::SerializedAsset**, AssetId);
 
   toml::value loadToml(const std::filesystem::path&);
 
  private:
-  std::vector<assets::AssetBundle*> asset_bundles;
+  types::vector<AssetBundle*> asset_bundles;
 };
 
+}  // namespace core
 }  // namespace mondradiko

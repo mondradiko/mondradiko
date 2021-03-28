@@ -4,15 +4,15 @@
 #pragma once
 
 #include <array>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 #include "core/gpu/GpuPipeline.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/msdfgen_headers.h"
+#include "types/containers/string.h"
+#include "types/containers/unordered_map.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class CVarScope;
@@ -46,7 +46,7 @@ struct GlyphInstance {
   }
 };
 
-using GlyphString = std::vector<GlyphInstance>;
+using GlyphString = types::vector<GlyphInstance>;
 
 class GlyphLoader {
  public:
@@ -61,7 +61,7 @@ class GlyphLoader {
   const GpuShader* getVertexShader() const { return vertex_shader; }
   const GpuShader* getFragmentShader() const { return fragment_shader; }
 
-  void drawString(GlyphString*, const std::string&) const;
+  void drawString(GlyphString*, const types::string&) const;
 
  private:
   const CVarScope* cvars;
@@ -72,7 +72,7 @@ class GlyphLoader {
   FT_Face font_face;
   msdfgen::FontHandle* sdf_font = nullptr;
 
-  std::unordered_map<msdfgen::unicode_t, uint32_t> character_map;
+  types::unordered_map<msdfgen::unicode_t, uint32_t> character_map;
 
   VkSampler sdf_sampler = VK_NULL_HANDLE;
   GpuImage* atlas_image = nullptr;
@@ -81,4 +81,5 @@ class GlyphLoader {
   GpuShader* fragment_shader = nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

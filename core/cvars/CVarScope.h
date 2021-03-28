@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include <map>
-#include <string>
-
 #include "lib/include/toml_headers.h"
 #include "log/log.h"
+#include "types/containers/map.h"
+#include "types/containers/string.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class CVarValueInterface;
@@ -17,20 +17,20 @@ class CVarValueInterface;
 class CVarScope {
  public:
   CVarScope();
-  CVarScope(const CVarScope*, const std::string&);
+  CVarScope(const CVarScope*, const types::string&);
   ~CVarScope();
 
-  CVarScope* addChild(const std::string&);
-  const CVarScope* getChild(const std::string&) const;
+  CVarScope* addChild(const types::string&);
+  const CVarScope* getChild(const types::string&) const;
 
   void loadConfig(const toml::value&);
   void saveConfig(toml::value*);
 
   const CVarScope* getParent() const { return parent; }
-  const std::string& getScopePath() const { return scope_path; }
-  std::string getValuePath(const std::string&) const;
+  const types::string& getScopePath() const { return scope_path; }
+  types::string getValuePath(const types::string&) const;
 
-  using KeyType = std::string;
+  using KeyType = types::string;
 
   template <class ValueType, typename... Args>
   void addValue(const KeyType& key, Args&&... args) {
@@ -61,9 +61,10 @@ class CVarScope {
 
  private:
   const CVarScope* parent = nullptr;
-  std::string scope_path;
-  std::map<std::string, CVarScope*> children;
-  std::map<KeyType, CVarValueInterface*> values;
+  types::string scope_path;
+  types::map<types::string, CVarScope*> children;
+  types::map<KeyType, CVarValueInterface*> values;
 };
 
+}  // namespace core
 }  // namespace mondradiko

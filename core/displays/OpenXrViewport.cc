@@ -10,6 +10,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 static glm::mat4 createProjectionFromFOV(const XrFovf fov, const float near_z,
                                          const float far_z) {
@@ -68,7 +69,7 @@ OpenXrViewport::OpenXrViewport(GpuInstance* gpu, OpenXrDisplay* display,
 
   uint32_t image_count;
   xrEnumerateSwapchainImages(swapchain, 0, &image_count, nullptr);
-  std::vector<XrSwapchainImageVulkanKHR> vulkan_images(image_count);
+  types::vector<XrSwapchainImageVulkanKHR> vulkan_images(image_count);
   xrEnumerateSwapchainImages(
       swapchain, image_count, &image_count,
       reinterpret_cast<XrSwapchainImageBaseHeader*>(vulkan_images.data()));
@@ -153,4 +154,5 @@ void OpenXrViewport::_releaseImage(uint32_t, VkSemaphore) {
   xrReleaseSwapchainImage(swapchain, &release_info);
 }
 
+}  // namespace core
 }  // namespace mondradiko

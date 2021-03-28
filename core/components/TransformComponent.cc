@@ -6,10 +6,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
-
-EntityId TransformComponent::getParent() const {
-  return static_cast<EntityId>(_data.parent());
-}
+namespace core {
 
 glm::mat4 TransformComponent::getLocalTransform() {
   auto orientation = _data.orientation();
@@ -64,4 +61,5 @@ void buildUpdateComponents<protocol::TransformComponent>(
   update_components->add_transform(components);
 }
 
+}  // namespace core
 }  // namespace mondradiko

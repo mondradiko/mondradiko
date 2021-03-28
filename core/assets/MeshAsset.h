@@ -12,6 +12,7 @@
 #include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuInstance;
@@ -51,6 +52,7 @@ class MeshAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::MeshAsset);
 
   // Asset lifetime implementation
+  MeshAsset() : mesh_pass(nullptr) {}
   explicit MeshAsset(MeshPass* mesh_pass) : mesh_pass(mesh_pass) {}
   void load(const assets::SerializedAsset*) final;
 
@@ -66,4 +68,5 @@ class MeshAsset : public Asset {
   size_t index_num = 0;
 };
 
+}  // namespace core
 }  // namespace mondradiko

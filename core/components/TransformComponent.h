@@ -11,6 +11,7 @@
 #include "types/protocol/TransformComponent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 class TransformComponent : public Component<protocol::TransformComponent> {
  public:
@@ -18,8 +19,6 @@ class TransformComponent : public Component<protocol::TransformComponent> {
       : Component(data) {}
 
   explicit TransformComponent(const assets::TransformPrefab* prefab) {
-    _data.mutate_parent(static_cast<protocol::EntityId>(NullEntity));
-
     // TODO(marceline-cramer) Make helpers for these
 
     auto& position = _data.mutable_position();
@@ -36,10 +35,6 @@ class TransformComponent : public Component<protocol::TransformComponent> {
 
   glm::mat4 getWorldTransform() const { return world_transform; }
 
-  void setParent(EntityId parent) {
-    _data.mutate_parent(static_cast<protocol::EntityId>(parent));
-  }
-
   // Implement Component
   // Defined in generated API linker
   static void linkScriptApi(ScriptEnvironment*, World*);
@@ -50,11 +45,8 @@ class TransformComponent : public Component<protocol::TransformComponent> {
 
   // System helpers
   // Used by World to calculate transforms
-  EntityId getParent() const;
   glm::mat4 getLocalTransform();
 
-  // Used to sort by parent
-  EntityId this_entity;
   // Final transform result used in math
   glm::mat4 world_transform;
 
@@ -70,4 +62,5 @@ class TransformComponent : public Component<protocol::TransformComponent> {
   wasm_trap_t* setPosition(const wasm_val_t[], wasm_val_t[]);
 };
 
+}  // namespace core
 }  // namespace mondradiko

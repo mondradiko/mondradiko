@@ -3,13 +3,11 @@
 
 #pragma once
 
-#include <string>
-#include <unordered_map>
-
 #include "core/assets/AssetPool.h"
 #include "lib/include/wasm_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class ComponentScript;
@@ -32,4 +30,5 @@ class ScriptAsset : public Asset {
   wasm_module_t* script_module = nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

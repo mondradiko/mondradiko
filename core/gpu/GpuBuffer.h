@@ -6,6 +6,7 @@
 #include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuInstance;
@@ -42,4 +43,5 @@ class GpuBuffer {
   GpuInstance* gpu;
 };
 
+}  // namespace core
 }  // namespace mondradiko

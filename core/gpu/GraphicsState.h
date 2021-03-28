@@ -6,6 +6,7 @@
 #include <cstdint>
 
 namespace mondradiko {
+namespace core {
 
 struct GraphicsState {
   using FlagData = uint8_t;
@@ -72,4 +73,5 @@ struct GraphicsState {
   } depth_state;
 };
 
+}  // namespace core
 }  // namespace mondradiko

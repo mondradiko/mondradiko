@@ -9,10 +9,11 @@
 #include "lib/include/glm_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuDescriptorSet;
-class GpuInstance;
+class Renderer;
 
 struct MaterialUniform {
   glm::vec4 emissive_factor;
@@ -25,8 +26,12 @@ struct MaterialUniform {
 
   uint32_t is_unlit;
   uint32_t enable_blend;
+  uint32_t has_albedo_texture;
   uint32_t has_emissive_texture;
   uint32_t has_metal_roughness_texture;
+
+  // TODO(marceline-cramer) Use bit array over individual uint32s
+  uint32_t _padding[3];
 };
 
 class MaterialAsset : public Asset {
@@ -34,8 +39,9 @@ class MaterialAsset : public Asset {
   DECL_ASSET_TYPE(assets::AssetType::MaterialAsset);
 
   // Asset lifetime implementation
-  MaterialAsset(AssetPool* asset_pool, GpuInstance* gpu)
-      : asset_pool(asset_pool), gpu(gpu) {}
+  MaterialAsset() : renderer(nullptr) {}
+  MaterialAsset(AssetPool* asset_pool, Renderer* renderer)
+      : asset_pool(asset_pool), renderer(renderer) {}
   void load(const assets::SerializedAsset*) final;
 
   // Override isLoaded() to include the textures
@@ -47,7 +53,7 @@ class MaterialAsset : public Asset {
 
  private:
   AssetPool* asset_pool;
-  GpuInstance* gpu;
+  Renderer* renderer;
 
   bool double_sided;
 
@@ -59,4 +65,5 @@ class MaterialAsset : public Asset {
   MaterialUniform uniform;
 };
 
+}  // namespace core
 }  // namespace mondradiko

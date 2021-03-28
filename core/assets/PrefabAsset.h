@@ -3,18 +3,19 @@
 
 #pragma once
 
-#include <vector>
-
 #include "core/assets/AssetHandle.h"
 #include "core/world/Entity.h"
 #include "types/assets/PrefabAsset_generated.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class AssetPool;
 class ScriptEnvironment;
 class TransformComponent;
+class World;
 
 class PrefabAsset : public Asset {
  public:
@@ -25,13 +26,14 @@ class PrefabAsset : public Asset {
   void load(const assets::SerializedAsset*) final;
   ~PrefabAsset();
 
-  EntityId instantiate(EntityRegistry*, ScriptEnvironment*) const;
+  EntityId instantiate(ScriptEnvironment*, World*) const;
 
  private:
   AssetPool* asset_pool;
 
   assets::PrefabAssetT* prefab;
-  std::vector<AssetHandle<PrefabAsset>> children;
+  types::vector<AssetHandle<PrefabAsset>> children;
 };
 
+}  // namespace core
 }  // namespace mondradiko

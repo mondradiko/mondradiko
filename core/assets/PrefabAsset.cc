@@ -9,16 +9,20 @@
 #include "core/components/PointLightComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ScriptEnvironment.h"
+#include "core/world/World.h"
 
 namespace mondradiko {
+namespace core {
 
 // Helper template function to instantiate components
 template <class ComponentType, class PrefabType>
-void initComponent(EntityRegistry* registry, EntityId instance_id,
+void initComponent(AssetPool* asset_pool, EntityRegistry* registry,
+                   EntityId instance_id,
                    const std::unique_ptr<PrefabType>& prefab) {
   if (prefab) {
-    registry->emplace<ComponentType>(
+    auto& c = registry->emplace<ComponentType>(
         instance_id, static_cast<const PrefabType*>(prefab.get()));
+    c.refresh(asset_pool);
   }
 }
 
@@ -39,23 +43,24 @@ PrefabAsset::~PrefabAsset() {
   if (prefab != nullptr) delete prefab;
 }
 
-EntityId PrefabAsset::instantiate(EntityRegistry* registry,
-                                  ScriptEnvironment* scripts) const {
+EntityId PrefabAsset::instantiate(ScriptEnvironment* scripts,
+                                  World* world) const {
+  EntityRegistry* registry = &world->registry;
   EntityId self_id = registry->create();
 
-  initComponent<MeshRendererComponent>(registry, self_id,
+  initComponent<MeshRendererComponent>(asset_pool, registry, self_id,
                                        prefab->mesh_renderer);
-  initComponent<PointLightComponent>(registry, self_id, prefab->point_light);
-  initComponent<TransformComponent>(registry, self_id, prefab->transform);
+  initComponent<PointLightComponent>(asset_pool, registry, self_id,
+                                     prefab->point_light);
+  initComponent<TransformComponent>(asset_pool, registry, self_id,
+                                    prefab->transform);
 
-  for (auto& child : children) {
-    if (!child) continue;
+  if (children.size() > 0) {
+    for (auto& child : children) {
+      if (!child) continue;
 
-    // TODO(marceline-cramer) Child transforms
-    EntityId child_id = child->instantiate(registry, scripts);
-
-    if (prefab->transform && registry->has<TransformComponent>(child_id)) {
-      registry->get<TransformComponent>(child_id).setParent(self_id);
+      EntityId child_id = child->instantiate(scripts, world);
+      world->adopt(self_id, child_id);
     }
   }
 
@@ -68,4 +73,5 @@ EntityId PrefabAsset::instantiate(EntityRegistry* registry,
   return self_id;
 }
 
+}  // namespace core
 }  // namespace mondradiko

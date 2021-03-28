@@ -8,6 +8,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
                    uint32_t height, uint32_t level_num,
@@ -138,4 +139,5 @@ void GpuImage::createView() {
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

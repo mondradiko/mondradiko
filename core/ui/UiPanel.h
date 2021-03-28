@@ -4,6 +4,7 @@
 #pragma once
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GlyphLoader;
@@ -19,4 +20,5 @@ class UiPanel {
   ScriptEnvironment* scripts;
 };
 
+}  // namespace core
 }  // namespace mondradiko

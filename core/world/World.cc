@@ -3,12 +3,15 @@
 
 #include "core/world/World.h"
 
+#include <deque>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 #include "core/assets/PrefabAsset.h"
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/PointLightComponent.h"
+#include "core/components/RelationshipComponent.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/filesystem/Filesystem.h"
@@ -17,6 +20,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
     : asset_pool(asset_pool), fs(fs), scripts(scripts) {
@@ -31,12 +35,37 @@ World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
 World::~World() { log_zone; }
 
 void World::initializePrefabs() {
-  std::vector<AssetId> prefabs;
+  types::vector<AssetId> prefabs;
   fs->getInitialPrefabs(prefabs);
 
   for (auto prefab_id : prefabs) {
     auto prefab = asset_pool->load<PrefabAsset>(prefab_id);
-    prefab->instantiate(&registry, scripts);
+    prefab->instantiate(scripts, this);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Entity operations
+///////////////////////////////////////////////////////////////////////////////
+
+void World::adopt(EntityId parent_id, EntityId child_id) {
+  if (!registry.has<RelationshipComponent>(parent_id)) {
+    registry.emplace<RelationshipComponent>(parent_id, parent_id);
+  }
+
+  if (!registry.has<RelationshipComponent>(child_id)) {
+    registry.emplace<RelationshipComponent>(child_id, child_id);
+  }
+
+  auto& parent = registry.get<RelationshipComponent>(parent_id);
+  auto& child = registry.get<RelationshipComponent>(child_id);
+  parent._adopt(&child, this);
+}
+
+void World::orphan(EntityId child_id) {
+  if (registry.has<RelationshipComponent>(child_id)) {
+    auto& child = registry.get<RelationshipComponent>(child_id);
+    child._orphan(this);
   }
 }
 
@@ -78,6 +107,12 @@ void World::onUpdateComponents(
       break;
     }
 
+    case protocol::ComponentType::RelationshipComponent: {
+      updateComponents<RelationshipComponent>(
+          entities, update_components->relationship());
+      break;
+    }
+
     case protocol::ComponentType::TransformComponent: {
       updateComponents<TransformComponent>(entities,
                                            update_components->transform());
@@ -101,59 +136,76 @@ bool World::update(double dt) {
   log_zone;
 
   {
-    log_zone_named("Update TransformComponent self-reference");
+    log_zone_named("Process free transforms");
 
-    auto transform_view = registry.view<TransformComponent>();
+    auto transforms = registry.group<TransformComponent>(
+        entt::exclude<RelationshipComponent>);
 
-    for (auto e : transform_view) {
-      TransformComponent& transform = transform_view.get(e);
-      transform.this_entity = e;
+    for (auto e : transforms) {
+      auto& transform = transforms.get<TransformComponent>(e);
+      transform.world_transform = transform.getLocalTransform();
     }
   }
 
   {
-    log_zone_named("Sort transform hierarchy");
+    log_zone_named("Process transform hierarchy");
 
-    registry.sort<TransformComponent>(
-        [](const TransformComponent& lhs, const TransformComponent& rhs) {
-          // Sort children after parents
-          if (lhs.this_entity == rhs.getParent()) {
-            return true;
-          }
-          return false;
-        });
-  }
+    // This is a rather naive approach to sorting the transform hierarchy.
+    // Optimally, it'd be tracking which transforms/relationships have been
+    // changed with a dirty component, but doing an exhaustive search of the
+    // hierarchy will do the job for now. If this zone starts taking up too
+    // much time in the future, then we need to optimize it.
 
-  {
-    log_zone_named("Transform children under parents");
+    // (child, parent)
+    std::deque<std::pair<EntityId, EntityId>> process_queue;
 
-    auto transform_view = registry.view<TransformComponent>();
+    {  // Find all top-level entities (without parents)
+      auto relationship_view = registry.view<RelationshipComponent>();
 
-    for (auto e : transform_view) {
-      TransformComponent& transform = transform_view.get(e);
+      for (auto e : relationship_view) {
+        auto& rel = relationship_view.get(e);
 
-      auto parent = transform.getParent();
-      glm::mat4 parent_transform;
-      if (parent == NullEntity) {
-        parent_transform = glm::mat4(1.0);
-      } else {
-        if (!registry.valid(parent)) {
-          log_err("Invalid Transform parent ID");
-          continue;
+        if (!rel._hasParent()) {
+          process_queue.emplace_front(std::make_pair(e, NullEntity));
+        }
+      }
+    }
+
+    // Propogate world transforms through hierarchy
+    while (!process_queue.empty()) {
+      // Get next entity
+      auto process_id = process_queue.back();
+      process_queue.pop_back();
+      EntityId self_id = process_id.first;
+      EntityId parent_id = process_id.second;
+
+      // Calculate transform
+      if (registry.has<TransformComponent>(self_id)) {
+        glm::mat4 parent_transform = glm::mat4(1.0);
+        if (parent_id != NullEntity) {
+          auto& transform = registry.get<TransformComponent>(parent_id);
+          parent_transform = transform.getWorldTransform();
         }
 
-        if (!registry.has<TransformComponent>(parent)) {
-          log_err("Transform parent has no Transform");
-          continue;
-        }
+        auto& self_transform = registry.get<TransformComponent>(self_id);
+        glm::mat4 local_transform = self_transform.getLocalTransform();
+        self_transform.world_transform = parent_transform * local_transform;
 
-        parent_transform =
-            registry.get<TransformComponent>(parent).getWorldTransform();
+        // Use ourselves as the transform parent for our children
+        parent_id = self_id;
       }
 
-      glm::mat4 local_transform = transform.getLocalTransform();
-
-      transform.world_transform = parent_transform * local_transform;
+      // Add children to queue
+      auto& self_rel = registry.get<RelationshipComponent>(self_id);
+      if (self_rel._data.child_num() > 0) {
+        auto first_child = static_cast<EntityId>(self_rel._data.first_child());
+        auto current_child = first_child;
+        do {
+          auto& next_child = registry.get<RelationshipComponent>(current_child);
+          process_queue.emplace_front(std::make_pair(current_child, parent_id));
+          current_child = static_cast<EntityId>(next_child._data.next_child());
+        } while (first_child != current_child);
+      }
     }
   }
 
@@ -222,4 +274,5 @@ void World::updateComponents(
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

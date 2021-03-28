@@ -7,6 +7,7 @@
 #include "core/components/Component.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class ComponentScript;
@@ -23,4 +24,5 @@ class ScriptComponent {
   ComponentScript* script_instance;
 };
 
+}  // namespace core
 }  // namespace mondradiko

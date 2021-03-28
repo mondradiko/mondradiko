@@ -3,9 +3,6 @@
 
 #include "core/renderer/MeshPass.h"
 
-#include <unordered_map>
-#include <vector>
-
 #include "core/assets/MeshAsset.h"
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/PointLightComponent.h"
@@ -29,8 +26,15 @@
 #include "shaders/mesh_forward.vert.h"
 
 namespace mondradiko {
+namespace core {
 
 void MeshPass::initCVars(CVarScope* cvars) {}
+
+void MeshPass::initDummyAssets(AssetPool* asset_pool) {
+  asset_pool->initializeAssetType<MaterialAsset>();
+  asset_pool->initializeAssetType<MeshAsset>();
+  asset_pool->initializeAssetType<TextureAsset>();
+}
 
 MeshPass::MeshPass(Renderer* renderer, World* world)
     : gpu(renderer->getGpu()), renderer(renderer), world(world) {
@@ -82,7 +86,7 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
   {
     log_zone_named("Create pipeline layout");
 
-    std::vector<VkDescriptorSetLayout> set_layouts{
+    types::vector<VkDescriptorSetLayout> set_layouts{
         renderer->getViewportLayout()->getSetLayout(),
         material_layout->getSetLayout(), mesh_layout->getSetLayout(),
         texture_layout->getSetLayout()};
@@ -137,7 +141,7 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
     log_zone_named("Initialize asset types");
 
     AssetPool* asset_pool = world->getAssetPool();
-    asset_pool->initializeAssetType<MaterialAsset>(asset_pool, gpu);
+    asset_pool->initializeAssetType<MaterialAsset>(asset_pool, renderer);
     asset_pool->initializeAssetType<MeshAsset>(this);
     asset_pool->initializeAssetType<TextureAsset>(this);
   }
@@ -228,7 +232,7 @@ void MeshPass::beginFrame(uint32_t frame_index,
   current_frame = frame_index;
   auto& frame = frame_data[current_frame];
 
-  std::vector<PointLightUniform> point_light_uniforms;
+  types::vector<PointLightUniform> point_light_uniforms;
 
   {
     auto point_lights = world->registry.view<PointLightComponent>();
@@ -254,11 +258,11 @@ void MeshPass::beginFrame(uint32_t frame_index,
     }
   }
 
-  std::unordered_map<AssetId, uint32_t> material_assets;
-  std::vector<MaterialUniform> frame_materials;
-  std::vector<GpuDescriptorSet*> frame_textures;
+  types::unordered_map<AssetId, uint32_t> material_assets;
+  types::vector<MaterialUniform> frame_materials;
+  types::vector<GpuDescriptorSet*> frame_textures;
 
-  std::vector<MeshUniform> frame_meshes;
+  types::vector<MeshUniform> frame_meshes;
 
   auto mesh_renderers =
       world->registry.view<MeshRendererComponent, TransformComponent>();
@@ -428,4 +432,5 @@ void MeshPass::executeMeshCommands(VkCommandBuffer command_buffer,
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

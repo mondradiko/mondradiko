@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cpplint --recursive --quiet assets bundler client core log
+cpplint --recursive --filter=-build/c++11 --quiet assets bundler client core log

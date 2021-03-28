@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include <string>
-#include <unordered_map>
-
 #include "core/assets/AssetPool.h"
 #include "core/world/Entity.h"
 #include "lib/include/wasm_headers.h"
+#include "types/containers/string.h"
+#include "types/containers/unordered_map.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class UserInterface;
@@ -24,6 +24,7 @@ class ScriptEnvironment {
   void initializeAssets(AssetPool*);
   void linkUiApis(UserInterface*);
   void linkComponentApis(World*);
+  void linkAssemblyScriptEnv();
   void update(EntityRegistry*, AssetPool*, double);
 
   wasm_engine_t* getEngine() { return engine; }
@@ -59,7 +60,7 @@ class ScriptEnvironment {
    *
    * @return The binding's Wasm function, or nullptr if it's not found.
    */
-  wasm_func_t* getBinding(const std::string&);
+  wasm_func_t* getBinding(const types::string&);
 
   /**
    * @brief Gets a Wasm function that interrupts the store when called.
@@ -84,8 +85,9 @@ class ScriptEnvironment {
   wasm_store_t* store = nullptr;
   wasmtime_interrupt_handle_t* interrupt_handle = nullptr;
 
-  std::unordered_map<std::string, wasm_func_t*> bindings;
+  types::unordered_map<types::string, wasm_func_t*> bindings;
   wasm_func_t* interrupt_func = nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

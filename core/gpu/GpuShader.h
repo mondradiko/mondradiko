@@ -6,6 +6,7 @@
 #include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GpuInstance;
@@ -25,4 +26,5 @@ class GpuShader {
   VkShaderModule shader_module = VK_NULL_HANDLE;
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -8,6 +8,7 @@
 #include "core/scripting/ScriptEnvironment.h"
 
 namespace mondradiko {
+namespace core {
 
 ComponentScript::ComponentScript(ScriptEnvironment* scripts,
                                  wasm_module_t* module)
@@ -32,4 +33,5 @@ void ComponentScript::update(EntityId self_id, double dt) {
   _runCallback("update", args.data(), args.size(), nullptr, 0);
 }
 
+}  // namespace core
 }  // namespace mondradiko

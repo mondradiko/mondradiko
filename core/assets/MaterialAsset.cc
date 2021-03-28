@@ -6,15 +6,24 @@
 #include "core/assets/Asset.h"
 #include "core/assets/TextureAsset.h"
 #include "core/gpu/GpuDescriptorSet.h"
-#include "core/gpu/GpuInstance.h"
+#include "core/renderer/Renderer.h"
 #include "types/assets/MaterialAsset_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 void MaterialAsset::load(const assets::SerializedAsset* asset) {
+  // Skip loading if we initialized as a dummy
+  if (renderer == nullptr) return;
+
   const assets::MaterialAsset* material = asset->material();
 
-  albedo_texture = asset_pool->load<TextureAsset>(material->albedo_texture());
+  if (material->albedo_texture() != AssetId::NullAsset) {
+    albedo_texture = asset_pool->load<TextureAsset>(material->albedo_texture());
+    uniform.has_albedo_texture = 1;
+  } else {
+    uniform.has_albedo_texture = 0;
+  }
 
   if (material->emissive_texture() != AssetId::NullAsset) {
     emissive_texture =
@@ -69,28 +78,32 @@ void MaterialAsset::load(const assets::SerializedAsset* asset) {
 
 void MaterialAsset::updateTextureDescriptor(
     GpuDescriptorSet* descriptor) const {
-  descriptor->updateImage(0, albedo_texture->getImage());
+  GpuImage* error_image = renderer->getErrorImage();
+
+  if (uniform.has_albedo_texture) {
+    descriptor->updateImage(0, albedo_texture->getImage());
+  } else {
+    descriptor->updateImage(0, error_image);
+  }
 
   if (uniform.has_emissive_texture) {
     descriptor->updateImage(1, emissive_texture->getImage());
   } else {
-    // TODO(marceline-cramer) Standard dummy textures for missing slots
-    descriptor->updateImage(1, albedo_texture->getImage());
+    descriptor->updateImage(1, error_image);
   }
 
   if (uniform.normal_map_scale > 0.0) {
     descriptor->updateImage(2, normal_map_texture->getImage());
   } else {
-    // TODO(marceline-cramer) Standard dummy textures for missing slots
-    descriptor->updateImage(2, albedo_texture->getImage());
+    descriptor->updateImage(2, error_image);
   }
 
   if (uniform.has_metal_roughness_texture) {
     descriptor->updateImage(3, metal_roughness_texture->getImage());
   } else {
-    // TODO(marceline-cramer) Standard dummy textures for missing slots
-    descriptor->updateImage(3, albedo_texture->getImage());
+    descriptor->updateImage(3, error_image);
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko
