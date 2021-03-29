@@ -15,6 +15,10 @@ struct PointLightPrefab {
   intensity:Vec3;
 }
 
+struct RigidBodyPrefab {
+  mass:float;
+}
+
 table ScriptPrefab {
   script:AssetId;
 }
@@ -29,6 +33,7 @@ table PrefabAsset {
 
   mesh_renderer:MeshRendererPrefab;
   point_light:PointLightPrefab;
+  rigid_body:RigidBodyPrefab;
   script:ScriptPrefab;
   transform:TransformPrefab;
 }
