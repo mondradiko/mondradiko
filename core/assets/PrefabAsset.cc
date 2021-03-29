@@ -7,6 +7,7 @@
 
 #include "core/components/MeshRendererComponent.h"
 #include "core/components/PointLightComponent.h"
+#include "core/components/RigidBodyComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ScriptEnvironment.h"
 
@@ -46,6 +47,7 @@ EntityId PrefabAsset::instantiate(EntityRegistry* registry,
   initComponent<MeshRendererComponent>(registry, self_id,
                                        prefab->mesh_renderer);
   initComponent<PointLightComponent>(registry, self_id, prefab->point_light);
+  initComponent<RigidBodyComponent>(registry, self_id, prefab->rigid_body);
   initComponent<TransformComponent>(registry, self_id, prefab->transform);
 
   for (auto& child : children) {
