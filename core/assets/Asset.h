@@ -3,13 +3,14 @@
 
 #pragma once
 
-#include "assets/common/AssetTypes.h"
+#include "types/assets/AssetTypes.h"
 #include "types/assets/SerializedAsset_generated.h"
 
 #define DECL_ASSET_TYPE(type) \
   static constexpr assets::AssetType ASSET_TYPE = type;
 
 namespace mondradiko {
+namespace core {
 
 using AssetId = assets::AssetId;
 
@@ -31,4 +32,5 @@ class Asset {
   friend class AssetPool;
 };
 
+}  // namespace core
 }  // namespace mondradiko

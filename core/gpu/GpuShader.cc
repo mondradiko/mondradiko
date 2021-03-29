@@ -7,6 +7,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuShader::GpuShader(GpuInstance* gpu, VkShaderStageFlagBits stage_flags,
                      const uint32_t* spirv_data, size_t spirv_size)
@@ -36,4 +37,5 @@ VkPipelineShaderStageCreateInfo GpuShader::getStageCreateInfo() const {
   return create_info;
 }
 
+}  // namespace core
 }  // namespace mondradiko

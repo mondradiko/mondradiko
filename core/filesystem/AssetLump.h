@@ -5,12 +5,12 @@
 
 #include <filesystem>
 
-#include "assets/common/AssetTypes.h"
+#include "types/assets/AssetTypes.h"
 #include "types/assets/SerializedAsset_generated.h"
 #include "types/assets/types_generated.h"
 
 namespace mondradiko {
-namespace assets {
+namespace core {
 
 class AssetLump {
  public:
@@ -18,11 +18,11 @@ class AssetLump {
   ~AssetLump();
 
   bool assertFileSize(size_t);
-  bool assertHash(LumpHashMethod, LumpHash);
+  bool assertHash(assets::LumpHashMethod, assets::LumpHash);
 
-  void decompress(LumpCompressionMethod);
+  void decompress(assets::LumpCompressionMethod);
 
-  bool loadAsset(const SerializedAsset**, size_t, size_t);
+  bool loadAsset(const assets::SerializedAsset**, size_t, size_t);
 
  private:
   std::filesystem::path lump_path;
@@ -31,5 +31,5 @@ class AssetLump {
   char* loaded_data = nullptr;
 };
 
-}  // namespace assets
+}  // namespace core
 }  // namespace mondradiko

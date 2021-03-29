@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <vector>
-
 #include "core/assets/AssetHandle.h"
 #include "core/assets/AssetPool.h"
 #include "core/assets/MeshAsset.h"
@@ -12,6 +10,7 @@
 #include "lib/include/glm_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class CVarScope;
@@ -40,6 +39,7 @@ struct MeshUniform {
 class MeshPass : public RenderPass {
  public:
   static void initCVars(CVarScope*);
+  static void initDummyAssets(AssetPool*);
 
   MeshPass(Renderer*, World*);
   ~MeshPass();
@@ -99,7 +99,7 @@ class MeshPass : public RenderPass {
   };
 
   // Helper function to render meshes
-  using MeshRenderCommandList = std::vector<MeshRenderCommand>;
+  using MeshRenderCommandList = types::vector<MeshRenderCommand>;
   void executeMeshCommands(VkCommandBuffer, const MeshRenderCommandList&, bool);
 
   struct FrameData {
@@ -114,8 +114,9 @@ class MeshPass : public RenderPass {
     MeshRenderCommandList double_sided;
   };
 
-  std::vector<FrameData> frame_data;
+  types::vector<FrameData> frame_data;
   uint32_t current_frame;
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -3,8 +3,6 @@
 
 #include "core/renderer/OverlayPass.h"
 
-#include <vector>
-
 #include "core/components/PointLightComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/cvars/BoolCVar.h"
@@ -24,6 +22,7 @@
 #include "shaders/debug.vert.h"
 
 namespace mondradiko {
+namespace core {
 
 void OverlayPass::initCVars(CVarScope* cvars) {
   CVarScope* debug = cvars->addChild("debug");
@@ -45,7 +44,7 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
   {
     log_zone_named("Create debug pipeline layout");
 
-    std::vector<VkDescriptorSetLayout> set_layouts{
+    types::vector<VkDescriptorSetLayout> set_layouts{
         renderer->getViewportLayout()->getSetLayout(),
     };
 
@@ -67,7 +66,7 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
     glyph_set_layout->addCombinedImageSampler(glyphs->getSampler());
     glyph_set_layout->addStorageBuffer(sizeof(GlyphUniform));
 
-    std::vector<VkDescriptorSetLayout> set_layouts{
+    types::vector<VkDescriptorSetLayout> set_layouts{
         renderer->getViewportLayout()->getSetLayout(),
         glyph_set_layout->getSetLayout()};
 
@@ -378,4 +377,5 @@ void OverlayPass::renderViewport(RenderPhase phase,
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

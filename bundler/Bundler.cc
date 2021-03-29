@@ -5,14 +5,36 @@
 
 #include <string>
 
-#include "bundler/ConverterInterface.h"
-#include "bundler/PrefabBuilder.h"
+#include "converter/ConverterInterface.h"
+#include "converter/PrefabBuilder.h"
+#include "converter/prefab/BinaryGltfConverter.h"
+#include "converter/prefab/TextGltfConverter.h"
+#include "converter/script/WasmConverter.h"
 #include "log/log.h"
 
 namespace mondradiko {
+namespace bundler {
+
+// using is ok here because it'd be inconvenient not to use it
+using namespace converter;  // NOLINT
 
 Bundler::Bundler(const std::filesystem::path& _manifest_path)
     : manifest_path(_manifest_path) {
+  {  // Create converters
+    auto binary_gltf_converter = new BinaryGltfConverter(this);
+    owned_converters.push_back(binary_gltf_converter);
+    addConverter("glb", binary_gltf_converter);
+    addConverter("vrm", binary_gltf_converter);
+
+    auto text_gltf_converter = new TextGltfConverter(this);
+    owned_converters.push_back(text_gltf_converter);
+    addConverter("gltf", text_gltf_converter);
+
+    auto wasm_converter = new WasmConverter(this);
+    owned_converters.push_back(wasm_converter);
+    addConverter("wat", wasm_converter);
+  }
+
   if (std::filesystem::is_directory(manifest_path)) {
     manifest_path = manifest_path / "bundler-manifest.toml";
   }
@@ -28,7 +50,7 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
   log_dbg_fmt("Bundler source dir: %s", source_root.string().c_str());
   log_dbg_fmt("Bundler bundle dir: %s", bundle_root.string().c_str());
 
-  bundle_builder = new assets::AssetBundleBuilder(bundle_root);
+  bundle_builder = new AssetBundleBuilder(bundle_root);
   prefab_builder = new PrefabBuilder;
 
   manifest = toml::parse(manifest_path);
@@ -54,6 +76,10 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
 }
 
 Bundler::~Bundler() {
+  for (auto converter : owned_converters) {
+    delete converter;
+  }
+
   if (bundle_builder != nullptr) delete bundle_builder;
   if (prefab_builder != nullptr) delete prefab_builder;
 }
@@ -164,4 +190,5 @@ void Bundler::bundle() {
   bundle_builder->buildBundle("registry.bin");
 }
 
+}  // namespace bundler
 }  // namespace mondradiko

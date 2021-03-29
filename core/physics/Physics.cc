@@ -9,6 +9,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 Physics::Physics(World* world) : world(world) {
   log_zone;
@@ -97,4 +98,5 @@ void Physics::update(double dt) {
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

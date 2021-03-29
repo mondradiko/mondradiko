@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <unordered_map>
-
 #include "core/assets/AssetPool.h"
 #include "core/physics/Physics.h"
 #include "core/scripting/ScriptEnvironment.h"
@@ -14,8 +12,6 @@
 namespace mondradiko {
 
 // Forward declarations
-class Filesystem;
-
 namespace protocol {
 struct WorldEvent;
 
@@ -23,6 +19,11 @@ struct SpawnEntity;
 struct UpdateComponents;
 struct UpdateScripts;
 }  // namespace protocol
+
+namespace core {
+
+// Forward declarations
+class Filesystem;
 
 class World {
  public:
@@ -32,6 +33,12 @@ class World {
   void initializePrefabs();
 
   AssetPool* getAssetPool() { return asset_pool; }
+
+  //
+  // Entity operations
+  //
+  void adopt(EntityId, EntityId);
+  void orphan(EntityId);
 
   //
   // World event callbacks
@@ -60,4 +67,5 @@ class World {
   Physics physics;
 };
 
+}  // namespace core
 }  // namespace mondradiko

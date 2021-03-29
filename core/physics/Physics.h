@@ -6,6 +6,7 @@
 #include "lib/include/bullet_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class World;
@@ -29,4 +30,5 @@ class Physics {
   btCollisionShape* default_shape = nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

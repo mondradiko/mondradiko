@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include <vector>
-
 #include "core/renderer/RenderPass.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class GlyphLoader;
@@ -51,8 +51,9 @@ class UserInterface : public RenderPass {
     GpuImage* panel_atlas = nullptr;
   };
 
-  std::vector<FrameData> frame_data;
+  types::vector<FrameData> frame_data;
   uint32_t current_frame;
 };
 
+}  // namespace core
 }  // namespace mondradiko

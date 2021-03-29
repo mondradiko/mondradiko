@@ -4,31 +4,31 @@
 #pragma once
 
 #include <filesystem>
-#include <unordered_map>
-#include <vector>
 
-#include "assets/common/AssetTypes.h"
 #include "core/filesystem/AssetLump.h"
+#include "types/assets/AssetTypes.h"
+#include "types/containers/unordered_map.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
-namespace assets {
+namespace core {
 
 class AssetBundle {
  public:
   explicit AssetBundle(const std::filesystem::path&);
   ~AssetBundle();
 
-  AssetResult loadRegistry(const char*);
+  assets::AssetResult loadRegistry(const char*);
 
-  void getChecksums(std::vector<LumpHash>&);
-  void getInitialPrefabs(std::vector<AssetId>&);
-  bool isAssetRegistered(AssetId);
-  bool loadAsset(const SerializedAsset**, AssetId);
+  void getChecksums(types::vector<assets::LumpHash>&);
+  void getInitialPrefabs(types::vector<assets::AssetId>&);
+  bool isAssetRegistered(assets::AssetId);
+  bool loadAsset(const assets::SerializedAsset**, assets::AssetId);
 
  private:
   std::filesystem::path bundle_root;
 
-  std::vector<AssetId> initial_prefabs;
+  types::vector<assets::AssetId> initial_prefabs;
 
   struct AssetLookupEntry {
     uint32_t lump_index;
@@ -36,18 +36,18 @@ class AssetBundle {
     uint32_t size;
   };
 
-  std::unordered_map<AssetId, AssetLookupEntry> asset_lookup;
+  types::unordered_map<assets::AssetId, AssetLookupEntry> asset_lookup;
 
   struct LumpCacheEntry {
     AssetLump* lump;
     size_t file_size;
-    LumpCompressionMethod compression_method;
-    LumpHashMethod hash_method;
-    LumpHash checksum;
+    assets::LumpCompressionMethod compression_method;
+    assets::LumpHashMethod hash_method;
+    assets::LumpHash checksum;
   };
 
-  std::vector<LumpCacheEntry> lump_cache;
+  types::vector<LumpCacheEntry> lump_cache;
 };
 
-}  // namespace assets
+}  // namespace core
 }  // namespace mondradiko

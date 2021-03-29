@@ -3,19 +3,24 @@
 
 #pragma once
 
-#include "bundler/ConverterInterface.h"
+#include "converter/ConverterInterface.h"
 
 namespace mondradiko {
+namespace converter {
+
+// Forward declarations
+class BundlerInterface;
 
 class WasmConverter : public ConverterInterface {
  public:
-  explicit WasmConverter(Bundler* bundler) : _bundler(bundler) {}
+  explicit WasmConverter(BundlerInterface* bundler) : _bundler(bundler) {}
 
   // ConverterInterface implementation
   AssetOffset convert(AssetBuilder*, std::filesystem::path) const final;
 
  private:
-  Bundler* _bundler;
+  BundlerInterface* _bundler;
 };
 
+}  // namespace converter
 }  // namespace mondradiko

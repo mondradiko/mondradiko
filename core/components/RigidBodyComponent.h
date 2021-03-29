@@ -9,6 +9,7 @@
 #include "types/protocol/RigidBodyComponent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class TransformComponent;
@@ -33,4 +34,5 @@ class RigidBodyComponent : public Component<protocol::RigidBodyComponent> {
   void _destroy(btDynamicsWorld*);
 };
 
+}  // namespace core
 }  // namespace mondradiko

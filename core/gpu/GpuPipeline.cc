@@ -14,6 +14,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuPipeline::GpuPipeline(GpuInstance* gpu, VkPipelineLayout pipeline_layout,
                          VkRenderPass render_pass, uint32_t subpass_index,
@@ -183,7 +184,7 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
 
   VkPipeline pipeline_object;
 
-  std::vector<VkPipelineShaderStageCreateInfo> shader_stages = {
+  types::vector<VkPipelineShaderStageCreateInfo> shader_stages = {
       vertex_shader->getStageCreateInfo(),
       fragment_shader->getStageCreateInfo()};
 
@@ -250,8 +251,8 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   color_blend_info.attachmentCount = 1;
   color_blend_info.pAttachments = &color_blend_attachment;
 
-  std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
-                                                VK_DYNAMIC_STATE_SCISSOR};
+  types::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT,
+                                                  VK_DYNAMIC_STATE_SCISSOR};
 
   VkPipelineDynamicStateCreateInfo dynamic_state_info{};
   dynamic_state_info.sType =
@@ -321,4 +322,5 @@ void GpuPipeline::cmdBind(VkCommandBuffer command_buffer,
   cmdBind(command_buffer, state_hash);
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include "core/displays/DisplayInterface.h"
 #include "lib/include/openxr_headers.h"
+#include "types/containers/string.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class OpenXrViewport;
@@ -38,7 +38,7 @@ class OpenXrDisplay : public DisplayInterface {
 
   void pollEvents(DisplayPollEventsInfo*) final;
   void beginFrame(DisplayBeginFrameInfo*) final;
-  void acquireViewports(std::vector<Viewport*>*) final;
+  void acquireViewports(types::vector<Viewport*>*) final;
   void endFrame(DisplayBeginFrameInfo*) final;
 
   bool enable_validation_layers = true;
@@ -62,7 +62,7 @@ class OpenXrDisplay : public DisplayInterface {
 
   VkFormat swapchain_format;
 
-  std::vector<OpenXrViewport*> viewports;
+  types::vector<OpenXrViewport*> viewports;
 
   PFN_xrCreateDebugUtilsMessengerEXT ext_xrCreateDebugUtilsMessengerEXT =
       nullptr;
@@ -77,4 +77,5 @@ class OpenXrDisplay : public DisplayInterface {
       nullptr;
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -6,12 +6,13 @@
 #include <cstring>
 #include <set>
 
-#include "core/common/vulkan_validation.h"
 #include "core/displays/DisplayInterface.h"
+#include "core/gpu/vulkan_validation.h"
 #include "log/log.h"
 #include "types/build_config.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
   log_zone;
@@ -59,9 +60,9 @@ GpuInstance::~GpuInstance() {
   if (instance != VK_NULL_HANDLE) vkDestroyInstance(instance, nullptr);
 }
 
-bool GpuInstance::findFormatFromOptions(const std::vector<VkFormat>* options,
-                                        const std::vector<VkFormat>* candidates,
-                                        VkFormat* selected) {
+bool GpuInstance::findFormatFromOptions(
+    const types::vector<VkFormat>* options,
+    const types::vector<VkFormat>* candidates, VkFormat* selected) {
   for (auto candidate : *candidates) {
     for (auto option : *options) {
       if (candidate == option) {
@@ -74,7 +75,7 @@ bool GpuInstance::findFormatFromOptions(const std::vector<VkFormat>* options,
   return false;
 }
 
-bool GpuInstance::findSupportedFormat(const std::vector<VkFormat>* options,
+bool GpuInstance::findSupportedFormat(const types::vector<VkFormat>* options,
                                       VkImageTiling tiling,
                                       VkFormatFeatureFlags features,
                                       VkFormat* selected) {
@@ -135,7 +136,7 @@ bool GpuInstance::checkValidationLayerSupport() {
   uint32_t layer_count;
   vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
 
-  std::vector<VkLayerProperties> available_layers(layer_count);
+  types::vector<VkLayerProperties> available_layers(layer_count);
   vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
 
   for (const char* layer_name : validationLayers) {
@@ -175,7 +176,7 @@ void GpuInstance::populateDebugMessengerCreateInfo(
 void GpuInstance::createInstance(VulkanRequirements* requirements) {
   log_zone;
 
-  std::vector<const char*> extensionNames;
+  types::vector<const char*> extensionNames;
   for (uint32_t i = 0; i < requirements->instance_extensions.size(); i++) {
     extensionNames.push_back(requirements->instance_extensions[i].c_str());
   }
@@ -248,7 +249,7 @@ void GpuInstance::findQueueFamilies() {
   uint32_t queueFamilyCount;
   vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyCount,
                                            nullptr);
-  std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+  types::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
   vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyCount,
                                            queueFamilies.data());
 
@@ -263,12 +264,12 @@ void GpuInstance::findQueueFamilies() {
 void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
   log_zone;
 
-  std::vector<const char*> extensionNames;
+  types::vector<const char*> extensionNames;
   for (uint32_t i = 0; i < requirements->device_extensions.size(); i++) {
     extensionNames.push_back(requirements->device_extensions[i].c_str());
   }
 
-  std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+  types::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
   std::set<uint32_t> uniqueQueueFamilies = {graphics_queue_family};
 
   float queuePriority = 1.0f;
@@ -336,4 +337,5 @@ void GpuInstance::createAllocator() {
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

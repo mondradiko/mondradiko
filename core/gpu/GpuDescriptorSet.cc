@@ -10,6 +10,7 @@
 #include "core/gpu/GpuVector.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuDescriptorSet::GpuDescriptorSet(GpuInstance* gpu,
                                    GpuDescriptorSetLayout* set_layout,
@@ -109,4 +110,5 @@ void GpuDescriptorSet::cmdBind(VkCommandBuffer command_buffer,
                           dynamic_offsets.data());
 }
 
+}  // namespace core
 }  // namespace mondradiko

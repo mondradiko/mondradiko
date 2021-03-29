@@ -6,6 +6,7 @@
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
+namespace core {
 
 void PointLightComponent::getUniform(PointLightUniform* uniform) {
   // TODO(marceline-cramer) Make helpers for these
@@ -21,13 +22,14 @@ void PointLightComponent::getUniform(PointLightUniform* uniform) {
 
 // Template specialization to build UpdateComponents event
 template <>
-void buildUpdateComponents<protocol::PointLightComponent>(
+void buildUpdateComponents<mondradiko::protocol::PointLightComponent>(
     protocol::UpdateComponentsBuilder* update_components,
     flatbuffers::Offset<
-        flatbuffers::Vector<const protocol::PointLightComponent*>>
+        flatbuffers::Vector<const mondradiko::protocol::PointLightComponent*>>
         components) {
   update_components->add_type(protocol::ComponentType::PointLightComponent);
   update_components->add_point_light(components);
 }
 
+}  // namespace core
 }  // namespace mondradiko

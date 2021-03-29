@@ -9,6 +9,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 GpuBuffer::GpuBuffer(GpuInstance* gpu, size_t initial_size,
                      VkBufferUsageFlags buffer_usage_flags,
@@ -51,4 +52,5 @@ void GpuBuffer::reserve(size_t target_size) {
   buffer_size = target_size;
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -5,4 +5,6 @@
 
 #include "types/protocol/WorldEvent_generated.h"
 
-namespace mondradiko {}  // namespace mondradiko
+namespace mondradiko {
+namespace core {}  // namespace core
+}  // namespace mondradiko

@@ -31,6 +31,7 @@ set(MONDRADIKO_CORE_SRC
   assets/TextureAsset.cc
   components/MeshRendererComponent.cc
   components/PointLightComponent.cc
+  components/RelationshipComponent.cc
   components/RigidBodyComponent.cc
   components/ScriptComponent.cc
   components/TransformComponent.cc
@@ -67,8 +68,8 @@ set(MONDRADIKO_CORE_SRC
   world/WorldEventSorter.cc
 )
 
-add_library(mondradiko-core STATIC $<TARGET_OBJECTS:mondradiko-api-components> ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
+add_library(mondradiko-core STATIC $<TARGET_OBJECTS:mondradiko-wasm-linker> ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
 
-target_link_libraries(mondradiko-core mondradiko-assets)
-target_link_libraries(mondradiko-core mondradiko-log)
 target_link_libraries(mondradiko-core mondradiko-lib)
+target_link_libraries(mondradiko-core mondradiko-log)
+target_link_libraries(mondradiko-core mondradiko-types)

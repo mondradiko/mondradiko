@@ -1,14 +1,13 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "bundler/script/WasmConverter.h"
+#include "converter/script/WasmConverter.h"
 
 #include <fstream>
 #include <vector>
 
-#include "bundler/Bundler.h"
-
 namespace mondradiko {
+namespace converter {
 
 WasmConverter::AssetOffset WasmConverter::convert(
     AssetBuilder* fbb, std::filesystem::path wasm_path) const {
@@ -38,4 +37,5 @@ WasmConverter::AssetOffset WasmConverter::convert(
   return asset_offset;
 }
 
+}  // namespace converter
 }  // namespace mondradiko

@@ -17,6 +17,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 void Renderer::initCVars(CVarScope* cvars) {
   CVarScope* renderer = cvars->addChild("renderer");
@@ -32,7 +33,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
   {
     log_zone_named("Create render pass");
 
-    std::vector<VkAttachmentDescription> attachments;
+    types::vector<VkAttachmentDescription> attachments;
 
     {
       VkAttachmentDescription swapchain_desc{};
@@ -66,7 +67,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
     depth_attachment_reference.layout =
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    std::vector<VkSubpassDescription> subpasses;
+    types::vector<VkSubpassDescription> subpasses;
 
     {
       VkSubpassDescription depth_pass{};
@@ -85,7 +86,7 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
       subpasses.push_back(forward_pass);
     }
 
-    std::vector<VkSubpassDependency> dependencies;
+    types::vector<VkSubpassDependency> dependencies;
 
     {
       VkSubpassDependency pre_dep{};
@@ -174,10 +175,35 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
           gpu, sizeof(ViewportUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     }
   }
+
+  {
+    log_zone_named("Create error image");
+
+    int error_width = 4;
+    int error_height = 4;
+
+    // Magenta-and-green checkerboard
+    const uint32_t error_data[] = {
+        0xFF00FFFF, 0xFF00FFFF, 0x00FF00FF, 0x00FF00FF,   // NOLINT
+        0xFF00FFFF, 0xFF00FFFF, 0x00FF00FF, 0x00FF00FF,   // NOLINT
+        0x00FF00FF, 0x00FF00FF, 0xFF00FFFF, 0xFF00FFFF,   // NOLINT
+        0x00FF00FF, 0x00FF00FF, 0xFF00FFFF, 0xFF00FFFF};  // NOLINT
+
+    error_image = new GpuImage(
+        gpu, VK_FORMAT_R8G8B8A8_UNORM, error_width, error_height, 1,
+        VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+        VMA_MEMORY_USAGE_GPU_ONLY);
+
+    error_image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    transferDataToImage(error_image, error_data);
+    error_image->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
 }
 
 Renderer::~Renderer() {
   log_zone;
+
+  if (error_image != nullptr) delete error_image;
 
   destroyFrameData();
 
@@ -389,8 +415,8 @@ void Renderer::renderFrame() {
     }
   }
 
-  std::vector<Viewport*> viewports;
-  std::vector<VkSemaphore> on_viewport_acquire(0);
+  types::vector<Viewport*> viewports;
+  types::vector<VkSemaphore> on_viewport_acquire(0);
   bool viewports_require_signal = false;
 
   {
@@ -499,4 +525,5 @@ void Renderer::addPassToPhase(RenderPhase phase, RenderPass* pass) {
   frame.phases[static_cast<size_t>(phase)].push_back(pass);
 }
 
+}  // namespace core
 }  // namespace mondradiko

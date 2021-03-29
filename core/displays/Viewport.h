@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include <vector>
-
 #include "lib/include/glm_headers.h"
 #include "lib/include/vulkan_headers.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class DisplayInterface;
@@ -135,7 +135,7 @@ class Viewport {
    * createImages() to create framebuffers.
    *
    */
-  std::vector<ViewportImage> _images;
+  types::vector<ViewportImage> _images;
   /**
    * @brief Required to construct framebuffers.
    *
@@ -157,4 +157,5 @@ class Viewport {
   uint32_t _current_image_index = 0;
 };
 
+}  // namespace core
 }  // namespace mondradiko

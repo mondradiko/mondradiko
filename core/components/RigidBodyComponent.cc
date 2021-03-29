@@ -6,6 +6,7 @@
 #include "core/components/TransformComponent.h"
 
 namespace mondradiko {
+namespace core {
 
 RigidBodyComponent::RigidBodyComponent(const assets::RigidBodyPrefab* prefab) {
   _data.mutate_mass(prefab->mass());
@@ -41,4 +42,5 @@ void RigidBodyComponent::_destroy(btDynamicsWorld* dynamics_world) {
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -11,6 +11,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 class GpuVector : public GpuBuffer {
  public:
@@ -55,4 +56,5 @@ void GpuVector::writeElement(uint32_t index, const ElementType& element) {
          reinterpret_cast<const char*>(&element), sizeof(ElementType));
 }
 
+}  // namespace core
 }  // namespace mondradiko

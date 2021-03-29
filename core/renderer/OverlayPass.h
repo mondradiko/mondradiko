@@ -4,13 +4,13 @@
 #pragma once
 
 #include <array>
-#include <vector>
 
 #include "core/gpu/GpuPipeline.h"
 #include "core/renderer/RenderPass.h"
 #include "lib/include/glm_headers.h"
 
 namespace mondradiko {
+namespace core {
 
 // Forward declarations
 class CVarScope;
@@ -88,8 +88,9 @@ class OverlayPass : public RenderPass {
     uint32_t glyph_count;
   };
 
-  std::vector<FrameData> frame_data;
+  types::vector<FrameData> frame_data;
   uint32_t current_frame;
 };
 
+}  // namespace core
 }  // namespace mondradiko

@@ -3,12 +3,15 @@
 
 #include "core/displays/SdlDisplay.h"
 
+#include <chrono>
+
 #include "core/displays/SdlViewport.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
 #include "types/build_config.h"
 
 namespace mondradiko {
+namespace core {
 
 SdlDisplay::SdlDisplay() {
   log_zone;
@@ -45,7 +48,7 @@ bool SdlDisplay::getVulkanRequirements(VulkanRequirements* requirements) {
 
   uint32_t instance_extension_count;
   SDL_Vulkan_GetInstanceExtensions(window, &instance_extension_count, nullptr);
-  std::vector<const char*> instance_extension_names(instance_extension_count);
+  types::vector<const char*> instance_extension_names(instance_extension_count);
   SDL_Vulkan_GetInstanceExtensions(window, &instance_extension_count,
                                    instance_extension_names.data());
 
@@ -69,7 +72,7 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
 
   uint32_t device_count = 0;
   vkEnumeratePhysicalDevices(instance, &device_count, nullptr);
-  std::vector<VkPhysicalDevice> devices(device_count);
+  types::vector<VkPhysicalDevice> devices(device_count);
   vkEnumeratePhysicalDevices(instance, &device_count, devices.data());
 
   // TODO(marceline-cramer) Move physical device selection/queue creation to
@@ -81,7 +84,7 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
     uint32_t queue_family_count;
     vkGetPhysicalDeviceQueueFamilyProperties(*physical_device,
                                              &queue_family_count, nullptr);
-    std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
+    types::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
     vkGetPhysicalDeviceQueueFamilyProperties(
         *physical_device, &queue_family_count, queue_families.data());
 
@@ -109,7 +112,7 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
   uint32_t format_count;
   vkGetPhysicalDeviceSurfaceFormatsKHR(*physical_device, surface, &format_count,
                                        nullptr);
-  std::vector<VkSurfaceFormatKHR> surface_formats(format_count);
+  types::vector<VkSurfaceFormatKHR> surface_formats(format_count);
   vkGetPhysicalDeviceSurfaceFormatsKHR(*physical_device, surface, &format_count,
                                        surface_formats.data());
 
@@ -130,7 +133,7 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
   uint32_t present_mode_count;
   vkGetPhysicalDeviceSurfacePresentModesKHR(*physical_device, surface,
                                             &present_mode_count, nullptr);
-  std::vector<VkPresentModeKHR> present_modes(present_mode_count);
+  types::vector<VkPresentModeKHR> present_modes(present_mode_count);
   vkGetPhysicalDeviceSurfacePresentModesKHR(
       *physical_device, surface, &present_mode_count, present_modes.data());
 
@@ -155,9 +158,9 @@ bool SdlDisplay::createSession(GpuInstance* _gpu) {
 
   gpu = _gpu;
 
-  std::vector<VkFormat> depth_format_options = {VK_FORMAT_D32_SFLOAT,
-                                                VK_FORMAT_D32_SFLOAT_S8_UINT,
-                                                VK_FORMAT_D24_UNORM_S8_UINT};
+  types::vector<VkFormat> depth_format_options = {VK_FORMAT_D32_SFLOAT,
+                                                  VK_FORMAT_D32_SFLOAT_S8_UINT,
+                                                  VK_FORMAT_D24_UNORM_S8_UINT};
 
   if (!gpu->findSupportedFormat(&depth_format_options, VK_IMAGE_TILING_OPTIMAL,
                                 VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -264,7 +267,28 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
 void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
   log_zone;
 
-  // TODO(marceline-cramer) SDL delta time
+  {
+    log_zone_named("Calculate delta time");
+
+    // TODO(marceline-cramer) Find a better way to do this
+    using clock = std::chrono::high_resolution_clock;
+    static const auto start_time = clock::now();
+    auto elapsed_time = clock::now();
+
+    double current_time =
+        std::chrono::duration<double, std::chrono::seconds::period>(
+            elapsed_time - start_time)
+            .count();
+
+    if (last_frame_time < -1.0) {
+      frame_info->dt = 0.0;
+    } else {
+      frame_info->dt = current_time - last_frame_time;
+    }
+
+    last_frame_time = current_time;
+  }
+
   if (main_viewport != nullptr) {
     if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
       float camera_speed = 0.1;
@@ -303,7 +327,7 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
   }
 }
 
-void SdlDisplay::acquireViewports(std::vector<Viewport*>* viewports) {
+void SdlDisplay::acquireViewports(types::vector<Viewport*>* viewports) {
   log_zone;
 
   viewports->resize(1);
@@ -312,4 +336,5 @@ void SdlDisplay::acquireViewports(std::vector<Viewport*>* viewports) {
 
 void SdlDisplay::endFrame(DisplayBeginFrameInfo* frame_info) { log_zone; }
 
+}  // namespace core
 }  // namespace mondradiko

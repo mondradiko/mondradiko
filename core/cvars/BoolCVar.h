@@ -6,6 +6,7 @@
 #include "core/cvars/CVarValueInterface.h"
 
 namespace mondradiko {
+namespace core {
 
 class BoolCVar : public CVarValueInterface {
  public:
@@ -21,4 +22,5 @@ class BoolCVar : public CVarValueInterface {
   }
 };
 
+}  // namespace core
 }  // namespace mondradiko

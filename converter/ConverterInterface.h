@@ -5,14 +5,12 @@
 
 #include <filesystem>
 
-#include "assets/common/AssetTypes.h"
-#include "bundler/AssetBundleBuilder.h"
+#include "converter/AssetBundleBuilder.h"
+#include "types/assets/AssetTypes.h"
 #include "types/assets/SerializedAsset_generated.h"
 
 namespace mondradiko {
-
-// Forward declarations
-class Bundler;
+namespace converter {
 
 class ConverterInterface {
  public:
@@ -25,4 +23,5 @@ class ConverterInterface {
   virtual AssetOffset convert(AssetBuilder*, std::filesystem::path) const = 0;
 };
 
+}  // namespace converter
 }  // namespace mondradiko

@@ -7,6 +7,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 static XRAPI_ATTR XrBool32 XRAPI_CALL
 debugCallbackOpenXR(XrDebugUtilsMessageSeverityFlagsEXT message_severity,
@@ -32,4 +33,5 @@ debugCallbackOpenXR(XrDebugUtilsMessageSeverityFlagsEXT message_severity,
   return VK_FALSE;
 }
 
+}  // namespace core
 }  // namespace mondradiko

@@ -3,17 +3,21 @@
 
 #pragma once
 
-#include "bundler/ConverterInterface.h"
+#include "converter/ConverterInterface.h"
 #include "lib/include/tinygltf_headers.h"
 
 namespace mondradiko {
+namespace converter {
+
+// Forward declarations
+class BundlerInterface;
 
 class GltfConverter : public ConverterInterface {
  public:
-  explicit GltfConverter(Bundler*);
+  explicit GltfConverter(BundlerInterface*);
 
  protected:
-  Bundler* _bundler;
+  BundlerInterface* _bundler;
 
   // Shorthand types for library objects
   using GltfModel = const tinygltf::Model&;
@@ -33,4 +37,5 @@ class GltfConverter : public ConverterInterface {
   assets::AssetId _loadImage(GltfImage, bool) const;
 };
 
+}  // namespace converter
 }  // namespace mondradiko

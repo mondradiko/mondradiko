@@ -8,6 +8,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 Filesystem::Filesystem() { log_zone; }
 
@@ -18,7 +19,7 @@ Filesystem::~Filesystem() {
 }
 
 bool Filesystem::loadAssetBundle(const std::filesystem::path& bundle_root) {
-  assets::AssetBundle* asset_bundle = new assets::AssetBundle(bundle_root);
+  AssetBundle* asset_bundle = new AssetBundle(bundle_root);
   auto result = asset_bundle->loadRegistry("registry.bin");
   if (result != assets::AssetResult::Success) {
     const char* error_string = assets::getAssetResultString(result);
@@ -31,22 +32,23 @@ bool Filesystem::loadAssetBundle(const std::filesystem::path& bundle_root) {
   return true;
 }
 
-void Filesystem::getChecksums(std::vector<assets::LumpHash>& local_checksums) {
+void Filesystem::getChecksums(
+    types::vector<assets::LumpHash>& local_checksums) {
   local_checksums.resize(0);
 
   for (auto asset_bundle : asset_bundles) {
-    std::vector<assets::LumpHash> bundle_checksums;
+    types::vector<assets::LumpHash> bundle_checksums;
     asset_bundle->getChecksums(bundle_checksums);
     local_checksums.insert(local_checksums.end(), bundle_checksums.begin(),
                            bundle_checksums.end());
   }
 }
 
-void Filesystem::getInitialPrefabs(std::vector<assets::AssetId>& prefabs) {
+void Filesystem::getInitialPrefabs(types::vector<assets::AssetId>& prefabs) {
   prefabs.resize(0);
 
   for (auto asset_bundle : asset_bundles) {
-    std::vector<assets::AssetId> bundle_prefabs;
+    types::vector<assets::AssetId> bundle_prefabs;
     asset_bundle->getInitialPrefabs(bundle_prefabs);
     prefabs.insert(prefabs.end(), bundle_prefabs.begin(), bundle_prefabs.end());
   }
@@ -69,4 +71,5 @@ toml::value Filesystem::loadToml(const std::filesystem::path& toml_path) {
   return toml::parse(toml_path);
 }
 
+}  // namespace core
 }  // namespace mondradiko

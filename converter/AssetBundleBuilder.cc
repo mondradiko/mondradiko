@@ -1,7 +1,7 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "bundler/AssetBundleBuilder.h"
+#include "converter/AssetBundleBuilder.h"
 
 #include <cstring>
 #include <fstream>
@@ -13,7 +13,10 @@
 #include "xxhash.h"  // NOLINT
 
 namespace mondradiko {
-namespace assets {
+namespace converter {
+
+// using is ok here because it'd be inconvenient not to use it
+using namespace assets;  // NOLINT
 
 AssetBundleBuilder::AssetBundleBuilder(const std::filesystem::path& bundle_root)
     : bundle_root(bundle_root) {
@@ -248,5 +251,5 @@ void AssetBundleBuilder::finalizeLump(LumpToSave* lump,
   }
 }
 
-}  // namespace assets
+}  // namespace converter
 }  // namespace mondradiko

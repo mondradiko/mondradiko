@@ -19,6 +19,7 @@
 #include "log/log.h"
 
 namespace mondradiko {
+namespace core {
 
 UserInterface::UserInterface(GlyphLoader* glyphs, Renderer* renderer)
     : glyphs(glyphs), gpu(renderer->getGpu()), renderer(renderer) {
@@ -48,7 +49,7 @@ UserInterface::UserInterface(GlyphLoader* glyphs, Renderer* renderer)
   {
     log_zone_named("Create panel pipeline layout");
 
-    std::vector<VkDescriptorSetLayout> set_layouts{
+    types::vector<VkDescriptorSetLayout> set_layouts{
         renderer->getViewportLayout()->getSetLayout()};
 
     VkPipelineLayoutCreateInfo layout_info{};
@@ -157,4 +158,5 @@ void UserInterface::renderViewport(
   }
 }
 
+}  // namespace core
 }  // namespace mondradiko

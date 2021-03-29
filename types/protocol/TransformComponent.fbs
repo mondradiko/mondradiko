@@ -6,7 +6,6 @@ include "types.fbs";
 namespace mondradiko.protocol;
 
 struct TransformComponent {
-  parent:EntityId;
   position:Vec3;
   orientation:Quaternion;
 }

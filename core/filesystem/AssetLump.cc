@@ -4,14 +4,17 @@
 #include "core/filesystem/AssetLump.h"
 
 #include <fstream>
-#include <vector>
 
 #include "log/log.h"
 #include "lz4frame.h"  // NOLINT
-#include "xxhash.h"    // NOLINT
+#include "types/containers/vector.h"
+#include "xxhash.h"  // NOLINT
 
 namespace mondradiko {
-namespace assets {
+namespace core {
+
+// using is ok here because it'd be inconvenient not to use it
+using namespace assets;  // NOLINT
 
 const uint32_t ASSET_LOAD_CHUNK_SIZE = 4 * 1024;  // 4 KiB
 static_assert(ASSET_LOAD_CHUNK_SIZE >= LZ4F_HEADER_SIZE_MAX);
@@ -113,7 +116,7 @@ void AssetLump::decompress(LumpCompressionMethod compression_method) {
       LZ4F_dctx* context;
       LZ4F_createDecompressionContext(&context, LZ4F_VERSION);
 
-      std::vector<char> buffer(ASSET_LOAD_CHUNK_SIZE);
+      types::vector<char> buffer(ASSET_LOAD_CHUNK_SIZE);
 
       {
         lump_file.read(buffer.data(), buffer.size());
@@ -217,5 +220,5 @@ bool AssetLump::loadAsset(const SerializedAsset** asset, size_t offset,
   return true;
 }
 
-}  // namespace assets
+}  // namespace core
 }  // namespace mondradiko

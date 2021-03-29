@@ -110,6 +110,7 @@ class WasmLinker(Codegen):
             ""
             "namespace mondradiko {",
             "",
+            "using namespace core;",
 
             # Common link methods
             LINKER_METHOD_TEMPLATES])
