@@ -34,6 +34,23 @@ class TransformComponent : public Component<protocol::TransformComponent> {
     orientation.mutate_z(prefab->orientation().z());
   }
 
+  TransformComponent(const glm::vec3& position, const glm::quat& orientation) {
+    _data.mutate_parent(static_cast<protocol::EntityId>(NullEntity));
+
+    // TODO(marceline-cramer) Make helpers for these
+
+    auto& _position = _data.mutable_position();
+    _position.mutate_x(position.x);
+    _position.mutate_y(position.y);
+    _position.mutate_z(position.z);
+
+    auto& _orientation = _data.mutable_orientation();
+    _orientation.mutate_w(orientation.w);
+    _orientation.mutate_x(orientation.x);
+    _orientation.mutate_y(orientation.y);
+    _orientation.mutate_z(orientation.z);
+  }
+
   glm::mat4 getWorldTransform() const { return world_transform; }
 
   void setParent(EntityId parent) {
