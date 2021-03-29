@@ -25,6 +25,8 @@ class Physics {
   btCollisionDispatcher* dispatcher = nullptr;
   btSequentialImpulseConstraintSolver* solver = nullptr;
   btDiscreteDynamicsWorld* dynamics_world = nullptr;
+
+  btCollisionShape* default_shape = nullptr;
 };
 
 }  // namespace mondradiko
