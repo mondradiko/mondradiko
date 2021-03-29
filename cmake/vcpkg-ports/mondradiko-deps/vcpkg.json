@@ -19,7 +19,8 @@
     "msdfgen",
     "freetype",
     "wasmtime-prebuilt",
-    "cli11"
+    "cli11",
+    "bullet3"
   ],
   "features": {
       "validation": {

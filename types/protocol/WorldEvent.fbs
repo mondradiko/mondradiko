@@ -6,6 +6,7 @@ include "types.fbs";
 include "MeshRendererComponent.fbs";
 include "PointLightComponent.fbs";
 include "RelationshipComponent.fbs";
+include "RigidBodyComponent.fbs";
 include "ScriptData.fbs";
 include "TransformComponent.fbs";
 
@@ -21,6 +22,7 @@ table UpdateComponents {
   mesh_renderer:[MeshRendererComponent];
   point_light:[PointLightComponent];
   relationship:[RelationshipComponent];
+  rigid_body:[RigidBodyComponent];
   transform:[TransformComponent];
 }
 

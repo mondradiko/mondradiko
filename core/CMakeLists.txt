@@ -32,6 +32,7 @@ set(MONDRADIKO_CORE_SRC
   components/MeshRendererComponent.cc
   components/PointLightComponent.cc
   components/RelationshipComponent.cc
+  components/RigidBodyComponent.cc
   components/ScriptComponent.cc
   components/TransformComponent.cc
   cvars/CVarScope.cc
@@ -51,6 +52,7 @@ set(MONDRADIKO_CORE_SRC
   gpu/GpuInstance.cc
   gpu/GpuPipeline.cc
   gpu/GpuShader.cc
+  physics/Physics.cc
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
   renderer/Renderer.cc

@@ -65,6 +65,15 @@ assets::AssetId PrefabBuilder::buildPrefab(BundlerInterface* bundler,
     prefab_builder.add_point_light(&point_light);
   }
 
+  if (prefab.find("rigid_body") != prefab.end()) {
+    auto rigid_body_table = prefab.at("rigid_body").as_table();
+
+    float mass = rigid_body_table.at("mass").as_floating();
+
+    assets::RigidBodyPrefab rigid_body(mass);
+    prefab_builder.add_rigid_body(&rigid_body);
+  }
+
   if (prefab.find("transform") != prefab.end()) {
     auto transform_table = prefab.at("transform").as_table();
     assets::Vec3 position = getVec3(transform_table.at("position"));

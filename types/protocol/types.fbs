@@ -21,6 +21,7 @@ enum ComponentType : ushort {
   MeshRendererComponent,
   PointLightComponent,
   RelationshipComponent,
+  RigidBodyComponent,
   TransformComponent
 }
 
