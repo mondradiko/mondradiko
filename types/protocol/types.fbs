@@ -20,6 +20,7 @@ enum ComponentType : ushort {
   NoComponent = 0,
   MeshRendererComponent,
   PointLightComponent,
+  RigidBodyComponent,
   TransformComponent
 }
 

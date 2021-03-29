@@ -5,6 +5,7 @@ include "types.fbs";
 
 include "MeshRendererComponent.fbs";
 include "PointLightComponent.fbs";
+include "RigidBodyComponent.fbs";
 include "ScriptData.fbs";
 include "TransformComponent.fbs";
 
@@ -19,6 +20,7 @@ table UpdateComponents {
   entities:[EntityId];
   mesh_renderer:[MeshRendererComponent];
   point_light:[PointLightComponent];
+  rigid_body:[RigidBodyComponent];
   transform:[TransformComponent];
 }
 
