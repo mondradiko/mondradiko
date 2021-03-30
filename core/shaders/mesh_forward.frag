@@ -147,12 +147,12 @@ vec3 getNormal(in MaterialUniform material) {
   }
 }
 
-vec3 getAlbedo(in MaterialUniform material) {
-  vec3 surface_albedo = material.albedo_factor.rgb;
+vec4 getAlbedo(in MaterialUniform material) {
+  vec4 surface_albedo = material.albedo_factor;
 
   if (material.has_albedo_texture) {
     vec4 sampled_albedo = texture(albedo_texture, fragTexCoord);
-    surface_albedo *= sampled_albedo.rgb;
+    surface_albedo *= sampled_albedo;
   }
 
   return surface_albedo;
@@ -162,15 +162,10 @@ void main() {
   MeshUniform mesh = meshes.meshes[fragMesh];
   MaterialUniform material = materials.materials[mesh.material_idx];
 
-  if (material.enable_blend) {
-    outColor = vec4(1.0, 0.0, 1.0, 1.0);
-    return;
-  }
-
-  vec3 surface_albedo = getAlbedo(material);
+  vec4 surface_albedo = getAlbedo(material);
 
   if (material.is_unlit) {
-    outColor = vec4(surface_albedo, 1.0);
+    outColor = surface_albedo;
     return;
   }
 
@@ -187,7 +182,7 @@ void main() {
   vec3 N = getNormal(material);
   vec3 V = normalize(camera.position - surface_position);
 
-  vec3 surface_luminance = vec3(0.05) * surface_albedo;
+  vec3 surface_luminance = vec3(0.05) * surface_albedo.rgb;
 
   for (uint i = 0; i < mesh.light_count; i++) {
     vec3 light_position = lights.point_lights[i].position.xyz - surface_position;
@@ -196,12 +191,12 @@ void main() {
     vec3 radiance = light_intensity / dot(light_position, light_position);
 
     vec3 reflected = BRDF(light_direction, N, V,
-                          surface_albedo, surface_metallic, surface_roughness);
+                          surface_albedo.rgb, surface_metallic, surface_roughness);
 
     surface_luminance += radiance * reflected;
   }
 
   // TODO(marceline-cramer): Fix PBR so that tone mapping doesn't make JPEG bad
   vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
-  outColor = vec4(tone_mapped, 1.0);
+  outColor = vec4(tone_mapped, surface_albedo.a);
 }

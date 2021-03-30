@@ -79,6 +79,7 @@ class MeshPass : public RenderPass {
   VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
   GpuPipeline* depth_pipeline = nullptr;
   GpuPipeline* forward_pipeline = nullptr;
+  GpuPipeline* transparent_pipeline = nullptr;
 
   VkSampler texture_sampler = VK_NULL_HANDLE;
 
@@ -91,8 +92,6 @@ class MeshPass : public RenderPass {
     uint32_t mesh_idx;
     GpuDescriptorSet* textures_descriptor;
 
-    bool skip_depth;
-
     uint32_t vertex_offset;
     uint32_t index_offset;
     uint32_t index_num;
@@ -100,7 +99,12 @@ class MeshPass : public RenderPass {
 
   // Helper function to render meshes
   using MeshRenderCommandList = types::vector<MeshRenderCommand>;
-  void executeMeshCommands(VkCommandBuffer, const MeshRenderCommandList&, bool);
+  void executeMeshCommands(VkCommandBuffer, const MeshRenderCommandList&);
+
+  struct MeshPassCommandList {
+    MeshRenderCommandList single_sided;
+    MeshRenderCommandList double_sided;
+  };
 
   struct FrameData {
     GpuVector* material_buffer = nullptr;
@@ -110,8 +114,8 @@ class MeshPass : public RenderPass {
     GpuDescriptorSet* material_descriptor;
     GpuDescriptorSet* mesh_descriptor;
 
-    MeshRenderCommandList single_sided;
-    MeshRenderCommandList double_sided;
+    MeshPassCommandList forward_commands;
+    MeshPassCommandList transparent_commands;
   };
 
   types::vector<FrameData> frame_data;

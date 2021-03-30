@@ -135,6 +135,11 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
         gpu, pipeline_layout, renderer->getViewportRenderPass(),
         renderer->getForwardSubpass(), forward_vertex_shader,
         forward_fragment_shader, vertex_bindings, attribute_descriptions);
+
+    transparent_pipeline = new GpuPipeline(
+        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getTransparentSubpass(), forward_vertex_shader,
+        forward_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 
   {
@@ -168,6 +173,7 @@ MeshPass::~MeshPass() {
     vkDestroySampler(gpu->device, texture_sampler, nullptr);
   if (vertex_pool != nullptr) delete vertex_pool;
   if (index_pool != nullptr) delete index_pool;
+  if (transparent_pipeline != nullptr) delete transparent_pipeline;
   if (forward_pipeline != nullptr) delete forward_pipeline;
   if (depth_pipeline != nullptr) delete depth_pipeline;
   if (depth_vertex_shader != nullptr) delete depth_vertex_shader;
@@ -228,6 +234,7 @@ void MeshPass::beginFrame(uint32_t frame_index,
 
   renderer->addPassToPhase(RenderPhase::Depth, this);
   renderer->addPassToPhase(RenderPhase::Forward, this);
+  renderer->addPassToPhase(RenderPhase::Transparent, this);
 
   current_frame = frame_index;
   auto& frame = frame_data[current_frame];
@@ -267,8 +274,10 @@ void MeshPass::beginFrame(uint32_t frame_index,
   auto mesh_renderers =
       world->registry.view<MeshRendererComponent, TransformComponent>();
 
-  frame.single_sided.clear();
-  frame.double_sided.clear();
+  frame.forward_commands.single_sided.clear();
+  frame.forward_commands.double_sided.clear();
+  frame.transparent_commands.single_sided.clear();
+  frame.transparent_commands.double_sided.clear();
 
   for (auto e : mesh_renderers) {
     auto& mesh_renderer = mesh_renderers.get<MeshRendererComponent>(e);
@@ -282,10 +291,17 @@ void MeshPass::beginFrame(uint32_t frame_index,
     {  // Write material uniform
       const auto& material_asset = mesh_renderer.getMaterialAsset();
 
-      if (material_asset->isDoubleSided()) {
-        target_commands = &frame.double_sided;
+      MeshPassCommandList* pass_commands;
+      if (material_asset->isTransparent()) {
+        pass_commands = &frame.transparent_commands;
       } else {
-        target_commands = &frame.single_sided;
+        pass_commands = &frame.forward_commands;
+      }
+
+      if (material_asset->isDoubleSided()) {
+        target_commands = &pass_commands->double_sided;
+      } else {
+        target_commands = &pass_commands->single_sided;
       }
 
       auto iter = material_assets.find(material_asset.getId());
@@ -325,15 +341,6 @@ void MeshPass::beginFrame(uint32_t frame_index,
       cmd.index_num = mesh_asset->getIndexNum();
     }
 
-    {  // Filter out transparent meshes from depth pass
-      const auto& uniform = frame_materials[material_idx];
-      if (uniform.enable_blend != 0) {
-        cmd.skip_depth = true;
-      } else {
-        cmd.skip_depth = false;
-      }
-    }
-
     target_commands->push_back(cmd);
   }
 
@@ -360,7 +367,13 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
   auto& frame = frame_data[current_frame];
   GraphicsState graphics_state;
   GpuPipeline* current_pipeline;
-  bool enable_depth_skip;
+
+  MeshPassCommandList* pass_commands;
+  if (phase == RenderPhase::Transparent) {
+    pass_commands = &frame.transparent_commands;
+  } else {
+    pass_commands = &frame.forward_commands;
+  }
 
   GraphicsState::InputAssemblyState input_assembly_state{};
   input_assembly_state.primitive_topology =
@@ -376,25 +389,38 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
 
   if (phase == RenderPhase::Depth) {
     current_pipeline = depth_pipeline;
-    enable_depth_skip = true;
 
     GraphicsState::DepthState depth_state{};
     depth_state.test_enable = GraphicsState::BoolFlag::True;
     depth_state.write_enable = GraphicsState::BoolFlag::True;
     depth_state.compare_op = GraphicsState::CompareOp::Less;
     graphics_state.depth_state = depth_state;
-  } else {
-    current_pipeline = forward_pipeline;
-    enable_depth_skip = false;
 
-    // TODO(marceline-cramer) Proper blending
-    // Only enabling LessOrEqual and depth write for now because the
-    // test avatar without eyelashes looks creepy as fuck
+    GraphicsState::ColorBlendState color_blend_state{};
+    graphics_state.color_blend_state = color_blend_state;
+  } else if (phase == RenderPhase::Forward) {
+    current_pipeline = forward_pipeline;
+
     GraphicsState::DepthState depth_state{};
     depth_state.test_enable = GraphicsState::BoolFlag::True;
-    depth_state.write_enable = GraphicsState::BoolFlag::True;
-    depth_state.compare_op = GraphicsState::CompareOp::LessOrEqual;
+    depth_state.write_enable = GraphicsState::BoolFlag::False;
+    depth_state.compare_op = GraphicsState::CompareOp::Equal;
     graphics_state.depth_state = depth_state;
+
+    GraphicsState::ColorBlendState color_blend_state{};
+    graphics_state.color_blend_state = color_blend_state;
+  } else {
+    current_pipeline = transparent_pipeline;
+
+    GraphicsState::DepthState depth_state{};
+    depth_state.test_enable = GraphicsState::BoolFlag::True;
+    depth_state.write_enable = GraphicsState::BoolFlag::False;
+    depth_state.compare_op = GraphicsState::CompareOp::Less;
+    graphics_state.depth_state = depth_state;
+
+    GraphicsState::ColorBlendState color_blend_state{};
+    color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
+    graphics_state.color_blend_state = color_blend_state;
   }
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
@@ -409,20 +435,17 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
                        VK_INDEX_TYPE_UINT32);
 
   current_pipeline->cmdBind(command_buffer, graphics_state);
-  executeMeshCommands(command_buffer, frame.single_sided, enable_depth_skip);
+  executeMeshCommands(command_buffer, pass_commands->single_sided);
 
   graphics_state.rasterization_state.cull_mode = GraphicsState::CullMode::None;
   current_pipeline->cmdBind(command_buffer, graphics_state);
-  executeMeshCommands(command_buffer, frame.double_sided, enable_depth_skip);
+  executeMeshCommands(command_buffer, pass_commands->double_sided);
 }
 
 // Helper function to actually render meshes
 void MeshPass::executeMeshCommands(VkCommandBuffer command_buffer,
-                                   const MeshRenderCommandList& commands,
-                                   bool enable_depth_skip) {
+                                   const MeshRenderCommandList& commands) {
   for (const auto& cmd : commands) {
-    if (enable_depth_skip && cmd.skip_depth) continue;
-
     log_zone_named("Render mesh");
 
     cmd.textures_descriptor->cmdBind(command_buffer, pipeline_layout, 3);
