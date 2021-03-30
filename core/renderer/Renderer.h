@@ -43,6 +43,7 @@ class Renderer {
   VkRenderPass getViewportRenderPass() const { return render_pass; }
   uint32_t getDepthSubpass() { return 0; }
   uint32_t getForwardSubpass() { return 1; }
+  uint32_t getTransparentSubpass() { return 2; }
 
   GpuImage* getErrorImage() { return error_image; }
 
