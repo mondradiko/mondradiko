@@ -86,6 +86,15 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
       subpasses.push_back(forward_pass);
     }
 
+    {
+      VkSubpassDescription transparent_pass{};
+      transparent_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+      transparent_pass.colorAttachmentCount = 1;
+      transparent_pass.pColorAttachments = &swapchain_attachment_reference;
+      transparent_pass.pDepthStencilAttachment = &depth_attachment_reference;
+      subpasses.push_back(transparent_pass);
+    }
+
     types::vector<VkSubpassDependency> dependencies;
 
     {
@@ -108,6 +117,17 @@ Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
       depth_dep.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
       depth_dep.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
       dependencies.push_back(depth_dep);
+    }
+
+    {
+      VkSubpassDependency forward_dep{};
+      forward_dep.srcSubpass = 1;
+      forward_dep.dstSubpass = 2;
+      forward_dep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      forward_dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      forward_dep.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      forward_dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      dependencies.push_back(forward_dep);
     }
 
     VkRenderPassCreateInfo ci{};

@@ -18,7 +18,8 @@ enum class RenderPhase : size_t {
   Depth,  // Depth prepass for faster culling in forward pass
   // Shadow,     // Render scene to shadow maps
   // Occlusion,  // After depth pyramid is generated, do occlusion culling
-  Forward,  // Shade geometry
+  Forward,      // Shade geometry
+  Transparent,  // Transparent geometry
   // Overlay,  // Render UI elements, debug, etc.
   // Post,       // Post-processing effects (bloom, AO, AA, etc.)
   // Composite,  // Combine forward and overlay into swapchain output

@@ -49,6 +49,7 @@ class MaterialAsset : public Asset {
 
   const MaterialUniform& getUniform() const { return uniform; }
   bool isDoubleSided() const { return double_sided; }
+  bool isTransparent() const { return transparent; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;
 
  private:
@@ -56,6 +57,7 @@ class MaterialAsset : public Asset {
   Renderer* renderer;
 
   bool double_sided;
+  bool transparent;
 
   AssetHandle<TextureAsset> albedo_texture;
   AssetHandle<TextureAsset> emissive_texture;

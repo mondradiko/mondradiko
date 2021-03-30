@@ -57,8 +57,10 @@ void MaterialAsset::load(const assets::SerializedAsset* asset) {
 
   if (material->enable_blend()) {
     uniform.enable_blend = 1;
+    transparent = true;
   } else {
     uniform.enable_blend = 0;
+    transparent = false;
   }
 
   double_sided = material->is_double_sided();

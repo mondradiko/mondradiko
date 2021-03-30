@@ -168,6 +168,39 @@ void createVkDepthStencilState(const GraphicsState& graphics_state,
   info->stencilTestEnable = VK_FALSE;
 }
 
+void createVkColorBlendState(const GraphicsState& graphics_state,
+                             VkPipelineColorBlendAttachmentState* info) {
+  const auto& color_blend_state = graphics_state.color_blend_state;
+
+  info->colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
+  switch (color_blend_state.blend_mode) {
+    case GraphicsState::BlendMode::Opaque: {
+      info->blendEnable = VK_FALSE;
+      return;
+    }
+
+    case GraphicsState::BlendMode::AlphaBlend: {
+      info->blendEnable = VK_TRUE;
+
+      info->srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+      info->dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+      info->colorBlendOp = VK_BLEND_OP_ADD;
+      info->srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+      info->dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+      info->alphaBlendOp = VK_BLEND_OP_ADD;
+
+      return;
+    }
+
+    default: {
+      log_ftl("Invalid GraphicsState");
+      return;
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Actual pipeline creation
 ////////////////////////////////////////////////////////////////////////////////
@@ -239,10 +272,7 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   createVkDepthStencilState(graphics_state, &depth_stencil_info);
 
   VkPipelineColorBlendAttachmentState color_blend_attachment{};
-  color_blend_attachment.blendEnable = VK_FALSE;
-  color_blend_attachment.colorWriteMask =
-      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  createVkColorBlendState(graphics_state, &color_blend_attachment);
 
   VkPipelineColorBlendStateCreateInfo color_blend_info{};
   color_blend_info.sType =

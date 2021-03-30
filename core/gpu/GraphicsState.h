@@ -56,6 +56,8 @@ struct GraphicsState {
     DecrementAndWrap = (1 << 7)
   };
 
+  enum BlendMode : FlagData { Opaque = (1 << 0), AlphaBlend = (1 << 1) };
+
   struct InputAssemblyState {
     PrimitiveTopology primitive_topology;
     BoolFlag primitive_restart_enable;
@@ -71,6 +73,10 @@ struct GraphicsState {
     BoolFlag write_enable;
     CompareOp compare_op;
   } depth_state;
+
+  struct ColorBlendState {
+    BlendMode blend_mode = BlendMode::Opaque;
+  } color_blend_state;
 };
 
 }  // namespace core
