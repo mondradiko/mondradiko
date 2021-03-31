@@ -96,6 +96,8 @@ void run(const ClientArgs& args) {
   ScriptEnvironment scripts;
   World world(&asset_pool, &fs, &scripts);
 
+  const Avatar* avatar = display->getAvatar(&world);
+
   Renderer renderer(&cvars, display.get(), &gpu);
   GlyphLoader glyphs(&cvars, &renderer);
   MeshPass mesh_pass(&renderer, &world);
@@ -111,8 +113,8 @@ void run(const ClientArgs& args) {
   std::unique_ptr<NetworkClient> client;
 
   if (!args.serverless) {
-    client = std::make_unique<NetworkClient>(
-        &cvars, &fs, &world, args.server_ip.c_str(), args.server_port);
+    client = std::make_unique<NetworkClient>(&cvars, &fs, &world);
+    client->connect(avatar, args.server_ip.c_str(), args.server_port);
   } else {
     world.initializePrefabs();
   }

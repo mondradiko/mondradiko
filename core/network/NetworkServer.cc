@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include "core/avatars/Avatar.h"
+#include "core/avatars/SpectatorAvatar.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/world/World.h"
 #include "core/world/WorldEventSorter.h"
@@ -73,8 +75,10 @@ NetworkServer::NetworkServer(Filesystem* fs,
 NetworkServer::~NetworkServer() {
   log_zone;
 
-  for (auto connection : connections) {
-    sockets->CloseConnection(connection.second, 0, "Server shutdown", true);
+  for (auto iter : connections) {
+    auto& conn = iter.second;
+    sockets->CloseConnection(conn.net_connection, 0, "Server shutdown", true);
+    if (conn.avatar != nullptr) delete conn.avatar;
   }
 
   if (poll_group != k_HSteamNetPollGroup_Invalid) {
@@ -112,8 +116,13 @@ void NetworkServer::update() {
 // Client event receive callbacks
 ///////////////////////////////////////////////////////////////////////////////
 
-void NetworkServer::onJoinRequest(ClientId client_id,
+void NetworkServer::onJoinRequest(ConnectedClient* client,
                                   const protocol::JoinRequest* join_request) {
+  if (client->is_joined) {
+    log_err_fmt("Client #%du has already joined", client->id);
+    return;
+  }
+
   types::vector<assets::LumpHash> our_checksums;
   fs->getChecksums(our_checksums);
 
@@ -137,14 +146,41 @@ void NetworkServer::onJoinRequest(ClientId client_id,
     }
   }
 
-  if (check_passed) {
+  Avatar* client_avatar = nullptr;
+  switch (join_request->avatar_type()) {
+    case protocol::AvatarType::Spectator: {
+      log_inf_fmt("Client is using SpectatorAvatar");
+      client_avatar = new SpectatorAvatar(world_event_sorter->getWorld());
+      break;
+    }
+
+    default: {
+      log_err_fmt("Unrecognized AvatarType: %hu", join_request->avatar_type());
+      break;
+    }
+  }
+
+  if (client_avatar != nullptr && check_passed) {
+    client->is_joined = true;
+    client->avatar = client_avatar;
+
     log_msg_fmt("Client joined: %s", join_request->username()->c_str());
     types::string connect_message =
-        "Welcome client #" + std::to_string(client_id);
+        "Welcome client #" + std::to_string(client->id);
     sendAnnouncement(connect_message);
   } else {
-    log_msg_fmt("Client join request denied: %d", client_id);
+    log_msg_fmt("Client join request denied: %du", client->id);
   }
+}
+
+void NetworkServer::onAvatarUpdate(
+    ConnectedClient* client, const protocol::AvatarUpdate* avatar_update) {
+  if (client->avatar == nullptr) {
+    log_err_fmt("Avatar %du doesn't have an avatar", client->id);
+    return;
+  }
+
+  client->avatar->deserialize(avatar_update->data());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -214,7 +250,12 @@ void NetworkServer::onConnected(types::string description,
     new_id++;
   }
 
-  connections.emplace(new_id, connection);
+  ConnectedClient new_client{};
+  new_client.id = new_id;
+  new_client.net_connection = connection;
+  new_client.is_joined = false;
+  new_client.avatar = nullptr;
+  connections.emplace(new_id, new_client);
 
   log_msg_fmt("Client #%d connected", new_id);
 }
@@ -233,15 +274,19 @@ void NetworkServer::onDisconnect(types::string description,
                                  HSteamNetConnection connection) {
   ClientId client_id = 0;
 
-  for (auto& it : connections) {
-    if (it.second == connection) {
-      client_id = it.first;
+  for (auto& iter : connections) {
+    if (iter.second.net_connection == connection) {
+      client_id = iter.first;
       break;
     }
   }
 
   if (client_id != 0) {
     log_msg_fmt("Client #%d disconnected", client_id);
+
+    auto& client = connections.at(client_id);
+    if (client.avatar != nullptr) delete client.avatar;
+
     connections.erase(client_id);
   }
 
@@ -265,16 +310,15 @@ void NetworkServer::receiveEvents() {
       break;
     }
 
-    ClientId client_id = 0;
-
-    for (auto& it : connections) {
-      if (it.second == incoming_msg->m_conn) {
-        client_id = it.first;
+    ConnectedClient* client = nullptr;
+    for (auto& iter : connections) {
+      if (iter.second.net_connection == incoming_msg->m_conn) {
+        client = &iter.second;
         break;
       }
     }
 
-    if (client_id == 0) continue;
+    if (client == nullptr) continue;
 
     auto event = protocol::GetClientEvent(incoming_msg->GetData());
 
@@ -285,7 +329,12 @@ void NetworkServer::receiveEvents() {
       }
 
       case protocol::ClientEventType::JoinRequest: {
-        onJoinRequest(client_id, event->join_request());
+        onJoinRequest(client, event->join_request());
+        break;
+      }
+
+      case protocol::ClientEventType::AvatarUpdate: {
+        onAvatarUpdate(client, event->avatar_update());
         break;
       }
 
@@ -362,7 +411,7 @@ void NetworkServer::sendQueuedEvents() {
         SteamNetworkingUtils()->AllocateMessage(message_size);
     memcpy(message->m_pData, event.data.data(), message_size);
 
-    message->m_conn = destination->second;
+    message->m_conn = destination->second.net_connection;
     message->m_nFlags = k_nSteamNetworkingSend_Reliable;
 
     outgoing_messages.push_back(message);

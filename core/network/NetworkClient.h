@@ -23,6 +23,7 @@ struct AssignClientId;
 namespace core {
 
 // Forward declarations
+class Avatar;
 class Filesystem;
 class World;
 
@@ -32,9 +33,10 @@ class NetworkClient {
  public:
   static void initCVars(CVarScope*);
 
-  NetworkClient(const CVarScope*, Filesystem*, World*, const char*, int);
+  NetworkClient(const CVarScope*, Filesystem*, World*);
   ~NetworkClient();
 
+  bool connect(const Avatar*, const char*, int);
   void update();
   void disconnect();
 
@@ -46,6 +48,8 @@ class NetworkClient {
   World* world;
 
   ISteamNetworkingSockets* sockets;
+
+  const Avatar* avatar;
 
   HSteamNetConnection connection = k_HSteamNetConnection_Invalid;
 
@@ -59,6 +63,7 @@ class NetworkClient {
   // Client event send methods
   //
   void requestJoin();
+  void updateAvatar();
 
   //
   // Connection status change callbacks
