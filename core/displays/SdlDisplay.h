@@ -11,8 +11,9 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class SdlViewport;
 class GpuInstance;
+class SdlViewport;
+class SpectatorAvatar;
 
 class SdlDisplay : public DisplayInterface {
  public:
@@ -22,6 +23,7 @@ class SdlDisplay : public DisplayInterface {
   bool getVulkanRequirements(VulkanRequirements*) final;
   bool getVulkanDevice(VkInstance, VkPhysicalDevice*) final;
   bool createSession(GpuInstance*) final;
+  const Avatar* getAvatar(World*) final;
   void destroySession() final;
 
   VkFormat getSwapchainFormat() final { return swapchain_format; }
@@ -56,6 +58,8 @@ class SdlDisplay : public DisplayInterface {
   // TODO(marceline-cramer) Move this into GpuInstance
   uint32_t present_queue_family;
   VkQueue present_queue = VK_NULL_HANDLE;
+
+  SpectatorAvatar* avatar = nullptr;
 
   double mouse_x;
   double mouse_y;
