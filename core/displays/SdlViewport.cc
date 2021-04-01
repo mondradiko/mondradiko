@@ -3,7 +3,6 @@
 
 #include "core/displays/SdlViewport.h"
 
-#define _USE_MATH_DEFINES  // currently needed for MSVC
 #include <cmath>
 
 #include "core/displays/SdlDisplay.h"

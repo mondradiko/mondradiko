@@ -18,6 +18,11 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   list(APPEND CMAKE_CXX_FLAGS -Wno-nullability-completeness)
 endif()
 
+if (MSVC)
+  # needed so that M_PI_2 consts etc. become available with cmath.h / math.h
+  add_compile_definitions(_USE_MATH_DEFINES)
+endif()
+
 include(SPIR-V)
 include(flatc)
 
