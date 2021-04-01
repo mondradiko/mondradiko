@@ -14,7 +14,7 @@ class World;
 
 class SpectatorAvatar : public Avatar {
  public:
-  SpectatorAvatar(World*);
+  explicit SpectatorAvatar(World*);
   ~SpectatorAvatar();
 
   void moveCamera(float, float, float, float, float);
