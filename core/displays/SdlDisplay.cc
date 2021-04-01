@@ -5,6 +5,7 @@
 
 #include <chrono>
 
+#include "core/avatars/SpectatorAvatar.h"
 #include "core/displays/SdlViewport.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
@@ -172,15 +173,22 @@ bool SdlDisplay::createSession(GpuInstance* _gpu) {
   return true;
 }
 
+const Avatar* SdlDisplay::getAvatar(World* world) {
+  avatar = new SpectatorAvatar(world);
+  return avatar;
+}
+
 void SdlDisplay::destroySession() {
   log_zone;
 
   vkDeviceWaitIdle(gpu->device);
 
+  if (avatar != nullptr) delete avatar;
   if (main_viewport != nullptr) delete main_viewport;
   if (surface != VK_NULL_HANDLE)
     vkDestroySurfaceKHR(gpu->instance, surface, nullptr);
 
+  avatar = nullptr;
   main_viewport = nullptr;
   surface = VK_NULL_HANDLE;
 }
@@ -189,7 +197,7 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
   log_zone;
 
   if (main_viewport == nullptr) {
-    main_viewport = new SdlViewport(gpu, this, poll_info->renderer);
+    main_viewport = new SdlViewport(gpu, this, poll_info->renderer, avatar);
   }
 
   poll_info->should_quit = false;
@@ -290,7 +298,7 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
   }
 
   if (main_viewport != nullptr) {
-    if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
+    if (avatar != nullptr && SDL_GetRelativeMouseMode() == SDL_TRUE) {
       float camera_speed = 0.1;
 
       float truck = 0.0;
@@ -317,8 +325,7 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
         boom = camera_speed;
       }
 
-      main_viewport->moveCamera(mouse_x * 0.003, mouse_y * 0.003, truck, dolly,
-                                boom);
+      avatar->moveCamera(mouse_x * 0.003, mouse_y * 0.003, truck, dolly, boom);
     }
 
     frame_info->should_render = true;

@@ -14,12 +14,14 @@ namespace mondradiko {
 
 // Forward declarations
 namespace protocol {
+struct AvatarUpdate;
 struct JoinRequest;
 }  // namespace protocol
 
 namespace core {
 
 // Forward declarations
+class Avatar;
 class Filesystem;
 class WorldEventSorter;
 
@@ -39,12 +41,20 @@ class NetworkServer {
 
   ISteamNetworkingSockets* sockets;
 
-  types::unordered_map<ClientId, HSteamNetConnection> connections;
+  struct ConnectedClient {
+    ClientId id;
+    HSteamNetConnection net_connection;
+    bool is_joined;
+    Avatar* avatar;
+  };
+
+  types::unordered_map<ClientId, ConnectedClient> connections;
 
   //
   // Client event receive methods
   //
-  void onJoinRequest(ClientId, const protocol::JoinRequest*);
+  void onJoinRequest(ConnectedClient*, const protocol::JoinRequest*);
+  void onAvatarUpdate(ConnectedClient*, const protocol::AvatarUpdate*);
 
   //
   // Server event send methods

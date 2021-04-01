@@ -37,6 +37,7 @@ class WorldEventSorter {
 
   bool isOutOfDate();
   void clearQueue();
+  World* getWorld() { return world; }
 
  private:
   World* world;

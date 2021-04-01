@@ -11,9 +11,11 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class Avatar;
 class GpuInstance;
 class Renderer;
 class Viewport;
+class World;
 
 struct VulkanRequirements {
   uint32_t min_api_version;
@@ -41,6 +43,7 @@ class DisplayInterface {
   virtual bool getVulkanRequirements(VulkanRequirements*) = 0;
   virtual bool getVulkanDevice(VkInstance, VkPhysicalDevice*) = 0;
   virtual bool createSession(GpuInstance*) = 0;
+  virtual const Avatar* getAvatar(World*) = 0;
   virtual void destroySession() = 0;
 
   virtual VkFormat getSwapchainFormat() = 0;

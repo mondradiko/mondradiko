@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include "core/avatars/SpectatorAvatar.h"
 #include "core/displays/SdlDisplay.h"
 #include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
@@ -16,11 +17,12 @@ namespace mondradiko {
 namespace core {
 
 SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
-                         Renderer* renderer)
+                         Renderer* renderer, SpectatorAvatar* avatar)
     : Viewport(display, gpu, renderer),
       gpu(gpu),
       display(display),
-      renderer(renderer) {
+      renderer(renderer),
+      avatar(avatar) {
   log_zone;
 
   int window_width;
@@ -81,10 +83,6 @@ SdlViewport::SdlViewport(GpuInstance* gpu, SdlDisplay* display,
       log_ftl("Failed to create image acquisition semaphore.");
     }
   }
-
-  camera_position = glm::vec3(0.0, 0.0, 0.0);
-  camera_pan = 0.0;
-  camera_tilt = 0.0;
 }
 
 SdlViewport::~SdlViewport() {
@@ -106,12 +104,7 @@ SdlViewport::~SdlViewport() {
 void SdlViewport::writeUniform(ViewportUniform* uniform) {
   log_zone;
 
-  glm::quat camera_orientation =
-      glm::angleAxis(camera_tilt, glm::vec3(1.0, 0.0, 0.0)) *
-      glm::angleAxis(camera_pan, glm::vec3(0.0, 1.0, 0.0));
-
-  uniform->view =
-      glm::translate(glm::mat4(camera_orientation), -camera_position);
+  uniform->view = avatar->getViewMatrix();
 
   uniform->projection = glm::perspective(
       glm::radians(80.0f),
@@ -121,32 +114,7 @@ void SdlViewport::writeUniform(ViewportUniform* uniform) {
   // Fix GLM matrix to work with Vulkan
   uniform->projection[1][1] *= -1.0;
 
-  uniform->position = camera_position;
-}
-
-void SdlViewport::moveCamera(float pan, float tilt, float truck, float dolly,
-                             float boom) {
-  camera_pan += pan;
-  camera_tilt += tilt;
-
-  if (camera_tilt <= -M_PI_2) camera_tilt = -M_PI_2;
-  if (camera_tilt >= M_PI_2) camera_tilt = M_PI_2;
-
-  // Truck direction from straight down
-  glm::vec2 horizontal_component = glm::vec2(sin(camera_pan), -cos(camera_pan));
-  // Truck direction from the side
-  glm::vec2 vertical_component = glm::vec2(cos(camera_tilt), -sin(camera_tilt));
-  // Composite to get forward direction
-  glm::vec3 truck_direction = glm::vec3(
-      horizontal_component.x * vertical_component.x, vertical_component.y,
-      horizontal_component.y * vertical_component.x);
-
-  glm::vec3 dolly_direction =
-      glm::vec3(-cos(camera_pan), 0.0, -sin(camera_pan));
-
-  camera_position += truck_direction * truck;
-  camera_position += dolly_direction * dolly;
-  camera_position.y += boom;
+  uniform->position = avatar->getPosition();
 }
 
 VkSemaphore SdlViewport::_acquireImage(uint32_t* image_index) {

@@ -29,6 +29,8 @@ set(MONDRADIKO_CORE_SRC
   assets/PrefabAsset.cc
   assets/ScriptAsset.cc
   assets/TextureAsset.cc
+  avatars/Avatar.cc
+  avatars/SpectatorAvatar.cc
   components/MeshRendererComponent.cc
   components/PointLightComponent.cc
   components/RelationshipComponent.cc

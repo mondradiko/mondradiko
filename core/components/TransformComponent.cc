@@ -16,8 +16,8 @@ glm::mat4 TransformComponent::getLocalTransform() {
                                   orientation.y(), orientation.z());
   glm::vec3 converted_position(position.x(), position.y(), position.z());
 
-  glm::mat4 transform =
-      glm::translate(glm::mat4(converted_orientation), converted_position);
+  glm::mat4 transform = glm::translate(glm::mat4(1.0), converted_position) *
+                        glm::mat4(converted_orientation);
   return transform;
 }
 

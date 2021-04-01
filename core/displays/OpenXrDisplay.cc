@@ -193,6 +193,11 @@ bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
   return true;
 }
 
+const Avatar* OpenXrDisplay::getAvatar(World*) {
+  // TODO(marceline-cramer) HumanoidAvatar
+  return nullptr;
+}
+
 void OpenXrDisplay::destroySession() {
   log_zone;
 

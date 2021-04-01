@@ -5,6 +5,7 @@
 
 #include <sstream>
 
+#include "core/avatars/Avatar.h"
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/StringCVar.h"
 #include "core/filesystem/Filesystem.h"
@@ -29,8 +30,7 @@ void NetworkClient::initCVars(CVarScope* cvars) {
 NetworkClient* g_client = nullptr;
 
 NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
-                             World* world, const char* server_ip,
-                             int server_port)
+                             World* world)
     : cvars(cvars->getChild("client")), fs(fs), world(world) {
   log_zone;
 
@@ -48,12 +48,24 @@ NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
   }
 
   sockets = SteamNetworkingSockets();
+}
+
+NetworkClient::~NetworkClient() {
+  log_zone;
+
+  disconnect();
+}
+
+bool NetworkClient::connect(const Avatar* client_avatar, const char* server_ip,
+                            int server_port) {
+  avatar = client_avatar;
 
   SteamNetworkingIPAddr server_addr;
   server_addr.Clear();
 
   if (!server_addr.ParseString(server_ip)) {
-    log_ftl_fmt("Failed to parse server address %s", server_ip);
+    log_err_fmt("Failed to parse server address %s", server_ip);
+    return false;
   }
 
   server_addr.m_port = server_port;
@@ -69,14 +81,11 @@ NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
   connection = sockets->ConnectByIPAddress(server_addr, 1, &callback);
 
   if (connection == k_HSteamNetConnection_Invalid) {
-    log_ftl("Failed to create connection");
+    log_err("Failed to create connection");
+    return false;
   }
-}
 
-NetworkClient::~NetworkClient() {
-  log_zone;
-
-  disconnect();
+  return true;
 }
 
 void NetworkClient::update() {
@@ -87,6 +96,8 @@ void NetworkClient::update() {
   if (state == ClientState::Disconnected) return;
 
   receiveEvents();
+
+  updateAvatar();
 
   if (event_queue.size() > 0) {
     sendQueuedEvents();
@@ -127,6 +138,11 @@ void NetworkClient::requestJoin() {
   flatbuffers::FlatBufferBuilder builder;
   builder.Clear();
 
+  protocol::AvatarType avatar_type = protocol::AvatarType::None;
+  if (avatar != nullptr) {
+    avatar_type = avatar->getProtocolType();
+  }
+
   auto username_offset =
       builder.CreateString(cvars->get<StringCVar>("username").str());
 
@@ -146,6 +162,7 @@ void NetworkClient::requestJoin() {
 
   protocol::JoinRequestBuilder join_request(builder);
   join_request.add_username(username_offset);
+  join_request.add_avatar_type(avatar_type);
   join_request.add_lump_checksums(lump_checksums_offset);
   auto join_request_offset = join_request.Finish();
 
@@ -156,6 +173,29 @@ void NetworkClient::requestJoin() {
 
   builder.Finish(event_offset);
   sendEvent(builder);
+}
+
+void NetworkClient::updateAvatar() {
+  if (avatar == nullptr) {
+    return;
+  }
+
+  flatbuffers::FlatBufferBuilder fbb;
+  fbb.Clear();
+
+  auto data_offset = avatar->serialize(&fbb);
+
+  protocol::AvatarUpdateBuilder avatar_update(fbb);
+  avatar_update.add_data(data_offset);
+  auto avatar_update_offset = avatar_update.Finish();
+
+  protocol::ClientEventBuilder event(fbb);
+  event.add_type(protocol::ClientEventType::AvatarUpdate);
+  event.add_avatar_update(avatar_update_offset);
+  auto event_offset = event.Finish();
+
+  fbb.Finish(event_offset);
+  sendEvent(fbb);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

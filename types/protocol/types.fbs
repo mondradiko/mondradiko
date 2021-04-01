@@ -7,6 +7,11 @@ enum AssetId : uint32 {
   NullAsset = 0
 }
 
+enum AvatarType : uint8 {
+  None = 0,
+  Spectator
+}
+
 enum ClientId : uint32 {
   AllClients = 0,
   FirstClient

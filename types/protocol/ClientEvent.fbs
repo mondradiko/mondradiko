@@ -7,18 +7,25 @@ namespace mondradiko.protocol;
 
 table JoinRequest {
   username:string;
+  avatar_type:AvatarType;
   lump_checksums:[uint64];
+}
+
+table AvatarUpdate {
+  data:[ubyte];
 }
 
 enum ClientEventType : ushort {
   NoMessage = 0,
-  JoinRequest
+  JoinRequest,
+  AvatarUpdate
 }
 
 table ClientEvent {
   type:ClientEventType;
 
   join_request:JoinRequest;
+  avatar_update:AvatarUpdate;
 }
 
 root_type ClientEvent;
