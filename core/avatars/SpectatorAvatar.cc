@@ -3,6 +3,7 @@
 
 #include "core/avatars/SpectatorAvatar.h"
 
+#include "core/components/TransformComponent.h"
 #include "core/world/World.h"
 #include "types/protocol/SpectatorAvatar_generated.h"
 
@@ -13,9 +14,12 @@ SpectatorAvatar::SpectatorAvatar(World* world) : world(world) {
   camera_position = glm::vec3(0.0, 0.0, 0.0);
   camera_pan = 0.0;
   camera_tilt = 0.0;
+
+  _self_id = world->registry.create();
+  _addEntity(_self_id);
 }
 
-SpectatorAvatar::~SpectatorAvatar() {}
+SpectatorAvatar::~SpectatorAvatar() { world->registry.destroy(_self_id); }
 
 void SpectatorAvatar::moveCamera(float pan, float tilt, float truck,
                                  float dolly, float boom) {
@@ -40,13 +44,14 @@ void SpectatorAvatar::moveCamera(float pan, float tilt, float truck,
   camera_position += truck_direction * truck;
   camera_position += dolly_direction * dolly;
   camera_position.y += boom;
+
+  _updateTransform();
 }
 
 glm::mat4 SpectatorAvatar::getViewMatrix() {
   glm::quat camera_orientation =
       glm::angleAxis(camera_tilt, glm::vec3(1.0, 0.0, 0.0)) *
       glm::angleAxis(camera_pan, glm::vec3(0.0, 1.0, 0.0));
-
   return glm::translate(glm::mat4(camera_orientation), -camera_position);
 }
 
@@ -90,13 +95,26 @@ void SpectatorAvatar::deserialize(const ProtocolBuffer* protocol_data) {
     camera_position.x = position->x();
     camera_position.y = position->y();
     camera_position.z = position->z();
-
-    log_inf_fmt("position: %f %f %f", camera_position.x, camera_position.y,
-                camera_position.z);
   }
 
   camera_pan = spectator_avatar->pan();
   camera_tilt = spectator_avatar->tilt();
+
+  _updateTransform();
+}
+
+void SpectatorAvatar::_updateTransform() {
+  if (world->registry.has<TransformComponent>(_self_id)) {
+    world->registry.remove<TransformComponent>(_self_id);
+  }
+
+  auto position = camera_position;
+
+  glm::quat orientation =
+      glm::angleAxis(camera_tilt, glm::vec3(0.0, 0.0, -1.0)) *
+      glm::angleAxis(camera_pan, glm::vec3(0.0, -1.0, 0.0));
+
+  world->registry.emplace<TransformComponent>(_self_id, position, orientation);
 }
 
 }  // namespace core

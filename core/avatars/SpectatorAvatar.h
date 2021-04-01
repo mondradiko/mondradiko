@@ -30,6 +30,11 @@ class SpectatorAvatar : public Avatar {
  private:
   World* world;
 
+  EntityId _self_id;
+
+  // Helper methods
+  void _updateTransform();
+
   glm::vec3 camera_position;
   float camera_pan;
   float camera_tilt;
