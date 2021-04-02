@@ -8,6 +8,7 @@
 
 #include "log/log.h"
 #include "types/assets/Registry_generated.h"
+#include "types/build_config.h"
 #include "types/containers/vector.h"
 
 namespace mondradiko {
@@ -64,8 +65,14 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
   {
     log_zone_named("Check registry metadata");
 
-    if (registry->version() != MONDRADIKO_ASSET_VERSION) {
+    if (registry->major_version() != MONDRADIKO_VERSION_MAJOR) {
       return AssetResult::WrongVersion;
+    }
+
+    if (registry->major_version() != 0) {
+      if (registry->minor_version() > MONDRADIKO_VERSION_MINOR) {
+        return AssetResult::WrongVersion;
+      }
     }
 
     if (registry->lumps() == nullptr) {

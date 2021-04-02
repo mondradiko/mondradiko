@@ -10,11 +10,6 @@
 #include "lib/include/glm_headers.h"
 #include "types/assets/types_generated.h"
 
-// Provided by build system
-#ifndef MONDRADIKO_ASSET_VERSION
-#define MONDRADIKO_ASSET_VERSION (-1)
-#endif
-
 namespace mondradiko {
 namespace assets {
 

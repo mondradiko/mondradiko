@@ -19,7 +19,9 @@ table LumpEntry {
 }
 
 table Registry {
-  version:uint32;
+  major_version:int;
+  minor_version:int;
+  patch_version:int;
   initial_prefabs:[AssetId];
   lumps:[LumpEntry];
 }

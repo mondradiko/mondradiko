@@ -10,6 +10,7 @@
 #include "lz4frame.h"  // NOLINT
 #include "lz4hc.h"     // NOLINT
 #include "types/assets/Registry_generated.h"
+#include "types/build_config.h"
 #include "xxhash.h"  // NOLINT
 
 namespace mondradiko {
@@ -150,7 +151,9 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
   auto lumps_offset = fbb.CreateVector(lump_offsets);
 
   RegistryBuilder registry_builder(fbb);
-  registry_builder.add_version(MONDRADIKO_ASSET_VERSION);
+  registry_builder.add_major_version(MONDRADIKO_VERSION_MAJOR);
+  registry_builder.add_minor_version(MONDRADIKO_VERSION_MINOR);
+  registry_builder.add_patch_version(MONDRADIKO_VERSION_PATCH);
   registry_builder.add_initial_prefabs(initial_prefabs_offset);
   registry_builder.add_lumps(lumps_offset);
 
