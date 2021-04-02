@@ -14,22 +14,36 @@ namespace core {
 
 using AssetId = assets::AssetId;
 
+enum class AssetState {
+  Unloaded,    // Unusable, and not in memory
+  Retrieving,  // Currently being decompressed and/or downloaded
+  Stored,      // In memory, ready to load
+  Loading,     // Being loaded
+  Loaded,      // Ready to use
+  Cached,      // Not currently being used; first candidate for unloading
+  Unloading    // Being removed from memory
+};
+
 class Asset {
  public:
   virtual ~Asset() {}
 
-  virtual void load(const assets::SerializedAsset*) = 0;
+  bool load(const assets::SerializedAsset*);
+  virtual bool isLoaded() const { return _state == AssetState::Loaded; }
 
-  virtual bool isLoaded() const { return loaded; }
-
- private:
-  bool loaded = false;
-  uint32_t ref_count = 0;
-
+ protected:
   template <class AssetType>
   friend class AssetHandle;
 
   friend class AssetPool;
+
+  virtual bool _load(const assets::SerializedAsset*) = 0;
+  void _ref();
+  void _unref();
+
+ private:
+  AssetState _state = AssetState::Unloaded;
+  uint32_t ref_count = 0;
 };
 
 }  // namespace core
