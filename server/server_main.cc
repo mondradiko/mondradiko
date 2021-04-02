@@ -90,31 +90,32 @@ void run(const ServerArgs& args) {
   std::chrono::time_point last_update = clock::now();
 
   while (!g_interrupted) {
-    auto current_time = clock::now();
+    auto frame_start = clock::now();
 
     if (std::chrono::duration<double, std::chrono::seconds::period>(
-            current_time - last_update)
+            frame_start - last_update)
             .count() > min_update_time) {
       server.updateWorld();
-      last_update = current_time;
+      last_update = frame_start;
     }
 
     server.update();
 
-    double dt;
+    {
+      log_zone_named("Lock tick rate");
 
-    while (true) {
-      current_time = clock::now();
-      dt = std::chrono::duration<double, std::chrono::seconds::period>(
-               current_time - last_frame)
-               .count();
-
-      if (dt >= min_frame_time) break;
+      auto frame_wait =
+          frame_start +
+          std::chrono::duration<double, std::chrono::seconds::period>(
+              min_frame_time);
+      std::this_thread::sleep_until(frame_wait);
     }
 
+    double dt = std::chrono::duration<double, std::chrono::seconds::period>(
+                    frame_start - last_frame)
+                    .count();
     if (!world.update(dt)) break;
-
-    last_frame = current_time;
+    last_frame = frame_start;
   }
 }
 
