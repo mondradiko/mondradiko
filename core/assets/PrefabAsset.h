@@ -23,10 +23,13 @@ class PrefabAsset : public Asset {
 
   // Asset lifetime implementation
   explicit PrefabAsset(AssetPool* asset_pool) : asset_pool(asset_pool) {}
-  void load(const assets::SerializedAsset*) final;
   ~PrefabAsset();
 
   EntityId instantiate(ScriptEnvironment*, World*) const;
+
+ protected:
+  // Asset implementation
+  bool _load(const assets::SerializedAsset*) final;
 
  private:
   AssetPool* asset_pool;

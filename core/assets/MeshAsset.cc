@@ -13,9 +13,9 @@
 namespace mondradiko {
 namespace core {
 
-void MeshAsset::load(const assets::SerializedAsset* asset) {
+bool MeshAsset::_load(const assets::SerializedAsset* asset) {
   // Skip loading if we initialized as a dummy
-  if (mesh_pass == nullptr) return;
+  if (mesh_pass == nullptr) return true;
 
   const assets::MeshAsset* mesh = asset->mesh();
 
@@ -48,6 +48,8 @@ void MeshAsset::load(const assets::SerializedAsset* asset) {
   renderer->transferDataToBuffer(
       mesh_pass->getIndexPool(), index_offset * sizeof(MeshIndex),
       indices.data(), indices.size() * sizeof(MeshIndex));
+
+  return true;
 }
 
 }  // namespace core
