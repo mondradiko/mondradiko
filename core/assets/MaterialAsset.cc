@@ -12,9 +12,38 @@
 namespace mondradiko {
 namespace core {
 
-void MaterialAsset::load(const assets::SerializedAsset* asset) {
+void MaterialAsset::updateTextureDescriptor(
+    GpuDescriptorSet* descriptor) const {
+  GpuImage* error_image = renderer->getErrorImage();
+
+  if (uniform.has_albedo_texture) {
+    descriptor->updateImage(0, albedo_texture->getImage());
+  } else {
+    descriptor->updateImage(0, error_image);
+  }
+
+  if (uniform.has_emissive_texture) {
+    descriptor->updateImage(1, emissive_texture->getImage());
+  } else {
+    descriptor->updateImage(1, error_image);
+  }
+
+  if (uniform.normal_map_scale > 0.0) {
+    descriptor->updateImage(2, normal_map_texture->getImage());
+  } else {
+    descriptor->updateImage(2, error_image);
+  }
+
+  if (uniform.has_metal_roughness_texture) {
+    descriptor->updateImage(3, metal_roughness_texture->getImage());
+  } else {
+    descriptor->updateImage(3, error_image);
+  }
+}
+
+bool MaterialAsset::_load(const assets::SerializedAsset* asset) {
   // Skip loading if we initialized as a dummy
-  if (renderer == nullptr) return;
+  if (renderer == nullptr) return true;
 
   const assets::MaterialAsset* material = asset->material();
 
@@ -76,35 +105,8 @@ void MaterialAsset::load(const assets::SerializedAsset* asset) {
   uniform.mask_threshold = material->mask_threshold();
   uniform.metallic_factor = material->metallic_factor();
   uniform.roughness_factor = material->roughness_factor();
-}
 
-void MaterialAsset::updateTextureDescriptor(
-    GpuDescriptorSet* descriptor) const {
-  GpuImage* error_image = renderer->getErrorImage();
-
-  if (uniform.has_albedo_texture) {
-    descriptor->updateImage(0, albedo_texture->getImage());
-  } else {
-    descriptor->updateImage(0, error_image);
-  }
-
-  if (uniform.has_emissive_texture) {
-    descriptor->updateImage(1, emissive_texture->getImage());
-  } else {
-    descriptor->updateImage(1, error_image);
-  }
-
-  if (uniform.normal_map_scale > 0.0) {
-    descriptor->updateImage(2, normal_map_texture->getImage());
-  } else {
-    descriptor->updateImage(2, error_image);
-  }
-
-  if (uniform.has_metal_roughness_texture) {
-    descriptor->updateImage(3, metal_roughness_texture->getImage());
-  } else {
-    descriptor->updateImage(3, error_image);
-  }
+  return true;
 }
 
 }  // namespace core

@@ -24,6 +24,7 @@ spirv_shaders(SHADER_HEADERS
 # Build core source
 #
 set(MONDRADIKO_CORE_SRC
+  assets/Asset.cc
   assets/MaterialAsset.cc
   assets/MeshAsset.cc
   assets/PrefabAsset.cc

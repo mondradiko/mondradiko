@@ -19,10 +19,13 @@ class TextureAsset : public Asset {
   // Asset lifetime implementation
   TextureAsset() : mesh_pass(nullptr) {}
   explicit TextureAsset(MeshPass* mesh_pass) : mesh_pass(mesh_pass) {}
-  void load(const assets::SerializedAsset*) final;
   ~TextureAsset();
 
   GpuImage* getImage() const { return image; }
+
+ protected:
+  // Asset implementation
+  bool _load(const assets::SerializedAsset*) final;
 
  private:
   MeshPass* mesh_pass;

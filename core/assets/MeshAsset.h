@@ -54,11 +54,14 @@ class MeshAsset : public Asset {
   // Asset lifetime implementation
   MeshAsset() : mesh_pass(nullptr) {}
   explicit MeshAsset(MeshPass* mesh_pass) : mesh_pass(mesh_pass) {}
-  void load(const assets::SerializedAsset*) final;
 
   size_t getVertexOffset() const { return vertex_offset; }
   size_t getIndexOffset() const { return index_offset; }
   size_t getIndexNum() const { return index_num; }
+
+ protected:
+  // Asset implementation
+  bool _load(const assets::SerializedAsset*) final;
 
  private:
   MeshPass* mesh_pass;

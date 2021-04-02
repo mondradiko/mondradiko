@@ -42,7 +42,6 @@ class MaterialAsset : public Asset {
   MaterialAsset() : renderer(nullptr) {}
   MaterialAsset(AssetPool* asset_pool, Renderer* renderer)
       : asset_pool(asset_pool), renderer(renderer) {}
-  void load(const assets::SerializedAsset*) final;
 
   // Override isLoaded() to include the textures
   bool isLoaded() const final { return albedo_texture.isLoaded(); }
@@ -51,6 +50,10 @@ class MaterialAsset : public Asset {
   bool isDoubleSided() const { return double_sided; }
   bool isTransparent() const { return transparent; }
   void updateTextureDescriptor(GpuDescriptorSet*) const;
+
+ protected:
+  // Asset implementation
+  bool _load(const assets::SerializedAsset*) final;
 
  private:
   AssetPool* asset_pool;

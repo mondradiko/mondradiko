@@ -3,7 +3,6 @@
 
 #pragma once
 
-
 #include <type_traits>
 
 #include "core/assets/Asset.h"
@@ -95,10 +94,12 @@ class AssetPool {
     }
 
     AssetType* new_asset = new AssetType(*template_asset);
-    new_asset->load(asset_data);
-    new_asset->loaded = true;
-    pool.emplace(id, new_asset);
+    if (!new_asset->load(asset_data)) {
+      log_err_fmt("Failed to load asset 0x%0dx", id);
+      return AssetHandle<AssetType>(nullptr);
+    }
 
+    pool.emplace(id, new_asset);
     return AssetHandle<AssetType>(id, new_asset);
   }
 

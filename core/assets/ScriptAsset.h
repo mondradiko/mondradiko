@@ -19,10 +19,13 @@ class ScriptAsset : public Asset {
 
   // Asset lifetime implementation
   explicit ScriptAsset(ScriptEnvironment* scripts) : scripts(scripts) {}
-  void load(const assets::SerializedAsset*) final;
   ~ScriptAsset();
 
   ComponentScript* createInstance() const;
+
+ protected:
+  // Asset implementation
+  bool _load(const assets::SerializedAsset*) final;
 
  private:
   ScriptEnvironment* scripts;

@@ -10,17 +10,26 @@
 namespace mondradiko {
 namespace core {
 
-void ScriptAsset::load(const assets::SerializedAsset* asset) {
+ScriptAsset::~ScriptAsset() {
+  if (script_module) wasm_module_delete(script_module);
+}
+
+ComponentScript* ScriptAsset::createInstance() const {
+  ComponentScript* instance = new ComponentScript(scripts, script_module);
+  return instance;
+}
+
+bool ScriptAsset::_load(const assets::SerializedAsset* asset) {
   const assets::ScriptAsset* script = asset->script();
 
   if (script->type() == assets::ScriptType::None) {
     log_err("Trying to load a null script");
-    return;
+    return false;
   }
 
   if (script->data()->size() == 0) {
     log_err("Script asset has no contents");
-    return;
+    return false;
   }
 
   // TODO(Turtle1331) free wasmtime memory as early as possible
@@ -65,15 +74,8 @@ void ScriptAsset::load(const assets::SerializedAsset* asset) {
   if (scripts->handleError(module_error, nullptr)) {
     log_ftl("Failed to compile module");
   }
-}
 
-ScriptAsset::~ScriptAsset() {
-  if (script_module) wasm_module_delete(script_module);
-}
-
-ComponentScript* ScriptAsset::createInstance() const {
-  ComponentScript* instance = new ComponentScript(scripts, script_module);
-  return instance;
+  return true;
 }
 
 }  // namespace core

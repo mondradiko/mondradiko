@@ -76,17 +76,11 @@ class AssetHandle {
   AssetType* ptr;
 
   void _ref() {
-    return;
-    if (ptr != nullptr) {
-      ptr->ref_count++;
-    }
+    if (ptr != nullptr) ptr->_ref();
   }
 
   void _unref() {
-    return;
-    if (ptr != nullptr) {
-      ptr->ref_count--;
-    }
+    if (ptr != nullptr) ptr->_unref();
   }
 };
 

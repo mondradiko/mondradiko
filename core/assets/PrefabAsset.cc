@@ -27,19 +27,6 @@ void initComponent(AssetPool* asset_pool, EntityRegistry* registry,
   }
 }
 
-void PrefabAsset::load(const assets::SerializedAsset* asset) {
-  const assets::PrefabAsset* prefab_asset = asset->prefab();
-
-  prefab = new assets::PrefabAssetT;
-  prefab_asset->UnPackTo(prefab);
-
-  children.resize(0);
-
-  for (auto& child : prefab->children) {
-    children.push_back(asset_pool->load<PrefabAsset>(child));
-  }
-}
-
 PrefabAsset::~PrefabAsset() {
   if (prefab != nullptr) delete prefab;
 }
@@ -74,6 +61,21 @@ EntityId PrefabAsset::instantiate(ScriptEnvironment* scripts,
   }
 
   return self_id;
+}
+
+bool PrefabAsset::_load(const assets::SerializedAsset* asset) {
+  const assets::PrefabAsset* prefab_asset = asset->prefab();
+
+  prefab = new assets::PrefabAssetT;
+  prefab_asset->UnPackTo(prefab);
+
+  children.resize(0);
+
+  for (auto& child : prefab->children) {
+    children.push_back(asset_pool->load<PrefabAsset>(child));
+  }
+
+  return true;
 }
 
 }  // namespace core

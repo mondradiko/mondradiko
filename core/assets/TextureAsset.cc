@@ -13,9 +13,13 @@
 namespace mondradiko {
 namespace core {
 
-void TextureAsset::load(const assets::SerializedAsset* asset) {
+TextureAsset::~TextureAsset() {
+  if (image) delete image;
+}
+
+bool TextureAsset::_load(const assets::SerializedAsset* asset) {
   // Skip loading if we initialized as a dummy
-  if (mesh_pass == nullptr) return;
+  if (mesh_pass == nullptr) return true;
 
   const assets::TextureAsset* texture = asset->texture();
 
@@ -46,10 +50,8 @@ void TextureAsset::load(const assets::SerializedAsset* asset) {
   image->transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
   mesh_pass->getRenderer()->transferDataToImage(image, texture->data()->data());
   image->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-}
 
-TextureAsset::~TextureAsset() {
-  if (image) delete image;
+  return true;
 }
 
 }  // namespace core
