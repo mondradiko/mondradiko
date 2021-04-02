@@ -5,6 +5,7 @@
 #include <csignal>
 #include <iostream>
 #include <memory>
+#include <thread>
 
 #include "CLI/App.hpp"
 #include "CLI/Config.hpp"
