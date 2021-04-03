@@ -190,7 +190,7 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
   delete[] atlas_data;
 
   renderer->transferDataToBuffer(glyph_buffer, 0, glyph_data.data(),
-                                 glyph_data.size());
+                                 glyph_data.size() * sizeof(glyph_data[0]));
 
   {
     log_zone_named("Create SDF sampler");
