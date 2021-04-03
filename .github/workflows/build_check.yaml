@@ -51,11 +51,11 @@ jobs:
           mkdir builddir
           pushd builddir
           cmake -GNinja .. ${{ matrix.extra_cmake_args }}
-          # ninja
+          ninja
           popd
 
       - name: Verify
         run: |
-          ./client/mondradiko-client --version || true
-          ./server/mondradiko-server --version || true
-          ./bundler/mondradiko-bundler --version || true
+          ./builddir/client/mondradiko-client --version || true
+          ./builddir/server/mondradiko-server --version || true
+          ./builddir/bundler/mondradiko-bundler --version || true
