@@ -18,11 +18,24 @@ jobs:
           include:
             # - extra_cmake_args: "-DUSE_PKGCONFIG=ON"
             - extra_cmake_args: "-DUSE_PKGCONFIG=OFF"
-    runs-on: self-hosted
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
+
+      - name: Install ninja-build tool
+        uses: mondradiko/gha-setup-ninja@v3
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+          architecture: x64
+
+      - name: apt
+        if: runner.os == 'Linux'
+        run: sudo apt install libwayland-dev libxrandr-dev
 
       - name: cached vcpkg runtime
         if: runner.os == 'Linux'
@@ -38,5 +51,11 @@ jobs:
           mkdir builddir
           pushd builddir
           cmake -GNinja .. ${{ matrix.extra_cmake_args }}
-          ninja
+          # ninja
           popd
+
+      - name: Verify
+        run: |
+          ./client/mondradiko-client --version || true
+          ./server/mondradiko-server --version || true
+          ./bundler/mondradiko-bundler --version || true
