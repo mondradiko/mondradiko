@@ -75,11 +75,15 @@ class AssetHandle {
   AssetId id;
   AssetType* ptr;
 
+  // FIXME(marceline-cramer) Un/refing assets segfaults on engine unload
+
   void _ref() {
+    return;
     if (ptr != nullptr) ptr->_ref();
   }
 
   void _unref() {
+    return;
     if (ptr != nullptr) ptr->_unref();
   }
 };
