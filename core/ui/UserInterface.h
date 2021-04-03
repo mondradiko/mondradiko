@@ -11,10 +11,11 @@ namespace core {
 
 // Forward declarations
 class GlyphLoader;
-class GpuImage;
+class GpuDescriptorSetLayout;
 class GpuInstance;
 class GpuPipeline;
 class GpuShader;
+class GpuVector;
 class Renderer;
 class ScriptEnvironment;
 class UiPanel;
@@ -40,15 +41,26 @@ class UserInterface : public RenderPass {
 
   ScriptEnvironment* scripts = nullptr;
 
-  UiPanel* main_panel = nullptr;
+  types::vector<UiPanel*> panels;
 
   GpuShader* panel_vertex_shader = nullptr;
   GpuShader* panel_fragment_shader = nullptr;
+  GpuDescriptorSetLayout* panel_layout = nullptr;
   VkPipelineLayout panel_pipeline_layout = VK_NULL_HANDLE;
   GpuPipeline* panel_pipeline = nullptr;
 
+  GpuDescriptorSetLayout* glyph_set_layout = nullptr;
+  VkPipelineLayout glyph_pipeline_layout = VK_NULL_HANDLE;
+  GpuPipeline* glyph_pipeline = nullptr;
+
   struct FrameData {
-    GpuImage* panel_atlas = nullptr;
+    GpuVector* panels = nullptr;
+    uint32_t panel_count;
+    GpuVector* glyph_instances = nullptr;
+    uint32_t glyph_count;
+
+    GpuDescriptorSet* panels_descriptor = nullptr;
+    GpuDescriptorSet* glyph_descriptor = nullptr;
   };
 
   types::vector<FrameData> frame_data;
