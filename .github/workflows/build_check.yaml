@@ -41,5 +41,5 @@ jobs:
           mkdir builddir
           pushd builddir
           cmake -GNinja .. ${{ matrix.extra_cmake_args }}
-          ninja
+          # ninja
           popd
