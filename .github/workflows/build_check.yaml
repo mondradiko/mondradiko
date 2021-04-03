@@ -27,6 +27,16 @@ jobs:
       - name: Install ninja-build tool
         uses: mondradiko/gha-setup-ninja@v3
 
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+          architecture: x64
+
+      - name: apt
+        if: runner.os == 'Linux'
+        run: sudo apt install libwayland-dev libxrandr-dev
+
       - name: cached vcpkg runtime
         if: runner.os == 'Linux'
         uses: actions/cache@v2
@@ -43,3 +53,9 @@ jobs:
           cmake -GNinja .. ${{ matrix.extra_cmake_args }}
           # ninja
           popd
+
+      - name: Verify
+        run: |
+          ./client/mondradiko-client --version || true
+          ./server/mondradiko-server --version || true
+          ./bundler/mondradiko-bundler --version || true
