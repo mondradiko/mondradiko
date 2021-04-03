@@ -24,6 +24,9 @@ jobs:
         with:
           submodules: 'true'
 
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v3
+
       - name: cached vcpkg runtime
         if: runner.os == 'Linux'
         uses: actions/cache@v2
