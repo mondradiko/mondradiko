@@ -8,7 +8,6 @@
 #include "core/gpu/GpuPipeline.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/msdfgen_headers.h"
-#include "types/containers/string.h"
 #include "types/containers/unordered_map.h"
 
 namespace mondradiko {
@@ -28,6 +27,7 @@ struct GlyphUniform {
 
 struct GlyphInstance {
   glm::vec2 position;
+  uint32_t style_index;
   uint32_t glyph_index;
 
   static GpuPipeline::VertexBindings getVertexBindings() {
@@ -39,14 +39,11 @@ struct GlyphInstance {
 
   static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
     // VkVertexInputAttributeDescription{location, binding, format, offset}
-    return {
-        {0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(GlyphInstance, position)},
-        {1, 0, VK_FORMAT_R32_UINT, offsetof(GlyphInstance, glyph_index)},
-    };
+    return {{0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(GlyphInstance, position)},
+            {1, 0, VK_FORMAT_R32_UINT, offsetof(GlyphInstance, style_index)},
+            {2, 0, VK_FORMAT_R32_UINT, offsetof(GlyphInstance, glyph_index)}};
   }
 };
-
-using GlyphString = types::vector<GlyphInstance>;
 
 class GlyphLoader {
  public:
@@ -61,7 +58,7 @@ class GlyphLoader {
   const GpuShader* getVertexShader() const { return vertex_shader; }
   const GpuShader* getFragmentShader() const { return fragment_shader; }
 
-  void drawString(GlyphString*, const types::string&) const;
+  uint32_t getGlyphIndex(msdfgen::unicode_t);
 
  private:
   const CVarScope* cvars;

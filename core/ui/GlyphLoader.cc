@@ -242,39 +242,13 @@ GlyphLoader::~GlyphLoader() {
   FT_Done_FreeType(freetype);
 }
 
-void GlyphLoader::drawString(GlyphString* glyph_string,
-                             const types::string& text) const {
-  double cursor = 0.0;
-  double line = 0.0;
-
-  for (uint32_t i = 0; i < text.length(); i++) {
-    char c = text[i];
-
-    if (c == ' ') {
-      cursor += 0.25;
-      continue;
-    } else if (c == '\n') {
-      cursor = 0.0;
-      line -= 0.25;
-      continue;
-    }
-
-    uint32_t glyph_index = 0;
-
-    auto iter = character_map.find(c);
-    if (iter != character_map.end()) {
-      glyph_index = iter->second;
-    } else {
-      cursor += 0.25;
-      continue;
-    }
-
-    GlyphInstance glyph;
-    glyph.position = glm::vec2(cursor, line);
-    glyph.glyph_index = glyph_index;
-
-    glyph_string->push_back(glyph);
-    cursor += 0.25;
+uint32_t GlyphLoader::getGlyphIndex(msdfgen::unicode_t character) {
+  auto iter = character_map.find(character);
+  if (iter != character_map.end()) {
+    return iter->second;
+  } else {
+    // TODO(marceline-cramer) Error character
+    return 0;
   }
 }
 
