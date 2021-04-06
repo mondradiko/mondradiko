@@ -49,14 +49,13 @@ def main():
 
     class_path = sys.argv[2]
     out_path = sys.argv[3]
-    class_def = toml.load(class_path)
+    classdef = toml.load(class_path)
 
     # Open the files we'll be writing to
-    class_name = class_def["name"]
-    generator = generators[generator_name](out_path, class_name)
+    generator = generators[generator_name](out_path, classdef)
 
     # Define methods
-    methods = class_def["methods"]
+    methods = classdef["methods"]
     for method_name, method in methods.items():
         generator.add_method(method_name, method)
 

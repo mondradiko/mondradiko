@@ -18,12 +18,12 @@ def assemblyscript_type(type_name):
 class AsBinding(Codegen):
     """AssemblyScript bindings generator for .d.ts header files."""
 
-    def __init__(self, output_file, component_name):
-        super().__init__(output_file, component_name)
+    def __init__(self, output_file, component):
+        super().__init__(output_file, component)
 
         self.out.extend([
             preamble("AssemblyScript bindings"),
-            f"@unmanaged declare class {component_name} " + "{"
+            f"@unmanaged declare class {self.classdef_name} " + "{"
         ])
 
     def add_method(self, method_name, method):
@@ -43,7 +43,7 @@ class AsBinding(Codegen):
             for param_name, type_name in params])
 
         self.out.extend([
-            f"  @external(\"{self.component_name}Component_{method_name}\")",
+            f"  @external(\"{self.internal_name}_{method_name}\")",
             f"  {method_name}({param_list}): {return_type}",
             ""
         ])
@@ -55,7 +55,7 @@ class AsBinding(Codegen):
             "",
 
             # Export namespace
-            f"export default {self.component_name};",
+            f"export default {self.classdef_name};",
             ""
         ])
 

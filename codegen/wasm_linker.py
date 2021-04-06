@@ -3,56 +3,19 @@
 
 from codegen import Codegen, preamble
 
-LINKER_METHOD_TEMPLATES = """
-template <class ComponentType>
-using BoundComponentMethod = wasm_trap_t* (ComponentType::*)(const wasm_val_t[], wasm_val_t[]);
 
-using MethodTypeCallback = const wasm_functype_t* (*)();
-
-// Forward definition for functions to create Wasm method types
-template <class ComponentType, BoundComponentMethod<ComponentType> method>
-static const wasm_functype_t* componentMethodType();
-
-template <class ComponentType, BoundComponentMethod<ComponentType> method>
-static wasm_trap_t* componentMethodWrapper(const wasmtime_caller_t* caller, void* env, const wasm_val_t args[], wasm_val_t results[]) {
-  World* world = reinterpret_cast<World*>(env);
-  EntityId self_id = static_cast<EntityId>(args[0].of.i32);
-  ComponentType& self = world->registry.get<ComponentType>(self_id);
-  return (self.*method)(args, results);
-}
-
-static void finalizer(void*) { }
-
-template <class ComponentType, BoundComponentMethod<ComponentType> method>
-void linkComponentMethod(ScriptEnvironment* scripts,
-                         World* world,
-                         const char* symbol,
-                         MethodTypeCallback type_callback) {
-  wasm_store_t* store = scripts->getStore();
-
-  const wasm_functype_t* func_type = (*type_callback)();
-
-  wasmtime_func_callback_with_env_t callback =
-    componentMethodWrapper<ComponentType, method>;
-
-  void* env = static_cast<void*>(world);
-
-  wasm_func_t* func =
-    wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
-
-  scripts->addBinding(symbol, func);
-}
-
-"""
-
-
-LINKER_LINK_FORMAT = "void {0}Component::linkScriptApi(ScriptEnvironment* scripts, World* world)"
+LINKER_LINK_FORMAT = "void core::{0}::linkScriptApi(ScriptEnvironment* scripts, World* world)"
 
 
 METHOD_TYPE_FORMAT = "const wasm_functype_t* methodType_{0}_{1}()"
 
 
-LINKER_METHOD_WRAP = "linkComponentMethod<{0}, &{0}::{1}>(scripts, world, \"{0}_{1}\", methodType_{0}_{1});"
+COMPONENT_METHOD_WRAP = \
+    "codegen::linkComponentMethod<{1}, &{1}::{2}>(scripts, world, \"{1}_{2}\", codegen::methodType_{0}_{2});"
+
+
+DYNAMIC_OBJECT_METHOD_WRAP = \
+    "codegen::linkDynamicObjectMethod<{1}, &{1}::{2}>(scripts, \"{1}_{2}\", codegen::methodType_{0}_{2});"
 
 
 C_TYPES_TO_WASM = {
@@ -93,37 +56,41 @@ def build_valtype_vec(vec_name, contents):
 class WasmLinker(Codegen):
     """C++ code generator for linking Wasm bindings to a ScriptEnvironment."""
 
-    def __init__(self, output_file, component_name):
-        super().__init__(output_file, component_name)
+    def __init__(self, output_file, component):
+        super().__init__(output_file, component)
 
         self.out.extend([
             preamble("linking implementation"),
 
             # Import the component we're linking
-            f'#include "core/components/{component_name}Component.h"',
+            f'#include "{self.internal_header}"',
             "",
 
-            # Import common headers
-            '#include "core/world/World.h"',
-            '#include "core/scripting/ScriptEnvironment.h"',
-            '#include "lib/include/wasm_headers.h"',
-            ""
+            # Include templates
+            '#include "codegen/linker_common.h"',
+            "",
+
+            # Setup namespaces
             "namespace mondradiko {",
+            "namespace codegen {",
             "",
             "using namespace core;",
+            ""])
 
-            # Common link methods
-            LINKER_METHOD_TEMPLATES])
+        if self.storage_type == "component":
+            self.method_wrap = COMPONENT_METHOD_WRAP
+        elif self.storage_type == "dynamic_object":
+            self.method_wrap = DYNAMIC_OBJECT_METHOD_WRAP
+        else:
+            raise ValueError("Invalid storage_type: " + self.storage_type)
 
     def add_method(self, method_name, method):
         # TODO(marceline-cramer) C++ name wrangling would go here
         # TODO(marceline-cramer) Handle method overrides
-        # TODO(marceline-cramer) Automatic type conversion
-        component_name = f"{self.component_name}Component"
 
         # Implement a MethodTypeCallback for this method
         self.out.extend([
-            METHOD_TYPE_FORMAT.format(component_name, method_name),
+            METHOD_TYPE_FORMAT.format(self.classdef_name, method_name),
             "{"])
 
         # Parse parameters
@@ -153,13 +120,18 @@ class WasmLinker(Codegen):
             "}", ""])
 
         # Save the linker wrapper template for when we finish up
-        self.methods.append(LINKER_METHOD_WRAP.format(
-            component_name, method_name))
+        self.methods.append(self.method_wrap.format(
+            self.classdef_name, self.internal_name, method_name))
 
     def finish(self):
+        # End of codegen
+        self.out.extend([
+            "}  // namespace codegen",
+            ""])
+
         # Implement Component::linkScriptApi()
         self.out.extend([
-            LINKER_LINK_FORMAT.format(self.component_name),
+            LINKER_LINK_FORMAT.format(self.internal_name),
             "{"])
 
         self.out.extend(f"  {method}" for method in self.methods)
@@ -167,10 +139,10 @@ class WasmLinker(Codegen):
         self.out.extend([
             # End of Component::linkScriptApi()
             "}",
-            "",
+            ""])
 
-            # End of namespace
-            "} // namespace mondradiko",
+        self.out.extend([
+            "}  // namespace mondradiko",
             ""])
 
         # Close linker source file

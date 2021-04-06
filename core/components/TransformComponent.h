@@ -13,6 +13,9 @@
 namespace mondradiko {
 namespace core {
 
+// Forward declarations
+class ScriptEnvironment;
+
 class TransformComponent : public Component<protocol::TransformComponent> {
  public:
   explicit TransformComponent(const protocol::TransformComponent& data)
@@ -70,11 +73,12 @@ class TransformComponent : public Component<protocol::TransformComponent> {
   //
 
   // Takes nothing, returns one f64
-  wasm_trap_t* getX(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* getY(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* getZ(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getX(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getY(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getZ(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
   // Takes three f64s, returns nothing
-  wasm_trap_t* setPosition(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setPosition(ScriptEnvironment*, const wasm_val_t[],
+                           wasm_val_t[]);
 };
 
 }  // namespace core
