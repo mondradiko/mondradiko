@@ -18,9 +18,14 @@ def preamble(summary):
 class Codegen:
     """Base class for generating classdef wrappers."""
 
-    def __init__(self, output_file, component_name):
+    def __init__(self, output_file, component):
         self.output_file = output_file
-        self.component_name = component_name
+
+        self.classdef_name = component["name"]
+        self.storage_type = component["storage_type"]
+        self.internal_name = component["internal_name"]
+        self.internal_header = component["internal_header"]
+
         self.methods = []
         self.out = []
 

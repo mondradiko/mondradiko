@@ -32,6 +32,26 @@ class ScriptEnvironment {
   wasmtime_interrupt_handle_t* getInterruptHandle() { return interrupt_handle; }
 
   /**
+   * @brief Stores a new script object in the script-accessible object registry.
+   * @param object_ptr A raw pointer to the object to be stored.
+   * @return The new ID of the object.
+   */
+  uint32_t storeInRegistry(void*);
+
+  /**
+   * @brief Retrieves a script object from the registry.
+   * @param object_id The ID of the object to be retrieved.
+   * @return A raw pointer to the object, or nullptr if the ID was invalid.
+   */
+  void* getFromRegistry(uint32_t);
+
+  /**
+   * @brief Removes a script object from the registry.
+   * @param object_id The ID of the object to be removed.
+   */
+  void removeFromRegistry(uint32_t);
+
+  /**
    * @brief Updates a local script. Overwrites existing script data, or
    * instantiates a new script if necessary.
    * @param registry The World's registry.
@@ -85,6 +105,7 @@ class ScriptEnvironment {
   wasm_store_t* store = nullptr;
   wasmtime_interrupt_handle_t* interrupt_handle = nullptr;
 
+  types::vector<void*> object_registry;
   types::unordered_map<types::string, wasm_func_t*> bindings;
   wasm_func_t* interrupt_func = nullptr;
 };
