@@ -190,7 +190,7 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
   delete[] atlas_data;
 
   renderer->transferDataToBuffer(glyph_buffer, 0, glyph_data.data(),
-                                 glyph_data.size());
+                                 glyph_data.size() * sizeof(glyph_data[0]));
 
   {
     log_zone_named("Create SDF sampler");
@@ -242,34 +242,13 @@ GlyphLoader::~GlyphLoader() {
   FT_Done_FreeType(freetype);
 }
 
-void GlyphLoader::drawString(GlyphString* glyph_string,
-                             const types::string& text) const {
-  double cursor = 0.0;
-
-  for (uint32_t i = 0; i < text.length(); i++) {
-    char c = text[i];
-
-    if (c == ' ') {
-      cursor += 0.25;
-      continue;
-    }
-
-    uint32_t glyph_index = 0;
-
-    auto iter = character_map.find(c);
-    if (iter != character_map.end()) {
-      glyph_index = iter->second;
-    } else {
-      cursor += 0.25;
-      continue;
-    }
-
-    GlyphInstance glyph;
-    glyph.position = glm::vec2(cursor, 0.0);
-    glyph.glyph_index = glyph_index;
-
-    glyph_string->push_back(glyph);
-    cursor += 0.25;
+uint32_t GlyphLoader::getGlyphIndex(msdfgen::unicode_t character) {
+  auto iter = character_map.find(character);
+  if (iter != character_map.end()) {
+    return iter->second;
+  } else {
+    // TODO(marceline-cramer) Error character
+    return 0;
   }
 }
 

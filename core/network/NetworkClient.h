@@ -25,6 +25,7 @@ namespace core {
 // Forward declarations
 class Avatar;
 class Filesystem;
+class UserInterface;
 class World;
 
 enum class ClientState { Disconnected, Connecting, Joining, Joined };
@@ -33,7 +34,7 @@ class NetworkClient {
  public:
   static void initCVars(CVarScope*);
 
-  NetworkClient(const CVarScope*, Filesystem*, World*);
+  NetworkClient(const CVarScope*, Filesystem*, UserInterface*, World*);
   ~NetworkClient();
 
   bool connect(const Avatar*, const char*, int);
@@ -45,6 +46,7 @@ class NetworkClient {
  private:
   const CVarScope* cvars;
   Filesystem* fs;
+  UserInterface* ui;
   World* world;
 
   ISteamNetworkingSockets* sockets;

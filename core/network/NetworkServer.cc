@@ -4,6 +4,7 @@
 #include "core/network/NetworkServer.h"
 
 #include <memory>
+#include <sstream>
 
 #include "core/avatars/Avatar.h"
 #include "core/avatars/SpectatorAvatar.h"
@@ -166,10 +167,10 @@ void NetworkServer::onJoinRequest(ConnectedClient* client,
     client->is_joined = true;
     client->avatar = client_avatar;
 
-    log_msg_fmt("Client joined: %s", join_request->username()->c_str());
-    types::string connect_message =
-        "Welcome client #" + std::to_string(client->id);
-    sendAnnouncement(connect_message);
+    std::ostringstream connect_message;
+    connect_message << "Welcome " << join_request->username()->str();
+    connect_message << " (#" << client->id << ")";
+    sendAnnouncement(connect_message.str());
   } else {
     log_msg_fmt("Client join request denied: %du", client->id);
   }
@@ -190,6 +191,8 @@ void NetworkServer::onAvatarUpdate(
 ///////////////////////////////////////////////////////////////////////////////
 
 void NetworkServer::sendAnnouncement(types::string message) {
+  log_msg_fmt("Server announcement: %s", message.c_str());
+
   flatbuffers::FlatBufferBuilder builder;
   builder.Clear();
 

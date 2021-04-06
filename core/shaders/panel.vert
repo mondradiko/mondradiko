@@ -9,17 +9,28 @@ layout(set = 0, binding = 0) uniform CameraUniform {
     mat4 projection;
 } camera;
 
+struct PanelUniform {
+  mat4 transform;
+  vec4 color;
+};
+
+layout(set = 1, binding = 0) buffer readonly PanelDescriptor {
+  PanelUniform panels[];
+} panels;
+
 const vec2 vert_positions[] = {
-  vec2(-1.0, -1.0),
-  vec2( 1.0, -1.0),
-  vec2(-1.0,  1.0),
-  vec2( 1.0,  1.0)
+  vec2(-0.5, -0.5),
+  vec2( 0.5, -0.5),
+  vec2(-0.5,  0.5),
+  vec2( 0.5,  0.5)
 };
 
 layout(location = 0) out vec4 fragColor;
 
 void main() {
+  PanelUniform panel = panels.panels[gl_InstanceIndex];
+
   vec4 vert_position = vec4(vert_positions[gl_VertexIndex], 0.0, 1.0);
-  gl_Position = camera.projection * camera.view * vert_position;
-  fragColor = vec4(0.1, 0.02, 0.02, 0.8);
+  gl_Position = camera.projection * camera.view * panel.transform * vert_position;
+  fragColor = panel.color;
 }

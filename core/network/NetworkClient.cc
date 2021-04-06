@@ -9,6 +9,7 @@
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/StringCVar.h"
 #include "core/filesystem/Filesystem.h"
+#include "core/ui/UserInterface.h"
 #include "core/world/World.h"
 #include "log/log.h"
 #include "types/protocol/ClientEvent_generated.h"
@@ -30,8 +31,8 @@ void NetworkClient::initCVars(CVarScope* cvars) {
 NetworkClient* g_client = nullptr;
 
 NetworkClient::NetworkClient(const CVarScope* cvars, Filesystem* fs,
-                             World* world)
-    : cvars(cvars->getChild("client")), fs(fs), world(world) {
+                             UserInterface* ui, World* world)
+    : cvars(cvars->getChild("client")), fs(fs), ui(ui), world(world) {
   log_zone;
 
   if (g_client) {
@@ -121,6 +122,7 @@ void NetworkClient::disconnect() {
 
 void NetworkClient::onAnnouncement(const protocol::Announcement* announcement) {
   log_msg_fmt("Server announcement: %s", announcement->message()->c_str());
+  ui->displayMessage(announcement->message()->c_str());
 }
 
 void NetworkClient::onAssignClientId(

@@ -72,20 +72,11 @@ class OverlayPass : public RenderPass {
   GpuShader* debug_fragment_shader = nullptr;
   GpuPipeline* debug_pipeline = nullptr;
 
-  VkPipelineLayout glyph_pipeline_layout = VK_NULL_HANDLE;
-  GpuPipeline* glyph_pipeline = nullptr;
-
-  GpuDescriptorSetLayout* glyph_set_layout = nullptr;
-
   struct FrameData {
     GpuVector* debug_vertices = nullptr;
     GpuVector* debug_indices = nullptr;
 
     uint16_t index_count;
-
-    GpuDescriptorSet* glyph_descriptor = nullptr;
-    GpuVector* glyph_instances = nullptr;
-    uint32_t glyph_count;
   };
 
   types::vector<FrameData> frame_data;
