@@ -19,7 +19,7 @@ using GlyphStyleList = types::vector<class GlyphStyle*>;
 
 class GlyphStyle {
  public:
-  GlyphStyle(GlyphLoader*);
+  explicit GlyphStyle(GlyphLoader*);
   ~GlyphStyle();
 
   void setTransform(const glm::mat4&);
