@@ -3,11 +3,16 @@
 A large part of Mondradiko's development is driven by the use of automatic
 code generation (codegen), implemented by the Python scripts in this directory.
 
+## Classdefs
+
 Each object that is handled by codegen is first defined in a "classdef" file,
 following the TOML format. Here's an example of a classdef file:
 
 ```toml
 name = "Transform"
+storage_type = "component"
+internal_name = "TransformComponent"
+internal_header = "core/components/TransformComponent.h"
 
 [methods]
 
@@ -37,6 +42,27 @@ various source files. For example, `wasm_linker.py` creates a C++ source file
 that links WebAssembly functions to the engine core's component methods.
 `as_binding.py` creates a `.d.ts` file to provide the engine's runtime API to
 AssemblyScript scripts.
+
+## Classdef Metadata
+
+### Name
+
+The outwards-facing name of this classdef.
+
+### Storage Type
+
+Either:
+
+- `dynamic_object`: IDs are keys into the script registry
+- `component`: IDs are entity IDs, and this classdef is a component
+
+### Internal Name
+
+The name of the internal class that this classdef is describing.
+
+### Internal Header
+
+The path to the header defining the class that this classdef links to.
 
 ## Notable Files
 
