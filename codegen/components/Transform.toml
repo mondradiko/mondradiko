@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 name = "Transform"
+storage_type = "component"
+internal_name = "TransformComponent"
+internal_header = "core/components/TransformComponent.h"
 
 [methods]
 
