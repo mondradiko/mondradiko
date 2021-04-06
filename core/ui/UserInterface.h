@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/renderer/RenderPass.h"
+#include "types/containers/string.h"
 #include "types/containers/vector.h"
 
 namespace mondradiko {
@@ -25,6 +26,8 @@ class UserInterface : public RenderPass {
   UserInterface(GlyphLoader*, Renderer*);
   ~UserInterface();
 
+  void displayMessage(const char*);
+
   // RenderPass implementation
   void createFrameData(uint32_t) final;
   void destroyFrameData() final;
@@ -43,6 +46,8 @@ class UserInterface : public RenderPass {
 
   types::vector<UiPanel*> panels;
 
+  types::string messages;
+
   GpuShader* panel_vertex_shader = nullptr;
   GpuShader* panel_fragment_shader = nullptr;
   GpuDescriptorSetLayout* panel_layout = nullptr;
@@ -58,6 +63,8 @@ class UserInterface : public RenderPass {
     uint32_t panel_count;
     GpuVector* glyph_instances = nullptr;
     uint32_t glyph_count;
+
+    GpuVector* styles = nullptr;
 
     GpuDescriptorSet* panels_descriptor = nullptr;
     GpuDescriptorSet* glyph_descriptor = nullptr;

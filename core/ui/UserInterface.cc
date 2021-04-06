@@ -15,7 +15,7 @@
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/shaders/panel.frag.h"
 #include "core/shaders/panel.vert.h"
-#include "core/ui/GlyphLoader.h"
+#include "core/ui/GlyphStyle.h"
 #include "core/ui/UiPanel.h"
 #include "log/log.h"
 
@@ -57,6 +57,7 @@ UserInterface::UserInterface(GlyphLoader* glyphs, Renderer* renderer)
 
     glyph_set_layout = new GpuDescriptorSetLayout(gpu);
     glyph_set_layout->addCombinedImageSampler(glyphs->getSampler());
+    glyph_set_layout->addStorageBuffer(sizeof(GlyphStyleUniform));
     glyph_set_layout->addStorageBuffer(sizeof(GlyphUniform));
   }
 
@@ -141,6 +142,11 @@ UserInterface::~UserInterface() {
   }
 }
 
+void UserInterface::displayMessage(const char* message) {
+  messages += message;
+  messages += '\n';
+}
+
 void UserInterface::createFrameData(uint32_t frame_count) {
   log_zone;
 
@@ -151,6 +157,8 @@ void UserInterface::createFrameData(uint32_t frame_count) {
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     frame.glyph_instances = new GpuVector(gpu, sizeof(GlyphInstance),
                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    frame.styles = new GpuVector(gpu, sizeof(GlyphStyleUniform),
+                                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
   }
 }
 
@@ -160,6 +168,7 @@ void UserInterface::destroyFrameData() {
   for (auto& frame : frame_data) {
     if (frame.panels != nullptr) delete frame.panels;
     if (frame.glyph_instances != nullptr) delete frame.glyph_instances;
+    if (frame.styles != nullptr) delete frame.styles;
   }
 }
 
@@ -173,12 +182,31 @@ void UserInterface::beginFrame(uint32_t frame_index,
   auto& frame = frame_data[current_frame];
 
   frame.panel_count = 0;
+  GlyphStyleList styles;
+  types::unordered_map<GlyphStyle*, uint32_t> style_indices;
+  GlyphString test_string;
 
   for (auto panel : panels) {
     PanelUniform panel_uniform{};
     panel->writeUniform(&panel_uniform);
     frame.panels->writeElement(frame.panel_count, panel_uniform);
     frame.panel_count++;
+
+    auto panel_styles = panel->getStyles();
+
+    for (auto panel_style : panel_styles) {
+      uint32_t style_index;
+      auto iter = style_indices.find(panel_style);
+      if (iter != style_indices.end()) {
+        style_index = iter->second;
+      } else {
+        style_index = styles.size();
+        styles.push_back(panel_style);
+        style_indices.emplace(panel_style, style_index);
+      }
+
+      panel_style->drawString(&test_string, style_index, messages);
+    }
   }
 
   frame.panels_descriptor = descriptor_pool->allocate(panel_layout);
@@ -186,17 +214,18 @@ void UserInterface::beginFrame(uint32_t frame_index,
 
   frame.glyph_descriptor = descriptor_pool->allocate(glyph_set_layout);
   frame.glyph_descriptor->updateImage(0, glyphs->getAtlas());
-  frame.glyph_descriptor->updateStorageBuffer(1, glyphs->getGlyphs());
+  frame.glyph_descriptor->updateStorageBuffer(1, frame.styles);
+  frame.glyph_descriptor->updateStorageBuffer(2, glyphs->getGlyphs());
 
   frame.glyph_count = 0;
-
-  GlyphString test_string;
-  glyphs->drawString(&test_string,
-                     "The quick brown fox jumps over the lazy dog.");
 
   for (uint32_t i = 0; i < test_string.size(); i++) {
     frame.glyph_instances->writeElement(frame.glyph_count, test_string[i]);
     frame.glyph_count++;
+  }
+
+  for (uint32_t i = 0; i < styles.size(); i++) {
+    frame.styles->writeElement(i, styles[i]->getUniform());
   }
 }
 
@@ -262,9 +291,9 @@ void UserInterface::renderViewport(
       graphics_state.rasterization_state = rasterization_state;
 
       GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::False;
+      depth_state.test_enable = GraphicsState::BoolFlag::True;
       depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Always;
+      depth_state.compare_op = GraphicsState::CompareOp::Less;
       graphics_state.depth_state = depth_state;
 
       glyph_pipeline->cmdBind(command_buffer, graphics_state);
