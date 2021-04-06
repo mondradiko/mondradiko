@@ -152,6 +152,33 @@ void ScriptEnvironment::update(EntityRegistry* registry, AssetPool* asset_pool,
   }
 }
 
+uint32_t ScriptEnvironment::storeInRegistry(void* object_ptr) {
+  // TODO(marceline-cramer) Hashmap for object registry
+  uint32_t object_id = 0;
+  while (object_id < object_registry.size()) {
+    if (object_registry[object_id] == nullptr) {
+      object_registry[object_id] = object_ptr;
+      return object_id;
+    }
+
+    object_id++;
+  }
+
+  object_registry.push_back(object_ptr);
+  return object_id;
+}
+
+void* ScriptEnvironment::getFromRegistry(uint32_t object_id) {
+  if (object_id >= object_registry.size()) return nullptr;
+  return object_registry[object_id];
+}
+
+void ScriptEnvironment::removeFromRegistry(uint32_t object_id) {
+  if (getFromRegistry(object_id) != nullptr) {
+    object_registry[object_id] = nullptr;
+  }
+}
+
 void ScriptEnvironment::updateScript(EntityRegistry* registry,
                                      AssetPool* asset_pool, EntityId entity,
                                      AssetId script_id, const uint8_t* data,
