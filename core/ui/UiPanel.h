@@ -4,12 +4,14 @@
 #pragma once
 
 #include "lib/include/glm_headers.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
 
 // Forward declarations
 class GlyphLoader;
+class GlyphStyle;
 class ScriptEnvironment;
 
 struct PanelUniform {
@@ -22,11 +24,18 @@ class UiPanel {
   UiPanel(GlyphLoader*, ScriptEnvironment*);
   ~UiPanel();
 
+  glm::mat4 getPlaneTransform();
+  glm::mat4 getTrsTransform();
   void writeUniform(PanelUniform*);
+
+  using StyleList = types::vector<GlyphStyle*>;
+  StyleList getStyles();
 
  private:
   GlyphLoader* glyphs;
   ScriptEnvironment* scripts;
+
+  GlyphStyle* _style = nullptr;
 
   glm::vec3 _position;
   glm::quat _orientation;
