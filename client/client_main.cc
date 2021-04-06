@@ -113,7 +113,7 @@ void run(const ClientArgs& args) {
   std::unique_ptr<NetworkClient> client;
 
   if (!args.serverless) {
-    client = std::make_unique<NetworkClient>(&cvars, &fs, &world);
+    client = std::make_unique<NetworkClient>(&cvars, &fs, &ui, &world);
     client->connect(avatar, args.server_ip.c_str(), args.server_port);
   } else {
     world.initializePrefabs();
