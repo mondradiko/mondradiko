@@ -19,10 +19,10 @@ layout(set = 1, binding = 0) buffer readonly PanelDescriptor {
 } panels;
 
 const vec2 vert_positions[] = {
-  vec2(-1.0, -1.0),
-  vec2( 1.0, -1.0),
-  vec2(-1.0,  1.0),
-  vec2( 1.0,  1.0)
+  vec2(-0.5, -0.5),
+  vec2( 0.5, -0.5),
+  vec2(-0.5,  0.5),
+  vec2( 0.5,  0.5)
 };
 
 layout(location = 0) out vec4 fragColor;
