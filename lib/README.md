@@ -26,5 +26,5 @@
 
 # To-Do
 
-- Add list of libraries to this document
+- Add list of libraries to this document (don't forget Bullet!)
 - Add proper licensing

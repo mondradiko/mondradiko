@@ -54,9 +54,7 @@ Contains the classdefs for the component scripting API.
 
 # To-Do
 
-- Rename the bindings/ directory to codegen/
 - Scriptable object base classes
 - World component synchronization
 - World update event factory implementation
-- AssemblyScript bindings
 - Generate separate documentation for the API

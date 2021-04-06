@@ -22,6 +22,7 @@ servers to send to clients each interval.
 
 # To-Do
 
+- Flesh this out
 - Rename `WorldEventSorter` to `EventFactory`?
 - Compute AABBs
 - AABB queries

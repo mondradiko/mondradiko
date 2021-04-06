@@ -9,3 +9,4 @@ See the README files in each subdirectory for details.
 # To-Do
 
 - Add READMEs to subdirectories
+- Document each object

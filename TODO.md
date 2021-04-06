@@ -12,10 +12,7 @@
     - better compliance with glsl spec
 - Add Mondradiko to EnTT wiki
 - Make Docker CI environment
-- Make avatar/ subsystem?
 - TEST TEST TEST
-- Remove assets/ directory
-- Put all engine components in different namespaces
 
 # Documentation
 
