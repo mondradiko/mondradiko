@@ -117,6 +117,7 @@ void run(const ClientArgs& args) {
     client->connect(avatar, args.server_ip.c_str(), args.server_port);
   } else {
     world.initializePrefabs();
+    ui.displayMessage("Running serverless client");
   }
 
   while (!g_interrupted) {
