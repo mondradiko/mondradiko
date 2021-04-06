@@ -16,8 +16,15 @@ float median(float r, float g, float b) {
 
 void main() {
   vec4 sdf = texture(glyph_atlas, fragTexCoord);
-  if (median(sdf.r, sdf.g, sdf.b) < 0.5) discard;
-  // if (sdf.a < 0.5) discard;
+  vec4 color = vec4(1.0);
 
-  outColor = vec4(1.0);
+  // if (median(sdf.r, sdf.g, sdf.b) < 0.5) color.a = 0.0;
+
+  // TODO(marceline-cramer) Make this more robust
+  float dist = 0.5 - median(sdf.r, sdf.g, sdf.b);
+  float duv = fwidth(dist);
+  float pixel_dist = dist / max(duv, 0.001);
+  color.a = clamp(0.5 - pixel_dist, 0, 1);
+
+  outColor = color;
 }

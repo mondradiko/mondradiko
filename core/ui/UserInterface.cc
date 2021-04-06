@@ -296,6 +296,10 @@ void UserInterface::renderViewport(
       depth_state.compare_op = GraphicsState::CompareOp::Less;
       graphics_state.depth_state = depth_state;
 
+      GraphicsState::ColorBlendState color_blend_state{};
+      color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
+      graphics_state.color_blend_state = color_blend_state;
+
       glyph_pipeline->cmdBind(command_buffer, graphics_state);
     }
 
