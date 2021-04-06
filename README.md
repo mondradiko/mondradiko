@@ -19,23 +19,16 @@ Mondradiko is strictly designed around a client-server architecture, allowing mu
 
 # Getting Started
 
-## Terminology
-
-## More Resources
-
-## Building
-
-Please see [BUILDING.md](/BUILDING.md) for building instructions.
-
-## Contributing
-
-Please see the [GitHub Pages](https://mondradiko.github.io/contributing) for information on how to contribute.
+- [Project overview](/docs/Overview.md)
+- [Building Mondradiko](/BUILDING.md)
+- [Repository structure](/docs/Repository_Structure.md)
+- [Contributing to this repository](/CONTRIBUTING.md)
+- [Project to-dos](/TODO.md)
 
 # Licenses
 Mondradiko's source code is licensed under [LGPL-v3](https://www.gnu.org/licenses/).
 
 Mondradiko's emblem is licensed under [CCBY-4.0](https://creativecommons.org/licenses/by/4.0/).
-
 
 Mondradiko includes the following third-party libraries (lib/ directory):
 
