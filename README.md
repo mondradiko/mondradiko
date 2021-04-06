@@ -17,19 +17,18 @@ Mondradiko is structured very similarly to a traditional game engine, but VR can
 ## Multiplayer?
 Mondradiko is strictly designed around a client-server architecture, allowing multiple users to exist in the same virtual environment. Servers can be built to host virtual classrooms, professional meeting spaces, casual hangout areas, and of course, games. Your imagination is the only limit.
 
-# Contributing
+# Getting Started
 
-Please see the [GitHub Pages](https://mondradiko.github.io/contributing) for information on how to contribute.
-
-# Building
-
-Please see [BUILDING.md](/BUILDING.md) for building instructions.
+- [Project overview](/docs/Overview.md)
+- [Building Mondradiko](/BUILDING.md)
+- [Repository structure](/docs/Repository_Structure.md)
+- [Contributing to this repository](/CONTRIBUTING.md)
+- [Project to-dos](/TODO.md)
 
 # Licenses
 Mondradiko's source code is licensed under [LGPL-v3](https://www.gnu.org/licenses/).
 
 Mondradiko's emblem is licensed under [CCBY-4.0](https://creativecommons.org/licenses/by/4.0/).
-
 
 Mondradiko includes the following third-party libraries (lib/ directory):
 
