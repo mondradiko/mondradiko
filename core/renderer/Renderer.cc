@@ -287,7 +287,7 @@ void Renderer::transferDataToBuffer(GpuBuffer* dst, size_t offset,
     log_ftl("Failed to allocate Vulkan buffer.");
   }
 
-  memcpy(allocation_info.pMappedData, src, allocation_info.size);
+  memcpy(allocation_info.pMappedData, src, size);
 
   VkCommandBuffer command_buffer = gpu->beginSingleTimeCommands();
   VkBufferCopy buffer_copy{};
@@ -331,7 +331,7 @@ void Renderer::transferDataToImage(GpuImage* dst, const void* src) {
     log_ftl("Failed to allocate Vulkan buffer");
   }
 
-  memcpy(allocation_info.pMappedData, src, allocation_info.size);
+  memcpy(allocation_info.pMappedData, src, size);
 
   VkCommandBuffer commandBuffer = gpu->beginSingleTimeCommands();
 
