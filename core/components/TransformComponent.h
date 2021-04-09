@@ -79,6 +79,16 @@ class TransformComponent : public Component<protocol::TransformComponent> {
   // Takes three f64s, returns nothing
   wasm_trap_t* setPosition(ScriptEnvironment*, const wasm_val_t[],
                            wasm_val_t[]);
+
+  // Takes nothing, returns one f64
+  wasm_trap_t* getRotationW(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getRotationX(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getRotationY(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getRotationZ(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+
+  // Takes four f64s, returns nothing
+  wasm_trap_t* setRotation(ScriptEnvironment*, const wasm_val_t[],
+      wasm_val_t[]);
 };
 
 }  // namespace core
