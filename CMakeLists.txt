@@ -55,3 +55,5 @@ add_subdirectory(core)
 add_subdirectory(client)
 add_subdirectory(server)
 add_subdirectory(bundler)
+
+set_property(DIRECTORY . PROPERTY VS_STARTUP_PROJECT mondradiko-client)

@@ -72,8 +72,40 @@ set(MONDRADIKO_CORE_SRC
   world/WorldEventSorter.cc
 )
 
+#### DEPENDENCIES
+include(mondradiko-vcpkg)
+
+find_mondradiko_dependency(mondradiko::openxr "OpenXR" INSTALL "openxr-loader" OpenXR::headers OpenXR::openxr_loader OpenXR::openxr-all-supported)
+
+find_mondradiko_dependency(mondradiko::freetype "freetype" freetype)
+add_library(Freetype::Freetype ALIAS freetype) # needed because vcpkg's msdfgen looks for Freetype::Freetype
+find_mondradiko_dependency(mondradiko::msdfgen "msdfgen" msdfgen::msdfgen msdfgen::msdfgen-ext)
+
+find_mondradiko_dependency(
+  mondradiko::sdl2 "SDL2" SDL2::SDL2main
+  INSTALL "sdl2[vulkan]"
+  UNIX SDL2::SDL2-static
+  WIN32 SDL2::SDL2
+)
+
+find_mondradiko_dependency(
+  mondradiko::bullet "Bullet"
+  INSTALL bullet3
+  INCLUDE "bullet"
+  UNIX -Wl,-Bstatic -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath -Wl,-Bdynamic
+  WIN32 BulletSoftBody BulletDynamics BulletCollision LinearMath
+ )
+
+#### /DEPENDENCIES
+
 add_library(mondradiko-core STATIC $<TARGET_OBJECTS:mondradiko-wasm-linker> ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
 
-target_link_libraries(mondradiko-core mondradiko-lib)
-target_link_libraries(mondradiko-core mondradiko-log)
-target_link_libraries(mondradiko-core mondradiko-types)
+target_link_libraries(mondradiko-core PUBLIC mondradiko-lib)
+target_link_libraries(mondradiko-core PUBLIC mondradiko-log)
+target_link_libraries(mondradiko-core PUBLIC mondradiko-types)
+target_link_libraries(mondradiko-core PUBLIC mondradiko::sdl2)
+target_link_libraries(mondradiko-core PUBLIC mondradiko::openxr)
+target_link_libraries(mondradiko-core PUBLIC mondradiko::msdfgen)
+target_link_libraries(mondradiko-core PUBLIC mondradiko::bullet)
+
+set_target_properties(mondradiko-core PROPERTIES FOLDER "components")
