@@ -26,11 +26,16 @@ UiPanel::UiPanel(GlyphLoader* glyphs, ScriptEnvironment* scripts)
       glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(-0.45 * _size.x,
                                                           0.45 * _size.y, 0.0)),
                  glm::vec3(0.075)));
+
+  _object_id = scripts->storeInRegistry(this);
 }
 
 UiPanel::~UiPanel() {
+  scripts->removeFromRegistry(_object_id);
   if (_style != nullptr) delete _style;
 }
+
+void UiPanel::update(double dt) {}
 
 glm::mat4 UiPanel::getPlaneTransform() {
   auto translate = glm::translate(glm::mat4(1.0), _position);

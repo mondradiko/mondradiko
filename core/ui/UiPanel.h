@@ -26,9 +26,13 @@ class UiPanel {
   UiPanel(GlyphLoader*, ScriptEnvironment*);
   ~UiPanel();
 
+  void update(double);
+
   glm::mat4 getPlaneTransform();
   glm::mat4 getTrsTransform();
   void writeUniform(PanelUniform*);
+
+  uint32_t getScriptObject() { return _object_id; }
 
   using StyleList = types::vector<GlyphStyle*>;
   StyleList getStyles();
@@ -41,6 +45,7 @@ class UiPanel {
   ScriptEnvironment* scripts;
 
   GlyphStyle* _style = nullptr;
+  uint32_t _object_id;
 
   glm::vec4 _color;
   glm::vec3 _position;
