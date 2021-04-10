@@ -32,6 +32,50 @@ class ScriptEnvironment {
   wasmtime_interrupt_handle_t* getInterruptHandle() { return interrupt_handle; }
 
   /**
+   * @brief Compiles a Wasm module from binary format.
+   * @param module_data The Wasm binary data to compile.
+   * @return A new wasm_module_t handle.
+   */
+  wasm_module_t* loadBinaryModule(const wasm_byte_vec_t&);
+
+  /**
+   * @brief Compiles a Wasm module from binary format.
+   * @param module_data The Wasm binary data to compile.
+   * @param data_size The size of the binary data.
+   * @return A new wasm_module_t handle.
+   */
+  wasm_module_t* loadBinaryModule(const char*, size_t);
+
+  /**
+   * @brief Compiles a Wasm module from binary format.
+   * @param module_data The Wasm binary data to compile.
+   * @return A new wasm_module_t handle.
+   */
+  wasm_module_t* loadBinaryModule(const types::vector<char>&);
+
+  /**
+   * @brief Compiles a Wasm module from text format.
+   * @param module_data The Wasm text data to compile.
+   * @return A new wasm_module_t handle.
+   */
+  wasm_module_t* loadTextModule(const wasm_byte_vec_t&);
+
+  /**
+   * @brief Compiles a Wasm module from binary format.
+   * @param module_data The Wasm text data to compile.
+   * @param data_size The size of the text data.
+   * @return A new wasm_module_t handle.
+   */
+  wasm_module_t* loadTextModule(const char*, size_t);
+
+  /**
+   * @brief Compiles a Wasm module from text format.
+   * @param module_data The Wasm text data to compile.
+   * @return A new wasm_module_t handle.
+   */
+  wasm_module_t* loadTextModule(const types::vector<char>&);
+
+  /**
    * @brief Stores a new script object in the script-accessible object registry.
    * @param object_ptr A raw pointer to the object to be stored.
    * @return The new ID of the object.
