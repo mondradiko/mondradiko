@@ -8,10 +8,14 @@
 namespace mondradiko {
 namespace core {
 
+// Forward declarations
+class UiPanel;
+
 class UiScript : public ScriptInstance {
  public:
   UiScript(ScriptEnvironment*, wasm_module_t*);
 
+  uint32_t bindPanel(UiPanel*);
   void update(double);
 
  private:

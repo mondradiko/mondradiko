@@ -11,6 +11,16 @@ namespace core {
 UiScript::UiScript(ScriptEnvironment* scripts, wasm_module_t* module)
     : ScriptInstance(scripts, module) {}
 
+uint32_t UiScript::bindPanel(UiPanel* panel) {
+  wasm_val_t arg;
+  arg.kind = WASM_I32;
+  arg.of.i32 = panel->getScriptObject();
+
+  wasm_val_t result;
+  _runCallback("createPanel", &arg, 1, &result, 1);
+  return result.of.i32;
+}
+
 void UiScript::update(double dt) {
   wasm_val_t dt_arg;
   dt_arg.kind = WASM_F64;
