@@ -55,6 +55,9 @@ class UiPanel {
   //
   // Scripting methods
   //
+  wasm_trap_t* getWidth(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getHeight(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setSize(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
   wasm_trap_t* setColor(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
 };
 

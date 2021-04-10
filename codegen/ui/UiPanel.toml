@@ -8,6 +8,19 @@ internal_header = "core/ui/UiPanel.h"
 
 [methods]
 
+  [methods.getWidth]
+  return = "double"
+
+  [methods.getHeight]
+  return = "double"
+
+  [methods.setSize]
+  param_list = ["width", "height"]
+
+    [methods.setSize.params]
+    width = "double"
+    height = "double"
+
   [methods.setColor]
   param_list = ["r", "g", "b", "a"]
 

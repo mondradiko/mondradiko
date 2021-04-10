@@ -58,6 +58,27 @@ UiPanel::StyleList UiPanel::getStyles() {
   return styles;
 }
 
+wasm_trap_t* UiPanel::getWidth(ScriptEnvironment*, const wasm_val_t[],
+                               wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.f64 = _size.x;
+  return nullptr;
+}
+
+wasm_trap_t* UiPanel::getHeight(ScriptEnvironment*, const wasm_val_t[],
+                                wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.f64 = _size.x;
+  return nullptr;
+}
+
+wasm_trap_t* UiPanel::setSize(ScriptEnvironment*, const wasm_val_t args[],
+                              wasm_val_t results[]) {
+  _size.x = args[1].of.f64;
+  _size.y = args[2].of.f64;
+  return nullptr;
+}
+
 wasm_trap_t* UiPanel::setColor(ScriptEnvironment*, const wasm_val_t args[],
                                wasm_val_t results[]) {
   _color.r = args[1].of.f64;
