@@ -62,6 +62,7 @@ set(MONDRADIKO_CORE_SRC
   scripting/ComponentScript.cc
   scripting/ScriptEnvironment.cc
   scripting/ScriptInstance.cc
+  scripting/UiScript.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
   ui/GlyphLoader.cc
