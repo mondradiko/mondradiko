@@ -8,6 +8,7 @@
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ComponentScript.h"
 #include "core/scripting/ScriptInstance.h"
+#include "core/ui/UiPanel.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -101,8 +102,15 @@ void ScriptEnvironment::initializeAssets(AssetPool* asset_pool) {
   asset_pool->initializeAssetType<ScriptAsset>(this);
 }
 
+// Helper function to link a dynamic object's API
+template <class ObjectType>
+void linkDynamicObjectApi(ScriptEnvironment* scripts) {
+  // TODO(marceline-cramer) Don't pass World to dynamic object linkers
+  ObjectType::linkScriptApi(scripts, nullptr);
+}
+
 void ScriptEnvironment::linkUiApis(UserInterface* ui) {
-  // TODO(marceline-cramer) UI API
+  linkDynamicObjectApi<UiPanel>(this);
 }
 
 // Helper function to link a component type's API
