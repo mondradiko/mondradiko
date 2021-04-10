@@ -33,6 +33,7 @@ endif()
 
 # Copy config files into binary folder
 file(COPY config/config.toml DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY config/ui_script.wasm DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Let all parts of the source base access each other's headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
