@@ -175,7 +175,7 @@ function(mondradiko_bootstrap_vcpkg)
 
   if(NOT EXISTS ${VCPKG_EXEC})
     message("bootstrapping vcpkg in ${CMAKE_SOURCE_DIR}/vcpkg")
-    execute_process(COMMAND ${VCPKG_BOOTSTRAP} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vcpkg)
+    execute_process(COMMAND ${VCPKG_BOOTSTRAP} -disableMetrics WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/vcpkg)
   endif()
 
   if(NOT EXISTS ${VCPKG_EXEC})
