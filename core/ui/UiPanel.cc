@@ -14,6 +14,7 @@ namespace core {
 
 UiPanel::UiPanel(GlyphLoader* glyphs, ScriptEnvironment* scripts)
     : glyphs(glyphs), scripts(scripts) {
+  _color = glm::vec4(0.0, 0.0, 0.0, 0.9);
   _position = glm::vec3(4.0, 1.25, 0.0);
   _orientation =
       glm::angleAxis(static_cast<float>(-M_PI_2), glm::vec3(0.0, 1.0, 0.0));
@@ -44,12 +45,22 @@ glm::mat4 UiPanel::getTrsTransform() {
 
 void UiPanel::writeUniform(PanelUniform* panel_uniform) {
   panel_uniform->transform = getTrsTransform();
-  panel_uniform->color = glm::vec4(0.0, 0.0, 0.0, 0.9);
+  panel_uniform->color = _color;
 }
 
 UiPanel::StyleList UiPanel::getStyles() {
   StyleList styles{_style};
   return styles;
+}
+
+wasm_trap_t* UiPanel::setColor(ScriptEnvironment*, const wasm_val_t args[],
+                               wasm_val_t results[]) {
+  _color.r = args[1].of.f64;
+  _color.g = args[2].of.f64;
+  _color.b = args[3].of.f64;
+  _color.a = args[4].of.f64;
+
+  return nullptr;
 }
 
 }  // namespace core

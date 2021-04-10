@@ -4,6 +4,7 @@
 #pragma once
 
 #include "lib/include/glm_headers.h"
+#include "lib/include/wasm_headers.h"
 #include "types/containers/vector.h"
 
 namespace mondradiko {
@@ -13,6 +14,7 @@ namespace core {
 class GlyphLoader;
 class GlyphStyle;
 class ScriptEnvironment;
+class World;
 
 struct PanelUniform {
   glm::mat4 transform;
@@ -31,15 +33,24 @@ class UiPanel {
   using StyleList = types::vector<GlyphStyle*>;
   StyleList getStyles();
 
+  // Defined in generated API linker
+  static void linkScriptApi(ScriptEnvironment*, World*);
+
  private:
   GlyphLoader* glyphs;
   ScriptEnvironment* scripts;
 
   GlyphStyle* _style = nullptr;
 
+  glm::vec4 _color;
   glm::vec3 _position;
   glm::quat _orientation;
   glm::vec2 _size;
+
+  //
+  // Scripting methods
+  //
+  wasm_trap_t* setColor(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
 };
 
 }  // namespace core
