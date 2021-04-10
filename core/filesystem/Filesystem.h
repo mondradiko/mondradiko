@@ -25,8 +25,8 @@ class Filesystem {
   bool loadAsset(const assets::SerializedAsset**, AssetId);
 
   toml::value loadToml(const std::filesystem::path&);
-  types::string loadTextFile(const std::filesystem::path&);
-  types::vector<char> loadBinaryFile(const std::filesystem::path&);
+  bool loadTextFile(const std::filesystem::path&, types::string*);
+  bool loadBinaryFile(const std::filesystem::path&, types::vector<char>*);
 
  private:
   types::vector<AssetBundle*> asset_bundles;
