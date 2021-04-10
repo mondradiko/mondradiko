@@ -71,5 +71,46 @@ toml::value Filesystem::loadToml(const std::filesystem::path& toml_path) {
   return toml::parse(toml_path);
 }
 
+types::string Filesystem::loadTextFile(const std::filesystem::path& file_path) {
+  if (!std::filesystem::exists(file_path)) {
+    log_err_fmt("File %s does not exist", file_path.c_str());
+    return types::string(nullptr);
+  }
+
+  types::string file_data;
+  std::ifstream f(file_path.c_str());
+
+  f.seekg(0, std::ios::end);
+  std::streampos length = f.tellg();
+  f.seekg(0, std::ios::beg);
+
+  file_data.resize(length);
+  f.read(file_data.data(), length);
+  f.close();
+
+  return file_data;
+}
+
+types::vector<char> Filesystem::loadBinaryFile(
+    const std::filesystem::path& file_path) {
+  if (!std::filesystem::exists(file_path)) {
+    log_err_fmt("File %s does not exist", file_path.c_str());
+    return types::vector<char>();
+  }
+
+  types::vector<char> file_data;
+  std::ifstream f(file_path.c_str(), std::ifstream::binary);
+
+  f.seekg(0, std::ios::end);
+  std::streampos length = f.tellg();
+  f.seekg(0, std::ios::beg);
+
+  file_data.resize(length);
+  f.read(file_data.data(), length);
+  f.close();
+
+  return file_data;
+}
+
 }  // namespace core
 }  // namespace mondradiko

@@ -8,6 +8,8 @@
 #include "core/assets/Asset.h"
 #include "core/filesystem/AssetBundle.h"
 #include "lib/include/toml_headers.h"
+#include "types/containers/string.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
@@ -23,6 +25,8 @@ class Filesystem {
   bool loadAsset(const assets::SerializedAsset**, AssetId);
 
   toml::value loadToml(const std::filesystem::path&);
+  types::string loadTextFile(const std::filesystem::path&);
+  types::vector<char> loadBinaryFile(const std::filesystem::path&);
 
  private:
   types::vector<AssetBundle*> asset_bundles;
