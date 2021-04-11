@@ -37,7 +37,7 @@ jobs:
 
       - name: Setup VsDev environment
         if: runner.os == 'Windows'
-        uses: seanmiddleditch/gha-setup-vsdevenv@v3
+        uses: mondradiko/gha-setup-vsdevenv@v3
 
       - name: Setup python
         uses: actions/setup-python@v2
