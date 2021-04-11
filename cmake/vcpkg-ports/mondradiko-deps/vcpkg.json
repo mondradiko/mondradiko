@@ -1,6 +1,7 @@
 {
   "name": "mondradiko-deps",
   "version-string": "0.0.0",
+  "port-version": 1,
   "description": "portfile for managing Mondradiko VCPKG dependencies as a set",
   "homepage": "https://github.com/mondradiko/mondradiko",
   "dependencies": [
@@ -20,7 +21,8 @@
     "freetype",
     "wasmtime-prebuilt",
     "cli11",
-    "bullet3"
+    "bullet3",
+    "zeromq"
   ],
   "features": {
       "validation": {

@@ -96,6 +96,8 @@ find_mondradiko_dependency(
   WIN32 BulletSoftBody BulletDynamics BulletCollision LinearMath
  )
 
+ find_mondradiko_dependency(mondradiko::zeromq "ZeroMQ" WIN32 libzmq UNIX libzmq-static)
+
 #### /DEPENDENCIES
 
 add_library(mondradiko-core STATIC $<TARGET_OBJECTS:mondradiko-wasm-linker> ${SHADER_HEADERS} ${MONDRADIKO_CORE_SRC})
@@ -107,5 +109,6 @@ target_link_libraries(mondradiko-core PUBLIC mondradiko::sdl2)
 target_link_libraries(mondradiko-core PUBLIC mondradiko::openxr)
 target_link_libraries(mondradiko-core PUBLIC mondradiko::msdfgen)
 target_link_libraries(mondradiko-core PUBLIC mondradiko::bullet)
+target_link_libraries(mondradiko-core PUBLIC mondradiko::zeromq)
 
 set_target_properties(mondradiko-core PROPERTIES FOLDER "components")
