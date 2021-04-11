@@ -26,6 +26,10 @@ class Codegen:
         self.internal_name = component["internal_name"]
         self.internal_header = component["internal_header"]
 
+        self.dependencies = []
+        if "dependencies" in component.keys():
+            self.dependencies = component["dependencies"]
+
         self.methods = []
         self.out = []
 
