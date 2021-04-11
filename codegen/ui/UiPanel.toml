@@ -5,6 +5,7 @@ name = "UiPanel"
 storage_type = "dynamic_object"
 internal_name = "UiPanel"
 internal_header = "core/ui/UiPanel.h"
+dependencies = ["GlyphStyle"]
 
 [methods]
 
@@ -29,3 +30,6 @@ internal_header = "core/ui/UiPanel.h"
     g = "double"
     b = "double"
     a = "double"
+
+  [methods.createGlyphStyle]
+  return_class = "GlyphStyle"

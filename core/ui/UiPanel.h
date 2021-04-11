@@ -34,7 +34,7 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
   void writeUniform(PanelUniform*);
 
   using StyleList = types::vector<GlyphStyle*>;
-  StyleList getStyles();
+  const StyleList& getStyles() { return _styles; }
 
   //
   // Scripting methods
@@ -43,11 +43,13 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
   wasm_trap_t* getHeight(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
   wasm_trap_t* setSize(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
   wasm_trap_t* setColor(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* createGlyphStyle(ScriptEnvironment*, const wasm_val_t[],
+                                wasm_val_t[]);
 
  private:
   GlyphLoader* glyphs;
 
-  GlyphStyle* _style = nullptr;
+  StyleList _styles;
 
   glm::vec4 _color;
   glm::vec3 _position;
