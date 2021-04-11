@@ -69,6 +69,7 @@ wrap_classes(AS_BINDINGS "as-binding" ${COMPONENT_CLASSDEFS})
 
 if (NOT WIN32)
   add_library(mondradiko-as-bindings INTERFACE ${AS_BINDINGS})
+  set_target_properties(mondradiko-as-bindings PROPERTIES FOLDER "components")
 endif()
 
 add_library(mondradiko-wasm-linker OBJECT ${SCRIPT_LINKERS})
@@ -77,3 +78,7 @@ add_library(mondradiko-wasm-linker OBJECT ${SCRIPT_LINKERS})
 add_dependencies(mondradiko-wasm-linker mondradiko-types)
 # This is needed to include the wasmtime headers
 target_link_libraries(mondradiko-wasm-linker mondradiko-lib)
+# This is needed for RigidBodyComponent to pull in bullet_headers
+target_include_directories(mondradiko-wasm-linker PUBLIC "${VCPKG_INSTALL_TRIPLETROOT}/include/bullet")
+
+set_target_properties(mondradiko-wasm-linker PROPERTIES FOLDER "components")

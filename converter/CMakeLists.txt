@@ -14,3 +14,5 @@ add_library(mondradiko-converter STATIC ${CONVERTER_SRC})
 target_link_libraries(mondradiko-converter mondradiko-types)
 target_link_libraries(mondradiko-converter mondradiko-lib)
 target_link_libraries(mondradiko-converter mondradiko-log)
+
+set_target_properties(mondradiko-converter PROPERTIES FOLDER "components")

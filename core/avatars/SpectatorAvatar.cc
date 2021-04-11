@@ -3,6 +3,8 @@
 
 #include "core/avatars/SpectatorAvatar.h"
 
+#include <cmath>
+
 #include "core/components/TransformComponent.h"
 #include "core/world/World.h"
 #include "types/protocol/SpectatorAvatar_generated.h"

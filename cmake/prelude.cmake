@@ -23,8 +23,12 @@ if (WIN32)
   # dynamically link against non-debug version of msvcrtxxx.dll (/MD)
   cmake_policy(SET CMP0091 NEW)
   set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
+
+  # enable VS Solution folders
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+  set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "predefined")
 endif()
 
 # VCPKG automation
-include(optional-vcpkg-setup)
+include(mondradiko-vcpkg)
 ###############################################################################

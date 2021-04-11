@@ -1,7 +1,10 @@
 # Copyright 2019, Collabora, Ltd.
 # SPDX-License-Identifier: BSL-1.0
 
-include(FindMondradikoDependency)
+#### DEPENDENCIES
+include(mondradiko-vcpkg)
+find_mondradiko_dependency(mondradiko::glslang "glslang" glslang::HLSL glslang::SPIRV glslang::glslang glslang::OGLCompiler)
+#### /DEPENDENCIES
 
 find_program(GLSLANGVALIDATOR_COMMAND glslangValidator)
 if(NOT GLSLANGVALIDATOR_COMMAND)
