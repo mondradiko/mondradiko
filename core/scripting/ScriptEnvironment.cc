@@ -8,6 +8,7 @@
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ComponentScript.h"
 #include "core/scripting/ScriptInstance.h"
+#include "core/ui/GlyphStyle.h"
 #include "core/ui/UiPanel.h"
 #include "log/log.h"
 
@@ -110,6 +111,7 @@ void linkDynamicObjectApi(ScriptEnvironment* scripts) {
 }
 
 void ScriptEnvironment::linkUiApis(UserInterface* ui) {
+  linkDynamicObjectApi<GlyphStyle>(this);
   linkDynamicObjectApi<UiPanel>(this);
 }
 

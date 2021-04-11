@@ -7,6 +7,7 @@
 layout(set = 1, binding = 0) uniform sampler2D glyph_atlas;
 
 layout(location = 0) in vec2 fragTexCoord;
+layout(location = 1) in vec4 fragColor;
 
 layout(location = 0) out vec4 outColor;
 
@@ -16,7 +17,7 @@ float median(float r, float g, float b) {
 
 void main() {
   vec4 sdf = texture(glyph_atlas, fragTexCoord);
-  vec4 color = vec4(1.0);
+  vec4 color = fragColor;
 
   // if (median(sdf.r, sdf.g, sdf.b) < 0.5) color.a = 0.0;
 
@@ -24,7 +25,7 @@ void main() {
   float dist = 0.5 - median(sdf.r, sdf.g, sdf.b);
   float duv = fwidth(dist);
   float pixel_dist = dist / max(duv, 0.001);
-  color.a = clamp(0.5 - pixel_dist, 0, 1);
+  color.a *= clamp(0.5 - pixel_dist, 0, 1);
 
   outColor = color;
 }

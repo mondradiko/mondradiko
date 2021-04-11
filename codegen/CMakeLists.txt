@@ -69,6 +69,7 @@ set(COMPONENT_CLASSDEFS
 )
 
 set(UI_CLASSDEFS
+  ui/GlyphStyle.toml
   ui/UiPanel.toml
 )
 

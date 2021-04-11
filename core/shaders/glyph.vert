@@ -11,6 +11,7 @@ layout(set = 0, binding = 0) uniform CameraUniform {
 
 struct StyleData {
   mat4 transform;
+  vec4 color;
 };
 
 layout(set = 1, binding = 1) buffer readonly StyleSet {
@@ -31,6 +32,7 @@ layout(location = 1) in uint style_index;
 layout(location = 2) in uint glyph_index;
 
 layout(location = 0) out vec2 fragTexCoord;
+layout(location = 1) out vec4 fragColor;
 
 void main() {
   StyleData style = styles.data[style_index];
@@ -39,4 +41,5 @@ void main() {
   vec4 vertex_position =  style.transform * vec4(glyph_coords, 0.0, 1.0);
   gl_Position = camera.projection * camera.view * vertex_position;
   fragTexCoord = glyph.atlas_coords[gl_VertexIndex].xy;
+  fragColor = style.color;
 }
