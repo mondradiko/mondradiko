@@ -3,8 +3,12 @@
 # To-Do
 
 - Flesh out this document
+- Write GlyphStyle bindings
+- Make GlyphStyle print Wasm strings
+- Bind shape render commands
 - Make rough widget classes
+- Add widget event types
+- Serve UI IPC on client
 - Make prototype scripting API bindings to UI functionality
-- SDF font rendering
 - Proper font kerning
 - Dedicated font subsystem?
