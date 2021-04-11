@@ -16,6 +16,31 @@ function smoothstep(x: f64): f64 {
   return x * x * (3 - 2 * x);
 }
 
+class Color {
+  constructor(public r: f64, public g: f64, public b: f64) {}
+}
+
+function HSVtoRGB(h: f64, s: f64, v: f64): Color {
+  if (s == 0.0) return new Color(v, v, v);
+
+  let i = Math.floor(h * 6.0);
+  let f = (h * 6.0) - i;
+  let p = v * (1.0 - s);
+  let q = v * (1.0 - s * f);
+  let t = v * (1.0 - s * (1.0 - f));
+
+  i %= 6;
+
+  if (i == 0) return new Color(v, t, p);
+  if (i == 1) return new Color(q, v, p);
+  if (i == 2) return new Color(p, v, t);
+  if (i == 3) return new Color(p, q, v);
+  if (i == 4) return new Color(t, p, v);
+  if (i == 5) return new Color(v, p, p);
+
+  return new Color(1.0, 0.0, 1.0);
+}
+
 class PanelImpl {
   hue_offset: f64 = 0.0;
 
@@ -35,14 +60,12 @@ class PanelImpl {
     this.transition_step += dt;
 
     if (this.transition_step < this.transition_time) {
-      let lerp: f64 = smoothstep(this.transition_step / this.transition_time);
+      let lerp = smoothstep(this.transition_step / this.transition_time);
       this.panel.setSize(this.target_width * lerp, this.target_height * lerp);
     } else {
       this.hue_offset += dt;
-      let r = Math.sin(this.hue_offset) * 0.5 + 0.5;
-      let g = 0.0;
-      let b = Math.cos(this.hue_offset) * 0.5 + 0.5;
-      this.panel.setColor(r, g, b, 0.9);
+      let panel_color = HSVtoRGB(this.hue_offset / 3.0, 1.0, 1.0);
+      this.panel.setColor(panel_color.r, panel_color.g, panel_color.b, 0.9);
 
       if (this.transition_step > 3.0) {
         this.transition_step = 0.0;
