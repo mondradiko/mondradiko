@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "core/scripting/ScriptObject.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/wasm_headers.h"
 #include "types/containers/vector.h"
@@ -21,7 +22,7 @@ struct PanelUniform {
   glm::vec4 color;
 };
 
-class UiPanel {
+class UiPanel : public DynamicScriptObject<UiPanel> {
  public:
   UiPanel(GlyphLoader*, ScriptEnvironment*);
   ~UiPanel();
@@ -32,25 +33,8 @@ class UiPanel {
   glm::mat4 getTrsTransform();
   void writeUniform(PanelUniform*);
 
-  uint32_t getScriptObject() { return _object_id; }
-
   using StyleList = types::vector<GlyphStyle*>;
   StyleList getStyles();
-
-  // Defined in generated API linker
-  static void linkScriptApi(ScriptEnvironment*, World*);
-
- private:
-  GlyphLoader* glyphs;
-  ScriptEnvironment* scripts;
-
-  GlyphStyle* _style = nullptr;
-  uint32_t _object_id;
-
-  glm::vec4 _color;
-  glm::vec3 _position;
-  glm::quat _orientation;
-  glm::vec2 _size;
 
   //
   // Scripting methods
@@ -59,6 +43,16 @@ class UiPanel {
   wasm_trap_t* getHeight(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
   wasm_trap_t* setSize(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
   wasm_trap_t* setColor(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+
+ private:
+  GlyphLoader* glyphs;
+
+  GlyphStyle* _style = nullptr;
+
+  glm::vec4 _color;
+  glm::vec3 _position;
+  glm::quat _orientation;
+  glm::vec2 _size;
 };
 
 }  // namespace core

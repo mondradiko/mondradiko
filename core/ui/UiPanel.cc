@@ -13,7 +13,7 @@ namespace mondradiko {
 namespace core {
 
 UiPanel::UiPanel(GlyphLoader* glyphs, ScriptEnvironment* scripts)
-    : glyphs(glyphs), scripts(scripts) {
+    : DynamicScriptObject(scripts), glyphs(glyphs) {
   _color = glm::vec4(0.0, 0.0, 0.0, 0.9);
   _position = glm::vec3(4.0, 1.25, 0.0);
   _orientation =
@@ -27,11 +27,9 @@ UiPanel::UiPanel(GlyphLoader* glyphs, ScriptEnvironment* scripts)
                                                           0.45 * _size.y, 0.0)),
                  glm::vec3(0.075)));
 
-  _object_id = scripts->storeInRegistry(this);
 }
 
 UiPanel::~UiPanel() {
-  scripts->removeFromRegistry(_object_id);
   if (_style != nullptr) delete _style;
 }
 
