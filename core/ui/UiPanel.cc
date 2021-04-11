@@ -68,7 +68,7 @@ wasm_trap_t* UiPanel::getWidth(ScriptEnvironment*, const wasm_val_t[],
 wasm_trap_t* UiPanel::getHeight(ScriptEnvironment*, const wasm_val_t[],
                                 wasm_val_t results[]) {
   results[0].kind = WASM_F64;
-  results[0].of.f64 = _size.x;
+  results[0].of.f64 = _size.y;
   return nullptr;
 }
 
