@@ -1,0 +1,31 @@
+# Copyright (c) 2020-2021 the Mondradiko contributors.
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+name = "UiPanel"
+storage_type = "dynamic_object"
+internal_name = "UiPanel"
+internal_header = "core/ui/UiPanel.h"
+
+[methods]
+
+  [methods.getWidth]
+  return = "double"
+
+  [methods.getHeight]
+  return = "double"
+
+  [methods.setSize]
+  param_list = ["width", "height"]
+
+    [methods.setSize.params]
+    width = "double"
+    height = "double"
+
+  [methods.setColor]
+  param_list = ["r", "g", "b", "a"]
+
+    [methods.setColor.params]
+    r = "double"
+    g = "double"
+    b = "double"
+    a = "double"

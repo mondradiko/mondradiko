@@ -11,6 +11,8 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class CVarScope;
+class Filesystem;
 class GlyphLoader;
 class GpuDescriptorSetLayout;
 class GpuInstance;
@@ -20,13 +22,17 @@ class GpuVector;
 class Renderer;
 class ScriptEnvironment;
 class UiPanel;
+class UiScript;
 
 class UserInterface : public RenderPass {
  public:
-  UserInterface(GlyphLoader*, Renderer*);
+  static void initCVars(CVarScope*);
+
+  UserInterface(const CVarScope*, Filesystem*, GlyphLoader*, Renderer*);
   ~UserInterface();
 
   void displayMessage(const char*);
+  bool update(double);
 
   // RenderPass implementation
   void createFrameData(uint32_t) final;
@@ -38,11 +44,14 @@ class UserInterface : public RenderPass {
   void endFrame() final {}
 
  private:
+  const CVarScope* cvars;
+  Filesystem* fs;
   GlyphLoader* glyphs;
   GpuInstance* gpu;
   Renderer* renderer;
 
   ScriptEnvironment* scripts = nullptr;
+  UiScript* ui_script = nullptr;
 
   types::vector<UiPanel*> panels;
 

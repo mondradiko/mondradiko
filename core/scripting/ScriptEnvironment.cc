@@ -8,6 +8,7 @@
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ComponentScript.h"
 #include "core/scripting/ScriptInstance.h"
+#include "core/ui/UiPanel.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -101,8 +102,15 @@ void ScriptEnvironment::initializeAssets(AssetPool* asset_pool) {
   asset_pool->initializeAssetType<ScriptAsset>(this);
 }
 
+// Helper function to link a dynamic object's API
+template <class ObjectType>
+void linkDynamicObjectApi(ScriptEnvironment* scripts) {
+  // TODO(marceline-cramer) Don't pass World to dynamic object linkers
+  ObjectType::linkScriptApi(scripts, nullptr);
+}
+
 void ScriptEnvironment::linkUiApis(UserInterface* ui) {
-  // TODO(marceline-cramer) UI API
+  linkDynamicObjectApi<UiPanel>(this);
 }
 
 // Helper function to link a component type's API
@@ -150,6 +158,65 @@ void ScriptEnvironment::update(EntityRegistry* registry, AssetPool* asset_pool,
 
     script.script_instance->update(e, dt);
   }
+}
+
+wasm_module_t* ScriptEnvironment::loadBinaryModule(
+    const wasm_byte_vec_t& module_data) {
+  wasmtime_error_t* module_error;
+  wasm_module_t* new_module;
+  module_error = wasmtime_module_new(getEngine(), &module_data, &new_module);
+  if (handleError(module_error, nullptr)) {
+    log_err("Failed to load Wasm module");
+    return nullptr;
+  }
+
+  return new_module;
+}
+
+wasm_module_t* ScriptEnvironment::loadBinaryModule(const char* module_data,
+                                                   size_t data_size) {
+  wasm_byte_vec_t binary_vec;
+  wasm_byte_vec_new(&binary_vec, data_size, module_data);
+  wasm_module_t* new_module = loadBinaryModule(binary_vec);
+  wasm_byte_vec_delete(&binary_vec);
+  return new_module;
+}
+
+wasm_module_t* ScriptEnvironment::loadBinaryModule(
+    const types::vector<char>& module_data) {
+  return loadBinaryModule(module_data.data(), module_data.size());
+}
+
+wasm_module_t* ScriptEnvironment::loadTextModule(
+    const wasm_byte_vec_t& module_data) {
+  wasmtime_error_t* module_error;
+  wasm_byte_vec_t binary_data;
+  module_error = wasmtime_wat2wasm(&module_data, &binary_data);
+  if (handleError(module_error, nullptr)) {
+    log_err("Failed to translate Wasm text to binary");
+    return nullptr;
+  }
+
+  wasm_module_t* new_module = loadBinaryModule(binary_data);
+  if (new_module == nullptr) {
+    log_err("Failed to load Wasm text module");
+  }
+
+  return new_module;
+}
+
+wasm_module_t* ScriptEnvironment::loadTextModule(const char* module_data,
+                                                 size_t data_size) {
+  wasm_byte_vec_t text_data;
+  wasm_byte_vec_new(&text_data, data_size, module_data);
+  wasm_module_t* new_module = loadTextModule(text_data);
+  wasm_byte_vec_delete(&text_data);
+  return new_module;
+}
+
+wasm_module_t* ScriptEnvironment::loadTextModule(
+    const types::vector<char>& module_data) {
+  return loadTextModule(module_data.data(), module_data.size());
 }
 
 uint32_t ScriptEnvironment::storeInRegistry(void* object_ptr) {

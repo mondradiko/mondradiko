@@ -16,3 +16,6 @@ sdf_range = 4.0
 enabled = true
 draw_lights = true
 draw_transforms = true
+
+[ui]
+script_path = "ui_script.wasm"
