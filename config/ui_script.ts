@@ -1,6 +1,7 @@
 // To compile:
 // $ asc -b ui_script.wasm -O3 ui_script.ts
 
+import GlyphStyle from "../builddir/codegen/ui/GlyphStyle";
 import UiPanel from "../builddir/codegen/ui/UiPanel";
 
 function clamp(x: f64, lower: f64, upper: f64): f64 {
@@ -44,6 +45,8 @@ function HSVtoRGB(h: f64, s: f64, v: f64): Color {
 class PanelImpl {
   hue_offset: f64 = 0.0;
 
+  style: GlyphStyle;
+
   transition_step: f64;
   transition_time: f64 = 0.25;
   target_width: f64;
@@ -54,22 +57,26 @@ class PanelImpl {
     this.target_width = panel.getWidth();
     this.target_height = panel.getHeight();
     panel.setSize(0.0, 0.0);
+
+    this.style = panel.createGlyphStyle();
+    this.style.setColor(1.0, 0.0, 1.0, 1.0);
+    this.style.setOffset(0.0, 0.0);
   }
 
   update(dt: f64): void {
     this.transition_step += dt;
 
-    if (this.transition_step < this.transition_time) {
-      let lerp = smoothstep(this.transition_step / this.transition_time);
-      this.panel.setSize(this.target_width * lerp, this.target_height * lerp);
-    } else {
-      this.hue_offset += dt;
-      let panel_color = HSVtoRGB(this.hue_offset / 3.0, 1.0, 1.0);
-      this.panel.setColor(panel_color.r, panel_color.g, panel_color.b, 0.9);
+    let lerp = smoothstep(this.transition_step / this.transition_time);
+    this.panel.setSize(this.target_width * lerp, this.target_height * lerp);
 
-      if (this.transition_step > 3.0) {
-        this.transition_step = 0.0;
-      }
+    this.hue_offset += dt;
+    let panel_color = HSVtoRGB(this.hue_offset / 3.0, 0.8, 0.1);
+    this.panel.setColor(panel_color.r, panel_color.g, panel_color.b, 0.9);
+
+    this.style.setOffset(Math.sin(this.hue_offset) * 0.45, 0.0);
+
+    if (this.transition_step > 3.0) {
+      this.transition_step = 0.0;
     }
   }
 }
