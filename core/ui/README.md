@@ -3,7 +3,6 @@
 # To-Do
 
 - Flesh out this document
-- Write GlyphStyle bindings
 - Make GlyphStyle print Wasm strings
 - Bind shape render commands
 - Make rough widget classes
