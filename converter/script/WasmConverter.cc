@@ -11,7 +11,7 @@ namespace converter {
 
 WasmConverter::AssetOffset WasmConverter::convert(
     AssetBuilder* fbb, std::filesystem::path wasm_path) const {
-  std::ifstream script_file(wasm_path);
+  std::ifstream script_file(wasm_path, std::ifstream::binary);
 
   script_file.seekg(0, std::ios::end);
   std::streampos length = script_file.tellg();
