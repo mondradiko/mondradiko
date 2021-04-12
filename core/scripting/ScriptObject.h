@@ -18,7 +18,7 @@ class ScriptObject {
 template <class T>
 class DynamicScriptObject : public ScriptObject<T> {
  public:
-  DynamicScriptObject(ScriptEnvironment* scripts) : scripts(scripts) {
+  explicit DynamicScriptObject(ScriptEnvironment* scripts) : scripts(scripts) {
     _object_id = scripts->storeInRegistry(this);
   }
 
