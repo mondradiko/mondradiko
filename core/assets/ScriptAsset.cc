@@ -27,39 +27,24 @@ bool ScriptAsset::_load(const assets::SerializedAsset* asset) {
     return false;
   }
 
-  if (script->data()->size() == 0) {
+  if (script->data() != nullptr && script->data()->size() == 0) {
     log_err("Script asset has no contents");
     return false;
   }
 
-  // TODO(Turtle1331) free wasmtime memory as early as possible
-
-  wasmtime_error_t* module_error = nullptr;
-
-  wasm_byte_vec_t module_data;
-  wasm_byte_vec_new(
-      &module_data, script->data()->size(),
-      reinterpret_cast<const wasm_byte_t*>(script->data()->data()));
-
+  const auto& module_data = script->data();
   switch (script->type()) {
     case assets::ScriptType::WasmBinary: {
-      module_error = wasmtime_module_new(scripts->getEngine(), &module_data,
-                                         &script_module);
+      script_module = scripts->loadBinaryModule(
+          reinterpret_cast<const char*>(module_data->data()),
+          module_data->size());
       break;
     }
 
     case assets::ScriptType::WasmText: {
-      wasm_byte_vec_t translated_data;
-
-      module_error = wasmtime_wat2wasm(&module_data, &translated_data);
-
-      if (module_error != nullptr) {
-        break;
-      }
-
-      module_error = wasmtime_module_new(scripts->getEngine(), &translated_data,
-                                         &script_module);
-      wasm_byte_vec_delete(&translated_data);
+      script_module = scripts->loadTextModule(
+          reinterpret_cast<const char*>(module_data->data()),
+          module_data->size());
       break;
     }
 
@@ -69,9 +54,7 @@ bool ScriptAsset::_load(const assets::SerializedAsset* asset) {
     }
   }
 
-  wasm_byte_vec_delete(&module_data);
-
-  if (scripts->handleError(module_error, nullptr)) {
+  if (script_module == nullptr) {
     log_ftl("Failed to compile module");
   }
 
