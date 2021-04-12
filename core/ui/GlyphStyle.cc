@@ -3,18 +3,20 @@
 
 #include "core/ui/GlyphStyle.h"
 
+#include "core/ui/UiPanel.h"
+
 namespace mondradiko {
 namespace core {
 
-GlyphStyle::GlyphStyle(GlyphLoader* glyphs) : glyphs(glyphs) {
-  _uniform.transform = glm::mat4(1.0);
+GlyphStyle::GlyphStyle(GlyphLoader* glyphs, ScriptEnvironment* scripts,
+                       UiPanel* panel)
+    : DynamicScriptObject(scripts), glyphs(glyphs), _panel(panel) {
+  _color = glm::vec4(1.0);
+  _offset = glm::vec2(-0.45);
+  _scale = 0.2;
 }
 
 GlyphStyle::~GlyphStyle() {}
-
-void GlyphStyle::setTransform(const glm::mat4& transform) {
-  _uniform.transform = transform;
-}
 
 void GlyphStyle::drawString(GlyphString* glyph_string, uint32_t style_index,
                             const types::string& text) const {
@@ -48,6 +50,41 @@ void GlyphStyle::drawString(GlyphString* glyph_string, uint32_t style_index,
       line -= 0.25;
     }
   }
+}
+
+GlyphStyleUniform GlyphStyle::getUniform() const {
+  GlyphStyleUniform ubo{};
+  ubo.transform =
+      _panel->getTrsTransform() *
+      glm::translate(glm::mat4(1.0), glm::vec3(_offset.x, -_offset.y, 0.0)) *
+      glm::scale(glm::mat4(1.0), glm::vec3(_scale));
+  ubo.color = _color;
+  return ubo;
+}
+
+wasm_trap_t* GlyphStyle::setOffset(ScriptEnvironment*, const wasm_val_t args[],
+                                   wasm_val_t[]) {
+  _offset.x = args[1].of.f64;
+  _offset.y = args[2].of.f64;
+
+  return nullptr;
+}
+
+wasm_trap_t* GlyphStyle::setScale(ScriptEnvironment*, const wasm_val_t args[],
+                                  wasm_val_t[]) {
+  _scale = args[1].of.f64;
+
+  return nullptr;
+}
+
+wasm_trap_t* GlyphStyle::setColor(ScriptEnvironment*, const wasm_val_t args[],
+                                  wasm_val_t[]) {
+  _color.r = args[1].of.f64;
+  _color.g = args[2].of.f64;
+  _color.b = args[3].of.f64;
+  _color.a = args[4].of.f64;
+
+  return nullptr;
 }
 
 }  // namespace core

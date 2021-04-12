@@ -22,9 +22,16 @@ class AsBinding(Codegen):
         super().__init__(output_file, component)
 
         self.out.extend([
-            preamble("AssemblyScript bindings"),
-            f"@unmanaged declare class {self.classdef_name} " + "{"
-        ])
+            preamble("AssemblyScript bindings")])
+
+        self.out.extend([f"import {dep} from \"./{dep}\";"
+                         for dep in self.dependencies])
+
+        if len(self.dependencies) > 0:
+            self.out.extend([""])
+
+        self.out.extend([
+            f"@unmanaged declare class {self.classdef_name} " + "{"])
 
     def add_method(self, method_name, method):
         params = []
@@ -33,10 +40,12 @@ class AsBinding(Codegen):
                 param_type = assemblyscript_type(method["params"][param_name])
                 params.append((param_name, param_type))
 
+        return_type = "void"
+
         if "return" in method.keys():
             return_type = assemblyscript_type(method["return"])
-        else:
-            return_type = "void"
+        elif "return_class" in method.keys():
+            return_type = method["return_class"]
 
         param_list = ", ".join([
             f"{param_name}: {type_name}"

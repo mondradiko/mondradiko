@@ -14,7 +14,7 @@ UiScript::UiScript(ScriptEnvironment* scripts, wasm_module_t* module)
 uint32_t UiScript::bindPanel(UiPanel* panel) {
   wasm_val_t arg;
   arg.kind = WASM_I32;
-  arg.of.i32 = panel->getScriptObject();
+  arg.of.i32 = panel->getObjectKey();
 
   wasm_val_t result;
   _runCallback("createPanel", &arg, 1, &result, 1);

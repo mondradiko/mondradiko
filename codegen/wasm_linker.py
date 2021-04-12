@@ -4,7 +4,7 @@
 from codegen import Codegen, preamble
 
 
-LINKER_LINK_FORMAT = "void core::{0}::linkScriptApi(ScriptEnvironment* scripts, World* world)"
+LINKER_LINK_FORMAT = "template<> void core::ScriptObject<core::{0}>::linkScriptApi(ScriptEnvironment* scripts, World* world)"
 
 
 METHOD_TYPE_FORMAT = "const wasm_functype_t* methodType_{0}_{1}()"
@@ -101,17 +101,23 @@ class WasmLinker(Codegen):
         self.out.extend(build_valtype_vec("params", params))
 
         # Parse results
+        return_type = None
+
         if "return" in method.keys():
             return_type = wasm_type(method["return"])
+        elif "return_class" in method.keys():
+            return_type = wasm_type("self")
+
+        if not return_type:
             self.out.extend([
                 "  wasm_valtype_vec_t results;",
-                f"  wasm_valtype_t* result = {return_type};"
-                "  wasm_valtype_vec_new(&results, 1, &result);",
+                "  wasm_valtype_vec_new_empty(&results);",
                 ""])
         else:
             self.out.extend([
                 "  wasm_valtype_vec_t results;",
-                "  wasm_valtype_vec_new_empty(&results);",
+                f"  wasm_valtype_t* result = {return_type};"
+                "  wasm_valtype_vec_new(&results, 1, &result);",
                 ""])
 
         # Combine and assemble functype

@@ -8,19 +8,6 @@
 namespace mondradiko {
 namespace core {
 
-glm::mat4 TransformComponent::getLocalTransform() {
-  auto orientation = _data.orientation();
-  auto position = _data.position();
-
-  glm::quat converted_orientation(orientation.w(), orientation.x(),
-                                  orientation.y(), orientation.z());
-  glm::vec3 converted_position(position.x(), position.y(), position.z());
-
-  glm::mat4 transform = glm::translate(glm::mat4(1.0), converted_position) *
-                        glm::mat4(converted_orientation);
-  return transform;
-}
-
 wasm_trap_t* TransformComponent::getX(ScriptEnvironment*,
                                       const wasm_val_t args[],
                                       wasm_val_t results[]) {
@@ -52,6 +39,19 @@ wasm_trap_t* TransformComponent::setPosition(ScriptEnvironment*,
   _data.mutable_position().mutate_y(args[2].of.f64);
   _data.mutable_position().mutate_z(args[3].of.f64);
   return nullptr;
+}
+
+glm::mat4 TransformComponent::getLocalTransform() {
+  auto orientation = _data.orientation();
+  auto position = _data.position();
+
+  glm::quat converted_orientation(orientation.w(), orientation.x(),
+                                  orientation.y(), orientation.z());
+  glm::vec3 converted_position(position.x(), position.y(), position.z());
+
+  glm::mat4 transform = glm::translate(glm::mat4(1.0), converted_position) *
+                        glm::mat4(converted_orientation);
+  return transform;
 }
 
 // Template specialization to build UpdateComponents event
