@@ -6,12 +6,18 @@
 #include <fstream>
 #include <vector>
 
+#include "log/log.h"
+
 namespace mondradiko {
 namespace converter {
 
 WasmConverter::AssetOffset WasmConverter::convert(
     AssetBuilder* fbb, std::filesystem::path wasm_path) const {
   std::ifstream script_file(wasm_path, std::ifstream::binary);
+
+  if (!script_file) {
+    log_ftl_fmt("Failed to open %s", wasm_path.c_str());
+  }
 
   script_file.seekg(0, std::ios::end);
   std::streampos length = script_file.tellg();
