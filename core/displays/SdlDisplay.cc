@@ -299,7 +299,7 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 
   if (main_viewport != nullptr) {
     if (avatar != nullptr && SDL_GetRelativeMouseMode() == SDL_TRUE) {
-      float camera_speed = 0.1;
+      float camera_speed = 5.0 * frame_info->dt;
 
       float truck = 0.0;
 
