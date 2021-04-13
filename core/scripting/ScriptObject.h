@@ -9,15 +9,11 @@ namespace mondradiko {
 namespace core {
 
 template <class T>
-class ScriptObject {
+class DynamicScriptObject {
  public:
   // Defined in generated API linker
-  static void linkScriptApi(ScriptEnvironment*, World*);
-};
+  static void linkScriptApi(ScriptEnvironment*);
 
-template <class T>
-class DynamicScriptObject : public ScriptObject<T> {
- public:
   explicit DynamicScriptObject(ScriptEnvironment* scripts) : scripts(scripts) {
     _object_id = scripts->storeInRegistry(this);
   }
