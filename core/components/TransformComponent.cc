@@ -90,9 +90,9 @@ wasm_trap_t* TransformComponent::setRotation(ScriptEnvironment*,
     const wasm_val_t args[],
     wasm_val_t results[]) {
     _data.mutable_orientation().mutate_w(args[1].of.f64);
-    _data.mutable_orientation().mutate_w(args[2].of.f64);
-    _data.mutable_orientation().mutate_w(args[3].of.f64);
-    _data.mutable_orientation().mutate_w(args[4].of.f64);
+    _data.mutable_orientation().mutate_x(args[2].of.f64);
+    _data.mutable_orientation().mutate_y(args[3].of.f64);
+    _data.mutable_orientation().mutate_z(args[4].of.f64);
     return nullptr;
 }
 
