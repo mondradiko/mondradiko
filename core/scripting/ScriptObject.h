@@ -26,9 +26,10 @@ class DynamicScriptObject : public ScriptObject<T> {
 
   uint32_t getObjectKey() { return _object_id; }
 
- private:
-  ScriptEnvironment* scripts;
+ protected:
+  ScriptEnvironment* const scripts;
 
+ private:
   uint32_t _object_id;
 };
 
