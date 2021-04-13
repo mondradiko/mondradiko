@@ -81,6 +81,7 @@ wasm_trap_t* TransformComponent::setRotation(ScriptEnvironment*,
     _data.mutable_orientation().mutate_y(args[3].of.f64);
     _data.mutable_orientation().mutate_z(args[4].of.f64);
     return nullptr;
+}
 
 glm::mat4 TransformComponent::getLocalTransform() {
   auto orientation = _data.orientation();
