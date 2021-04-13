@@ -107,7 +107,7 @@ void ScriptEnvironment::initializeAssets(AssetPool* asset_pool) {
 template <class ObjectType>
 void linkDynamicObjectApi(ScriptEnvironment* scripts) {
   // TODO(marceline-cramer) Don't pass World to dynamic object linkers
-  ObjectType::linkScriptApi(scripts, nullptr);
+  ObjectType::linkScriptApi(scripts);
 }
 
 void ScriptEnvironment::linkUiApis(UserInterface* ui) {
