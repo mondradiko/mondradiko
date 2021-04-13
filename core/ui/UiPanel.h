@@ -39,12 +39,11 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
   //
   // Scripting methods
   //
-  wasm_trap_t* getWidth(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* getHeight(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* setSize(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* setColor(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* createGlyphStyle(ScriptEnvironment*, const wasm_val_t[],
-                                wasm_val_t[]);
+  wasm_trap_t* getWidth(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getHeight(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setSize(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setColor(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* createGlyphStyle(const wasm_val_t[], wasm_val_t[]);
 
  private:
   GlyphLoader* glyphs;
