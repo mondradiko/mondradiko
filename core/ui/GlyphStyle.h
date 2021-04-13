@@ -3,34 +3,50 @@
 
 #pragma once
 
+#include "core/scripting/ScriptObject.h"
 #include "core/ui/GlyphLoader.h"
+#include "lib/include/wasm_headers.h"
 #include "types/containers/string.h"
 #include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
 
+// Forward declarations
+class ScriptEnvironment;
+class UiPanel;
+class World;
+
 struct GlyphStyleUniform {
   glm::mat4 transform;
+  glm::vec4 color;
 };
 
 using GlyphString = types::vector<GlyphInstance>;
 using GlyphStyleList = types::vector<class GlyphStyle*>;
 
-class GlyphStyle {
+class GlyphStyle : public DynamicScriptObject<GlyphStyle> {
  public:
-  explicit GlyphStyle(GlyphLoader*);
+  explicit GlyphStyle(GlyphLoader*, ScriptEnvironment*, UiPanel*);
   ~GlyphStyle();
 
-  void setTransform(const glm::mat4&);
-
   void drawString(GlyphString*, uint32_t, const types::string&) const;
-  const GlyphStyleUniform& getUniform() const { return _uniform; }
+  GlyphStyleUniform getUniform() const;
+
+  //
+  // Scripting methods
+  //
+  wasm_trap_t* setOffset(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setScale(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setColor(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
 
  private:
   GlyphLoader* glyphs;
 
-  GlyphStyleUniform _uniform;
+  UiPanel* _panel;
+  glm::vec4 _color;
+  glm::vec2 _offset;
+  double _scale;
 };
 
 }  // namespace core

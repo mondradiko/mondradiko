@@ -38,3 +38,5 @@ add_library(mondradiko-types STATIC ${TYPES_SRC} ${ASSET_HEADERS} ${PROTOCOL_HEA
 set_target_properties(mondradiko-types PROPERTIES LINKER_LANGUAGE CXX)
 
 target_link_libraries(mondradiko-types mondradiko-lib)
+
+set_target_properties(mondradiko-types PROPERTIES FOLDER "components")

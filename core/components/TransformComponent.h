@@ -4,9 +4,9 @@
 #pragma once
 
 #include "core/components/Component.h"
+#include "core/scripting/ScriptObject.h"
 #include "core/world/Entity.h"
 #include "lib/include/glm_headers.h"
-#include "lib/include/wasm_headers.h"
 #include "types/assets/PrefabAsset_generated.h"
 #include "types/protocol/TransformComponent_generated.h"
 
@@ -16,7 +16,8 @@ namespace core {
 // Forward declarations
 class ScriptEnvironment;
 
-class TransformComponent : public Component<protocol::TransformComponent> {
+class TransformComponent : public Component<protocol::TransformComponent>,
+                           public ScriptObject<TransformComponent> {
  public:
   explicit TransformComponent(const protocol::TransformComponent& data)
       : Component(data) {}
@@ -53,21 +54,6 @@ class TransformComponent : public Component<protocol::TransformComponent> {
 
   glm::mat4 getWorldTransform() const { return world_transform; }
 
-  // Implement Component
-  // Defined in generated API linker
-  static void linkScriptApi(ScriptEnvironment*, World*);
-
- private:
-  // Systems allowed to access private members directly
-  friend class World;
-
-  // System helpers
-  // Used by World to calculate transforms
-  glm::mat4 getLocalTransform();
-
-  // Final transform result used in math
-  glm::mat4 world_transform;
-
   //
   // Scripting methods
   //
@@ -89,6 +75,17 @@ class TransformComponent : public Component<protocol::TransformComponent> {
   // Takes four f64s, returns nothing
   wasm_trap_t* setRotation(ScriptEnvironment*, const wasm_val_t[],
       wasm_val_t[]);
+
+ private:
+  // Systems allowed to access private members directly
+  friend class World;
+
+  // System helpers
+  // Used by World to calculate transforms
+  glm::mat4 getLocalTransform();
+
+  // Final transform result used in math
+  glm::mat4 world_transform;
 };
 
 }  // namespace core

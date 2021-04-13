@@ -1,4 +1,4 @@
 # Copyright (c) 2020-2021 the Mondradiko contributors.
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-# This file is needed to make a codegen/components/ directory in the build
+# This file is needed to make a codegen/ui/ directory in the build

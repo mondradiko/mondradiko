@@ -77,6 +77,7 @@ void run(const ClientArgs& args) {
   GlyphLoader::initCVars(&cvars);
   Renderer::initCVars(&cvars);
   NetworkClient::initCVars(&cvars);
+  UserInterface::initCVars(&cvars);
   cvars.loadConfig(config);
 
   for (auto bundle : args.bundle_paths) {
@@ -107,7 +108,7 @@ void run(const ClientArgs& args) {
   renderer.addRenderPass(&mesh_pass);
   renderer.addRenderPass(&overlay_pass);
 
-  UserInterface ui(&glyphs, &renderer);
+  UserInterface ui(&cvars, &fs, &glyphs, &renderer);
   renderer.addRenderPass(&ui);
 
   std::unique_ptr<NetworkClient> client;
@@ -132,6 +133,8 @@ void run(const ClientArgs& args) {
       display->beginFrame(&frame_info);
 
       if (!world.update(frame_info.dt)) break;
+
+      if (!ui.update(frame_info.dt)) break;
 
       if (frame_info.should_render) {
         renderer.renderFrame();

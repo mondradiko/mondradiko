@@ -3,6 +3,8 @@
 
 #include "core/ui/UserInterface.h"
 
+#include "core/cvars/CVarScope.h"
+#include "core/cvars/StringCVar.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
@@ -13,6 +15,7 @@
 #include "core/gpu/GraphicsState.h"
 #include "core/renderer/Renderer.h"
 #include "core/scripting/ScriptEnvironment.h"
+#include "core/scripting/UiScript.h"
 #include "core/shaders/panel.frag.h"
 #include "core/shaders/panel.vert.h"
 #include "core/ui/GlyphStyle.h"
@@ -22,8 +25,19 @@
 namespace mondradiko {
 namespace core {
 
-UserInterface::UserInterface(GlyphLoader* glyphs, Renderer* renderer)
-    : glyphs(glyphs), gpu(renderer->getGpu()), renderer(renderer) {
+void UserInterface::initCVars(CVarScope* cvars) {
+  CVarScope* ui = cvars->addChild("ui");
+
+  ui->addValue<StringCVar>("script_path");
+}
+
+UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
+                             GlyphLoader* glyphs, Renderer* renderer)
+    : cvars(_cvars->getChild("ui")),
+      fs(fs),
+      glyphs(glyphs),
+      gpu(renderer->getGpu()),
+      renderer(renderer) {
   log_zone;
 
   {
@@ -33,8 +47,27 @@ UserInterface::UserInterface(GlyphLoader* glyphs, Renderer* renderer)
     scripts->linkUiApis(this);
   }
 
+  {
+    log_zone_named("Load UI script");
+
+    auto script_path = cvars->get<StringCVar>("script_path").str();
+
+    types::vector<char> script_data;
+    if (!fs->loadBinaryFile(script_path, &script_data)) {
+      log_ftl("Failed to load UI script file");
+    }
+
+    wasm_module_t* ui_module = scripts->loadBinaryModule(script_data);
+    if (ui_module == nullptr) {
+      log_ftl("Failed to load UI script module");
+    }
+
+    ui_script = new UiScript(scripts, ui_module);
+  }
+
   {  // Temp panel
     UiPanel* temp_panel = new UiPanel(glyphs, scripts);
+    ui_script->bindPanel(temp_panel);
     panels.push_back(temp_panel);
   }
 
@@ -135,16 +168,32 @@ UserInterface::~UserInterface() {
     vkDestroyPipelineLayout(gpu->device, panel_pipeline_layout, nullptr);
   if (panel_vertex_shader != nullptr) delete panel_vertex_shader;
   if (panel_fragment_shader != nullptr) delete panel_fragment_shader;
-  if (scripts != nullptr) delete scripts;
 
   for (auto panel : panels) {
     if (panel != nullptr) delete panel;
   }
+
+  if (ui_script != nullptr) delete ui_script;
+  if (scripts != nullptr) delete scripts;
 }
 
 void UserInterface::displayMessage(const char* message) {
   messages += message;
   messages += '\n';
+}
+
+bool UserInterface::update(double dt) {
+  log_zone;
+
+  ui_script->update(dt);
+
+  for (auto panel : panels) {
+    if (panel != nullptr) {
+      panel->update(dt);
+    }
+  }
+
+  return true;
 }
 
 void UserInterface::createFrameData(uint32_t frame_count) {

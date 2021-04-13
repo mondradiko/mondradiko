@@ -6,8 +6,8 @@ set(BUNDLER_SRC
   Bundler.cc
 )
 
-include(FindMondradikoDependency)
-find_mondradiko_dependency(mondradiko::cli11 VCPKG "CLI11" VCPKG_MODULES CLI11::CLI11)
+include(mondradiko-vcpkg)
+find_mondradiko_dependency(mondradiko::cli11 "CLI11" CLI11::CLI11)
 
 add_executable(mondradiko-bundler ${BUNDLER_SRC})
 target_link_libraries(mondradiko-bundler mondradiko-converter)

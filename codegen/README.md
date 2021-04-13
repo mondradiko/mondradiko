@@ -64,6 +64,12 @@ The name of the internal class that this classdef is describing.
 
 The path to the header defining the class that this classdef links to.
 
+### Dependencies
+
+An array of other classdefs that this classdef references, either through return
+values or arguments. Automatically converted to `import` statements in the
+generated bindings.
+
 ## Notable Files
 
 ### codegen.py

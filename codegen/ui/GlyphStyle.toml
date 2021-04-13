@@ -1,0 +1,31 @@
+# Copyright (c) 2020-2021 the Mondradiko contributors.
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+name = "GlyphStyle"
+storage_type = "dynamic_object"
+internal_name = "GlyphStyle"
+internal_header = "core/ui/GlyphStyle.h"
+
+[methods]
+
+  [methods.setOffset]
+  param_list = ["x", "y"]
+
+    [methods.setOffset.params]
+    x = "double"
+    y = "double"
+
+  [methods.setScale]
+  param_list = ["scale"]
+
+    [methods.setScale.params]
+    scale = "double"
+
+  [methods.setColor]
+  param_list = ["r", "g", "b", "a"]
+
+    [methods.setColor.params]
+    r = "double"
+    g = "double"
+    b = "double"
+    a = "double"

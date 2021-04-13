@@ -15,6 +15,7 @@ set(GENERATE_CLASS_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/generate_class.py")
 set(CLASSDEF_GENERATOR_SCRIPTS
   "${CMAKE_CURRENT_SOURCE_DIR}/as_binding.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/codegen.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/generate_class.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/wasm_linker.py"
 )
 
@@ -60,15 +61,24 @@ endfunction(wrap_classes)
 # Create components/ binary directory
 add_subdirectory(components)
 
+# Create ui/ binary directory
+add_subdirectory(ui)
+
 set(COMPONENT_CLASSDEFS
   components/Transform.toml
 )
 
-wrap_classes(SCRIPT_LINKERS "wasm-linker" ${COMPONENT_CLASSDEFS})
-wrap_classes(AS_BINDINGS "as-binding" ${COMPONENT_CLASSDEFS})
+set(UI_CLASSDEFS
+  ui/GlyphStyle.toml
+  ui/UiPanel.toml
+)
+
+wrap_classes(SCRIPT_LINKERS "wasm-linker" "${COMPONENT_CLASSDEFS};${UI_CLASSDEFS}")
+wrap_classes(AS_BINDINGS "as-binding" "${COMPONENT_CLASSDEFS};${UI_CLASSDEFS}")
 
 if (NOT WIN32)
   add_library(mondradiko-as-bindings INTERFACE ${AS_BINDINGS})
+  set_target_properties(mondradiko-as-bindings PROPERTIES FOLDER "components")
 endif()
 
 add_library(mondradiko-wasm-linker OBJECT ${SCRIPT_LINKERS})
@@ -77,3 +87,7 @@ add_library(mondradiko-wasm-linker OBJECT ${SCRIPT_LINKERS})
 add_dependencies(mondradiko-wasm-linker mondradiko-types)
 # This is needed to include the wasmtime headers
 target_link_libraries(mondradiko-wasm-linker mondradiko-lib)
+# This is needed for RigidBodyComponent to pull in bullet_headers
+target_include_directories(mondradiko-wasm-linker PUBLIC "${VCPKG_INSTALL_TRIPLETROOT}/include/bullet")
+
+set_target_properties(mondradiko-wasm-linker PROPERTIES FOLDER "components")
