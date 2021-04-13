@@ -13,10 +13,10 @@ namespace mondradiko {
 namespace core {
 
 class MeshRendererComponent
-    : public Component<protocol::MeshRendererComponent> {
+    : public SynchronizedComponent<protocol::MeshRendererComponent> {
  public:
   explicit MeshRendererComponent(const protocol::MeshRendererComponent& data)
-      : Component(data) {}
+      : SynchronizedComponent(data) {}
 
   explicit MeshRendererComponent(const assets::MeshRendererPrefab* prefab) {
     _data.mutate_mesh_asset(static_cast<protocol::AssetId>(prefab->mesh()));
@@ -25,7 +25,7 @@ class MeshRendererComponent
   }
 
   MeshRendererComponent(AssetId mesh_asset, AssetId material_asset)
-      : Component(protocol::MeshRendererComponent(
+      : SynchronizedComponent(protocol::MeshRendererComponent(
             static_cast<protocol::AssetId>(mesh_asset),
             static_cast<protocol::AssetId>(material_asset))) {}
 

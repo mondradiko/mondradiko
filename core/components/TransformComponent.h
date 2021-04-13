@@ -16,11 +16,12 @@ namespace core {
 // Forward declarations
 class ScriptEnvironment;
 
-class TransformComponent : public Component<protocol::TransformComponent>,
-                           public ScriptObject<TransformComponent> {
+class TransformComponent
+    : public ScriptableComponent<TransformComponent,
+                                 protocol::TransformComponent> {
  public:
   explicit TransformComponent(const protocol::TransformComponent& data)
-      : Component(data) {}
+      : ScriptableComponent(data) {}
 
   explicit TransformComponent(const assets::TransformPrefab* prefab) {
     // TODO(marceline-cramer) Make helpers for these

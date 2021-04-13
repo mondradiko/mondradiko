@@ -16,10 +16,11 @@ struct PointLightUniform {
   glm::vec4 intensity;
 };
 
-class PointLightComponent : public Component<protocol::PointLightComponent> {
+class PointLightComponent
+    : public SynchronizedComponent<protocol::PointLightComponent> {
  public:
   explicit PointLightComponent(const protocol::PointLightComponent& data)
-      : Component(data) {}
+      : SynchronizedComponent(data) {}
 
   explicit PointLightComponent(const assets::PointLightPrefab* prefab) {
     // TODO(marceline-cramer) Make helpers for these
