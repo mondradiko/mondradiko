@@ -18,9 +18,13 @@ namespace codegen {
 using namespace core;
 
 template <class ClassdefType>
-using BoundClassdefMethod = wasm_trap_t* (ClassdefType::*)(ScriptEnvironment*,
-                                                           const wasm_val_t[],
+using BoundClassdefMethod = wasm_trap_t* (ClassdefType::*)(const wasm_val_t[],
                                                            wasm_val_t[]);
+
+template <class ClassdefType>
+using BoundComponentMethod = wasm_trap_t* (ClassdefType::*)(ScriptEnvironment*,
+                                                            const wasm_val_t[],
+                                                            wasm_val_t[]);
 
 using ClassdefMethodCallback = const wasm_functype_t* (*)();
 
@@ -30,7 +34,7 @@ static const wasm_functype_t* createClassdefMethodType();
 
 static void finalizer(void*) {}
 
-template <class ComponentType, BoundClassdefMethod<ComponentType> method>
+template <class ComponentType, BoundComponentMethod<ComponentType> method>
 static wasm_trap_t* componentMethodWrapper(const wasmtime_caller_t* caller,
                                            void* env, const wasm_val_t args[],
                                            wasm_val_t results[]) {
@@ -53,7 +57,7 @@ static wasm_trap_t* componentMethodWrapper(const wasmtime_caller_t* caller,
   return ((*self).*method)(world->scripts, args, results);
 }
 
-template <class ComponentType, BoundClassdefMethod<ComponentType> method>
+template <class ComponentType, BoundComponentMethod<ComponentType> method>
 void linkComponentMethod(ScriptEnvironment* scripts, World* world,
                          const char* symbol,
                          ClassdefMethodCallback type_callback) {
@@ -108,7 +112,7 @@ static wasm_trap_t* dynamicObjectMethodWrapper(const wasmtime_caller_t* caller,
     return wasm_trap_new(scripts->getStore(), &error);
   }*/
 
-  return ((*self).*method)(scripts, args, results);
+  return ((*self).*method)(args, results);
 }
 
 template <class ObjectType, BoundClassdefMethod<ObjectType> method>
