@@ -125,5 +125,33 @@ void linkDynamicObjectMethod(ScriptEnvironment* scripts, const char* symbol,
   scripts->addBinding(symbol, func);
 }
 
+template <class ObjectType, BoundClassdefMethod<ObjectType> method>
+static wasm_trap_t* staticObjectMethodWrapper(const wasmtime_caller_t* caller,
+                                              void* env,
+                                              const wasm_val_t args[],
+                                              wasm_val_t results[]) {
+  ObjectType* self = reinterpret_cast<ObjectType*>(env);
+  return ((*self).*method)(args, results);
+}
+
+template <class ObjectType, BoundClassdefMethod<ObjectType> method>
+void linkStaticObjectMethod(ScriptEnvironment* scripts, ObjectType* self,
+                            const char* symbol,
+                            ClassdefMethodCallback type_callback) {
+  wasm_store_t* store = scripts->getStore();
+
+  const wasm_functype_t* func_type = (*type_callback)();
+
+  wasmtime_func_callback_with_env_t callback =
+      staticObjectMethodWrapper<ObjectType, method>;
+
+  void* env = static_cast<void*>(self);
+
+  wasm_func_t* func =
+      wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
+
+  scripts->addBinding(symbol, func);
+}
+
 }  // namespace codegen
 }  // namespace mondradiko

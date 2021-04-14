@@ -24,6 +24,10 @@ DYNAMIC_OBJECT_METHOD_WRAP = \
     "codegen::linkDynamicObjectMethod<{1}, &{1}::{2}>(scripts, \"{1}_{2}\", codegen::methodType_{0}_{2});"
 
 
+STATIC_OBJECT_METHOD_WRAP = \
+    "codegen::linkStaticObjectMethod<{1}, &{1}::{2}>(scripts, self, \"{1}_{2}\", codegen::methodType_{0}_{2});"
+
+
 C_TYPES_TO_WASM = {
     "self": "WASM_I32",
     "double": "WASM_F64"
@@ -89,6 +93,9 @@ class WasmLinker(Codegen):
         elif self.storage_type == "dynamic_object":
             self.link_format = DYNAMIC_LINK_FORMAT
             self.method_wrap = DYNAMIC_OBJECT_METHOD_WRAP
+        elif self.storage_type == "static_object":
+            self.link_format = STATIC_LINK_FORMAT
+            self.method_wrap = STATIC_OBJECT_METHOD_WRAP
         else:
             raise ValueError("Invalid storage_type: " + self.storage_type)
 
@@ -102,7 +109,11 @@ class WasmLinker(Codegen):
             "{"])
 
         # Parse parameters
-        params = ["self"]
+        if self.storage_type != "static_object":
+            params = ["self"]
+        else:
+            params = []
+
         if "param_list" in method.keys():
             params.extend([
                 method["params"][param] for param in method["param_list"]])
