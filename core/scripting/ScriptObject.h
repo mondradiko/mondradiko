@@ -29,5 +29,27 @@ class DynamicScriptObject {
   uint32_t _object_id;
 };
 
+template <class T>
+class StaticScriptObject {
+ public:
+  // Defined in generated API linker
+  static void linkScriptApi(ScriptEnvironment*, T*);
+
+  explicit StaticScriptObject(ScriptEnvironment* scripts, const char* symbol)
+      : scripts(scripts), _static_symbol(symbol) {
+    if (scripts->storeStaticObject(_static_symbol, this)) {
+      linkScriptApi(scripts, static_cast<T*>(this));
+    }
+  }
+
+  ~StaticScriptObject() { scripts->removeStaticObject(_static_symbol); }
+
+ protected:
+  ScriptEnvironment* const scripts;
+
+ private:
+  const char* _static_symbol;
+};
+
 }  // namespace core
 }  // namespace mondradiko
