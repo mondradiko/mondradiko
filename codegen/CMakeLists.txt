@@ -76,6 +76,8 @@ set(UI_CLASSDEFS
 wrap_classes(SCRIPT_LINKERS "wasm-linker" "${COMPONENT_CLASSDEFS};${UI_CLASSDEFS}")
 wrap_classes(AS_BINDINGS "as-binding" "${COMPONENT_CLASSDEFS};${UI_CLASSDEFS}")
 
+file(COPY components/Entity.d.ts DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/components)
+
 if (NOT WIN32)
   add_library(mondradiko-as-bindings INTERFACE ${AS_BINDINGS})
   set_target_properties(mondradiko-as-bindings PROPERTIES FOLDER "components")
