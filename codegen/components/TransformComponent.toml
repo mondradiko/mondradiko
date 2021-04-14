@@ -9,19 +9,19 @@ internal_header = "core/components/TransformComponent.h"
 [methods]
 
   [methods.getX]
-  brief = "Retrieves the X coordinate of this TransformComponent."
+  brief = "Retrieves the X coordinate."
   return = "double"
 
   [methods.getY]
-  brief = "Retrieves the Y coordinate of this TransformComponent."
+  brief = "Retrieves the Y coordinate."
   return = "double"
 
   [methods.getZ]
-  brief = "Retrieves the Z coordinate of this TransformComponent."
+  brief = "Retrieves the Z coordinate."
   return = "double"
 
   [methods.setPosition]
-  brief = "Sets the position of this TransformComponent."
+  brief = "Sets the position."
   param_list = ["x", "y", "z"]
 
     [methods.setPosition.params]
@@ -30,23 +30,23 @@ internal_header = "core/components/TransformComponent.h"
     z = "double"
 
   [methods.getRotationW]
-  brief = "Retrieves the W rotation component of this Transform's Quarternion."
+  brief = "Retrieves the W rotation component."
   return = "double"
 
   [methods.getRotationX]
-  brief = "Retrieves the X rotation component of this Transform's Quarternion."
+  brief = "Retrieves the X rotation component."
   return = "double"
 
   [methods.getRotationY]
-  brief = "Retrieves the Y rotation component of this Transform's Quarternion."
+  brief = "Retrieves the Y rotation component."
   return = "double"
 
   [methods.getRotationZ]
-  brief = "Retrieves the Z rotation component of this Transform's Quarternion."
+  brief = "Retrieves the Z rotation component."
   return = "double"
-  
+
   [methods.setRotation]
-  brief = "Sets the Quarternion rotation of this Transform."
+  brief = "Sets the quaternion rotation."
   param_list = ["w", "x", "y", "z"]
 
     [methods.setRotation.params]
