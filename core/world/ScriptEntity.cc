@@ -3,6 +3,7 @@
 
 #include "core/world/ScriptEntity.h"
 
+#include "core/components/PointLightComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/world/World.h"
@@ -89,6 +90,10 @@ void linkEntityMethod(ScriptEnvironment* scripts, World* world,
 void ScriptEntity::linkScriptApi(ScriptEnvironment* scripts, World* world) {
   linkEntityMethod<Entity_getComponent>(scripts, world, "Entity_getComponent",
                                         methodType_Entity);
+  linkEntityMethod<Entity_hasComponent<PointLightComponent>>(
+      scripts, world, "Entity_hasPointLight", methodType_Entity);
+  linkEntityMethod<Entity_addComponent<PointLightComponent>>(
+      scripts, world, "Entity_addPointLight", methodType_Entity);
   linkEntityMethod<Entity_hasComponent<TransformComponent>>(
       scripts, world, "Entity_hasTransform", methodType_Entity);
   linkEntityMethod<Entity_addComponent<TransformComponent>>(

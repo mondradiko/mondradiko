@@ -4,6 +4,7 @@
 #include "core/scripting/ScriptEnvironment.h"
 
 #include "core/assets/ScriptAsset.h"
+#include "core/components/PointLightComponent.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ComponentScript.h"
@@ -123,6 +124,7 @@ void linkComponentApi(ScriptEnvironment* scripts, World* world) {
 }
 
 void ScriptEnvironment::linkComponentApis(World* world) {
+  linkComponentApi<PointLightComponent>(this, world);
   linkComponentApi<TransformComponent>(this, world);
   linkComponentApi<ScriptEntity>(this, world);
 }

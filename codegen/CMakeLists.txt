@@ -65,6 +65,7 @@ add_subdirectory(components)
 add_subdirectory(ui)
 
 set(COMPONENT_CLASSDEFS
+  components/PointLightComponent.toml
   components/TransformComponent.toml
 )
 

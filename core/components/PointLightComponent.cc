@@ -20,6 +20,15 @@ void PointLightComponent::getUniform(PointLightUniform* uniform) {
   uniform->intensity.b = _data.intensity().z();
 }
 
+wasm_trap_t* PointLightComponent::setIntensity(ScriptEnvironment*,
+                                               const wasm_val_t args[],
+                                               wasm_val_t[]) {
+  _data.mutable_intensity().mutate_x(args[1].of.f64);
+  _data.mutable_intensity().mutate_y(args[2].of.f64);
+  _data.mutable_intensity().mutate_z(args[3].of.f64);
+  return nullptr;
+}
+
 // Template specialization to build UpdateComponents event
 template <>
 void buildUpdateComponents<mondradiko::protocol::PointLightComponent>(
