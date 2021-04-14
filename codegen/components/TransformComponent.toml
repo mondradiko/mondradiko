@@ -28,3 +28,29 @@ internal_header = "core/components/TransformComponent.h"
     x = "double"
     y = "double"
     z = "double"
+
+  [methods.getRotationW]
+  brief = "Retrieves the W rotation component of this Transform's Quarternion."
+  return = "double"
+
+  [methods.getRotationX]
+  brief = "Retrieves the X rotation component of this Transform's Quarternion."
+  return = "double"
+
+  [methods.getRotationY]
+  brief = "Retrieves the Y rotation component of this Transform's Quarternion."
+  return = "double"
+
+  [methods.getRotationZ]
+  brief = "Retrieves the Z rotation component of this Transform's Quarternion."
+  return = "double"
+  
+  [methods.setRotation]
+  brief = "Sets the Quarternion rotation of this Transform."
+  param_list = ["w", "x", "y", "z"]
+
+    [methods.setRotation.params]
+    w = "double"
+    x = "double"
+    y = "double"
+    z = "double"
