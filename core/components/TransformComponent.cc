@@ -41,6 +41,48 @@ wasm_trap_t* TransformComponent::setPosition(ScriptEnvironment*,
   return nullptr;
 }
 
+wasm_trap_t* TransformComponent::getRotationW(ScriptEnvironment*,
+    const wasm_val_t args[],
+    wasm_val_t results[]) {
+    results[0].kind = WASM_F64;
+    results[0].of.f64 = _data.orientation().w();
+    return nullptr;
+}
+
+wasm_trap_t* TransformComponent::getRotationX(ScriptEnvironment*,
+    const wasm_val_t args[],
+    wasm_val_t results[]) {
+    results[0].kind = WASM_F64;
+    results[0].of.f64 = _data.orientation().x();
+    return nullptr;
+}
+
+wasm_trap_t* TransformComponent::getRotationY(ScriptEnvironment*,
+    const wasm_val_t args[],
+    wasm_val_t results[]) {
+    results[0].kind = WASM_F64;
+    results[0].of.f64 = _data.orientation().y();
+    return nullptr;
+}
+
+wasm_trap_t* TransformComponent::getRotationZ(ScriptEnvironment*,
+    const wasm_val_t args[],
+    wasm_val_t results[]) {
+    results[0].kind = WASM_F64;
+    results[0].of.f64 = _data.orientation().z();
+    return nullptr;
+}
+
+wasm_trap_t* TransformComponent::setRotation(ScriptEnvironment*,
+    const wasm_val_t args[],
+    wasm_val_t results[]) {
+    _data.mutable_orientation().mutate_w(args[1].of.f64);
+    _data.mutable_orientation().mutate_x(args[2].of.f64);
+    _data.mutable_orientation().mutate_y(args[3].of.f64);
+    _data.mutable_orientation().mutate_z(args[4].of.f64);
+    return nullptr;
+}
+
 glm::mat4 TransformComponent::getLocalTransform() {
   auto orientation = _data.orientation();
   auto position = _data.position();
