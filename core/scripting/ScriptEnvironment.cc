@@ -162,6 +162,12 @@ void ScriptEnvironment::update(EntityRegistry* registry, AssetPool* asset_pool,
   }
 }
 
+wasm_trap_t* ScriptEnvironment::createTrap(const types::string& message) {
+  wasm_name_t error;
+  wasm_name_new_from_string(&error, message.c_str());
+  return wasm_trap_new(getStore(), &error);
+}
+
 wasm_module_t* ScriptEnvironment::loadBinaryModule(
     const wasm_byte_vec_t& module_data) {
   wasmtime_error_t* module_error;

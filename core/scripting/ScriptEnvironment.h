@@ -32,6 +32,13 @@ class ScriptEnvironment {
   wasmtime_interrupt_handle_t* getInterruptHandle() { return interrupt_handle; }
 
   /**
+   * @brief Creates a WebAssembly trap with a message.
+   * @param message The message for the trap.
+   * @return A handle to the new trap.
+   */
+  wasm_trap_t* createTrap(const types::string&);
+
+  /**
    * @brief Compiles a Wasm module from binary format.
    * @param module_data The Wasm binary data to compile.
    * @return A new wasm_module_t handle.
