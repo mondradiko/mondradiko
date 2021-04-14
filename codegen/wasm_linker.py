@@ -4,7 +4,13 @@
 from codegen import Codegen, preamble
 
 
-LINKER_LINK_FORMAT = "template<> void core::ScriptObject<core::{0}>::linkScriptApi(ScriptEnvironment* scripts, World* world)"
+COMPONENT_LINK_FORMAT = "template<> void core::ScriptableComponent<core::{0}, core::{0}::SerializedType>::linkScriptApi(ScriptEnvironment* scripts, World* world)"
+
+
+DYNAMIC_LINK_FORMAT = "template<> void core::DynamicScriptObject<core::{0}>::linkScriptApi(ScriptEnvironment* scripts)"
+
+
+STATIC_LINK_FORMAT = "template<> void core::StaticScriptObject<core::{0}>::linkScriptApi(ScriptEnvironment* scripts, {0}* self)"
 
 
 METHOD_TYPE_FORMAT = "const wasm_functype_t* methodType_{0}_{1}()"
@@ -16,6 +22,10 @@ COMPONENT_METHOD_WRAP = \
 
 DYNAMIC_OBJECT_METHOD_WRAP = \
     "codegen::linkDynamicObjectMethod<{1}, &{1}::{2}>(scripts, \"{1}_{2}\", codegen::methodType_{0}_{2});"
+
+
+STATIC_OBJECT_METHOD_WRAP = \
+    "codegen::linkStaticObjectMethod<{1}, &{1}::{2}>(scripts, self, \"{1}_{2}\", codegen::methodType_{0}_{2});"
 
 
 C_TYPES_TO_WASM = {
@@ -78,9 +88,14 @@ class WasmLinker(Codegen):
             ""])
 
         if self.storage_type == "component":
+            self.link_format = COMPONENT_LINK_FORMAT
             self.method_wrap = COMPONENT_METHOD_WRAP
         elif self.storage_type == "dynamic_object":
+            self.link_format = DYNAMIC_LINK_FORMAT
             self.method_wrap = DYNAMIC_OBJECT_METHOD_WRAP
+        elif self.storage_type == "static_object":
+            self.link_format = STATIC_LINK_FORMAT
+            self.method_wrap = STATIC_OBJECT_METHOD_WRAP
         else:
             raise ValueError("Invalid storage_type: " + self.storage_type)
 
@@ -94,7 +109,11 @@ class WasmLinker(Codegen):
             "{"])
 
         # Parse parameters
-        params = ["self"]
+        if self.storage_type != "static_object":
+            params = ["self"]
+        else:
+            params = []
+
         if "param_list" in method.keys():
             params.extend([
                 method["params"][param] for param in method["param_list"]])
@@ -137,7 +156,7 @@ class WasmLinker(Codegen):
 
         # Implement Component::linkScriptApi()
         self.out.extend([
-            LINKER_LINK_FORMAT.format(self.internal_name),
+            self.link_format.format(self.internal_name),
             "{"])
 
         self.out.extend(f"  {method}" for method in self.methods)

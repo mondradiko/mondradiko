@@ -9,7 +9,7 @@ Each object that is handled by codegen is first defined in a "classdef" file,
 following the TOML format. Here's an example of a classdef file:
 
 ```toml
-name = "Transform"
+name = "TransformComponent"
 storage_type = "component"
 internal_name = "TransformComponent"
 internal_header = "core/components/TransformComponent.h"
@@ -33,9 +33,9 @@ internal_header = "core/components/TransformComponent.h"
   params = ["double", "double", "double"]
 ```
 
-The class being defined here is named "Transform," and this classdef gives it
-several methods, of which each can have a description, list of parameters, and
-list of return values.
+The class being defined here is named "TransformComponent," and this classdef
+gives it several methods, of which each can have a description, list of
+parameters, and list of return values.
 
 This classdef file is then consumed by the codegen implementation to generate
 various source files. For example, `wasm_linker.py` creates a C++ source file
@@ -54,6 +54,7 @@ The outwards-facing name of this classdef.
 Either:
 
 - `dynamic_object`: IDs are keys into the script registry
+- `static_object`: No IDs, and methods operate on a singleton object
 - `component`: IDs are entity IDs, and this classdef is a component
 
 ### Internal Name
@@ -86,7 +87,6 @@ Contains the classdefs for the component scripting API.
 
 # To-Do
 
-- Scriptable object base classes
 - World component synchronization
 - World update event factory implementation
 - Generate separate documentation for the API

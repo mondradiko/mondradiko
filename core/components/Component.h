@@ -26,14 +26,15 @@ void buildUpdateComponents(
     flatbuffers::Offset<flatbuffers::Vector<const ProtocolComponentType*>>);
 
 template <typename DataType>
-class Component {
+class SynchronizedComponent {
  public:
   // Make data type public so other classes can use it
   using SerializedType = DataType;
 
-  Component() {}
-  explicit Component(const SerializedType& data) : _data(data) {}
+  SynchronizedComponent() {}
+  explicit SynchronizedComponent(const SerializedType& data) : _data(data) {}
 
+  // TODO(marceline-cramer) CRTP this method
   virtual void refresh(AssetPool*) {}
 
   void markDirty() { dirty = true; }
@@ -48,6 +49,17 @@ class Component {
 
  private:
   bool dirty = true;
+};
+
+template <typename Inheritor, typename DataType>
+class ScriptableComponent : public SynchronizedComponent<DataType> {
+ public:
+  ScriptableComponent() {}
+  explicit ScriptableComponent(const DataType& data)
+      : SynchronizedComponent<DataType>(data) {}
+
+  // Defined in generated API linker
+  static void linkScriptApi(ScriptEnvironment*, World*);
 };
 
 }  // namespace core

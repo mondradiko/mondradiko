@@ -16,32 +16,6 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
   wasmtime_error_t* module_error = nullptr;
   wasm_trap_t* module_trap = nullptr;
 
-  {
-    log_zone_named("Create module callbacks");
-
-    wasm_importtype_vec_t required_imports;
-    wasm_module_imports(script_module, &required_imports);
-
-    types::vector<wasm_extern_t*> module_imports;
-
-    for (uint32_t i = 0; i < required_imports.size; i++) {
-      const wasm_name_t* import_name =
-          wasm_importtype_name(required_imports.data[i]);
-
-      // TODO(marceline-cramer) Import other kinds?
-
-      types::string binding_name(import_name->data, import_name->size);
-      wasm_func_t* binding_func = scripts->getBinding(binding_name);
-
-      if (binding_func == nullptr) {
-        log_err_fmt("Script binding \"%s\" is missing", binding_name.c_str());
-        binding_func = scripts->getInterruptFunc();
-      }
-
-      module_imports.push_back(wasm_func_as_extern(binding_func));
-    }
-  }
-
   types::vector<wasm_extern_t*> module_imports;
 
   {
@@ -67,56 +41,58 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
       module_imports.push_back(wasm_func_as_extern(binding_func));
     }
 
-    {
-      log_zone_named("Create module instance");
+    wasm_importtype_vec_delete(&required_imports);
+  }
 
-      module_error = wasmtime_instance_new(
-          scripts->getStore(), script_module, module_imports.data(),
-          module_imports.size(), &module_instance, &module_trap);
-      if (scripts->handleError(module_error, nullptr)) {
-        log_ftl("Failed to instantiate module");
-      }
+  {
+    log_zone_named("Create module instance");
+
+    module_error = wasmtime_instance_new(
+        scripts->getStore(), script_module, module_imports.data(),
+        module_imports.size(), &module_instance, &module_trap);
+    if (scripts->handleError(module_error, module_trap)) {
+      log_ftl("Failed to instantiate module");
     }
+  }
 
-    {
-      log_zone_named("Get module exports");
+  {
+    log_zone_named("Get module exports");
 
-      wasm_exporttype_vec_t export_types;
-      wasm_extern_vec_t instance_externs;
-      wasm_module_exports(script_module, &export_types);
-      wasm_instance_exports(module_instance, &instance_externs);
+    wasm_exporttype_vec_t export_types;
+    wasm_extern_vec_t instance_externs;
+    wasm_module_exports(script_module, &export_types);
+    wasm_instance_exports(module_instance, &instance_externs);
 
-      if (export_types.size != instance_externs.size) {
-        wasm_extern_vec_delete(&instance_externs);
-        wasm_exporttype_vec_delete(&export_types);
-        log_ftl("Mismatch between export_types.size and instance_externs.size");
-      }
-
-      for (uint32_t i = 0; i < instance_externs.size; i++) {
-        wasm_exporttype_t* export_type = export_types.data[i];
-        const wasm_name_t* export_name = wasm_exporttype_name(export_type);
-
-        wasm_extern_t* exported = instance_externs.data[i];
-        wasm_externkind_t extern_kind = wasm_extern_kind(exported);
-
-        // TODO(marceline-cramer) Handle other kinds of exports
-        if (extern_kind == WASM_EXTERN_FUNC) {
-          wasm_func_t* callback = wasm_extern_as_func(exported);
-          types::string callback_name(export_name->data, export_name->size);
-          _addCallback(callback_name, callback);
-
-          log_inf_fmt("Imported callback %s", callback_name.c_str());
-          log_inf_fmt("Param arity: %zu", wasm_func_param_arity(callback));
-          log_inf_fmt("Result arity: %zu", wasm_func_result_arity(callback));
-        }
-      }
-
-      // TODO(marceline-cramer): Wasmtime-friendly function export handling
-      // FIXME(marceline-cramer): This is a memory leak to keep funcs reffed
-      // wasm_extern_vec_delete(&instance_externs);
-
+    if (export_types.size != instance_externs.size) {
+      wasm_extern_vec_delete(&instance_externs);
       wasm_exporttype_vec_delete(&export_types);
+      log_ftl("Mismatch between export_types.size and instance_externs.size");
     }
+
+    for (uint32_t i = 0; i < instance_externs.size; i++) {
+      wasm_exporttype_t* export_type = export_types.data[i];
+      const wasm_name_t* export_name = wasm_exporttype_name(export_type);
+
+      wasm_extern_t* exported = instance_externs.data[i];
+      wasm_externkind_t extern_kind = wasm_extern_kind(exported);
+
+      // TODO(marceline-cramer) Handle other kinds of exports
+      if (extern_kind == WASM_EXTERN_FUNC) {
+        wasm_func_t* callback = wasm_extern_as_func(exported);
+        types::string callback_name(export_name->data, export_name->size);
+        _addCallback(callback_name, callback);
+
+        log_inf_fmt("Imported callback %s", callback_name.c_str());
+        log_inf_fmt("Param arity: %zu", wasm_func_param_arity(callback));
+        log_inf_fmt("Result arity: %zu", wasm_func_result_arity(callback));
+      }
+    }
+
+    // TODO(marceline-cramer): Wasmtime-friendly function export handling
+    // FIXME(marceline-cramer): This is a memory leak to keep funcs reffed
+    // wasm_extern_vec_delete(&instance_externs);
+
+    wasm_exporttype_vec_delete(&export_types);
   }
 }
 

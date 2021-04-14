@@ -16,11 +16,12 @@ namespace core {
 // Forward declarations
 class ScriptEnvironment;
 
-class TransformComponent : public Component<protocol::TransformComponent>,
-                           public ScriptObject<TransformComponent> {
+class TransformComponent
+    : public ScriptableComponent<TransformComponent,
+                                 protocol::TransformComponent> {
  public:
   explicit TransformComponent(const protocol::TransformComponent& data)
-      : Component(data) {}
+      : ScriptableComponent(data) {}
 
   explicit TransformComponent(const assets::TransformPrefab* prefab) {
     // TODO(marceline-cramer) Make helpers for these
@@ -51,6 +52,9 @@ class TransformComponent : public Component<protocol::TransformComponent>,
     _orientation.mutate_y(orientation.y);
     _orientation.mutate_z(orientation.z);
   }
+
+  TransformComponent()
+      : TransformComponent(glm::vec3(0.0, 0.0, 0.0), glm::quat()) {}
 
   glm::mat4 getWorldTransform() const { return world_transform; }
 

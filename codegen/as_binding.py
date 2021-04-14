@@ -51,9 +51,16 @@ class AsBinding(Codegen):
             f"{param_name}: {type_name}"
             for param_name, type_name in params])
 
+        attributes = []
+
+        if self.storage_type == "static_object":
+            attributes.append("static")
+
+        attributes = " ".join(attributes)
+
         self.out.extend([
             f"  @external(\"{self.internal_name}_{method_name}\")",
-            f"  {method_name}({param_list}): {return_type}",
+            f"  {attributes} {method_name}({param_list}): {return_type}",
             ""
         ])
 

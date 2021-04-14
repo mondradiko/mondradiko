@@ -5,6 +5,7 @@
 
 #include "core/components/Component.h"
 #include "lib/include/glm_headers.h"
+#include "lib/include/wasm_headers.h"
 #include "types/assets/PrefabAsset_generated.h"
 #include "types/protocol/PointLightComponent_generated.h"
 
@@ -16,10 +17,12 @@ struct PointLightUniform {
   glm::vec4 intensity;
 };
 
-class PointLightComponent : public Component<protocol::PointLightComponent> {
+class PointLightComponent
+    : public ScriptableComponent<PointLightComponent,
+                                 protocol::PointLightComponent> {
  public:
   explicit PointLightComponent(const protocol::PointLightComponent& data)
-      : Component(data) {}
+      : ScriptableComponent(data) {}
 
   explicit PointLightComponent(const assets::PointLightPrefab* prefab) {
     // TODO(marceline-cramer) Make helpers for these
@@ -46,7 +49,15 @@ class PointLightComponent : public Component<protocol::PointLightComponent> {
     _data.mutable_intensity().mutate_z(b);
   }
 
+  PointLightComponent() : PointLightComponent(0.0, 0.0, 0.0, 1.0, 0.0, 0.0) {}
+
   void getUniform(PointLightUniform*);
+
+  //
+  // Script methods
+  //
+  wasm_trap_t* setIntensity(ScriptEnvironment*, const wasm_val_t[],
+                            wasm_val_t[]);
 
  private:
 };

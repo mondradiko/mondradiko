@@ -4,12 +4,14 @@
 #include "core/scripting/ScriptEnvironment.h"
 
 #include "core/assets/ScriptAsset.h"
+#include "core/components/PointLightComponent.h"
 #include "core/components/ScriptComponent.h"
 #include "core/components/TransformComponent.h"
 #include "core/scripting/ComponentScript.h"
 #include "core/scripting/ScriptInstance.h"
 #include "core/ui/GlyphStyle.h"
 #include "core/ui/UiPanel.h"
+#include "core/world/ScriptEntity.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -107,7 +109,7 @@ void ScriptEnvironment::initializeAssets(AssetPool* asset_pool) {
 template <class ObjectType>
 void linkDynamicObjectApi(ScriptEnvironment* scripts) {
   // TODO(marceline-cramer) Don't pass World to dynamic object linkers
-  ObjectType::linkScriptApi(scripts, nullptr);
+  ObjectType::linkScriptApi(scripts);
 }
 
 void ScriptEnvironment::linkUiApis(UserInterface* ui) {
@@ -122,7 +124,9 @@ void linkComponentApi(ScriptEnvironment* scripts, World* world) {
 }
 
 void ScriptEnvironment::linkComponentApis(World* world) {
+  linkComponentApi<PointLightComponent>(this, world);
   linkComponentApi<TransformComponent>(this, world);
+  linkComponentApi<ScriptEntity>(this, world);
 }
 
 void ScriptEnvironment::linkAssemblyScriptEnv() {
@@ -160,6 +164,12 @@ void ScriptEnvironment::update(EntityRegistry* registry, AssetPool* asset_pool,
 
     script.script_instance->update(e, dt);
   }
+}
+
+wasm_trap_t* ScriptEnvironment::createTrap(const types::string& message) {
+  wasm_name_t error;
+  wasm_name_new_from_string(&error, message.c_str());
+  return wasm_trap_new(getStore(), &error);
 }
 
 wasm_module_t* ScriptEnvironment::loadBinaryModule(
@@ -248,6 +258,40 @@ void ScriptEnvironment::removeFromRegistry(uint32_t object_id) {
   }
 }
 
+bool ScriptEnvironment::storeStaticObject(const char* object_key,
+                                          void* object_ptr) {
+  auto iter = static_objects.find(object_key);
+  if (iter != static_objects.end()) {
+    if (iter->second != nullptr) {
+      log_err_fmt("Static object %s has already been stored", object_key);
+    } else {
+      iter->second = object_ptr;
+    }
+
+    return false;
+  } else {
+    static_objects.emplace(object_key, object_ptr);
+    return true;
+  }
+}
+
+void* ScriptEnvironment::getStaticObject(const char* object_key) {
+  auto iter = static_objects.find(object_key);
+  if (iter != static_objects.end()) {
+    return iter->second;
+  } else {
+    log_err_fmt("Retrieving null static %s", object_key);
+    return nullptr;
+  }
+}
+
+void ScriptEnvironment::removeStaticObject(const char* object_key) {
+  auto iter = static_objects.find(object_key);
+  if (iter != static_objects.end()) {
+    iter->second = nullptr;
+  }
+}
+
 void ScriptEnvironment::updateScript(EntityRegistry* registry,
                                      AssetPool* asset_pool, EntityId entity,
                                      AssetId script_id, const uint8_t* data,
@@ -285,7 +329,12 @@ void ScriptEnvironment::updateScript(EntityRegistry* registry,
 }
 
 void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {
-  bindings.emplace(types::string(symbol), func);
+  auto iter = bindings.find(symbol);
+  if (iter != bindings.end()) {
+    log_err_fmt("Environment has already has binding %s", symbol);
+  } else {
+    bindings.emplace(types::string(symbol), func);
+  }
 }
 
 wasm_func_t* ScriptEnvironment::getBinding(const types::string& symbol) {

@@ -6,6 +6,7 @@
 #include "core/assets/AssetPool.h"
 #include "core/physics/Physics.h"
 #include "core/scripting/ScriptEnvironment.h"
+#include "core/scripting/ScriptObject.h"
 #include "core/world/Entity.h"
 #include "lib/include/flatbuffers_headers.h"
 
@@ -25,7 +26,7 @@ namespace core {
 // Forward declarations
 class Filesystem;
 
-class World {
+class World : public StaticScriptObject<World> {
  public:
   World(AssetPool*, Filesystem*, ScriptEnvironment*);
   ~World();
@@ -57,6 +58,12 @@ class World {
   void updateComponents(
       const flatbuffers::Vector<EntityId>*,
       const flatbuffers::Vector<const ProtocolComponentType*>*);
+
+  //
+  // Scripting methods
+  //
+  wasm_trap_t* spawnEntity(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* spawnEntityAt(const wasm_val_t[], wasm_val_t[]);
 
   // TODO(marceline-cramer) Blech, restore World privacy
   // Move event callbacks to private

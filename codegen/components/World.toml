@@ -1,0 +1,22 @@
+# Copyright (c) 2020-2021 the Mondradiko contributors.
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+name = "World"
+storage_type = "static_object"
+internal_name = "World"
+internal_header = "core/world/World.h"
+dependencies = ["Entity"]
+
+[methods]
+
+  [methods.spawnEntity]
+  return_class = "Entity"
+
+  [methods.spawnEntityAt]
+  param_list = ["x", "y", "z"]
+  return_class = "Entity"
+
+    [methods.spawnEntityAt.params]
+    x = "double"
+    y = "double"
+    z = "double"

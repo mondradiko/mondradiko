@@ -14,7 +14,8 @@ namespace core {
 // Forward declarations
 class TransformComponent;
 
-class RigidBodyComponent : public Component<protocol::RigidBodyComponent> {
+class RigidBodyComponent
+    : public SynchronizedComponent<protocol::RigidBodyComponent> {
  public:
   explicit RigidBodyComponent(const assets::RigidBodyPrefab*);
   ~RigidBodyComponent();

@@ -32,6 +32,13 @@ class ScriptEnvironment {
   wasmtime_interrupt_handle_t* getInterruptHandle() { return interrupt_handle; }
 
   /**
+   * @brief Creates a WebAssembly trap with a message.
+   * @param message The message for the trap.
+   * @return A handle to the new trap.
+   */
+  wasm_trap_t* createTrap(const types::string&);
+
+  /**
    * @brief Compiles a Wasm module from binary format.
    * @param module_data The Wasm binary data to compile.
    * @return A new wasm_module_t handle.
@@ -96,6 +103,28 @@ class ScriptEnvironment {
   void removeFromRegistry(uint32_t);
 
   /**
+   * @brief Stores a static script object.
+   * @param object_key The symbol of the static object.
+   * @param object_ptr The raw pointer to the object.
+   * @return False if the object symbol has already been stored, otherwise true.
+   */
+  bool storeStaticObject(const char*, void*);
+
+  /**
+   * @brief Retrieves a static object.
+   * @param object_key The symbol of the static object to be retrieved.
+   * @return A raw pointer to the object, or nullptr if the key was invalid.
+   */
+  void* getStaticObject(const char*);
+
+  /**
+   * @brief Removes a static object instance, while keeping bindings.
+   * @note storeStaticObject() will still return false after removal.
+   * @param object_key The symbol of the static object to be removed.
+   */
+  void removeStaticObject(const char*);
+
+  /**
    * @brief Updates a local script. Overwrites existing script data, or
    * instantiates a new script if necessary.
    * @param registry The World's registry.
@@ -150,6 +179,7 @@ class ScriptEnvironment {
   wasmtime_interrupt_handle_t* interrupt_handle = nullptr;
 
   types::vector<void*> object_registry;
+  types::unordered_map<types::string, void*> static_objects;
   types::unordered_map<types::string, wasm_func_t*> bindings;
   wasm_func_t* interrupt_func = nullptr;
 };

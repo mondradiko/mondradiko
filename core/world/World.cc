@@ -23,7 +23,11 @@ namespace mondradiko {
 namespace core {
 
 World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
-    : asset_pool(asset_pool), fs(fs), scripts(scripts), physics(this) {
+    : StaticScriptObject(scripts, "World"),
+      asset_pool(asset_pool),
+      fs(fs),
+      scripts(scripts),
+      physics(this) {
   log_zone;
 
   asset_pool->initializeAssetType<PrefabAsset>(asset_pool);
@@ -278,6 +282,26 @@ void World::updateComponents(
       handle.refresh(asset_pool);
     }
   }
+}
+
+wasm_trap_t* World::spawnEntity(const wasm_val_t args[], wasm_val_t results[]) {
+  EntityId new_entity = registry.create();
+  results[0].kind = WASM_I32;
+  results[0].of.i32 = new_entity;
+  return nullptr;
+}
+
+wasm_trap_t* World::spawnEntityAt(const wasm_val_t args[],
+                                  wasm_val_t results[]) {
+  EntityId new_entity = registry.create();
+
+  registry.emplace<TransformComponent>(
+      new_entity, glm::vec3(args[0].of.f64, args[1].of.f64, args[2].of.f64),
+      glm::quat());
+
+  results[0].kind = WASM_I32;
+  results[0].of.i32 = new_entity;
+  return nullptr;
 }
 
 }  // namespace core

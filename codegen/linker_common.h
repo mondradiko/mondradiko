@@ -18,9 +18,13 @@ namespace codegen {
 using namespace core;
 
 template <class ClassdefType>
-using BoundClassdefMethod = wasm_trap_t* (ClassdefType::*)(ScriptEnvironment*,
-                                                           const wasm_val_t[],
+using BoundClassdefMethod = wasm_trap_t* (ClassdefType::*)(const wasm_val_t[],
                                                            wasm_val_t[]);
+
+template <class ClassdefType>
+using BoundComponentMethod = wasm_trap_t* (ClassdefType::*)(ScriptEnvironment*,
+                                                            const wasm_val_t[],
+                                                            wasm_val_t[]);
 
 using ClassdefMethodCallback = const wasm_functype_t* (*)();
 
@@ -30,7 +34,7 @@ static const wasm_functype_t* createClassdefMethodType();
 
 static void finalizer(void*) {}
 
-template <class ComponentType, BoundClassdefMethod<ComponentType> method>
+template <class ComponentType, BoundComponentMethod<ComponentType> method>
 static wasm_trap_t* componentMethodWrapper(const wasmtime_caller_t* caller,
                                            void* env, const wasm_val_t args[],
                                            wasm_val_t results[]) {
@@ -43,17 +47,13 @@ static wasm_trap_t* componentMethodWrapper(const wasmtime_caller_t* caller,
     error_format << "Type assertion failed: ";
     error_format << "Entity " << self_id << " does not have a ";
     error_format << typeid(ComponentType).name();
-
-    wasm_name_t error;
-    wasm_name_new_from_string(&error, error_format.str().c_str());
-
-    return wasm_trap_new(world->scripts->getStore(), &error);
+    return world->scripts->createTrap(error_format.str());
   }
 
   return ((*self).*method)(world->scripts, args, results);
 }
 
-template <class ComponentType, BoundClassdefMethod<ComponentType> method>
+template <class ComponentType, BoundComponentMethod<ComponentType> method>
 void linkComponentMethod(ScriptEnvironment* scripts, World* world,
                          const char* symbol,
                          ClassdefMethodCallback type_callback) {
@@ -86,11 +86,7 @@ static wasm_trap_t* dynamicObjectMethodWrapper(const wasmtime_caller_t* caller,
     std::ostringstream error_format;
     error_format << "Registry lookup failed: ";
     error_format << self_id << " is an invalid ID";
-
-    wasm_name_t error;
-    wasm_name_new_from_string(&error, error_format.str().c_str());
-
-    return wasm_trap_new(scripts->getStore(), &error);
+    return scripts->createTrap(error_format.str());
   }
 
   ObjectType* self = reinterpret_cast<ObjectType*>(self_raw);
@@ -108,7 +104,7 @@ static wasm_trap_t* dynamicObjectMethodWrapper(const wasmtime_caller_t* caller,
     return wasm_trap_new(scripts->getStore(), &error);
   }*/
 
-  return ((*self).*method)(scripts, args, results);
+  return ((*self).*method)(args, results);
 }
 
 template <class ObjectType, BoundClassdefMethod<ObjectType> method>
@@ -122,6 +118,34 @@ void linkDynamicObjectMethod(ScriptEnvironment* scripts, const char* symbol,
       dynamicObjectMethodWrapper<ObjectType, method>;
 
   void* env = static_cast<void*>(scripts);
+
+  wasm_func_t* func =
+      wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
+
+  scripts->addBinding(symbol, func);
+}
+
+template <class ObjectType, BoundClassdefMethod<ObjectType> method>
+static wasm_trap_t* staticObjectMethodWrapper(const wasmtime_caller_t* caller,
+                                              void* env,
+                                              const wasm_val_t args[],
+                                              wasm_val_t results[]) {
+  ObjectType* self = reinterpret_cast<ObjectType*>(env);
+  return ((*self).*method)(args, results);
+}
+
+template <class ObjectType, BoundClassdefMethod<ObjectType> method>
+void linkStaticObjectMethod(ScriptEnvironment* scripts, ObjectType* self,
+                            const char* symbol,
+                            ClassdefMethodCallback type_callback) {
+  wasm_store_t* store = scripts->getStore();
+
+  const wasm_functype_t* func_type = (*type_callback)();
+
+  wasmtime_func_callback_with_env_t callback =
+      staticObjectMethodWrapper<ObjectType, method>;
+
+  void* env = static_cast<void*>(self);
 
   wasm_func_t* func =
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);

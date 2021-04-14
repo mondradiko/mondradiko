@@ -31,9 +31,9 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
     flatbuffers::FlatBufferBuilder* builder, EntityRegistry* registry) {
   using ProtocolComponentType = typename ComponentType::SerializedType;
 
-  static_assert(
-      std::is_base_of<Component<ProtocolComponentType>, ComponentType>(),
-      "ComponentType must inherit from Component");
+  static_assert(std::is_base_of<SynchronizedComponent<ProtocolComponentType>,
+                                ComponentType>(),
+                "ComponentType must inherit from SynchronizedComponent");
 
   auto component_view = registry->view<ComponentType>();
 
