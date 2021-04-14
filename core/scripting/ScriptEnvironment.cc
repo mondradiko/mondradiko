@@ -10,6 +10,7 @@
 #include "core/scripting/ScriptInstance.h"
 #include "core/ui/GlyphStyle.h"
 #include "core/ui/UiPanel.h"
+#include "core/world/ScriptEntity.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -123,6 +124,7 @@ void linkComponentApi(ScriptEnvironment* scripts, World* world) {
 
 void ScriptEnvironment::linkComponentApis(World* world) {
   linkComponentApi<TransformComponent>(this, world);
+  linkComponentApi<ScriptEntity>(this, world);
 }
 
 void ScriptEnvironment::linkAssemblyScriptEnv() {
