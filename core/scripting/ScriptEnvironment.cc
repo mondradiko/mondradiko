@@ -258,6 +258,40 @@ void ScriptEnvironment::removeFromRegistry(uint32_t object_id) {
   }
 }
 
+bool ScriptEnvironment::storeStaticObject(const char* object_key,
+                                          void* object_ptr) {
+  auto iter = static_objects.find(object_key);
+  if (iter != static_objects.end()) {
+    if (iter->second != nullptr) {
+      log_err_fmt("Static object %s has already been stored", object_key);
+    } else {
+      iter->second = object_ptr;
+    }
+
+    return false;
+  } else {
+    static_objects.emplace(object_key, object_ptr);
+    return true;
+  }
+}
+
+void* ScriptEnvironment::getStaticObject(const char* object_key) {
+  auto iter = static_objects.find(object_key);
+  if (iter != static_objects.end()) {
+    return iter->second;
+  } else {
+    log_err_fmt("Retrieving null static %s", object_key);
+    return nullptr;
+  }
+}
+
+void ScriptEnvironment::removeStaticObject(const char* object_key) {
+  auto iter = static_objects.find(object_key);
+  if (iter != static_objects.end()) {
+    iter->second = nullptr;
+  }
+}
+
 void ScriptEnvironment::updateScript(EntityRegistry* registry,
                                      AssetPool* asset_pool, EntityId entity,
                                      AssetId script_id, const uint8_t* data,
@@ -295,7 +329,12 @@ void ScriptEnvironment::updateScript(EntityRegistry* registry,
 }
 
 void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {
-  bindings.emplace(types::string(symbol), func);
+  auto iter = bindings.find(symbol);
+  if (iter != bindings.end()) {
+    log_err_fmt("Environment has already has binding %s", symbol);
+  } else {
+    bindings.emplace(types::string(symbol), func);
+  }
 }
 
 wasm_func_t* ScriptEnvironment::getBinding(const types::string& symbol) {
