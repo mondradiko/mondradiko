@@ -53,6 +53,9 @@ class TransformComponent
     _orientation.mutate_z(orientation.z);
   }
 
+  TransformComponent()
+      : TransformComponent(glm::vec3(0.0, 0.0, 0.0), glm::quat()) {}
+
   glm::mat4 getWorldTransform() const { return world_transform; }
 
   //
