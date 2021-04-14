@@ -47,11 +47,7 @@ static wasm_trap_t* componentMethodWrapper(const wasmtime_caller_t* caller,
     error_format << "Type assertion failed: ";
     error_format << "Entity " << self_id << " does not have a ";
     error_format << typeid(ComponentType).name();
-
-    wasm_name_t error;
-    wasm_name_new_from_string(&error, error_format.str().c_str());
-
-    return wasm_trap_new(world->scripts->getStore(), &error);
+    return world->scripts->createTrap(error_format.str());
   }
 
   return ((*self).*method)(world->scripts, args, results);
@@ -90,11 +86,7 @@ static wasm_trap_t* dynamicObjectMethodWrapper(const wasmtime_caller_t* caller,
     std::ostringstream error_format;
     error_format << "Registry lookup failed: ";
     error_format << self_id << " is an invalid ID";
-
-    wasm_name_t error;
-    wasm_name_new_from_string(&error, error_format.str().c_str());
-
-    return wasm_trap_new(scripts->getStore(), &error);
+    return scripts->createTrap(error_format.str());
   }
 
   ObjectType* self = reinterpret_cast<ObjectType*>(self_raw);
