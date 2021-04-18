@@ -14,6 +14,6 @@ Inherits from [ScriptInstance](#scriptinstance).
 
 - Flesh out this document
 - Make API for asset acquisition
-- "Globals" with named registry keys
+- `wasm_val_t` leaks, although `wasm_functype_t` takes ownership
 - AssemblyScript constructor parameters from prefabs
 - AssemblyScript object network synchronization
