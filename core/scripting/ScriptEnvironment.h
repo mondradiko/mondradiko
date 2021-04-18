@@ -145,6 +145,12 @@ class ScriptEnvironment {
                     const uint8_t*, size_t);
 
   /**
+   * @brief Destroys all ScriptComponents.
+   * @param registry The World's registry.
+   */
+  void destroyComponents(EntityRegistry*);
+
+  /**
    * @brief Adds a binding symbol's callback to the ScriptEnvironment.
    *
    * @param symbol The name to link.

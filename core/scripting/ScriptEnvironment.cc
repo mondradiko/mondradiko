@@ -166,6 +166,19 @@ void ScriptEnvironment::update(EntityRegistry* registry, AssetPool* asset_pool,
   }
 }
 
+void ScriptEnvironment::destroyComponents(EntityRegistry* registry) {
+  auto script_view = registry->view<ScriptComponent>();
+
+  for (auto& e : script_view) {
+    auto& script = script_view.get(e);
+
+    if (script.script_instance != nullptr) {
+      delete script.script_instance;
+      script.script_instance = nullptr;
+    }
+  }
+}
+
 void ScriptEnvironment::collectFunc(wasm_func_t* func) {
   for (auto& collected_func : func_collection) {
     if (collected_func == func) return;
