@@ -11,7 +11,7 @@
 namespace mondradiko {
 namespace core {
 
-const wasm_functype_t* methodType_Entity() {
+wasm_functype_t* methodType_Entity() {
   return wasm_functype_new_1_1(wasm_valtype_new_i32(), wasm_valtype_new_i32());
 }
 
@@ -52,7 +52,7 @@ static wasm_trap_t* Entity_getComponent(World*, const wasm_val_t args[],
 using BoundEntityMethod = wasm_trap_t* (*)(World*, const wasm_val_t[],
                                            wasm_val_t[]);
 
-using EntityMethodTypeCallback = const wasm_functype_t* (*)();
+using EntityMethodTypeCallback = wasm_functype_t* (*)();
 
 static void finalizer(void*) {}
 
@@ -75,7 +75,7 @@ void linkEntityMethod(ScriptEnvironment* scripts, World* world,
                       EntityMethodTypeCallback type_callback) {
   wasm_store_t* store = scripts->getStore();
 
-  const wasm_functype_t* func_type = (*type_callback)();
+  wasm_functype_t* func_type = (*type_callback)();
 
   wasmtime_func_callback_with_env_t callback = entityMethodWrapper<method>;
 
@@ -85,6 +85,7 @@ void linkEntityMethod(ScriptEnvironment* scripts, World* world,
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
 
   scripts->addBinding(symbol, func);
+  wasm_functype_delete(func_type);
 }
 
 void ScriptEntity::linkScriptApi(ScriptEnvironment* scripts, World* world) {
