@@ -92,9 +92,8 @@ void run(const ClientArgs& args) {
     log_ftl("Failed to create display session!");
   }
 
-  AssetPool asset_pool(&fs);
-
   ScriptEnvironment scripts;
+  AssetPool asset_pool(&fs);
   World world(&asset_pool, &fs, &scripts);
 
   const Avatar* avatar = display->getAvatar(&world);

@@ -25,7 +25,13 @@ class AssetPool {
  public:
   explicit AssetPool(Filesystem* fs) : fs(fs) {}
 
-  ~AssetPool() { unloadAll(); }
+  ~AssetPool() {
+    unloadAll();
+
+    for (auto& template_asset : templates) {
+      if (template_asset != nullptr) delete template_asset;
+    }
+  }
 
   template <typename AssetType, typename... Args>
   void initializeAssetType(Args&&... args) {
@@ -34,7 +40,7 @@ class AssetPool {
 
     if (asset_type >= templates.size()) {
       templates.resize(asset_type + 1, nullptr);
-    } else if (templates[asset_type]) {
+    } else if (templates[asset_type] != nullptr) {
       log_err_fmt("Attempted to initialize %s pool twice", type_name);
       return;
     }

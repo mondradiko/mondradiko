@@ -34,7 +34,7 @@ class PrefabAsset : public Asset {
  private:
   AssetPool* asset_pool;
 
-  assets::PrefabAssetT* prefab;
+  assets::PrefabAssetT* prefab = nullptr;
   types::vector<AssetHandle<PrefabAsset>> children;
 };
 

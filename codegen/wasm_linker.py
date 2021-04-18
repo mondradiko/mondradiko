@@ -13,7 +13,7 @@ DYNAMIC_LINK_FORMAT = "template<> void core::DynamicScriptObject<core::{0}>::lin
 STATIC_LINK_FORMAT = "template<> void core::StaticScriptObject<core::{0}>::linkScriptApi(ScriptEnvironment* scripts, {0}* self)"
 
 
-METHOD_TYPE_FORMAT = "const wasm_functype_t* methodType_{0}_{1}()"
+METHOD_TYPE_FORMAT = "wasm_functype_t* methodType_{0}_{1}()"
 
 
 COMPONENT_METHOD_WRAP = \

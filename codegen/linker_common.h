@@ -26,7 +26,7 @@ using BoundComponentMethod = wasm_trap_t* (ClassdefType::*)(ScriptEnvironment*,
                                                             const wasm_val_t[],
                                                             wasm_val_t[]);
 
-using ClassdefMethodCallback = const wasm_functype_t* (*)();
+using ClassdefMethodCallback = wasm_functype_t* (*)();
 
 // Forward definition for functions to create Wasm method types
 template <class ClassdefType, BoundClassdefMethod<ClassdefType> method>
@@ -59,7 +59,7 @@ void linkComponentMethod(ScriptEnvironment* scripts, World* world,
                          ClassdefMethodCallback type_callback) {
   wasm_store_t* store = scripts->getStore();
 
-  const wasm_functype_t* func_type = (*type_callback)();
+  wasm_functype_t* func_type = (*type_callback)();
 
   wasmtime_func_callback_with_env_t callback =
       componentMethodWrapper<ComponentType, method>;
@@ -70,6 +70,7 @@ void linkComponentMethod(ScriptEnvironment* scripts, World* world,
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
 
   scripts->addBinding(symbol, func);
+  wasm_functype_delete(func_type);
 }
 
 template <class ObjectType, BoundClassdefMethod<ObjectType> method>
@@ -112,7 +113,7 @@ void linkDynamicObjectMethod(ScriptEnvironment* scripts, const char* symbol,
                              ClassdefMethodCallback type_callback) {
   wasm_store_t* store = scripts->getStore();
 
-  const wasm_functype_t* func_type = (*type_callback)();
+  wasm_functype_t* func_type = (*type_callback)();
 
   wasmtime_func_callback_with_env_t callback =
       dynamicObjectMethodWrapper<ObjectType, method>;
@@ -123,6 +124,7 @@ void linkDynamicObjectMethod(ScriptEnvironment* scripts, const char* symbol,
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
 
   scripts->addBinding(symbol, func);
+  wasm_functype_delete(func_type);
 }
 
 template <class ObjectType, BoundClassdefMethod<ObjectType> method>
@@ -140,7 +142,7 @@ void linkStaticObjectMethod(ScriptEnvironment* scripts, ObjectType* self,
                             ClassdefMethodCallback type_callback) {
   wasm_store_t* store = scripts->getStore();
 
-  const wasm_functype_t* func_type = (*type_callback)();
+  wasm_functype_t* func_type = (*type_callback)();
 
   wasmtime_func_callback_with_env_t callback =
       staticObjectMethodWrapper<ObjectType, method>;
@@ -151,6 +153,7 @@ void linkStaticObjectMethod(ScriptEnvironment* scripts, ObjectType* self,
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
 
   scripts->addBinding(symbol, func);
+  wasm_functype_delete(func_type);
 }
 
 }  // namespace codegen

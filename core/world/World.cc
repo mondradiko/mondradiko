@@ -36,7 +36,11 @@ World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
   scripts->linkComponentApis(this);
 }
 
-World::~World() { log_zone; }
+World::~World() {
+  log_zone;
+
+  scripts->destroyComponents(&registry);
+}
 
 void World::initializePrefabs() {
   types::vector<AssetId> prefabs;

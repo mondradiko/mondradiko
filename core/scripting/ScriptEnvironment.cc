@@ -88,8 +88,8 @@ ScriptEnvironment::ScriptEnvironment() {
 ScriptEnvironment::~ScriptEnvironment() {
   log_zone;
 
-  for (auto iter : bindings) {
-    wasm_func_delete(iter.second);
+  for (auto func : func_collection) {
+    wasm_func_delete(func);
   }
 
   if (interrupt_func) wasm_func_delete(interrupt_func);
@@ -166,6 +166,27 @@ void ScriptEnvironment::update(EntityRegistry* registry, AssetPool* asset_pool,
   }
 }
 
+void ScriptEnvironment::destroyComponents(EntityRegistry* registry) {
+  auto script_view = registry->view<ScriptComponent>();
+
+  for (auto& e : script_view) {
+    auto& script = script_view.get(e);
+
+    if (script.script_instance != nullptr) {
+      delete script.script_instance;
+      script.script_instance = nullptr;
+    }
+  }
+}
+
+void ScriptEnvironment::collectFunc(wasm_func_t* func) {
+  for (auto& collected_func : func_collection) {
+    if (collected_func == func) return;
+  }
+
+  func_collection.push_back(func);
+}
+
 wasm_trap_t* ScriptEnvironment::createTrap(const types::string& message) {
   wasm_name_t error;
   wasm_name_new_from_string(&error, message.c_str());
@@ -213,6 +234,8 @@ wasm_module_t* ScriptEnvironment::loadTextModule(
   if (new_module == nullptr) {
     log_err("Failed to load Wasm text module");
   }
+
+  wasm_byte_vec_delete(&binary_data);
 
   return new_module;
 }
@@ -329,6 +352,8 @@ void ScriptEnvironment::updateScript(EntityRegistry* registry,
 }
 
 void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {
+  collectFunc(func);
+
   auto iter = bindings.find(symbol);
   if (iter != bindings.end()) {
     log_err_fmt("Environment has already has binding %s", symbol);
