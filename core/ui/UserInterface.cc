@@ -48,7 +48,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
   }
 
   {
-    log_zone_named("Load UI script");
+    log_zone_named("Load UI script module");
 
     auto script_path = cvars->get<StringCVar>("script_path").str();
 
@@ -57,12 +57,16 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
       log_ftl("Failed to load UI script file");
     }
 
-    wasm_module_t* ui_module = scripts->loadBinaryModule(script_data);
-    if (ui_module == nullptr) {
+    script_module = scripts->loadBinaryModule(script_data);
+    if (script_module == nullptr) {
       log_ftl("Failed to load UI script module");
     }
+  }
 
-    ui_script = new UiScript(scripts, ui_module);
+  {
+    log_zone_named("Instantiate UI script");
+
+    ui_script = new UiScript(scripts, script_module);
   }
 
   {  // Temp panel
@@ -166,6 +170,7 @@ UserInterface::~UserInterface() {
   if (panel_pipeline != nullptr) delete panel_pipeline;
   if (panel_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, panel_pipeline_layout, nullptr);
+  if (panel_layout != nullptr) delete panel_layout;
   if (panel_vertex_shader != nullptr) delete panel_vertex_shader;
   if (panel_fragment_shader != nullptr) delete panel_fragment_shader;
 
@@ -174,6 +179,7 @@ UserInterface::~UserInterface() {
   }
 
   if (ui_script != nullptr) delete ui_script;
+  if (script_module != nullptr) wasm_module_delete(script_module);
   if (scripts != nullptr) delete scripts;
 }
 

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/renderer/RenderPass.h"
+#include "lib/include/wasm_headers.h"
 #include "types/containers/string.h"
 #include "types/containers/vector.h"
 
@@ -51,6 +52,7 @@ class UserInterface : public RenderPass {
   Renderer* renderer;
 
   ScriptEnvironment* scripts = nullptr;
+  wasm_module_t* script_module = nullptr;
   UiScript* ui_script = nullptr;
 
   types::vector<UiPanel*> panels;
