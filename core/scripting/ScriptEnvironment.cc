@@ -214,6 +214,8 @@ wasm_module_t* ScriptEnvironment::loadTextModule(
     log_err("Failed to load Wasm text module");
   }
 
+  wasm_byte_vec_delete(&binary_data);
+
   return new_module;
 }
 
