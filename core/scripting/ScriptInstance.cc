@@ -49,7 +49,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
 
     module_error = wasmtime_instance_new(
         scripts->getStore(), script_module, module_imports.data(),
-        module_imports.size(), &module_instance, &module_trap);
+        module_imports.size(), &_module_instance, &module_trap);
     if (scripts->handleError(module_error, module_trap)) {
       log_ftl("Failed to instantiate module");
     }
@@ -59,21 +59,19 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
     log_zone_named("Get module exports");
 
     wasm_exporttype_vec_t export_types;
-    wasm_extern_vec_t instance_externs;
     wasm_module_exports(script_module, &export_types);
-    wasm_instance_exports(module_instance, &instance_externs);
+    wasm_instance_exports(_module_instance, &_instance_externs);
 
-    if (export_types.size != instance_externs.size) {
-      wasm_extern_vec_delete(&instance_externs);
+    if (export_types.size != _instance_externs.size) {
       wasm_exporttype_vec_delete(&export_types);
       log_ftl("Mismatch between export_types.size and instance_externs.size");
     }
 
-    for (uint32_t i = 0; i < instance_externs.size; i++) {
+    for (uint32_t i = 0; i < _instance_externs.size; i++) {
       wasm_exporttype_t* export_type = export_types.data[i];
       const wasm_name_t* export_name = wasm_exporttype_name(export_type);
 
-      wasm_extern_t* exported = instance_externs.data[i];
+      wasm_extern_t* exported = _instance_externs.data[i];
       wasm_externkind_t extern_kind = wasm_extern_kind(exported);
 
       // TODO(marceline-cramer) Handle other kinds of exports
@@ -89,33 +87,34 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
     }
 
     // TODO(marceline-cramer): Wasmtime-friendly function export handling
-    // FIXME(marceline-cramer): This is a memory leak to keep funcs reffed
-    // wasm_extern_vec_delete(&instance_externs);
-
     wasm_exporttype_vec_delete(&export_types);
   }
 }
 
 ScriptInstance::~ScriptInstance() {
-  if (module_instance) wasm_instance_delete(module_instance);
+  if (_module_instance != nullptr) {
+    wasm_extern_vec_delete(&_instance_externs);
+    wasm_instance_delete(_module_instance);
+  }
 }
 
 void ScriptInstance::_addCallback(const types::string& callback_name,
                                   wasm_func_t* callback) {
-  callbacks.emplace(callback_name, callback);
+  _callbacks.emplace(callback_name, callback);
 }
 
 bool ScriptInstance::_hasCallback(const types::string& callback_name) {
-  return callbacks.find(callback_name) != callbacks.end();
+  return _callbacks.find(callback_name) != _callbacks.end();
 }
 
 void ScriptInstance::_runCallback(const types::string& callback_name,
                                   const wasm_val_t* args, size_t arg_num,
                                   wasm_val_t* results, size_t result_num) {
-  auto iter = callbacks.find(callback_name);
+  auto iter = _callbacks.find(callback_name);
 
-  if (iter == callbacks.end()) {
+  if (iter == _callbacks.end()) {
     log_err_fmt("Attempted to run missing callback %s", callback_name.c_str());
+    return;
   }
 
   wasmtime_error_t* module_error = nullptr;
