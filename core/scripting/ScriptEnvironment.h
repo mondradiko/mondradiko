@@ -32,6 +32,12 @@ class ScriptEnvironment {
   wasmtime_interrupt_handle_t* getInterruptHandle() { return interrupt_handle; }
 
   /**
+   * @brief Collects a wasm_func_t, to be destroyed on unload.
+   * @param func The wasm_func_t to collect.
+   */
+  void collectFunc(wasm_func_t*);
+
+  /**
    * @brief Creates a WebAssembly trap with a message.
    * @param message The message for the trap.
    * @return A handle to the new trap.
@@ -178,6 +184,7 @@ class ScriptEnvironment {
   wasm_store_t* store = nullptr;
   wasmtime_interrupt_handle_t* interrupt_handle = nullptr;
 
+  types::vector<wasm_func_t*> func_collection;
   types::vector<void*> object_registry;
   types::unordered_map<types::string, void*> static_objects;
   types::unordered_map<types::string, wasm_func_t*> bindings;
