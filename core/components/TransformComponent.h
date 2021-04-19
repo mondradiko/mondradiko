@@ -8,6 +8,7 @@
 #include "core/world/Entity.h"
 #include "lib/include/glm_headers.h"
 #include "types/assets/PrefabAsset_generated.h"
+#include "types/protocol/ProtocolTypes.h"
 #include "types/protocol/TransformComponent_generated.h"
 
 namespace mondradiko {
@@ -24,33 +25,16 @@ class TransformComponent
       : ScriptableComponent(data) {}
 
   explicit TransformComponent(const assets::TransformPrefab* prefab) {
-    // TODO(marceline-cramer) Make helpers for these
+    auto position = glm::make_vec3(prefab->position().v()->data());
+    protocol::GlmToVec3(&_data.mutable_position(), position);
 
-    auto& position = _data.mutable_position();
-    position.mutate_x(prefab->position().x());
-    position.mutate_y(prefab->position().y());
-    position.mutate_z(prefab->position().z());
-
-    auto& orientation = _data.mutable_orientation();
-    orientation.mutate_w(prefab->orientation().w());
-    orientation.mutate_x(prefab->orientation().x());
-    orientation.mutate_y(prefab->orientation().y());
-    orientation.mutate_z(prefab->orientation().z());
+    auto orientation = glm::make_quat(prefab->orientation().v()->data());
+    protocol::GlmToQuat(&_data.mutable_orientation(), orientation);
   }
 
   TransformComponent(const glm::vec3& position, const glm::quat& orientation) {
-    // TODO(marceline-cramer) Make helpers for these
-
-    auto& _position = _data.mutable_position();
-    _position.mutate_x(position.x);
-    _position.mutate_y(position.y);
-    _position.mutate_z(position.z);
-
-    auto& _orientation = _data.mutable_orientation();
-    _orientation.mutate_w(orientation.w);
-    _orientation.mutate_x(orientation.x);
-    _orientation.mutate_y(orientation.y);
-    _orientation.mutate_z(orientation.z);
+    protocol::GlmToVec3(&_data.mutable_position(), position);
+    protocol::GlmToQuat(&_data.mutable_orientation(), orientation);
   }
 
   TransformComponent()
@@ -72,17 +56,17 @@ class TransformComponent
 
   // Takes nothing, returns one f64
   wasm_trap_t* getRotationW(ScriptEnvironment*, const wasm_val_t[],
-      wasm_val_t[]);
+                            wasm_val_t[]);
   wasm_trap_t* getRotationX(ScriptEnvironment*, const wasm_val_t[],
-      wasm_val_t[]);
+                            wasm_val_t[]);
   wasm_trap_t* getRotationY(ScriptEnvironment*, const wasm_val_t[],
-      wasm_val_t[]);
+                            wasm_val_t[]);
   wasm_trap_t* getRotationZ(ScriptEnvironment*, const wasm_val_t[],
-      wasm_val_t[]);
+                            wasm_val_t[]);
 
   // Takes four f64s, returns nothing
   wasm_trap_t* setRotation(ScriptEnvironment*, const wasm_val_t[],
-      wasm_val_t[]);
+                           wasm_val_t[]);
 
  private:
   // Systems allowed to access private members directly

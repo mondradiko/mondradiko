@@ -9,11 +9,8 @@ namespace mondradiko {
 namespace core {
 
 void MeshRendererComponent::refresh(AssetPool* asset_pool) {
-  auto mesh_id = static_cast<AssetId>(_data.mesh_asset());
-  auto material_id = static_cast<AssetId>(_data.material_asset());
-
-  mesh_asset = asset_pool->load<MeshAsset>(mesh_id);
-  material_asset = asset_pool->load<MaterialAsset>(material_id);
+  mesh_asset = asset_pool->load<MeshAsset>(_data.mesh_asset());
+  material_asset = asset_pool->load<MaterialAsset>(_data.material_asset());
 }
 
 // Template specialization to build UpdateComponents event
