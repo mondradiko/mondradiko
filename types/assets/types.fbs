@@ -3,10 +3,6 @@
 
 namespace mondradiko.assets;
 
-enum AssetId : uint32 {
-  NullAsset = 0
-}
-
 enum AssetType : uint16 {
   None = 0,
   MaterialAsset,
@@ -29,26 +25,17 @@ enum LumpCompressionMethod : uint8 {
 }
 
 struct Vec2 {
-  x:double;
-  y:double;
+  v:[double:2];
 }
 
 struct Vec3 {
-  x:double;
-  y:double;
-  z:double;
+  v:[double:3];
 }
 
 struct Vec4 {
-  x:double;
-  y:double;
-  z:double;
-  w:double;
+  v:[double:4];
 }
 
 struct Quaternion {
-  w:double;
-  x:double;
-  y:double;
-  z:double;
+  v:[double:4];
 }

@@ -14,7 +14,7 @@ class AssetHandle {
  public:
   AssetHandle() : ptr(nullptr) {}
 
-  explicit AssetHandle(std::nullptr_t ptr) : id(AssetId::NullAsset), ptr(ptr) {}
+  explicit AssetHandle(std::nullptr_t ptr) : id(NullAsset), ptr(ptr) {}
 
   explicit AssetHandle(AssetId id, AssetType* ptr) : id(id), ptr(ptr) {
     _ref();
@@ -62,7 +62,7 @@ class AssetHandle {
   operator bool() const { return isLoaded(); }
 
   AssetId getId() const {
-    if (!isLoaded()) return AssetId::NullAsset;
+    if (!isLoaded()) return NullAsset;
     return id;
   }
 

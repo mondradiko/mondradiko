@@ -9,23 +9,18 @@ namespace mondradiko {
 namespace core {
 
 void PointLightComponent::getUniform(PointLightUniform* uniform) {
-  // TODO(marceline-cramer) Make helpers for these
-  uniform->position.x = _data.position().x();
-  uniform->position.y = _data.position().y();
-  uniform->position.z = _data.position().z();
-  uniform->position.w = 1.0;
+  auto position = glm::make_vec3(_data.position().v()->data());
+  uniform->position = glm::vec4(position, 1.0);
 
-  uniform->intensity.r = _data.intensity().x();
-  uniform->intensity.g = _data.intensity().y();
-  uniform->intensity.b = _data.intensity().z();
+  auto intensity = glm::make_vec3(_data.intensity().v()->data());
+  uniform->intensity = glm::vec4(intensity, 1.0);
 }
 
 wasm_trap_t* PointLightComponent::setIntensity(ScriptEnvironment*,
                                                const wasm_val_t args[],
                                                wasm_val_t[]) {
-  _data.mutable_intensity().mutate_x(args[1].of.f64);
-  _data.mutable_intensity().mutate_y(args[2].of.f64);
-  _data.mutable_intensity().mutate_z(args[3].of.f64);
+  auto intensity = glm::vec3(args[1].of.f64, args[2].of.f64, args[3].of.f64);
+  protocol::GlmToVec3(&_data.mutable_intensity(), intensity);
   return nullptr;
 }
 

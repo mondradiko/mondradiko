@@ -32,6 +32,7 @@ flatc_schemas(PROTOCOL_HEADERS
 
 set(TYPES_SRC
   assets/AssetTypes.cc
+  protocol/ProtocolTypes.cc
 )
 
 add_library(mondradiko-types STATIC ${TYPES_SRC} ${ASSET_HEADERS} ${PROTOCOL_HEADERS})

@@ -12,7 +12,7 @@ wasm_trap_t* TransformComponent::getX(ScriptEnvironment*,
                                       const wasm_val_t args[],
                                       wasm_val_t results[]) {
   results[0].kind = WASM_F64;
-  results[0].of.f64 = _data.position().x();
+  results[0].of.f64 = _data.position().v()->Get(0);
   return nullptr;
 }
 
@@ -20,7 +20,7 @@ wasm_trap_t* TransformComponent::getY(ScriptEnvironment*,
                                       const wasm_val_t args[],
                                       wasm_val_t results[]) {
   results[0].kind = WASM_F64;
-  results[0].of.f64 = _data.position().y();
+  results[0].of.f64 = _data.position().v()->Get(1);
   return nullptr;
 }
 
@@ -28,71 +28,65 @@ wasm_trap_t* TransformComponent::getZ(ScriptEnvironment*,
                                       const wasm_val_t args[],
                                       wasm_val_t results[]) {
   results[0].kind = WASM_F64;
-  results[0].of.f64 = _data.position().z();
+  results[0].of.f64 = _data.position().v()->Get(2);
   return nullptr;
 }
 
 wasm_trap_t* TransformComponent::setPosition(ScriptEnvironment*,
                                              const wasm_val_t args[],
                                              wasm_val_t results[]) {
-  _data.mutable_position().mutate_x(args[1].of.f64);
-  _data.mutable_position().mutate_y(args[2].of.f64);
-  _data.mutable_position().mutate_z(args[3].of.f64);
+  auto position = glm::vec3(args[1].of.f64, args[2].of.f64, args[3].of.f64);
+  protocol::GlmToVec3(&_data.mutable_position(), position);
   return nullptr;
 }
 
 wasm_trap_t* TransformComponent::getRotationW(ScriptEnvironment*,
-    const wasm_val_t args[],
-    wasm_val_t results[]) {
-    results[0].kind = WASM_F64;
-    results[0].of.f64 = _data.orientation().w();
-    return nullptr;
+                                              const wasm_val_t args[],
+                                              wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.f64 = _data.orientation().v()->Get(0);
+  return nullptr;
 }
 
 wasm_trap_t* TransformComponent::getRotationX(ScriptEnvironment*,
-    const wasm_val_t args[],
-    wasm_val_t results[]) {
-    results[0].kind = WASM_F64;
-    results[0].of.f64 = _data.orientation().x();
-    return nullptr;
+                                              const wasm_val_t args[],
+                                              wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.f64 = _data.orientation().v()->Get(1);
+  return nullptr;
 }
 
 wasm_trap_t* TransformComponent::getRotationY(ScriptEnvironment*,
-    const wasm_val_t args[],
-    wasm_val_t results[]) {
-    results[0].kind = WASM_F64;
-    results[0].of.f64 = _data.orientation().y();
-    return nullptr;
+                                              const wasm_val_t args[],
+                                              wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.f64 = _data.orientation().v()->Get(2);
+  return nullptr;
 }
 
 wasm_trap_t* TransformComponent::getRotationZ(ScriptEnvironment*,
-    const wasm_val_t args[],
-    wasm_val_t results[]) {
-    results[0].kind = WASM_F64;
-    results[0].of.f64 = _data.orientation().z();
-    return nullptr;
+                                              const wasm_val_t args[],
+                                              wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.f64 = _data.orientation().v()->Get(3);
+  return nullptr;
 }
 
 wasm_trap_t* TransformComponent::setRotation(ScriptEnvironment*,
-    const wasm_val_t args[],
-    wasm_val_t results[]) {
-    _data.mutable_orientation().mutate_w(args[1].of.f64);
-    _data.mutable_orientation().mutate_x(args[2].of.f64);
-    _data.mutable_orientation().mutate_y(args[3].of.f64);
-    _data.mutable_orientation().mutate_z(args[4].of.f64);
-    return nullptr;
+                                             const wasm_val_t args[],
+                                             wasm_val_t results[]) {
+  auto orientation =
+      glm::quat(args[1].of.f64, args[2].of.f64, args[3].of.f64, args[4].of.f64);
+  protocol::GlmToQuat(&_data.mutable_orientation(), orientation);
+  return nullptr;
 }
 
 glm::mat4 TransformComponent::getLocalTransform() {
-  auto orientation = _data.orientation();
-  auto position = _data.position();
+  glm::quat orientation = glm::make_quat(_data.orientation().v()->data());
+  glm::vec3 position = glm::make_vec3(_data.position().v()->data());
 
-  glm::quat converted_orientation(orientation.w(), orientation.x(),
-                                  orientation.y(), orientation.z());
-  glm::vec3 converted_position(position.x(), position.y(), position.z());
-
-  glm::mat4 transform = glm::translate(glm::mat4(1.0), converted_position) *
-                        glm::mat4(converted_orientation);
+  glm::mat4 transform =
+      glm::translate(glm::mat4(1.0), position) * glm::mat4(orientation);
   return transform;
 }
 

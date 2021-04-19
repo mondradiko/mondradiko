@@ -25,11 +25,11 @@ bool MeshAsset::_load(const assets::SerializedAsset* asset) {
   for (uint32_t i = 0; i < vertices.size(); i++) {
     const assets::MeshVertex* vertex = mesh->vertices()->Get(i);
 
-    vertices[i].position = assets::Vec3ToGlm(vertex->position());
-    vertices[i].tex_coord = assets::Vec2ToGlm(vertex->tex_coord());
-    vertices[i].color = assets::Vec3ToGlm(vertex->color());
-    vertices[i].normal = assets::Vec3ToGlm(vertex->normal());
-    vertices[i].tangent = assets::Vec3ToGlm(vertex->tangent());
+    vertices[i].position = glm::make_vec3(vertex->position().v()->data());
+    vertices[i].tex_coord = glm::make_vec2(vertex->tex_coord().v()->data());
+    vertices[i].color = glm::make_vec3(vertex->color().v()->data());
+    vertices[i].normal = glm::make_vec3(vertex->normal().v()->data());
+    vertices[i].tangent = glm::make_vec3(vertex->tangent().v()->data());
   }
 
   for (uint32_t i = 0; i < indices.size(); i++) {

@@ -9,21 +9,21 @@ table MaterialAsset {
   /*occlusion_texture:AssetId;*/
 
   emissive_factor:Vec3;
-  emissive_texture:AssetId;
+  emissive_texture:uint;
 
   normal_map_scale:float;
-  normal_map_texture:AssetId;
+  normal_map_texture:uint;
 
   // Metallic-roughness
   albedo_factor:Vec4;
-  albedo_texture:AssetId;
+  albedo_texture:uint;
   is_double_sided:bool;
   is_unlit:bool;
   enable_blend:bool;
   mask_threshold:float;
   metallic_factor:float;
   roughness_factor:float;
-  metal_roughness_texture:AssetId;
+  metal_roughness_texture:uint;
 }
 
 root_type MaterialAsset;

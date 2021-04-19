@@ -8,6 +8,7 @@
 #include "lib/include/wasm_headers.h"
 #include "types/assets/PrefabAsset_generated.h"
 #include "types/protocol/PointLightComponent_generated.h"
+#include "types/protocol/ProtocolTypes.h"
 
 namespace mondradiko {
 namespace core {
@@ -25,31 +26,21 @@ class PointLightComponent
       : ScriptableComponent(data) {}
 
   explicit PointLightComponent(const assets::PointLightPrefab* prefab) {
-    // TODO(marceline-cramer) Make helpers for these
+    auto position = glm::make_vec3(prefab->position().v()->data());
+    protocol::GlmToVec3(&_data.mutable_position(), position);
 
-    auto& position = _data.mutable_position();
-    position.mutate_x(prefab->position().x());
-    position.mutate_y(prefab->position().y());
-    position.mutate_z(prefab->position().z());
-
-    auto& intensity = _data.mutable_intensity();
-    intensity.mutate_x(prefab->intensity().x());
-    intensity.mutate_y(prefab->intensity().y());
-    intensity.mutate_z(prefab->intensity().z());
+    auto intensity = glm::make_vec3(prefab->intensity().v()->data());
+    protocol::GlmToVec3(&_data.mutable_intensity(), intensity);
   }
 
-  PointLightComponent(double x, double y, double z, double r, double g,
-                      double b) {
-    _data.mutable_position().mutate_x(x);
-    _data.mutable_position().mutate_y(y);
-    _data.mutable_position().mutate_z(z);
-
-    _data.mutable_intensity().mutate_x(r);
-    _data.mutable_intensity().mutate_y(g);
-    _data.mutable_intensity().mutate_z(b);
+  PointLightComponent(const glm::vec3& position, const glm::vec3& intensity) {
+    protocol::GlmToVec3(&_data.mutable_position(), position);
+    protocol::GlmToVec3(&_data.mutable_intensity(), intensity);
   }
 
-  PointLightComponent() : PointLightComponent(0.0, 0.0, 0.0, 1.0, 0.0, 0.0) {}
+  PointLightComponent()
+      : PointLightComponent(glm::vec3(0.0, 0.0, 0.0),
+                            glm::vec3(1.0, 0.0, 0.0)) {}
 
   void getUniform(PointLightUniform*);
 

@@ -7,7 +7,7 @@ namespace mondradiko.protocol;
 
 table ScriptData {
   entity:EntityId;
-  script_asset:AssetId;
+  script_asset:uint32;
   // TODO(marceline-cramer) Synchronize local script data here
   // instance_data:[ubyte]
 }

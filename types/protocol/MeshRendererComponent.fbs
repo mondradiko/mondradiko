@@ -6,6 +6,6 @@ include "types.fbs";
 namespace mondradiko.protocol;
 
 struct MeshRendererComponent {
-  mesh_asset:AssetId;
-  material_asset:AssetId;
+  mesh_asset:uint32;
+  material_asset:uint32;
 }

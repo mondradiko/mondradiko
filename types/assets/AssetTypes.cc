@@ -39,10 +39,32 @@ std::string generateLumpName(uint32_t lump_index) {
   return buf;
 }
 
-glm::vec2 Vec2ToGlm(const Vec2& vec) { return glm::vec2(vec.x(), vec.y()); }
+void GlmToVec2(Vec2* dst, const glm::vec2& src) {
+  auto v = dst->mutable_v();
+  v->Mutate(0, src.x);
+  v->Mutate(1, src.y);
+}
 
-glm::vec3 Vec3ToGlm(const Vec3& vec) {
-  return glm::vec3(vec.x(), vec.y(), vec.z());
+void GlmToVec3(Vec3* dst, const glm::vec3& src) {
+  auto v = dst->mutable_v();
+  v->Mutate(0, src.x);
+  v->Mutate(1, src.y);
+  v->Mutate(2, src.z);
+}
+
+void GlmToVec4(Vec4* dst, const glm::vec4& src) {
+  auto v = dst->mutable_v();
+  v->Mutate(0, src.x);
+  v->Mutate(1, src.y);
+  v->Mutate(2, src.z);
+}
+
+void GlmToQuat(Quaternion* dst, const glm::quat& src) {
+  auto v = dst->mutable_v();
+  v->Mutate(0, src.w);
+  v->Mutate(1, src.x);
+  v->Mutate(2, src.y);
+  v->Mutate(3, src.z);
 }
 
 }  // namespace assets

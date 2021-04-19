@@ -13,6 +13,7 @@ namespace mondradiko {
 namespace core {
 
 using AssetId = assets::AssetId;
+constexpr auto NullAsset = assets::NullAsset;
 
 enum class AssetState {
   Unloaded,    // Unusable, and not in memory

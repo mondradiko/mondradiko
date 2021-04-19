@@ -47,14 +47,14 @@ bool MaterialAsset::_load(const assets::SerializedAsset* asset) {
 
   const assets::MaterialAsset* material = asset->material();
 
-  if (material->albedo_texture() != AssetId::NullAsset) {
+  if (material->albedo_texture() != NullAsset) {
     albedo_texture = asset_pool->load<TextureAsset>(material->albedo_texture());
     uniform.has_albedo_texture = 1;
   } else {
     uniform.has_albedo_texture = 0;
   }
 
-  if (material->emissive_texture() != AssetId::NullAsset) {
+  if (material->emissive_texture() != NullAsset) {
     emissive_texture =
         asset_pool->load<TextureAsset>(material->emissive_texture());
     uniform.has_emissive_texture = 1;
@@ -62,7 +62,7 @@ bool MaterialAsset::_load(const assets::SerializedAsset* asset) {
     uniform.has_emissive_texture = 0;
   }
 
-  if (material->normal_map_texture() != AssetId::NullAsset) {
+  if (material->normal_map_texture() != NullAsset) {
     normal_map_texture =
         asset_pool->load<TextureAsset>(material->normal_map_texture());
     uniform.normal_map_scale = material->normal_map_scale();
@@ -70,7 +70,7 @@ bool MaterialAsset::_load(const assets::SerializedAsset* asset) {
     uniform.normal_map_scale = -1.0;
   }
 
-  if (material->metal_roughness_texture() != AssetId::NullAsset) {
+  if (material->metal_roughness_texture() != NullAsset) {
     metal_roughness_texture =
         asset_pool->load<TextureAsset>(material->metal_roughness_texture());
     uniform.has_metal_roughness_texture = 1;
@@ -95,12 +95,10 @@ bool MaterialAsset::_load(const assets::SerializedAsset* asset) {
   double_sided = material->is_double_sided();
 
   const assets::Vec3* emissive_factor = material->emissive_factor();
-  uniform.emissive_factor = glm::vec4(
-      emissive_factor->x(), emissive_factor->y(), emissive_factor->z(), 1.0);
+  uniform.emissive_factor = glm::make_vec4(emissive_factor->v()->data());
 
   const assets::Vec4* albedo_factor = material->albedo_factor();
-  uniform.albedo_factor = glm::vec4(albedo_factor->x(), albedo_factor->y(),
-                                    albedo_factor->z(), albedo_factor->w());
+  uniform.albedo_factor = glm::make_vec4(albedo_factor->v()->data());
 
   uniform.mask_threshold = material->mask_threshold();
   uniform.metallic_factor = material->metallic_factor();

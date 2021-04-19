@@ -10,7 +10,7 @@ namespace core {
 
 // TODO(marceline-cramer) Reflect types from protocol
 using EntityId = uint32_t;
-static const EntityId NullEntity = 0;
+constexpr EntityId NullEntity = 0;
 using EntityRegistry = entt::basic_registry<EntityId>;
 
 }  // namespace core

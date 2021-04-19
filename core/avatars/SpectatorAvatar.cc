@@ -66,11 +66,8 @@ SpectatorAvatar::ProtocolBufferOffset SpectatorAvatar::serialize(
   flatbuffers::FlatBufferBuilder fbb;
   fbb.Clear();
 
-  // TODO(marceline-cramer) Helpers for these
   protocol::Vec3 position;
-  position.mutate_x(camera_position.x);
-  position.mutate_y(camera_position.y);
-  position.mutate_z(camera_position.z);
+  protocol::GlmToVec3(&position, camera_position);
 
   protocol::SpectatorAvatarBuilder spectator_avatar(fbb);
   spectator_avatar.add_position(&position);
@@ -93,10 +90,7 @@ void SpectatorAvatar::deserialize(const ProtocolBuffer* protocol_data) {
 
   if (spectator_avatar->position() != nullptr) {
     // TODO(marceline-cramer) Helpers for these
-    auto position = spectator_avatar->position();
-    camera_position.x = position->x();
-    camera_position.y = position->y();
-    camera_position.z = position->z();
+    camera_position = glm::make_vec3(spectator_avatar->position()->v()->data());
   }
 
   camera_pan = spectator_avatar->pan();

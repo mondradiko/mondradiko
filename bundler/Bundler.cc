@@ -100,7 +100,7 @@ void Bundler::addConverter(std::string file_format,
 assets::AssetId Bundler::getAssetByAlias(const std::string& alias) {
   auto iter = asset_aliases.find(alias);
   if (iter == asset_aliases.end()) {
-    return assets::AssetId::NullAsset;
+    return assets::NullAsset;
   }
 
   return iter->second;

@@ -6,7 +6,7 @@ include "types.fbs";
 namespace mondradiko.assets;
 
 struct AssetEntry {
-  id:AssetId;
+  id:uint32;
   size:uint32;
 }
 
@@ -22,7 +22,7 @@ table Registry {
   major_version:int;
   minor_version:int;
   patch_version:int;
-  initial_prefabs:[AssetId];
+  initial_prefabs:[uint32];
   lumps:[LumpEntry];
 }
 

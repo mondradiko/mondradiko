@@ -15,9 +15,18 @@ namespace converter {
 assets::Vec3 getVec3(const toml::value& src_array) {
   auto src = src_array.as_array();
   assets::Vec3 dst;
-  dst.mutate_x(src[0].as_floating());
-  dst.mutate_y(src[1].as_floating());
-  dst.mutate_z(src[2].as_floating());
+
+  auto v = dst.mutable_v();
+  v->Mutate(0, src[0].as_floating());
+  v->Mutate(1, src[1].as_floating());
+  v->Mutate(2, src[2].as_floating());
+
+  return dst;
+}
+
+assets::Quaternion getQuaternion() {
+  assets::Quaternion dst;
+  assets::GlmToQuat(&dst, glm::quat());
   return dst;
 }
 
@@ -79,7 +88,7 @@ assets::AssetId PrefabBuilder::buildPrefab(BundlerInterface* bundler,
     assets::Vec3 position = getVec3(transform_table.at("position"));
 
     // TODO(marceline-cramer) Load this from the TOML
-    assets::Quaternion orientation(1.0, 0.0, 0.0, 0.0);
+    assets::Quaternion orientation = getQuaternion();
 
     assets::TransformPrefab transform_builder(position, orientation);
     prefab_builder.add_transform(&transform_builder);
