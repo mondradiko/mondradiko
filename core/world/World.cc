@@ -213,7 +213,8 @@ bool World::update(double dt) {
         glm::mat4 local_transform = self_transform.getLocalTransform();
         glm::mat4 new_transform = parent_transform * local_transform;
 
-        registry.emplace<WorldTransform>(self_id, new_transform);
+        registry.emplace_or_replace<WorldTransform>(self_id, new_transform);
+      }
 
         // Use ourselves as the transform parent for our children
         parent_id = self_id;

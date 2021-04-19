@@ -88,7 +88,7 @@ void Physics::update(double dt) {
     for (auto e : rigid_body_view) {
       auto& rigid_body = rigid_body_view.get(e);
       auto new_transform = rigid_body.makeWorldTransform();
-      registry.emplace<WorldTransform>(e, new_transform);
+      registry.emplace_or_replace<WorldTransform>(e, new_transform);
     }
   }
 }
