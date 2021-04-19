@@ -35,8 +35,7 @@ class SynchronizedComponent : public InternalComponent {
   SynchronizedComponent() {}
   explicit SynchronizedComponent(const SerializedType& data) : _data(data) {}
 
-  // TODO(marceline-cramer) CRTP this method
-  virtual void refresh(AssetPool*) {}
+  void refresh(AssetPool*) {}
 
   const SerializedType& getData() const { return _data; }
   void writeData(const SerializedType& data) { _data = data; }

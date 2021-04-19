@@ -28,7 +28,7 @@ class MeshRendererComponent
             protocol::MeshRendererComponent(mesh_asset, material_asset)) {}
 
   // Component implementation
-  void refresh(AssetPool*) final;
+  void refresh(AssetPool*);
 
   bool isLoaded() const { return getMeshAsset() && getMaterialAsset(); }
 
