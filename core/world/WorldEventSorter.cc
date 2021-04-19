@@ -41,11 +41,7 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
   entities_data.reserve(component_view.size());
 
   for (auto& entity : component_view) {
-    auto& component = component_view.get(entity);
-
-    if (component.isDirty()) {
-      entities_data.push_back(entity);
-    }
+    entities_data.push_back(entity);
   }
 
   // Allocate and copy dirty component data

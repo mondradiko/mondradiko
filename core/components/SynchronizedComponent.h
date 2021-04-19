@@ -38,18 +38,11 @@ class SynchronizedComponent : public InternalComponent {
   // TODO(marceline-cramer) CRTP this method
   virtual void refresh(AssetPool*) {}
 
-  void markDirty() { dirty = true; }
-  bool isDirty() { return dirty; }
-  void markClean() { dirty = false; }
-
   const SerializedType& getData() const { return _data; }
   void writeData(const SerializedType& data) { _data = data; }
 
  protected:
   SerializedType _data;
-
- private:
-  bool dirty = true;
 };
 
 }  // namespace core
