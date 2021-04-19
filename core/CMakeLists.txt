@@ -32,12 +32,12 @@ set(MONDRADIKO_CORE_SRC
   assets/TextureAsset.cc
   avatars/Avatar.cc
   avatars/SpectatorAvatar.cc
-  components/MeshRendererComponent.cc
-  components/PointLightComponent.cc
-  components/RelationshipComponent.cc
-  components/RigidBodyComponent.cc
-  components/ScriptComponent.cc
-  components/TransformComponent.cc
+  components/internal/ScriptComponent.cc
+  components/scriptable/PointLightComponent.cc
+  components/scriptable/TransformComponent.cc
+  components/synchronized/MeshRendererComponent.cc
+  components/synchronized/RelationshipComponent.cc
+  components/synchronized/RigidBodyComponent.cc
   cvars/CVarScope.cc
   displays/OpenXrDisplay.cc
   displays/OpenXrViewport.cc

@@ -1,7 +1,7 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "core/components/RelationshipComponent.h"
+#include "core/components/synchronized/RelationshipComponent.h"
 
 #include "core/world/World.h"
 #include "types/protocol/WorldEvent_generated.h"

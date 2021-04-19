@@ -3,8 +3,8 @@
 
 #include "core/physics/Physics.h"
 
-#include "core/components/RigidBodyComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
+#include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/world/World.h"
 #include "log/log.h"
 

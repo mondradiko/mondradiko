@@ -4,7 +4,7 @@
 name = "PointLightComponent"
 storage_type = "component"
 internal_name = "PointLightComponent"
-internal_header = "core/components/PointLightComponent.h"
+internal_header = "core/components/scriptable/PointLightComponent.h"
 
 [methods]
 

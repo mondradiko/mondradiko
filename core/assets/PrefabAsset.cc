@@ -5,10 +5,10 @@
 
 #include <memory>
 
-#include "core/components/MeshRendererComponent.h"
-#include "core/components/PointLightComponent.h"
-#include "core/components/RigidBodyComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
+#include "core/components/synchronized/MeshRendererComponent.h"
+#include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/world/World.h"
 

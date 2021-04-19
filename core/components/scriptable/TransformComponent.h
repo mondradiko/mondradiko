@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/components/Component.h"
+#include "core/components/ScriptableComponent.h"
 #include "core/scripting/ScriptObject.h"
 #include "core/world/Entity.h"
 #include "lib/include/glm_headers.h"

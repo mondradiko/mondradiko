@@ -5,11 +5,10 @@
 
 #include <utility>
 
-#include "core/components/MeshRendererComponent.h"
-#include "core/components/PointLightComponent.h"
-#include "core/components/RelationshipComponent.h"
-#include "core/components/ScriptComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
+#include "core/components/synchronized/MeshRendererComponent.h"
+#include "core/components/synchronized/RelationshipComponent.h"
 #include "core/world/World.h"
 #include "types/protocol/WorldEvent_generated.h"
 

@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-#include "core/components/TransformComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
 #include "core/world/World.h"
 #include "types/protocol/SpectatorAvatar_generated.h"
 

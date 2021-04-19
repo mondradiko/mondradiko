@@ -3,8 +3,8 @@
 
 #include "core/renderer/OverlayPass.h"
 
-#include "core/components/PointLightComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/CVarScope.h"
 #include "core/gpu/GpuDescriptorPool.h"

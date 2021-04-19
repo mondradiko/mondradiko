@@ -4,7 +4,7 @@
 name = "TransformComponent"
 storage_type = "component"
 internal_name = "TransformComponent"
-internal_header = "core/components/TransformComponent.h"
+internal_header = "core/components/scriptable/TransformComponent.h"
 
 [methods]
 

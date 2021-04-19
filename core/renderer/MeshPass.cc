@@ -4,9 +4,9 @@
 #include "core/renderer/MeshPass.h"
 
 #include "core/assets/MeshAsset.h"
-#include "core/components/MeshRendererComponent.h"
-#include "core/components/PointLightComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
+#include "core/components/synchronized/MeshRendererComponent.h"
 #include "core/cvars/CVarScope.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuDescriptorPool.h"

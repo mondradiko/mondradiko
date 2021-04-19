@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/components/Component.h"
+#include "core/components/SynchronizedComponent.h"
 #include "lib/include/bullet_headers.h"
 #include "types/assets/PrefabAsset_generated.h"
 #include "types/protocol/RigidBodyComponent_generated.h"

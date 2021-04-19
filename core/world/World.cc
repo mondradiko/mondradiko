@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "core/assets/PrefabAsset.h"
-#include "core/components/MeshRendererComponent.h"
-#include "core/components/PointLightComponent.h"
-#include "core/components/RelationshipComponent.h"
-#include "core/components/ScriptComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/internal/ScriptComponent.h"
+#include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
+#include "core/components/synchronized/MeshRendererComponent.h"
+#include "core/components/synchronized/RelationshipComponent.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "log/log.h"

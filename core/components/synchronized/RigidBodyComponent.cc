@@ -1,9 +1,9 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "core/components/RigidBodyComponent.h"
+#include "core/components/synchronized/RigidBodyComponent.h"
 
-#include "core/components/TransformComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
 
 namespace mondradiko {
 namespace core {
