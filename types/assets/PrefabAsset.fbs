@@ -6,8 +6,8 @@ include "types.fbs";
 namespace mondradiko.assets;
 
 struct MeshRendererPrefab {
-  mesh:AssetId;
-  material:AssetId;
+  mesh:uint32;
+  material:uint32;
 }
 
 struct PointLightPrefab {
@@ -20,7 +20,7 @@ struct RigidBodyPrefab {
 }
 
 table ScriptPrefab {
-  script:AssetId;
+  script:uint32;
 }
 
 struct TransformPrefab {
@@ -29,7 +29,7 @@ struct TransformPrefab {
 }
 
 table PrefabAsset {
-  children:[AssetId];
+  children:[uint32];
 
   mesh_renderer:MeshRendererPrefab;
   point_light:PointLightPrefab;

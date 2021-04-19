@@ -13,6 +13,9 @@
 namespace mondradiko {
 namespace assets {
 
+using AssetId = uint32_t;
+constexpr AssetId NullAsset = 0;
+
 static const size_t ASSET_REGISTRY_MAX_LUMPS = 256;
 static const size_t ASSET_LUMP_MAX_ASSETS = 4096;
 static const size_t ASSET_LUMP_MAX_SIZE = 48 * 1024 * 1024;  // 128 MiB
@@ -35,8 +38,10 @@ enum class AssetResult {
 std::string generateLumpName(uint32_t);
 const char* getAssetResultString(AssetResult);
 
-glm::vec2 Vec2ToGlm(const Vec2&);
-glm::vec3 Vec3ToGlm(const Vec3&);
+void GlmToVec2(Vec2*, const glm::vec2&);
+void GlmToVec3(Vec3*, const glm::vec3&);
+void GlmToVec4(Vec4*, const glm::vec4&);
+void GlmToQuat(Quaternion*, const glm::quat&);
 
 }  // namespace assets
 }  // namespace mondradiko
