@@ -10,6 +10,7 @@
 
 #include "core/assets/PrefabAsset.h"
 #include "core/components/internal/ScriptComponent.h"
+#include "core/components/internal/WorldTransform.h"
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/components/scriptable/TransformComponent.h"
 #include "core/components/synchronized/MeshRendererComponent.h"
@@ -144,6 +145,13 @@ bool World::update(double dt) {
   log_zone;
 
   {
+    log_zone_named("Destroy old WorldTransforms");
+
+    // TODO(marceline-cramer) DirtyTransform flag
+    registry.clear<WorldTransform>();
+  }
+
+  {
     log_zone_named("Update physics");
 
     physics.update(dt);
@@ -157,7 +165,7 @@ bool World::update(double dt) {
 
     for (auto e : transforms) {
       auto& transform = transforms.get<TransformComponent>(e);
-      transform.world_transform = transform.getLocalTransform();
+      registry.emplace<WorldTransform>(e, transform.getLocalTransform());
     }
   }
 
@@ -197,13 +205,15 @@ bool World::update(double dt) {
       if (registry.has<TransformComponent>(self_id)) {
         glm::mat4 parent_transform = glm::mat4(1.0);
         if (parent_id != NullEntity) {
-          auto& transform = registry.get<TransformComponent>(parent_id);
-          parent_transform = transform.getWorldTransform();
+          auto& transform = registry.get<WorldTransform>(parent_id);
+          parent_transform = transform.getTransform();
         }
 
         auto& self_transform = registry.get<TransformComponent>(self_id);
         glm::mat4 local_transform = self_transform.getLocalTransform();
-        self_transform.world_transform = parent_transform * local_transform;
+        glm::mat4 new_transform = parent_transform * local_transform;
+
+        registry.emplace<WorldTransform>(self_id, new_transform);
 
         // Use ourselves as the transform parent for our children
         parent_id = self_id;
