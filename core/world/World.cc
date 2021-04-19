@@ -216,7 +216,8 @@ bool World::update(double dt) {
         registry.emplace_or_replace<WorldTransform>(self_id, new_transform);
       }
 
-        // Use ourselves as the transform parent for our children
+      // Use ourselves as the transform parent for our children
+      if (registry.has<WorldTransform>(self_id)) {
         parent_id = self_id;
       }
 
