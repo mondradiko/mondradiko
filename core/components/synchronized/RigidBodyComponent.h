@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/components/Component.h"
+#include "core/components/SynchronizedComponent.h"
 #include "lib/include/bullet_headers.h"
 #include "types/assets/PrefabAsset_generated.h"
 #include "types/protocol/RigidBodyComponent_generated.h"
@@ -12,7 +12,7 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class TransformComponent;
+class WorldTransform;
 
 class RigidBodyComponent
     : public SynchronizedComponent<protocol::RigidBodyComponent> {
@@ -22,7 +22,7 @@ class RigidBodyComponent
 
   // TODO(marceline-cramer) Rigid body network sync
 
-  TransformComponent makeTransform();
+  WorldTransform makeWorldTransform();
 
  private:
   // Systems allowed to access private members directly

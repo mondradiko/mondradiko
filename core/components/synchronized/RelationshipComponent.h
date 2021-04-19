@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/components/Component.h"
+#include "core/components/SynchronizedComponent.h"
 #include "core/world/Entity.h"
 #include "types/protocol/RelationshipComponent_generated.h"
 

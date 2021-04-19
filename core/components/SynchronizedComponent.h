@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "core/components/InternalComponent.h"
 #include "lib/include/flatbuffers_headers.h"
 
 namespace mondradiko {
@@ -26,7 +27,7 @@ void buildUpdateComponents(
     flatbuffers::Offset<flatbuffers::Vector<const ProtocolComponentType*>>);
 
 template <typename DataType>
-class SynchronizedComponent {
+class SynchronizedComponent : public InternalComponent {
  public:
   // Make data type public so other classes can use it
   using SerializedType = DataType;
@@ -34,32 +35,13 @@ class SynchronizedComponent {
   SynchronizedComponent() {}
   explicit SynchronizedComponent(const SerializedType& data) : _data(data) {}
 
-  // TODO(marceline-cramer) CRTP this method
-  virtual void refresh(AssetPool*) {}
-
-  void markDirty() { dirty = true; }
-  bool isDirty() { return dirty; }
-  void markClean() { dirty = false; }
+  void refresh(AssetPool*) {}
 
   const SerializedType& getData() const { return _data; }
   void writeData(const SerializedType& data) { _data = data; }
 
  protected:
   SerializedType _data;
-
- private:
-  bool dirty = true;
-};
-
-template <typename Inheritor, typename DataType>
-class ScriptableComponent : public SynchronizedComponent<DataType> {
- public:
-  ScriptableComponent() {}
-  explicit ScriptableComponent(const DataType& data)
-      : SynchronizedComponent<DataType>(data) {}
-
-  // Defined in generated API linker
-  static void linkScriptApi(ScriptEnvironment*, World*);
 };
 
 }  // namespace core

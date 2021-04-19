@@ -4,7 +4,7 @@
 #pragma once
 
 #include "core/assets/ScriptAsset.h"
-#include "core/components/Component.h"
+#include "core/components/InternalComponent.h"
 
 namespace mondradiko {
 namespace core {
@@ -12,7 +12,7 @@ namespace core {
 // Forward declarations
 class ComponentScript;
 
-class ScriptComponent {
+class ScriptComponent : public InternalComponent {
  public:
   const AssetHandle<ScriptAsset>& getScriptAsset() { return script_asset; }
 

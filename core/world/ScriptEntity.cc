@@ -3,8 +3,8 @@
 
 #include "core/world/ScriptEntity.h"
 
-#include "core/components/PointLightComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/world/World.h"
 

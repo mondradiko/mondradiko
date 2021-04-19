@@ -4,9 +4,9 @@
 #include "core/scripting/ScriptEnvironment.h"
 
 #include "core/assets/ScriptAsset.h"
-#include "core/components/PointLightComponent.h"
-#include "core/components/ScriptComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/internal/ScriptComponent.h"
+#include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
 #include "core/scripting/ComponentScript.h"
 #include "core/scripting/ScriptInstance.h"
 #include "core/ui/GlyphStyle.h"

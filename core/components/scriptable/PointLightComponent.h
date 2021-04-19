@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/components/Component.h"
+#include "core/components/ScriptableComponent.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/wasm_headers.h"
 #include "types/assets/PrefabAsset_generated.h"

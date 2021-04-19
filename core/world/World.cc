@@ -9,11 +9,14 @@
 #include <vector>
 
 #include "core/assets/PrefabAsset.h"
-#include "core/components/MeshRendererComponent.h"
-#include "core/components/PointLightComponent.h"
-#include "core/components/RelationshipComponent.h"
-#include "core/components/ScriptComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/internal/ScriptComponent.h"
+#include "core/components/internal/TransformAuthorityFlag.h"
+#include "core/components/internal/WorldTransform.h"
+#include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
+#include "core/components/synchronized/MeshRendererComponent.h"
+#include "core/components/synchronized/RelationshipComponent.h"
+#include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "log/log.h"
@@ -34,6 +37,15 @@ World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
 
   scripts->initializeAssets(asset_pool);
   scripts->linkComponentApis(this);
+
+  registry.on_construct<TransformComponent>()
+      .connect<&onTransformAuthorityConstruct>();
+  registry.on_destroy<TransformComponent>()
+      .connect<&onTransformAuthorityDestroy>();
+  registry.on_construct<RigidBodyComponent>()
+      .connect<&onTransformAuthorityConstruct>();
+  registry.on_destroy<RigidBodyComponent>()
+      .connect<&onTransformAuthorityDestroy>();
 }
 
 World::~World() {
@@ -75,6 +87,23 @@ void World::orphan(EntityId child_id) {
     auto& child = registry.get<RelationshipComponent>(child_id);
     child._orphan(this);
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Observer callbacks
+///////////////////////////////////////////////////////////////////////////////
+
+void World::onTransformAuthorityConstruct(EntityRegistry& registry,
+                                          EntityId id) {
+  if (registry.remove_if_exists<TransformAuthorityFlag>(id) > 0) {
+    log_err_fmt("Entity %lu already had transform authority", id);
+  } else {
+    registry.emplace<TransformAuthorityFlag>(id);
+  }
+}
+
+void World::onTransformAuthorityDestroy(EntityRegistry& registry, EntityId id) {
+  registry.remove_if_exists<TransformAuthorityFlag>(id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -144,6 +173,13 @@ bool World::update(double dt) {
   log_zone;
 
   {
+    log_zone_named("Destroy old WorldTransforms");
+
+    // TODO(marceline-cramer) DirtyTransform flag
+    registry.clear<WorldTransform>();
+  }
+
+  {
     log_zone_named("Update physics");
 
     physics.update(dt);
@@ -157,7 +193,7 @@ bool World::update(double dt) {
 
     for (auto e : transforms) {
       auto& transform = transforms.get<TransformComponent>(e);
-      transform.world_transform = transform.getLocalTransform();
+      registry.emplace<WorldTransform>(e, transform.getLocalTransform());
     }
   }
 
@@ -197,15 +233,19 @@ bool World::update(double dt) {
       if (registry.has<TransformComponent>(self_id)) {
         glm::mat4 parent_transform = glm::mat4(1.0);
         if (parent_id != NullEntity) {
-          auto& transform = registry.get<TransformComponent>(parent_id);
-          parent_transform = transform.getWorldTransform();
+          auto& transform = registry.get<WorldTransform>(parent_id);
+          parent_transform = transform.getTransform();
         }
 
         auto& self_transform = registry.get<TransformComponent>(self_id);
         glm::mat4 local_transform = self_transform.getLocalTransform();
-        self_transform.world_transform = parent_transform * local_transform;
+        glm::mat4 new_transform = parent_transform * local_transform;
 
-        // Use ourselves as the transform parent for our children
+        registry.emplace_or_replace<WorldTransform>(self_id, new_transform);
+      }
+
+      // Use ourselves as the transform parent for our children
+      if (registry.has<WorldTransform>(self_id)) {
         parent_id = self_id;
       }
 

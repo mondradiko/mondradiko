@@ -5,11 +5,10 @@
 
 #include <utility>
 
-#include "core/components/MeshRendererComponent.h"
-#include "core/components/PointLightComponent.h"
-#include "core/components/RelationshipComponent.h"
-#include "core/components/ScriptComponent.h"
-#include "core/components/TransformComponent.h"
+#include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/scriptable/TransformComponent.h"
+#include "core/components/synchronized/MeshRendererComponent.h"
+#include "core/components/synchronized/RelationshipComponent.h"
 #include "core/world/World.h"
 #include "types/protocol/WorldEvent_generated.h"
 
@@ -42,11 +41,7 @@ flatbuffers::Offset<protocol::WorldEvent> updateComponents(
   entities_data.reserve(component_view.size());
 
   for (auto& entity : component_view) {
-    auto& component = component_view.get(entity);
-
-    if (component.isDirty()) {
-      entities_data.push_back(entity);
-    }
+    entities_data.push_back(entity);
   }
 
   // Allocate and copy dirty component data

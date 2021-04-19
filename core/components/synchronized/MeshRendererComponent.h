@@ -5,7 +5,7 @@
 
 #include "core/assets/MaterialAsset.h"
 #include "core/assets/MeshAsset.h"
-#include "core/components/Component.h"
+#include "core/components/SynchronizedComponent.h"
 #include "types/assets/PrefabAsset_generated.h"
 #include "types/protocol/MeshRendererComponent_generated.h"
 
@@ -28,7 +28,7 @@ class MeshRendererComponent
             protocol::MeshRendererComponent(mesh_asset, material_asset)) {}
 
   // Component implementation
-  void refresh(AssetPool*) final;
+  void refresh(AssetPool*);
 
   bool isLoaded() const { return getMeshAsset() && getMaterialAsset(); }
 
