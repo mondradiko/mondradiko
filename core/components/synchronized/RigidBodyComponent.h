@@ -12,7 +12,7 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class TransformComponent;
+class WorldTransform;
 
 class RigidBodyComponent
     : public SynchronizedComponent<protocol::RigidBodyComponent> {
@@ -22,7 +22,7 @@ class RigidBodyComponent
 
   // TODO(marceline-cramer) Rigid body network sync
 
-  TransformComponent makeTransform();
+  WorldTransform makeWorldTransform();
 
  private:
   // Systems allowed to access private members directly

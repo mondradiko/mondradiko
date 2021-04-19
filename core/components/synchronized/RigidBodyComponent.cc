@@ -3,7 +3,7 @@
 
 #include "core/components/synchronized/RigidBodyComponent.h"
 
-#include "core/components/scriptable/TransformComponent.h"
+#include "core/components/internal/WorldTransform.h"
 
 namespace mondradiko {
 namespace core {
@@ -14,7 +14,7 @@ RigidBodyComponent::RigidBodyComponent(const assets::RigidBodyPrefab* prefab) {
 
 RigidBodyComponent::~RigidBodyComponent() { _destroy(nullptr); }
 
-TransformComponent RigidBodyComponent::makeTransform() {
+WorldTransform RigidBodyComponent::makeWorldTransform() {
   auto transform = _rigid_body->getCenterOfMassTransform();
   auto body_position = transform.getOrigin();
   auto body_orientation = transform.getRotation();
@@ -23,7 +23,8 @@ TransformComponent RigidBodyComponent::makeTransform() {
   glm::vec3 position(body_position.x(), body_position.y(), body_position.z());
   glm::quat orientation(body_orientation.w(), body_orientation.x(),
                         body_orientation.y(), body_orientation.z());
-  return TransformComponent(position, orientation);
+
+  return WorldTransform(position, orientation);
 }
 
 void RigidBodyComponent::_destroy(btDynamicsWorld* dynamics_world) {
