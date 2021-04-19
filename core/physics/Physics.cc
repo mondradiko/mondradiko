@@ -3,7 +3,7 @@
 
 #include "core/physics/Physics.h"
 
-#include "core/components/scriptable/TransformComponent.h"
+#include "core/components/internal/WorldTransform.h"
 #include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/world/World.h"
 #include "log/log.h"
@@ -87,13 +87,8 @@ void Physics::update(double dt) {
 
     for (auto e : rigid_body_view) {
       auto& rigid_body = rigid_body_view.get(e);
-
-      if (registry.has<TransformComponent>(e)) {
-        // TODO(marceline-cramer) Make internal single-write TransformComponent
-        registry.remove<TransformComponent>(e);
-      }
-
-      registry.emplace<TransformComponent>(e, rigid_body.makeTransform());
+      auto new_transform = rigid_body.makeWorldTransform();
+      registry.emplace<WorldTransform>(e, new_transform);
     }
   }
 }
