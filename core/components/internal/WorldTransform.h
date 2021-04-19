@@ -11,7 +11,7 @@ namespace core {
 
 class WorldTransform : public InternalComponent {
  public:
-  WorldTransform(const glm::mat4& transform) : _transform(transform) {}
+  explicit WorldTransform(const glm::mat4& transform) : _transform(transform) {}
 
   WorldTransform(const glm::vec3& position, const glm::quat& orientation) {
     auto translation = glm::translate(glm::mat4(1.0), position);
