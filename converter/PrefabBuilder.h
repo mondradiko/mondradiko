@@ -4,6 +4,7 @@
 #pragma once
 
 #include "lib/include/toml_headers.h"
+#include "types/assets/AssetTypes.h"
 #include "types/assets/SerializedAsset_generated.h"
 
 namespace mondradiko {

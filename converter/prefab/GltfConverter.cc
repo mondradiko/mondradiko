@@ -111,8 +111,10 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
       mesh_renderer.mutate_material(material_id);
 
       assets::TransformPrefab transform;
-      transform.mutable_position() = assets::Vec3(0.0, 0.0, 0.0);
-      transform.mutable_orientation() = assets::Quaternion(1.0, 0.0, 0.0, 0.0);
+      assets::GlmToVec3(&transform.mutable_position(),
+                        glm::vec3(0.0, 0.0, 0.0));
+      assets::GlmToQuat(&transform.mutable_orientation(),
+                        glm::quat(1.0, 0.0, 0.0, 0.0));
 
       assets::PrefabAssetBuilder prefab(fbb);
       prefab.add_mesh_renderer(&mesh_renderer);
@@ -143,14 +145,8 @@ assets::AssetId GltfConverter::_loadNode(GltfModel model, GltfNode node,
     auto children_offset = fbb.CreateVector(children);
 
     assets::TransformPrefab transform;
-    transform.mutable_position().mutate_x(node_translation.x);
-    transform.mutable_position().mutate_y(node_translation.y);
-    transform.mutable_position().mutate_z(node_translation.z);
-
-    transform.mutable_orientation().mutate_w(node_orientation.w);
-    transform.mutable_orientation().mutate_x(node_orientation.x);
-    transform.mutable_orientation().mutate_y(node_orientation.y);
-    transform.mutable_orientation().mutate_z(node_orientation.z);
+    assets::GlmToVec3(&transform.mutable_position(), node_translation);
+    assets::GlmToQuat(&transform.mutable_orientation(), node_orientation);
 
     assets::PrefabAssetBuilder prefab_asset(fbb);
     prefab_asset.add_children(children_offset);
@@ -210,30 +206,30 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
 
   if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
     log_ftl("GLTF primitive must be triangle list");
-    return assets::AssetId::NullAsset;
+    return assets::NullAsset;
   }
 
   const auto &attributes = primitive.attributes;
 
   if (attributes.find("POSITION") == primitive.attributes.end()) {
     log_err("GLTF primitive must have position attributes");
-    return assets::AssetId::NullAsset;
+    return assets::NullAsset;
   }
 
   if (attributes.find("NORMAL") == primitive.attributes.end()) {
     log_err("GLTF primitive must have normal attributes");
-    return assets::AssetId::NullAsset;
+    return assets::NullAsset;
   }
 
   if (attributes.find("TEXCOORD_0") == primitive.attributes.end()) {
     log_err("GLTF primitive must have texture coordinates");
-    return assets::AssetId::NullAsset;
+    return assets::NullAsset;
   }
 
   // TODO(marceline-cramer) Generate indices if they're not there
   if (primitive.indices <= -1) {
     log_err("GLTF primitive must have indices");
-    return assets::AssetId::NullAsset;
+    return assets::NullAsset;
   }
 
   {  // Load vertices
@@ -242,11 +238,13 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
     GltfAccessor tex_accessor(model, attributes.find("TEXCOORD_0")->second);
 
     std::unique_ptr<GltfAccessor> tan_accessor;
-    assets::Vec3 tangent_vec(0.0, 1.0, 0.0);
     if (attributes.find("TANGENT") != primitive.attributes.end()) {
       tan_accessor = std::make_unique<GltfAccessor>(
           model, attributes.find("TANGENT")->second);
     }
+
+    assets::Vec3 tangent_vec;
+    assets::GlmToVec3(&tangent_vec, glm::vec3(0.0, 1.0, 0.0));
 
     for (size_t v = 0; v < pos_accessor.size(); v++) {
       const float *position_raw = pos_accessor.get<float>(v);
@@ -267,15 +265,21 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
         // Normalize the tangent
         glm::vec3 tangent = glm::normalize(
             glm::vec3(tangent_raw[0], tangent_raw[1], tangent_raw[2]));
-        tangent_vec = assets::Vec3(tangent.x, tangent.y, tangent.z);
+        assets::GlmToVec3(&tangent_vec, tangent);
       }
 
-      assets::Vec3 position_vec(position.x, position.y, position.z);
-      assets::Vec3 normal_vec(normal.x, normal.y, normal.z);
+      assets::Vec3 position_vec;
+      assets::GlmToVec3(&position_vec, position);
+
+      assets::Vec3 normal_vec;
+      assets::GlmToVec3(&normal_vec, normal);
 
       // TODO(marceline-cramer) Read mesh vertex colors
-      assets::Vec3 color_vec(1.0, 1.0, 1.0);
-      assets::Vec2 tex_coord_vec(tex_coord[0], tex_coord[1]);
+      assets::Vec3 color_vec;
+      assets::Vec2 tex_coord_vec;
+
+      assets::GlmToVec3(&color_vec, glm::vec3(1.0, 1.0, 1.0));
+      assets::GlmToVec2(&tex_coord_vec, glm::vec2(tex_coord[0], tex_coord[1]));
 
       assets::MeshVertex vertex(position_vec, normal_vec, tangent_vec,
                                 color_vec, tex_coord_vec);
@@ -345,20 +349,28 @@ assets::AssetId GltfConverter::_loadPrimitive(GltfModel model,
 
 // Helper functions to load vectors
 // TODO(marceline-cramer) Move this into a helper file
-void loadVector(assets::Vec3 *dst, const std::vector<double> &src) {
+void loadVector(assets::Vec3 *dst, const std::vector<double> &src,
+                const glm::vec3 &default_src) {
   if (src.size() >= 3) {
-    dst->mutate_x(src[0]);
-    dst->mutate_y(src[1]);
-    dst->mutate_z(src[2]);
+    auto v = dst->mutable_v();
+    v->Mutate(0, src[0]);
+    v->Mutate(1, src[1]);
+    v->Mutate(2, src[2]);
+  } else {
+    assets::GlmToVec3(dst, default_src);
   }
 }
 
-void loadVector(assets::Vec4 *dst, const std::vector<double> &src) {
+void loadVector(assets::Vec4 *dst, const std::vector<double> &src,
+                const glm::vec4 &default_src) {
   if (src.size() >= 4) {
-    dst->mutate_x(src[0]);
-    dst->mutate_y(src[1]);
-    dst->mutate_z(src[2]);
-    dst->mutate_w(src[3]);
+    auto v = dst->mutable_v();
+    v->Mutate(0, src[0]);
+    v->Mutate(1, src[1]);
+    v->Mutate(2, src[2]);
+    v->Mutate(3, src[3]);
+  } else {
+    assets::GlmToVec4(dst, default_src);
   }
 }
 
@@ -393,8 +405,8 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
       material_builder.add_is_unlit(false);
     }
 
-    assets::Vec3 emissive_factor(0.0, 0.0, 0.0);
-    loadVector(&emissive_factor, base.emissiveFactor);
+    assets::Vec3 emissive_factor;
+    loadVector(&emissive_factor, base.emissiveFactor, glm::vec3(0.0, 0.0, 0.0));
     material_builder.add_emissive_factor(&emissive_factor);
 
     assets::AssetId emissive_texture =
@@ -403,7 +415,7 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
 
     material_builder.add_normal_map_scale(base.normalTexture.scale);
 
-    assets::AssetId normal_map_texture = assets::AssetId::NullAsset;
+    assets::AssetId normal_map_texture = assets::NullAsset;
     if (base.normalTexture.index >= 0) {
       const auto &normal_texture = model.textures[base.normalTexture.index];
       if (normal_texture.source >= 0) {
@@ -417,8 +429,9 @@ assets::AssetId GltfConverter::_loadMaterial(GltfModel model,
   {  // Load PBR
     const auto &pbr = material.pbrMetallicRoughness;
 
-    assets::Vec4 albedo_factor(1.0, 1.0, 1.0, 1.0);
-    loadVector(&albedo_factor, pbr.baseColorFactor);
+    assets::Vec4 albedo_factor;
+    glm::vec4 albedo_default = glm::vec4(1.0, 1.0, 1.0, 1.0);
+    loadVector(&albedo_factor, pbr.baseColorFactor, albedo_default);
     material_builder.add_albedo_factor(&albedo_factor);
 
     assets::AssetId albedo_texture =
@@ -449,14 +462,14 @@ assets::AssetId GltfConverter::_loadTexture(GltfModel model,
                                             bool srgb) const {
   if (texture_info.index < 0) {
     log_err("Attempting to load null texture info");
-    return assets::AssetId::NullAsset;
+    return assets::NullAsset;
   }
 
   const auto &texture = model.textures[texture_info.index];
 
   if (texture.source < 0) {
     log_err("Attempting to load null texture source");
-    return assets::AssetId::NullAsset;
+    return assets::NullAsset;
   }
 
   const auto &image = model.images[texture.source];
