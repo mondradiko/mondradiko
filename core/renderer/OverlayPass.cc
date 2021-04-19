@@ -3,8 +3,8 @@
 
 #include "core/renderer/OverlayPass.h"
 
+#include "core/components/internal/WorldTransform.h"
 #include "core/components/scriptable/PointLightComponent.h"
-#include "core/components/scriptable/TransformComponent.h"
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/CVarScope.h"
 #include "core/gpu/GpuDescriptorPool.h"
@@ -130,10 +130,10 @@ void OverlayPass::beginFrame(uint32_t frame_index,
   if (!cvars->get<BoolCVar>("enabled")) return;
 
   if (cvars->get<BoolCVar>("draw_transforms")) {
-    auto transform_view = world->registry.view<TransformComponent>();
+    auto transform_view = world->registry.view<WorldTransform>();
 
     for (auto& e : transform_view) {
-      glm::mat4 transform = transform_view.get(e).getWorldTransform();
+      glm::mat4 transform = transform_view.get(e).getTransform();
 
       {
         // Draw X line

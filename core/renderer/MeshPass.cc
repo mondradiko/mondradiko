@@ -4,8 +4,8 @@
 #include "core/renderer/MeshPass.h"
 
 #include "core/assets/MeshAsset.h"
+#include "core/components/internal/WorldTransform.h"
 #include "core/components/scriptable/PointLightComponent.h"
-#include "core/components/scriptable/TransformComponent.h"
 #include "core/components/synchronized/MeshRendererComponent.h"
 #include "core/cvars/CVarScope.h"
 #include "core/gpu/GpuBuffer.h"
@@ -250,9 +250,9 @@ void MeshPass::beginFrame(uint32_t frame_index,
       PointLightUniform uniform;
       point_light.getUniform(&uniform);
 
-      if (world->registry.has<TransformComponent>(e)) {
-        auto& transform = world->registry.get<TransformComponent>(e);
-        uniform.position = transform.getWorldTransform() * uniform.position;
+      if (world->registry.has<WorldTransform>(e)) {
+        auto& transform = world->registry.get<WorldTransform>(e);
+        uniform.position = transform.getTransform() * uniform.position;
       }
 
       point_light_uniforms.push_back(uniform);
@@ -272,7 +272,7 @@ void MeshPass::beginFrame(uint32_t frame_index,
   types::vector<MeshUniform> frame_meshes;
 
   auto mesh_renderers =
-      world->registry.view<MeshRendererComponent, TransformComponent>();
+      world->registry.group<MeshRendererComponent, WorldTransform>();
 
   frame.forward_commands.single_sided.clear();
   frame.forward_commands.double_sided.clear();
@@ -322,10 +322,10 @@ void MeshPass::beginFrame(uint32_t frame_index,
     }
 
     {  // Write mesh uniform
-      auto& transform = mesh_renderers.get<TransformComponent>(e);
+      auto& transform = mesh_renderers.get<WorldTransform>(e);
 
       MeshUniform mesh_uniform;
-      mesh_uniform.model = transform.getWorldTransform();
+      mesh_uniform.model = transform.getTransform();
       mesh_uniform.light_count = point_light_uniforms.size();
       mesh_uniform.material_idx = material_idx;
 
