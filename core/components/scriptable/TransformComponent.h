@@ -40,8 +40,6 @@ class TransformComponent
   TransformComponent()
       : TransformComponent(glm::vec3(0.0, 0.0, 0.0), glm::quat()) {}
 
-  glm::mat4 getWorldTransform() const { return world_transform; }
-
   //
   // Scripting methods
   //
@@ -75,9 +73,6 @@ class TransformComponent
   // System helpers
   // Used by World to calculate transforms
   glm::mat4 getLocalTransform();
-
-  // Final transform result used in math
-  glm::mat4 world_transform;
 };
 
 }  // namespace core
