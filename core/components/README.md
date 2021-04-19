@@ -6,13 +6,36 @@ computing model, which revolves around "components" which are attached to
 "entities" and then operated on by "systems." This subfolder contains the
 implementations of each component type.
 
-## Component Base Class
+## Internal Components
 
-## Synchronized Data
+Internal components are only used by internal engine processes, and are not
+synchronized across the network, or accessible by scripts.
 
-## Scripting Methods
+### `ScriptComponent`
 
-##
+### `WorldTransform`
+
+## Synchronized Components
+
+Synchronized components are serialized and deserialized across a network
+connection, and have a protected `_data` member of a [`protocol` type](/types/).
+
+### `PointLightComponent`
+
+### `TransformComponent`
+
+## Scriptable Components
+
+Scriptable components are components with scripting APIs exposed to the
+component script environment.
+
+All scriptable components are synchronized.
+
+### `MeshRendererComponent`
+
+### `RelationshipComponent`
+
+### `RigidBodyComponent`
 
 # To-Do
 
