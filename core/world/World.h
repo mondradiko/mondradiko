@@ -42,6 +42,12 @@ class World : public StaticScriptObject<World> {
   void orphan(EntityId);
 
   //
+  // Observer callbacks
+  //
+  static void onTransformAuthorityConstruct(EntityRegistry&, EntityId);
+  static void onTransformAuthorityDestroy(EntityRegistry&, EntityId);
+
+  //
   // World event callbacks
   //
   void onSpawnEntity(const protocol::SpawnEntity*);

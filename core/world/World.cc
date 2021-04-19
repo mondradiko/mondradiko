@@ -10,11 +10,13 @@
 
 #include "core/assets/PrefabAsset.h"
 #include "core/components/internal/ScriptComponent.h"
+#include "core/components/internal/TransformAuthorityFlag.h"
 #include "core/components/internal/WorldTransform.h"
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/components/scriptable/TransformComponent.h"
 #include "core/components/synchronized/MeshRendererComponent.h"
 #include "core/components/synchronized/RelationshipComponent.h"
+#include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/filesystem/Filesystem.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "log/log.h"
@@ -35,6 +37,15 @@ World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
 
   scripts->initializeAssets(asset_pool);
   scripts->linkComponentApis(this);
+
+  registry.on_construct<TransformComponent>()
+      .connect<&onTransformAuthorityConstruct>();
+  registry.on_destroy<TransformComponent>()
+      .connect<&onTransformAuthorityDestroy>();
+  registry.on_construct<RigidBodyComponent>()
+      .connect<&onTransformAuthorityConstruct>();
+  registry.on_destroy<RigidBodyComponent>()
+      .connect<&onTransformAuthorityDestroy>();
 }
 
 World::~World() {
@@ -76,6 +87,23 @@ void World::orphan(EntityId child_id) {
     auto& child = registry.get<RelationshipComponent>(child_id);
     child._orphan(this);
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Observer callbacks
+///////////////////////////////////////////////////////////////////////////////
+
+void World::onTransformAuthorityConstruct(EntityRegistry& registry,
+                                          EntityId id) {
+  if (registry.remove_if_exists<TransformAuthorityFlag>(id) > 0) {
+    log_err_fmt("Entity %lu already had transform authority", id);
+  } else {
+    registry.emplace<TransformAuthorityFlag>(id);
+  }
+}
+
+void World::onTransformAuthorityDestroy(EntityRegistry& registry, EntityId id) {
+  registry.remove_if_exists<TransformAuthorityFlag>(id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
