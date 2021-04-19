@@ -62,7 +62,7 @@ class AssetHandle {
   operator bool() const { return isLoaded(); }
 
   AssetId getId() const {
-    if (!isLoaded()) return AssetId::NullAsset;
+    if (!isLoaded()) return NullAsset;
     return id;
   }
 
