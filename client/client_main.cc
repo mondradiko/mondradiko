@@ -96,8 +96,6 @@ void run(const ClientArgs& args) {
   AssetPool asset_pool(&fs);
   World world(&asset_pool, &fs, &scripts);
 
-  const Avatar* avatar = display->getAvatar(&world);
-
   Renderer renderer(&cvars, display.get(), &gpu);
   GlyphLoader glyphs(&cvars, &renderer);
   MeshPass mesh_pass(&renderer, &world);
@@ -111,6 +109,8 @@ void run(const ClientArgs& args) {
   renderer.addRenderPass(&ui);
 
   std::unique_ptr<NetworkClient> client;
+
+  const Avatar* avatar = display->getAvatar(&world);
 
   if (!args.serverless) {
     client = std::make_unique<NetworkClient>(&cvars, &fs, &ui, &world);
