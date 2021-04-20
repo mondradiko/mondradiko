@@ -100,17 +100,14 @@ void SpectatorAvatar::deserialize(const ProtocolBuffer* protocol_data) {
 }
 
 void SpectatorAvatar::_updateTransform() {
-  if (world->registry.has<TransformComponent>(_self_id)) {
-    world->registry.remove<TransformComponent>(_self_id);
-  }
-
   auto position = camera_position;
 
   glm::quat orientation =
-      glm::angleAxis(camera_tilt, glm::vec3(0.0, 0.0, -1.0)) *
-      glm::angleAxis(camera_pan, glm::vec3(0.0, -1.0, 0.0));
+      glm::angleAxis(camera_tilt, glm::vec3(0.0, 0.0, 1.0)) *
+      glm::angleAxis(camera_pan, glm::vec3(0.0, 1.0, 0.0));
 
-  world->registry.emplace<TransformComponent>(_self_id, position, orientation);
+  world->registry.emplace_or_replace<TransformComponent>(_self_id, position,
+                                                         orientation);
 }
 
 }  // namespace core
