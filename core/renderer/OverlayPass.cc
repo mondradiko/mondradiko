@@ -3,6 +3,7 @@
 
 #include "core/renderer/OverlayPass.h"
 
+#include "core/components/internal/PointerComponent.h"
 #include "core/components/internal/WorldTransform.h"
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/cvars/BoolCVar.h"
@@ -30,6 +31,7 @@ void OverlayPass::initCVars(CVarScope* cvars) {
   debug->addValue<BoolCVar>("enabled");
   debug->addValue<BoolCVar>("draw_lights");
   debug->addValue<BoolCVar>("draw_transforms");
+  debug->addValue<BoolCVar>("draw_pointers");
 }
 
 OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
@@ -236,6 +238,47 @@ void OverlayPass::beginFrame(uint32_t frame_index,
         DebugDrawVertex vertex{};
         vertex.position = position - line_space;
         vertex.color = glm::vec3(1.0);
+
+        frame.debug_vertices->writeElement(vertex_count, vertex);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
+      }
+    }
+  }
+
+  if (cvars->get<BoolCVar>("draw_pointers")) {
+    auto pointers_view = world->registry.view<PointerComponent>();
+
+    for (auto e : pointers_view) {
+      auto& pointer = pointers_view.get(e);
+
+      glm::mat4 transform(1.0);
+      if (world->registry.has<WorldTransform>(e)) {
+        transform = world->registry.get<WorldTransform>(e).getTransform();
+      }
+
+      glm::vec3 position = pointer.getPosition();
+      glm::vec3 direction = position + pointer.getDirection() * glm::vec3(10.0);
+
+      glm::vec3 start_pos = transform * glm::vec4(position, 1.0);
+      glm::vec3 end_pos = transform * glm::vec4(direction, 1.0);
+
+      {
+        DebugDrawVertex vertex{};
+        vertex.position = start_pos;
+        vertex.color = glm::vec3(0.0, 1.0, 1.0);
+
+        frame.debug_vertices->writeElement(vertex_count, vertex);
+        frame.debug_indices->writeElement(frame.index_count, vertex_count);
+        vertex_count++;
+        frame.index_count++;
+      }
+
+      {
+        DebugDrawVertex vertex{};
+        vertex.position = end_pos;
+        vertex.color = glm::vec3(0.5, 0.5, 0.5);
 
         frame.debug_vertices->writeElement(vertex_count, vertex);
         frame.debug_indices->writeElement(frame.index_count, vertex_count);
