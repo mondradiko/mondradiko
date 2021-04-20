@@ -209,14 +209,21 @@ void OverlayPass::beginFrame(uint32_t frame_index,
     for (auto e : point_lights_view) {
       auto& point_light = point_lights_view.get(e);
 
+      glm::mat4 world_transform(1.0);
+      if (world->registry.has<WorldTransform>(e)) {
+        world_transform = world->registry.get<WorldTransform>(e).getTransform();
+      }
+
       PointLightUniform uniform;
       point_light.getUniform(&uniform);
       glm::vec3 position =
-          glm::vec3(uniform.position.x, uniform.position.y, uniform.position.z);
+          world_transform * glm::vec4(glm::vec3(uniform.position), 1.0);
+
+      glm::vec3 line_space(0.0, 0.1, 0.0);
 
       {
         DebugDrawVertex vertex{};
-        vertex.position = position + glm::vec3(0.0, 0.1, 0.0);
+        vertex.position = position + line_space;
         vertex.color = glm::vec3(1.0);
 
         frame.debug_vertices->writeElement(vertex_count, vertex);
@@ -227,7 +234,7 @@ void OverlayPass::beginFrame(uint32_t frame_index,
 
       {
         DebugDrawVertex vertex{};
-        vertex.position = position;
+        vertex.position = position - line_space;
         vertex.color = glm::vec3(1.0);
 
         frame.debug_vertices->writeElement(vertex_count, vertex);
