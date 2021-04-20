@@ -18,7 +18,7 @@
 #include "core/components/synchronized/RelationshipComponent.h"
 #include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/filesystem/Filesystem.h"
-#include "core/scripting/ScriptEnvironment.h"
+#include "core/scripting/environment/ScriptEnvironment.h"
 #include "log/log.h"
 #include "types/protocol/WorldEvent_generated.h"
 

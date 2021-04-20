@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/scripting/ScriptObject.h"
+#include "core/scripting/object/ScriptObject.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/wasm_headers.h"
 #include "types/containers/vector.h"

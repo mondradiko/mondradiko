@@ -6,8 +6,8 @@
 #include <sstream>
 #include <typeinfo>
 
-#include "core/scripting/ScriptEnvironment.h"
-#include "core/scripting/ScriptObject.h"
+#include "core/scripting/environment/ScriptEnvironment.h"
+#include "core/scripting/object/ScriptObject.h"
 #include "core/world/World.h"
 #include "lib/include/wasm_headers.h"
 #include "log/log.h"

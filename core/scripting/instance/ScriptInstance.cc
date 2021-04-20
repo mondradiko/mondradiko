@@ -1,9 +1,9 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "core/scripting/ScriptInstance.h"
+#include "core/scripting/instance/ScriptInstance.h"
 
-#include "core/scripting/ScriptEnvironment.h"
+#include "core/scripting/environment/ScriptEnvironment.h"
 #include "log/log.h"
 #include "types/containers/string.h"
 

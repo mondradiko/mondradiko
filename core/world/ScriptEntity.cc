@@ -5,7 +5,7 @@
 
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/components/scriptable/TransformComponent.h"
-#include "core/scripting/ScriptEnvironment.h"
+#include "core/scripting/environment/ScriptEnvironment.h"
 #include "core/world/World.h"
 
 namespace mondradiko {

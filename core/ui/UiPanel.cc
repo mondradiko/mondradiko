@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-#include "core/scripting/ScriptEnvironment.h"
+#include "core/scripting/environment/ScriptEnvironment.h"
 #include "core/ui/GlyphLoader.h"
 #include "core/ui/GlyphStyle.h"
 

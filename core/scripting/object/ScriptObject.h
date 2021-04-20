@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/scripting/ScriptEnvironment.h"
+#include "core/scripting/environment/ScriptEnvironment.h"
 
 namespace mondradiko {
 namespace core {
