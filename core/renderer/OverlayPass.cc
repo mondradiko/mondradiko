@@ -209,15 +209,15 @@ void OverlayPass::beginFrame(uint32_t frame_index,
     for (auto e : point_lights_view) {
       auto& point_light = point_lights_view.get(e);
 
-      glm::mat4 transform(1.0);
+      glm::mat4 world_transform(1.0);
       if (world->registry.has<WorldTransform>(e)) {
-        transform = world->registry.get<WorldTransform>(e).getTransform();
+        world_transform = world->registry.get<WorldTransform>(e).getTransform();
       }
 
       PointLightUniform uniform;
       point_light.getUniform(&uniform);
       glm::vec3 position =
-          transform * glm::vec4(glm::vec3(uniform.position), 1.0);
+          world_transform * glm::vec4(glm::vec3(uniform.position), 1.0);
 
       glm::vec3 line_space(0.0, 0.1, 0.0);
 
