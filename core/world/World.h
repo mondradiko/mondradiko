@@ -6,7 +6,7 @@
 #include "core/assets/AssetPool.h"
 #include "core/physics/Physics.h"
 #include "core/scripting/environment/ScriptEnvironment.h"
-#include "core/scripting/object/ScriptObject.h"
+#include "core/scripting/object/StaticScriptObject.h"
 #include "core/world/Entity.h"
 #include "lib/include/flatbuffers_headers.h"
 

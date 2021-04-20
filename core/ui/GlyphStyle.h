@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/scripting/object/ScriptObject.h"
+#include "core/scripting/object/DynamicScriptObject.h"
 #include "core/ui/GlyphLoader.h"
 #include "lib/include/wasm_headers.h"
 #include "types/containers/string.h"

@@ -7,7 +7,8 @@
 #include <typeinfo>
 
 #include "core/scripting/environment/ScriptEnvironment.h"
-#include "core/scripting/object/ScriptObject.h"
+#include "core/scripting/object/DynamicScriptObject.h"
+#include "core/scripting/object/StaticScriptObject.h"
 #include "core/world/World.h"
 #include "lib/include/wasm_headers.h"
 #include "log/log.h"
