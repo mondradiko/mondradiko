@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include "core/components/internal/PointerComponent.h"
 #include "core/components/scriptable/TransformComponent.h"
 #include "core/world/World.h"
 #include "types/protocol/SpectatorAvatar_generated.h"
@@ -19,6 +20,9 @@ SpectatorAvatar::SpectatorAvatar(World* world) : world(world) {
 
   _self_id = world->registry.create();
   _addEntity(_self_id);
+
+  world->registry.emplace<PointerComponent>(_self_id, glm::vec3(0.0),
+                                            glm::vec3(0.0, 0.0, 1.0));
 }
 
 SpectatorAvatar::~SpectatorAvatar() { world->registry.destroy(_self_id); }
