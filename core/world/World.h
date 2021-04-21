@@ -5,7 +5,7 @@
 
 #include "core/assets/AssetPool.h"
 #include "core/physics/Physics.h"
-#include "core/scripting/environment/ScriptEnvironment.h"
+#include "core/scripting/environment/ComponentScriptEnvironment.h"
 #include "core/scripting/object/StaticScriptObject.h"
 #include "core/world/Entity.h"
 #include "lib/include/flatbuffers_headers.h"
@@ -25,10 +25,11 @@ namespace core {
 
 // Forward declarations
 class Filesystem;
+class WorldScriptEnvironment;
 
 class World : public StaticScriptObject<World> {
  public:
-  World(AssetPool*, Filesystem*, ScriptEnvironment*);
+  World(AssetPool*, Filesystem*, WorldScriptEnvironment*);
   ~World();
 
   void initializePrefabs();
@@ -76,9 +77,9 @@ class World : public StaticScriptObject<World> {
   // private:
   AssetPool* asset_pool;
   Filesystem* fs;
-  ScriptEnvironment* scripts;
 
   EntityRegistry registry;
+  ComponentScriptEnvironment scripts;
   Physics physics;
 };
 
