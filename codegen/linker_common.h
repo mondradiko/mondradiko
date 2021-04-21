@@ -40,6 +40,7 @@ static wasm_trap_t* componentMethodWrapper(const wasmtime_caller_t* caller,
                                            void* env, const wasm_val_t args[],
                                            wasm_val_t results[]) {
   World* world = reinterpret_cast<World*>(env);
+  ComponentScriptEnvironment* scripts = &world->scripts;
   EntityId self_id = static_cast<EntityId>(args[0].of.i32);
   ComponentType* self = world->registry.try_get<ComponentType>(self_id);
 
@@ -48,10 +49,10 @@ static wasm_trap_t* componentMethodWrapper(const wasmtime_caller_t* caller,
     error_format << "Type assertion failed: ";
     error_format << "Entity " << self_id << " does not have a ";
     error_format << typeid(ComponentType).name();
-    return world->scripts->createTrap(error_format.str());
+    return scripts->createTrap(error_format.str());
   }
 
-  return ((*self).*method)(world->scripts, args, results);
+  return ((*self).*method)(scripts, args, results);
 }
 
 template <class ComponentType, BoundComponentMethod<ComponentType> method>
