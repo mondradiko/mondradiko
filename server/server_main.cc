@@ -18,6 +18,7 @@
 #include "core/gpu/GpuInstance.h"
 #include "core/network/NetworkServer.h"
 #include "core/renderer/MeshPass.h"
+#include "core/scripting/environment/WorldScriptEnvironment.h"
 #include "core/world/World.h"
 #include "core/world/WorldEventSorter.h"
 #include "log/log.h"
@@ -74,7 +75,7 @@ void run(const ServerArgs& args) {
   AssetPool asset_pool(&fs);
   MeshPass::initDummyAssets(&asset_pool);
 
-  ScriptEnvironment scripts;
+  WorldScriptEnvironment scripts;
   World world(&asset_pool, &fs, &scripts);
   WorldEventSorter world_event_sorter(&world);
   NetworkServer server(&fs, &world_event_sorter, args.server_ip.c_str(),

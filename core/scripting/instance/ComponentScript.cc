@@ -6,6 +6,7 @@
 #include <array>
 
 #include "core/scripting/environment/ScriptEnvironment.h"
+#include "log/log.h"
 
 namespace mondradiko {
 namespace core {

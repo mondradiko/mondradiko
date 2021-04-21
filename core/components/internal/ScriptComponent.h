@@ -18,7 +18,7 @@ class ScriptComponent : public InternalComponent {
 
  private:
   // Systems allowed to access private members directly
-  friend class ScriptEnvironment;
+  friend class ComponentScriptEnvironment;
 
   AssetHandle<ScriptAsset> script_asset;
   ComponentScript* script_instance;

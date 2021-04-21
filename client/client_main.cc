@@ -92,9 +92,10 @@ void run(const ClientArgs& args) {
     log_ftl("Failed to create display session!");
   }
 
-  ScriptEnvironment scripts;
   AssetPool asset_pool(&fs);
-  World world(&asset_pool, &fs, &scripts);
+
+  // TODO(marceline-cramer) Serverless world scripts
+  World world(&asset_pool, &fs, nullptr);
 
   Renderer renderer(&cvars, display.get(), &gpu);
   GlyphLoader glyphs(&cvars, &renderer);
