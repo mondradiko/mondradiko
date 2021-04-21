@@ -14,19 +14,20 @@ class StaticScriptObject {
   // Defined in generated API linker
   static void linkScriptApi(ScriptEnvironment*, T*);
 
-  explicit StaticScriptObject(ScriptEnvironment* scripts, const char* symbol)
+  StaticScriptObject(ScriptEnvironment* scripts, const char* symbol)
       : scripts(scripts), _static_symbol(symbol) {
-    if (scripts->storeStaticObject(_static_symbol, this)) {
+    if (scripts != nullptr &&
+        scripts->storeStaticObject(_static_symbol, this)) {
       linkScriptApi(scripts, static_cast<T*>(this));
     }
   }
 
-  ~StaticScriptObject() { scripts->removeStaticObject(_static_symbol); }
-
- protected:
-  ScriptEnvironment* const scripts;
+  ~StaticScriptObject() {
+    if (scripts != nullptr) scripts->removeStaticObject(_static_symbol);
+  }
 
  private:
+  ScriptEnvironment* const scripts;
   const char* _static_symbol;
 };
 
