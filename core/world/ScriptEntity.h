@@ -7,12 +7,12 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class ScriptEnvironment;
+class ComponentScriptEnvironment;
 class World;
 
 class ScriptEntity {
  public:
-  static void linkScriptApi(ScriptEnvironment*, World*);
+  static void linkScriptApi(World*);
 };
 
 }  // namespace core

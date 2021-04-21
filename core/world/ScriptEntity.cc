@@ -5,7 +5,7 @@
 
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/components/scriptable/TransformComponent.h"
-#include "core/scripting/environment/ScriptEnvironment.h"
+#include "core/scripting/environment/ComponentScriptEnvironment.h"
 #include "core/world/World.h"
 
 namespace mondradiko {
@@ -63,14 +63,14 @@ wasm_trap_t* entityMethodWrapper(const wasmtime_caller_t* caller, void* env,
   World* world = reinterpret_cast<World*>(env);
 
   if (!world->registry.valid(args[0].of.i32)) {
-    return world->scripts->createTrap("Invalid entity ID");
+    return world->scripts.createTrap("Invalid entity ID");
   }
 
   return (*method)(world, args, results);
 }
 
 template <BoundEntityMethod method>
-void linkEntityMethod(ScriptEnvironment* scripts, World* world,
+void linkEntityMethod(ComponentScriptEnvironment* scripts, World* world,
                       const char* symbol,
                       EntityMethodTypeCallback type_callback) {
   wasm_store_t* store = scripts->getStore();
@@ -88,7 +88,9 @@ void linkEntityMethod(ScriptEnvironment* scripts, World* world,
   wasm_functype_delete(func_type);
 }
 
-void ScriptEntity::linkScriptApi(ScriptEnvironment* scripts, World* world) {
+void ScriptEntity::linkScriptApi(World* world) {
+  ComponentScriptEnvironment* scripts = &world->scripts;
+
   linkEntityMethod<Entity_getComponent>(scripts, world, "Entity_getComponent",
                                         methodType_Entity);
   linkEntityMethod<Entity_hasComponent<PointLightComponent>>(
