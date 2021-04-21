@@ -13,7 +13,6 @@ namespace core {
 
 // Forward declarations
 class AssetPool;
-class ScriptEnvironment;
 class TransformComponent;
 class World;
 
@@ -25,7 +24,7 @@ class PrefabAsset : public Asset {
   explicit PrefabAsset(AssetPool* asset_pool) : asset_pool(asset_pool) {}
   ~PrefabAsset();
 
-  EntityId instantiate(ScriptEnvironment*, World*) const;
+  EntityId instantiate(World*) const;
 
  protected:
   // Asset implementation
