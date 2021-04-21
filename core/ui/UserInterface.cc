@@ -14,7 +14,7 @@
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
 #include "core/renderer/Renderer.h"
-#include "core/scripting/environment/ScriptEnvironment.h"
+#include "core/scripting/environment/UiScriptEnvironment.h"
 #include "core/scripting/instance/UiScript.h"
 #include "core/shaders/panel.frag.h"
 #include "core/shaders/panel.vert.h"
@@ -43,8 +43,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
   {
     log_zone_named("Bind script API");
 
-    scripts = new ScriptEnvironment;
-    scripts->linkUiApis(this);
+    scripts = new UiScriptEnvironment(this);
   }
 
   {

@@ -21,9 +21,9 @@ class GpuPipeline;
 class GpuShader;
 class GpuVector;
 class Renderer;
-class ScriptEnvironment;
 class UiPanel;
 class UiScript;
+class UiScriptEnvironment;
 
 class UserInterface : public RenderPass {
  public:
@@ -51,7 +51,7 @@ class UserInterface : public RenderPass {
   GpuInstance* gpu;
   Renderer* renderer;
 
-  ScriptEnvironment* scripts = nullptr;
+  UiScriptEnvironment* scripts = nullptr;
   wasm_module_t* script_module = nullptr;
   UiScript* ui_script = nullptr;
 
