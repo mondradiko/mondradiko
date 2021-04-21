@@ -3,15 +3,6 @@
 
 #include "core/scripting/environment/ScriptEnvironment.h"
 
-#include "core/assets/ScriptAsset.h"
-#include "core/components/internal/ScriptComponent.h"
-#include "core/components/scriptable/PointLightComponent.h"
-#include "core/components/scriptable/TransformComponent.h"
-#include "core/scripting/instance/ComponentScript.h"
-#include "core/scripting/instance/ScriptInstance.h"
-#include "core/ui/GlyphStyle.h"
-#include "core/ui/UiPanel.h"
-#include "core/world/ScriptEntity.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -99,36 +90,6 @@ ScriptEnvironment::~ScriptEnvironment() {
   if (engine) wasm_engine_delete(engine);
 }
 
-void ScriptEnvironment::initializeAssets(AssetPool* asset_pool) {
-  log_zone;
-
-  asset_pool->initializeAssetType<ScriptAsset>(this);
-}
-
-// Helper function to link a dynamic object's API
-template <class ObjectType>
-void linkDynamicObjectApi(ScriptEnvironment* scripts) {
-  // TODO(marceline-cramer) Don't pass World to dynamic object linkers
-  ObjectType::linkScriptApi(scripts);
-}
-
-void ScriptEnvironment::linkUiApis(UserInterface* ui) {
-  linkDynamicObjectApi<GlyphStyle>(this);
-  linkDynamicObjectApi<UiPanel>(this);
-}
-
-// Helper function to link a component type's API
-template <class ComponentType>
-void linkComponentApi(ScriptEnvironment* scripts, World* world) {
-  ComponentType::linkScriptApi(scripts, world);
-}
-
-void ScriptEnvironment::linkComponentApis(World* world) {
-  linkComponentApi<PointLightComponent>(this, world);
-  linkComponentApi<TransformComponent>(this, world);
-  linkComponentApi<ScriptEntity>(this, world);
-}
-
 void ScriptEnvironment::linkAssemblyScriptEnv() {
   log_zone;
 
@@ -150,32 +111,6 @@ void ScriptEnvironment::linkAssemblyScriptEnv() {
     wasm_functype_delete(abort_func_type);
 
     addBinding("abort", abort_func);
-  }
-}
-
-void ScriptEnvironment::update(EntityRegistry* registry, AssetPool* asset_pool,
-                               double dt) {
-  auto script_view = registry->view<ScriptComponent>();
-
-  for (auto& e : script_view) {
-    auto& script = script_view.get(e);
-
-    if (!script.getScriptAsset()) continue;
-
-    script.script_instance->update(e, dt);
-  }
-}
-
-void ScriptEnvironment::destroyComponents(EntityRegistry* registry) {
-  auto script_view = registry->view<ScriptComponent>();
-
-  for (auto& e : script_view) {
-    auto& script = script_view.get(e);
-
-    if (script.script_instance != nullptr) {
-      delete script.script_instance;
-      script.script_instance = nullptr;
-    }
   }
 }
 
@@ -313,42 +248,6 @@ void ScriptEnvironment::removeStaticObject(const char* object_key) {
   if (iter != static_objects.end()) {
     iter->second = nullptr;
   }
-}
-
-void ScriptEnvironment::updateScript(EntityRegistry* registry,
-                                     AssetPool* asset_pool, EntityId entity,
-                                     AssetId script_id, const uint8_t* data,
-                                     size_t data_size) {
-  // Ensure the entity exists
-  if (!registry->valid(entity)) {
-    entity = registry->create(entity);
-  }
-
-  bool needs_initialization = false;
-
-  const AssetHandle<ScriptAsset>& script_asset =
-      asset_pool->load<ScriptAsset>(script_id);
-
-  // Destroy the old ScriptInstance if necessary
-  if (registry->has<ScriptComponent>(entity)) {
-    ScriptComponent& old_script = registry->get<ScriptComponent>(entity);
-    if (old_script.script_asset != script_asset) {
-      delete old_script.script_instance;
-      needs_initialization = true;
-    }
-  } else {
-    needs_initialization = true;
-  }
-
-  ScriptComponent& script_component =
-      registry->get_or_emplace<ScriptComponent>(entity);
-
-  if (needs_initialization) {
-    script_component.script_instance = script_asset->createInstance();
-  }
-
-  script_component.script_asset = script_asset;
-  script_component.script_instance->updateData(data, data_size);
 }
 
 void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {

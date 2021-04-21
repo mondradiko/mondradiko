@@ -3,29 +3,20 @@
 
 #pragma once
 
-#include "core/assets/AssetPool.h"
-#include "core/world/Entity.h"
 #include "lib/include/wasm_headers.h"
 #include "types/containers/string.h"
 #include "types/containers/unordered_map.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
-
-// Forward declarations
-class UserInterface;
-class World;
 
 class ScriptEnvironment {
  public:
   ScriptEnvironment();
   ~ScriptEnvironment();
 
-  void initializeAssets(AssetPool*);
-  void linkUiApis(UserInterface*);
-  void linkComponentApis(World*);
   void linkAssemblyScriptEnv();
-  void update(EntityRegistry*, AssetPool*, double);
 
   wasm_engine_t* getEngine() { return engine; }
   wasm_store_t* getStore() { return store; }
@@ -129,26 +120,6 @@ class ScriptEnvironment {
    * @param object_key The symbol of the static object to be removed.
    */
   void removeStaticObject(const char*);
-
-  /**
-   * @brief Updates a local script. Overwrites existing script data, or
-   * instantiates a new script if necessary.
-   * @param registry The World's registry.
-   * @param asset_pool The World's asset pool.
-   * @param entity The EntityId of the ScriptComponent to update.
-   * @param script_asset The AssetId of the data's ScriptAsset.
-   * @param data A pointer to the script data, or nullptr.
-   * @param data_size The length in bytes of the data.
-   *
-   */
-  void updateScript(EntityRegistry*, AssetPool*, EntityId, AssetId,
-                    const uint8_t*, size_t);
-
-  /**
-   * @brief Destroys all ScriptComponents.
-   * @param registry The World's registry.
-   */
-  void destroyComponents(EntityRegistry*);
 
   /**
    * @brief Adds a binding symbol's callback to the ScriptEnvironment.
