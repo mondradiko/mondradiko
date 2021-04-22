@@ -55,6 +55,9 @@ class ScriptInstance {
  private:
   wasm_instance_t* _module_instance = nullptr;
   wasm_extern_vec_t _instance_externs;
+
+  // Exported data
+  wasm_memory_t* _memory = nullptr;
   types::unordered_map<types::string, wasm_func_t*> _callbacks;
 };
 

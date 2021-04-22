@@ -75,19 +75,35 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
       wasm_externkind_t extern_kind = wasm_extern_kind(exported);
 
       // TODO(marceline-cramer) Handle other kinds of exports
-      if (extern_kind == WASM_EXTERN_FUNC) {
-        wasm_func_t* callback = wasm_extern_as_func(exported);
-        types::string callback_name(export_name->data, export_name->size);
-        _addCallback(callback_name, callback);
+      switch (extern_kind) {
+        case WASM_EXTERN_FUNC: {
+          wasm_func_t* callback = wasm_extern_as_func(exported);
+          types::string callback_name(export_name->data, export_name->size);
+          _addCallback(callback_name, callback);
 
-        log_inf_fmt("Imported callback %s", callback_name.c_str());
-        log_inf_fmt("Param arity: %zu", wasm_func_param_arity(callback));
-        log_inf_fmt("Result arity: %zu", wasm_func_result_arity(callback));
+          log_inf_fmt("Imported callback %s", callback_name.c_str());
+          log_inf_fmt("Param arity: %zu", wasm_func_param_arity(callback));
+          log_inf_fmt("Result arity: %zu", wasm_func_result_arity(callback));
+
+          break;
+        }
+
+        case WASM_EXTERN_MEMORY: {
+          _memory = wasm_extern_as_memory(exported);
+          break;
+        }
+
+        default:
+          break;
       }
     }
 
     // TODO(marceline-cramer): Wasmtime-friendly function export handling
     wasm_exporttype_vec_delete(&export_types);
+  }
+
+  if (_memory == nullptr) {
+    log_wrn("WebAssembly instance does not export its memory");
   }
 }
 
