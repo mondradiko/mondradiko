@@ -76,6 +76,8 @@ wasm_func_t* createComponentMethod(ScriptInstance* instance) {
 
   wasm_functype_delete(func_type);
 
+  scripts->collectFunc(func);
+
   return func;
 }
 
@@ -128,6 +130,8 @@ wasm_func_t* createDynamicObjectMethod(ScriptInstance* instance) {
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
 
   wasm_functype_delete(func_type);
+
+  scripts->collectFunc(func);
 
   return func;
 }

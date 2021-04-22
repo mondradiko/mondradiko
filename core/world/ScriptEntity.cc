@@ -124,6 +124,8 @@ wasm_func_t* createEntityMethod(ScriptInstance* instance) {
 
   wasm_functype_delete(func_type);
 
+  scripts->collectFunc(func);
+
   return func;
 }
 
