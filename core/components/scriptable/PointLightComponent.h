@@ -13,6 +13,9 @@
 namespace mondradiko {
 namespace core {
 
+// Forward declarations
+class ComponentScript;
+
 struct PointLightUniform {
   glm::vec4 position;
   glm::vec4 intensity;
@@ -47,8 +50,7 @@ class PointLightComponent
   //
   // Script methods
   //
-  wasm_trap_t* setIntensity(ScriptEnvironment*, const wasm_val_t[],
-                            wasm_val_t[]);
+  wasm_trap_t* setIntensity(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
 
  private:
 };

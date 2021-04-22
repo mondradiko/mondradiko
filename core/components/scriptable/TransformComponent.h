@@ -15,7 +15,7 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class ScriptEnvironment;
+class ComponentScript;
 
 class TransformComponent
     : public ScriptableComponent<TransformComponent,
@@ -45,26 +45,20 @@ class TransformComponent
   //
 
   // Takes nothing, returns one f64
-  wasm_trap_t* getX(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* getY(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* getZ(ScriptEnvironment*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getX(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getY(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getZ(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
   // Takes three f64s, returns nothing
-  wasm_trap_t* setPosition(ScriptEnvironment*, const wasm_val_t[],
-                           wasm_val_t[]);
+  wasm_trap_t* setPosition(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
 
   // Takes nothing, returns one f64
-  wasm_trap_t* getRotationW(ScriptEnvironment*, const wasm_val_t[],
-                            wasm_val_t[]);
-  wasm_trap_t* getRotationX(ScriptEnvironment*, const wasm_val_t[],
-                            wasm_val_t[]);
-  wasm_trap_t* getRotationY(ScriptEnvironment*, const wasm_val_t[],
-                            wasm_val_t[]);
-  wasm_trap_t* getRotationZ(ScriptEnvironment*, const wasm_val_t[],
-                            wasm_val_t[]);
+  wasm_trap_t* getRotationW(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getRotationX(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getRotationY(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getRotationZ(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
 
   // Takes four f64s, returns nothing
-  wasm_trap_t* setRotation(ScriptEnvironment*, const wasm_val_t[],
-                           wasm_val_t[]);
+  wasm_trap_t* setRotation(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
 
  private:
   // Systems allowed to access private members directly
