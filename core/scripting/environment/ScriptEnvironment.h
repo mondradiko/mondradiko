@@ -142,23 +142,6 @@ class ScriptEnvironment {
   wasm_func_t* createBinding(const types::string&, ScriptInstance*);
 
   /**
-   * @brief Adds a binding symbol's callback to the ScriptEnvironment.
-   *
-   * @param symbol The name to link.
-   * @param func The function linked to the symbol.
-   *
-   */
-  void addBinding(const char*, wasm_func_t*);
-
-  /**
-   * @brief Attempts to look up a stored binding.
-   * @param symbol The binding to search for.
-   *
-   * @return The binding's Wasm function, or nullptr if it's not found.
-   */
-  wasm_func_t* getBinding(const types::string&);
-
-  /**
    * @brief Gets a Wasm function that interrupts the store when called.
    * Used by ScriptAsset to replace missing binding imports.
    *
@@ -189,7 +172,6 @@ class ScriptEnvironment {
   types::vector<void*> object_registry;
   types::unordered_map<types::string, void*> static_objects;
   types::unordered_map<types::string, ScriptBindingFactory> binding_factories;
-  types::unordered_map<types::string, wasm_func_t*> bindings;
   wasm_func_t* interrupt_func = nullptr;
 };
 

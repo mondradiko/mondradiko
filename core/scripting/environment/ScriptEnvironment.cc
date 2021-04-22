@@ -267,23 +267,6 @@ wasm_func_t* ScriptEnvironment::createBinding(const types::string& symbol,
   return (iter->second)(instance);
 }
 
-void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {
-  collectFunc(func);
-
-  auto iter = bindings.find(symbol);
-  if (iter != bindings.end()) {
-    log_err_fmt("Environment has already has binding %s", symbol);
-  } else {
-    bindings.emplace(types::string(symbol), func);
-  }
-}
-
-wasm_func_t* ScriptEnvironment::getBinding(const types::string& symbol) {
-  auto iter = bindings.find(symbol);
-  if (iter == bindings.end()) return nullptr;
-  return iter->second;
-}
-
 bool ScriptEnvironment::handleError(wasmtime_error_t* error,
                                     wasm_trap_t* trap) {
   wasm_byte_vec_t error_message;
