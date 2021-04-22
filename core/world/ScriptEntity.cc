@@ -6,6 +6,7 @@
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/components/scriptable/TransformComponent.h"
 #include "core/scripting/environment/ComponentScriptEnvironment.h"
+#include "core/scripting/instance/ComponentScript.h"
 #include "core/world/World.h"
 #include "types/containers/string.h"
 
@@ -91,8 +92,6 @@ using BoundEntityMethod = wasm_trap_t* (*)(World*, const wasm_val_t[],
 
 using EntityMethodTypeCallback = wasm_functype_t* (*)();
 
-static void finalizer(void*) {}
-
 template <BoundEntityMethod method>
 wasm_trap_t* entityMethodWrapper(const wasmtime_caller_t* caller, void* env,
                                  const wasm_val_t args[],
@@ -106,42 +105,52 @@ wasm_trap_t* entityMethodWrapper(const wasmtime_caller_t* caller, void* env,
   return (*method)(world, args, results);
 }
 
-template <BoundEntityMethod method>
-void linkEntityMethod(ComponentScriptEnvironment* scripts, World* world,
-                      const types::string& symbol,
-                      EntityMethodTypeCallback type_callback) {
+static void finalizer(void*) {}
+
+template <BoundEntityMethod method, EntityMethodTypeCallback type_callback>
+wasm_func_t* createEntityMethod(ScriptInstance* instance) {
+  ScriptEnvironment* scripts = instance->scripts;
+
   wasm_store_t* store = scripts->getStore();
 
   wasm_functype_t* func_type = (*type_callback)();
 
   wasmtime_func_callback_with_env_t callback = entityMethodWrapper<method>;
 
-  void* env = static_cast<void*>(world);
+  void* env = static_cast<void*>(instance);
 
   wasm_func_t* func =
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
 
-  scripts->addBinding(symbol.c_str(), func);
   wasm_functype_delete(func_type);
+
+  return func;
+}
+
+template <BoundEntityMethod method, EntityMethodTypeCallback type_callback>
+void linkEntityMethod(ComponentScriptEnvironment* scripts, World* world,
+                      const types::string& symbol) {
+  ScriptBindingFactory factory = createEntityMethod<method, type_callback>;
+  scripts->addBindingFactory(symbol, factory);
 }
 
 // Helper function to link a component API
 template <class ComponentType>
 void linkComponentApi(World* world, const char* symbol) {
   ComponentScriptEnvironment* scripts = &world->scripts;
-  linkEntityMethod<Entity_getComponent<ComponentType>>(
-      scripts, world, std::string("Entity_get") + symbol, methodType_Entity);
-  linkEntityMethod<Entity_hasComponent<ComponentType>>(
-      scripts, world, std::string("Entity_has") + symbol, methodType_Entity);
-  linkEntityMethod<Entity_addComponent<ComponentType>>(
-      scripts, world, std::string("Entity_add") + symbol, methodType_Entity);
+  linkEntityMethod<Entity_getComponent<ComponentType>, methodType_Entity>(
+      scripts, world, std::string("Entity_get") + symbol);
+  linkEntityMethod<Entity_hasComponent<ComponentType>, methodType_Entity>(
+      scripts, world, std::string("Entity_has") + symbol);
+  linkEntityMethod<Entity_addComponent<ComponentType>, methodType_Entity>(
+      scripts, world, std::string("Entity_add") + symbol);
 }
 
 void ScriptEntity::linkScriptApi(World* world) {
   ComponentScriptEnvironment* scripts = &world->scripts;
 
-  linkEntityMethod<Entity_spawnChild>(scripts, world, "Entity_spawnChild",
-                                      methodType_Entity);
+  linkEntityMethod<Entity_spawnChild, methodType_Entity>(scripts, world,
+                                                         "Entity_spawnChild");
 
   linkComponentApi<PointLightComponent>(world, "PointLight");
   linkComponentApi<TransformComponent>(world, "Transform");
