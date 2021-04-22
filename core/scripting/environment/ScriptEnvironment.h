@@ -11,6 +11,11 @@
 namespace mondradiko {
 namespace core {
 
+// Forward declarations
+class ScriptInstance;
+
+using ScriptBindingFactory = wasm_func_t* (*)(ScriptInstance*);
+
 class ScriptEnvironment {
  public:
   ScriptEnvironment();
@@ -122,6 +127,21 @@ class ScriptEnvironment {
   void removeStaticObject(const char*);
 
   /**
+   * @brief Adds a binding symbol's factory.
+   * @param symbol The symbol to link.
+   * @param factory The binding factory linked to the symbol.
+   */
+  void addBindingFactory(const types::string&, ScriptBindingFactory);
+
+  /**
+   * @brief Creates a binding associated with a ScriptInstance.
+   * @param symbol The symbol of the binding factory.
+   * @param instance The ScriptInstance to be bound to.
+   * @return A wasm_func_t to bind to the instance.
+   */
+  wasm_func_t* createBinding(const types::string&, ScriptInstance*);
+
+  /**
    * @brief Adds a binding symbol's callback to the ScriptEnvironment.
    *
    * @param symbol The name to link.
@@ -164,6 +184,7 @@ class ScriptEnvironment {
   types::vector<wasm_func_t*> func_collection;
   types::vector<void*> object_registry;
   types::unordered_map<types::string, void*> static_objects;
+  types::unordered_map<types::string, ScriptBindingFactory> binding_factories;
   types::unordered_map<types::string, wasm_func_t*> bindings;
   wasm_func_t* interrupt_func = nullptr;
 };

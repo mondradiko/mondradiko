@@ -5,6 +5,7 @@
 
 #include <ctime>
 
+#include "core/scripting/instance/ScriptInstance.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -274,6 +275,27 @@ void ScriptEnvironment::removeStaticObject(const char* object_key) {
   if (iter != static_objects.end()) {
     iter->second = nullptr;
   }
+}
+
+void ScriptEnvironment::addBindingFactory(const types::string& symbol,
+                                          ScriptBindingFactory func) {
+  auto iter = binding_factories.find(symbol);
+  if (iter != binding_factories.end()) {
+    log_err_fmt("Environment already has binding factory %s", symbol.c_str());
+  } else {
+    binding_factories.emplace(types::string(symbol), func);
+  }
+}
+
+wasm_func_t* ScriptEnvironment::createBinding(const types::string& symbol,
+                                              ScriptInstance* instance) {
+  auto iter = binding_factories.find(symbol);
+  if (iter == binding_factories.end()) {
+    log_err_fmt("Binding factory %s not found", symbol.c_str());
+    return nullptr;
+  }
+
+  return (iter->second)(instance);
 }
 
 void ScriptEnvironment::addBinding(const char* symbol, wasm_func_t* func) {
