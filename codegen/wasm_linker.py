@@ -17,11 +17,11 @@ METHOD_TYPE_FORMAT = "wasm_functype_t* methodType_{0}_{1}()"
 
 
 COMPONENT_METHOD_WRAP = \
-    "codegen::linkComponentMethod<{1}, &{1}::{2}>(scripts, world, \"{1}_{2}\", codegen::methodType_{0}_{2});"
+    "codegen::linkComponentMethod<{1}, &{1}::{2}, codegen::methodType_{0}_{2}>(scripts, world, \"{1}_{2}\");"
 
 
 DYNAMIC_OBJECT_METHOD_WRAP = \
-    "codegen::linkDynamicObjectMethod<{1}, &{1}::{2}>(scripts, \"{1}_{2}\", codegen::methodType_{0}_{2});"
+    "codegen::linkDynamicObjectMethod<{1}, &{1}::{2}, codegen::methodType_{0}_{2}>(scripts, \"{1}_{2}\");"
 
 
 STATIC_OBJECT_METHOD_WRAP = \
