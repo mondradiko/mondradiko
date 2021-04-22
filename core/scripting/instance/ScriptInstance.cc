@@ -114,32 +114,67 @@ ScriptInstance::~ScriptInstance() {
   }
 }
 
-void ScriptInstance::_addCallback(const types::string& callback_name,
-                                  wasm_func_t* callback) {
-  _callbacks.emplace(callback_name, callback);
+////////////////////////////////////////////////////////////////////////////////
+// Callback helpers
+////////////////////////////////////////////////////////////////////////////////
+
+void ScriptInstance::_addCallback(const types::string& symbol,
+                                  wasm_func_t* func) {
+  _callbacks.emplace(symbol, func);
 }
 
-bool ScriptInstance::_hasCallback(const types::string& callback_name) {
-  return _callbacks.find(callback_name) != _callbacks.end();
+bool ScriptInstance::_hasCallback(const types::string& symbol) {
+  return _callbacks.find(symbol) != _callbacks.end();
 }
 
-void ScriptInstance::_runCallback(const types::string& callback_name,
+wasm_func_t* ScriptInstance::_getCallback(const types::string& symbol) {
+  auto iter = _callbacks.find(symbol);
+
+  if (iter != _callbacks.end()) {
+    return iter->second;
+  } else {
+    return nullptr;
+  }
+}
+
+bool ScriptInstance::_runCallback(const types::string& symbol,
                                   const wasm_val_t* args, size_t arg_num,
                                   wasm_val_t* results, size_t result_num) {
-  auto iter = _callbacks.find(callback_name);
+  auto iter = _callbacks.find(symbol);
 
   if (iter == _callbacks.end()) {
-    log_err_fmt("Attempted to run missing callback %s", callback_name.c_str());
-    return;
+    log_err_fmt("Attempted to run missing callback %s", symbol.c_str());
+    return false;
+  }
+
+  if (_runFunction(iter->second, args, arg_num, results, result_num)) {
+    return true;
+  } else {
+    log_err_fmt("Error while running callback %s", symbol.c_str());
+    return false;
+  }
+}
+
+bool ScriptInstance::_runFunction(wasm_func_t* func, const wasm_val_t* args,
+                                  size_t arg_num, wasm_val_t* results,
+                                  size_t result_num) {
+  if (func == nullptr) {
+    log_err_fmt("Attempted to run null function");
+    return false;
   }
 
   wasmtime_error_t* module_error = nullptr;
   wasm_trap_t* module_trap = nullptr;
-
-  module_error = wasmtime_func_call(iter->second, args, arg_num, results,
-                                    result_num, &module_trap);
+  module_error = wasmtime_func_call(func, args, arg_num, results, result_num,
+                                    &module_trap);
   if (scripts->handleError(module_error, module_trap)) {
-    log_err_fmt("Error while running callback %s", callback_name.c_str());
+    log_err_fmt("Error while running function");
+    return false;
+  } else {
+    return true;
+  }
+}
+
   }
 }
 

@@ -40,17 +40,60 @@ class ScriptInstance {
   ScriptInstance(ScriptEnvironment*, wasm_module_t*);
   ~ScriptInstance();
 
+  // TODO(marceline-cramer) Make observers in ScriptEnvironment for events
+  // TODO(marceline-cramer) Define entrypoint classes and their sizes
+
  protected:
   ScriptEnvironment* scripts;
 
-  // TODO(marceline-cramer) Make observers in ScriptEnvironment for events
-  // TODO(marceline-cramer) Define entrypoint classes and their sizes
-  // TODO(marceline-cramer) Dynamic ScriptInstance Wasm allocation
-  // TODO(marceline-cramer) Pass EntityIds to scripts
+  //////////////////////////////////////////////////////////////////////////////
+  // Callback helpers
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @brief Adds a callback.
+   * @param symbol The symbol of the callback.
+   * @param func The callback's function.
+   */
   void _addCallback(const types::string&, wasm_func_t*);
+
+  /**
+   * @brief Checks if a callback is available.
+   * @param symbol The symbol of the callback.
+   * @return True if the callback is available, false if not.
+   */
   bool _hasCallback(const types::string&);
-  void _runCallback(const types::string&, const wasm_val_t*, size_t,
+
+  /**
+   * @brief Retrieves a callback's function.
+   * @param symbol The symbol of the callback.
+   * @return The wasm_func_t of the callback, or nullptr if unavailable.
+   */
+  wasm_func_t* _getCallback(const types::string&);
+
+  /**
+   * @brief Runs a callback, while performing proper error checking.
+   * @param symbol The symbol of the callback.
+   * @param args A pointer to an array of arguments.
+   * @param arg_num The number of arguments.
+   * @param results A pointer to an array of results.
+   * @param result_num The number of results.
+   * @return True on success, false on an invalid callback or a trap throw.
+   */
+  bool _runCallback(const types::string&, const wasm_val_t*, size_t,
                     wasm_val_t*, size_t);
+
+  /**
+   * @brief Runs a function directly, while performing proper error checking.
+   * @param func The function to call.
+   * @param args A pointer to an array of arguments.
+   * @param arg_num The number of arguments.
+   * @param results A pointer to an array of results.
+   * @param result_num The number of results.
+   * @return True on success, false on an invalid callback or a trap throw.
+   */
+  bool _runFunction(wasm_func_t*, const wasm_val_t*, size_t, wasm_val_t*,
+                    size_t);
 
  private:
   wasm_instance_t* _module_instance = nullptr;
