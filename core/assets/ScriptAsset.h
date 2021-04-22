@@ -12,6 +12,7 @@ namespace core {
 // Forward declarations
 class ComponentScript;
 class ScriptEnvironment;
+class World;
 
 class ScriptAsset : public Asset {
  public:
@@ -21,7 +22,7 @@ class ScriptAsset : public Asset {
   explicit ScriptAsset(ScriptEnvironment* scripts) : scripts(scripts) {}
   ~ScriptAsset();
 
-  ComponentScript* createInstance() const;
+  ComponentScript* createInstance(World*) const;
 
  protected:
   // Asset implementation

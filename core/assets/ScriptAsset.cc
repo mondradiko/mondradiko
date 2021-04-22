@@ -14,8 +14,9 @@ ScriptAsset::~ScriptAsset() {
   if (script_module) wasm_module_delete(script_module);
 }
 
-ComponentScript* ScriptAsset::createInstance() const {
-  ComponentScript* instance = new ComponentScript(scripts, script_module);
+ComponentScript* ScriptAsset::createInstance(World* world) const {
+  ComponentScript* instance =
+      new ComponentScript(scripts, world, script_module);
   return instance;
 }
 

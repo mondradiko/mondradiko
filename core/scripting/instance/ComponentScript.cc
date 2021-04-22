@@ -11,9 +11,9 @@
 namespace mondradiko {
 namespace core {
 
-ComponentScript::ComponentScript(ScriptEnvironment* scripts,
+ComponentScript::ComponentScript(ScriptEnvironment* scripts, World* world,
                                  wasm_module_t* module)
-    : ScriptInstance(scripts, module) {}
+    : ScriptInstance(scripts, module), world(world) {}
 
 void ComponentScript::update(EntityId self_id, double dt) {
   if (!_hasCallback("update")) {

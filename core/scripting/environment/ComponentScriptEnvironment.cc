@@ -88,7 +88,7 @@ void ComponentScriptEnvironment::updateScript(EntityId entity,
       registry->get_or_emplace<ScriptComponent>(entity);
 
   if (needs_initialization) {
-    script_component.script_instance = script_asset->createInstance();
+    script_component.script_instance = script_asset->createInstance(world);
   }
 
   script_component.script_asset = script_asset;
