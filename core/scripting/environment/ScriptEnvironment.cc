@@ -3,6 +3,8 @@
 
 #include "core/scripting/environment/ScriptEnvironment.h"
 
+#include <ctime>
+
 #include "log/log.h"
 
 namespace mondradiko {
@@ -30,6 +32,14 @@ static wasm_trap_t* abortCallback(const wasmtime_caller_t* caller, void* env,
   wasm_name_delete(&message);
 
   return trap;
+}
+
+static wasm_trap_t* seedCallback(const wasmtime_caller_t* caller, void* env,
+                                 const wasm_val_t args[],
+                                 wasm_val_t results[]) {
+  results[0].kind = WASM_F64;
+  results[0].of.i64 = time(nullptr);  // Seed f64 value with i64 random int
+  return nullptr;
 }
 
 // Dummy finalizer needed for wasmtime_func_new_with_env()
@@ -111,6 +121,22 @@ void ScriptEnvironment::linkAssemblyScriptEnv() {
     wasm_functype_delete(abort_func_type);
 
     addBinding("abort", abort_func);
+  }
+
+  {  // Link seed()
+    wasm_valtype_t* rs = wasm_valtype_new_f64();
+
+    wasm_valtype_vec_t params, results;
+    wasm_valtype_vec_new_empty(&params);
+    wasm_valtype_vec_new(&results, 1, &rs);
+
+    wasm_functype_t* seed_func_type = wasm_functype_new(&params, &results);
+
+    wasm_func_t* seed_func = wasmtime_func_new_with_env(
+        store, seed_func_type, seedCallback, this, interruptCallbackFinalizer);
+    wasm_functype_delete(seed_func_type);
+
+    addBinding("seed", seed_func);
   }
 }
 
