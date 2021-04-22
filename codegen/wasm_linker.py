@@ -25,7 +25,7 @@ DYNAMIC_OBJECT_METHOD_WRAP = \
 
 
 STATIC_OBJECT_METHOD_WRAP = \
-    "codegen::linkStaticObjectMethod<{1}, &{1}::{2}>(scripts, self, \"{1}_{2}\", codegen::methodType_{0}_{2});"
+    "codegen::linkStaticObjectMethod<{1}, &{1}::{2}, codegen::methodType_{0}_{2}>(scripts, self, \"{1}_{2}\");"
 
 
 C_TYPES_TO_WASM = {

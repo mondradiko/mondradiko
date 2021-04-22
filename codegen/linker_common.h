@@ -153,10 +153,11 @@ static wasm_trap_t* staticObjectMethodWrapper(const wasmtime_caller_t* caller,
   return ((*self).*method)(args, results);
 }
 
-template <class ObjectType, BoundClassdefMethod<ObjectType> method>
-void linkStaticObjectMethod(ScriptEnvironment* scripts, ObjectType* self,
-                            const char* symbol,
-                            ClassdefMethodCallback type_callback) {
+template <class ObjectType, BoundClassdefMethod<ObjectType> method,
+          ClassdefMethodCallback type_callback>
+wasm_func_t* createStaticObjectMethod(ScriptInstance* instance) {
+  ScriptEnvironment* scripts = instance->scripts;
+
   wasm_store_t* store = scripts->getStore();
 
   wasm_functype_t* func_type = (*type_callback)();
@@ -164,13 +165,25 @@ void linkStaticObjectMethod(ScriptEnvironment* scripts, ObjectType* self,
   wasmtime_func_callback_with_env_t callback =
       staticObjectMethodWrapper<ObjectType, method>;
 
-  void* env = static_cast<void*>(self);
+  void* env = static_cast<void*>(instance);
 
   wasm_func_t* func =
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
 
-  scripts->addBinding(symbol, func);
   wasm_functype_delete(func_type);
+
+  scripts->collectFunc(func);
+
+  return func;
+}
+
+template <class ObjectType, BoundClassdefMethod<ObjectType> method,
+          ClassdefMethodCallback type_callback>
+void linkStaticObjectMethod(ScriptEnvironment* scripts, ObjectType* self,
+                            const char* symbol) {
+  ScriptBindingFactory factory =
+      createStaticObjectMethod<ObjectType, method, type_callback>;
+  scripts->addBindingFactory(symbol, factory);
 }
 
 }  // namespace codegen
