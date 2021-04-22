@@ -96,7 +96,9 @@ template <BoundEntityMethod method>
 wasm_trap_t* entityMethodWrapper(const wasmtime_caller_t* caller, void* env,
                                  const wasm_val_t args[],
                                  wasm_val_t results[]) {
-  World* world = reinterpret_cast<World*>(env);
+  ComponentScript* instance = reinterpret_cast<ComponentScript*>(env);
+
+  World* world = instance->world;
 
   if (!world->registry.valid(args[0].of.i32)) {
     return world->scripts.createTrap("Invalid entity ID");
