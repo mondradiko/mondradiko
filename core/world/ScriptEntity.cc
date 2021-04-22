@@ -16,6 +16,22 @@ wasm_functype_t* methodType_Entity() {
   return wasm_functype_new_1_1(wasm_valtype_new_i32(), wasm_valtype_new_i32());
 }
 
+static wasm_trap_t* Entity_spawnChild(World* world, const wasm_val_t args[],
+                                      wasm_val_t results[]) {
+  EntityId self_id = args[0].of.i32;
+  if (!world->registry.valid(self_id)) {
+    return world->scripts.createTrap("Invalid entity ID");
+  }
+
+  EntityId new_entity = world->registry.create();
+  world->adopt(self_id, new_entity);
+
+  results[0].kind = WASM_I32;
+  results[0].of.i32 = new_entity;
+
+  return nullptr;
+}
+
 template <class ComponentType>
 static wasm_trap_t* Entity_hasComponent(World* world, const wasm_val_t args[],
                                         wasm_val_t results[]) {
@@ -123,6 +139,9 @@ void linkComponentApi(World* world, const char* symbol) {
 
 void ScriptEntity::linkScriptApi(World* world) {
   ComponentScriptEnvironment* scripts = &world->scripts;
+
+  linkEntityMethod<Entity_spawnChild>(scripts, world, "Entity_spawnChild",
+                                      methodType_Entity);
 
   linkComponentApi<PointLightComponent>(world, "PointLight");
   linkComponentApi<TransformComponent>(world, "Transform");

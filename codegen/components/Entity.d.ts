@@ -5,6 +5,9 @@ import PointLightComponent from "./PointLightComponent";
 import TransformComponent from "./TransformComponent";
 
 @unmanaged declare class Entity {
+  @external("Entity_spawnChild")
+  spawnChild(): Entity
+
 
   /////////////////////
   // PointLightComponent
