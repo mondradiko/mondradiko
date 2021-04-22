@@ -5,8 +5,6 @@ import PointLightComponent from "./PointLightComponent";
 import TransformComponent from "./TransformComponent";
 
 @unmanaged declare class Entity {
-  @external("Entity_getComponent")
-  get<T>(): T
 
   /////////////////////
   // PointLightComponent
@@ -17,6 +15,9 @@ import TransformComponent from "./TransformComponent";
   @external("Entity_addPointLight")
   addPointLight(): PointLightComponent
 
+  @external("Entity_getPointLight")
+  getPointLight(): PointLightComponent
+
   /////////////////////
   // TransformComponent
   /////////////////////
@@ -25,6 +26,9 @@ import TransformComponent from "./TransformComponent";
 
   @external("Entity_addTransform")
   addTransform(): TransformComponent
+
+  @external("Entity_getTransform")
+  getTransform(): TransformComponent
 }
 
 export default Entity;

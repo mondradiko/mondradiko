@@ -7,6 +7,7 @@
 #include "core/components/scriptable/TransformComponent.h"
 #include "core/scripting/environment/ComponentScriptEnvironment.h"
 #include "core/world/World.h"
+#include "types/containers/string.h"
 
 namespace mondradiko {
 namespace core {
@@ -18,9 +19,14 @@ wasm_functype_t* methodType_Entity() {
 template <class ComponentType>
 static wasm_trap_t* Entity_hasComponent(World* world, const wasm_val_t args[],
                                         wasm_val_t results[]) {
+  EntityId self_id = args[0].of.i32;
+  if (!world->registry.valid(self_id)) {
+    return world->scripts.createTrap("Invalid entity ID");
+  }
+
   results[0].kind = WASM_I32;
 
-  if (world->registry.has<ComponentType>(args[0].of.i32)) {
+  if (world->registry.has<ComponentType>(self_id)) {
     results[0].of.i32 = 1;
   } else {
     results[0].of.i32 = 0;
@@ -32,20 +38,35 @@ static wasm_trap_t* Entity_hasComponent(World* world, const wasm_val_t args[],
 template <class ComponentType>
 static wasm_trap_t* Entity_addComponent(World* world, const wasm_val_t args[],
                                         wasm_val_t results[]) {
-  results[0].kind = WASM_I32;
-  results[0].of.i32 = args[0].of.i32;
+  EntityId self_id = args[0].of.i32;
+  if (!world->registry.valid(self_id)) {
+    return world->scripts.createTrap("Invalid entity ID");
+  }
 
-  if (!world->registry.has<ComponentType>(args[0].of.i32)) {
-    world->registry.emplace<ComponentType>(args[0].of.i32);
+  results[0].kind = WASM_I32;
+  results[0].of.i32 = self_id;
+
+  if (!world->registry.has<ComponentType>(self_id)) {
+    world->registry.emplace<ComponentType>(self_id);
   }
 
   return nullptr;
 }
 
-static wasm_trap_t* Entity_getComponent(World*, const wasm_val_t args[],
+template <class ComponentType>
+static wasm_trap_t* Entity_getComponent(World* world, const wasm_val_t args[],
                                         wasm_val_t results[]) {
+  EntityId self_id = args[0].of.i32;
+  if (!world->registry.valid(self_id)) {
+    return world->scripts.createTrap("Invalid entity ID");
+  }
+
+  if (!world->registry.has<ComponentType>(self_id)) {
+    world->registry.emplace<ComponentType>(self_id);
+  }
+
   results[0].kind = WASM_I32;
-  results[0].of.i32 = args[0].of.i32;
+  results[0].of.i32 = self_id;
   return nullptr;
 }
 
@@ -71,7 +92,7 @@ wasm_trap_t* entityMethodWrapper(const wasmtime_caller_t* caller, void* env,
 
 template <BoundEntityMethod method>
 void linkEntityMethod(ComponentScriptEnvironment* scripts, World* world,
-                      const char* symbol,
+                      const types::string& symbol,
                       EntityMethodTypeCallback type_callback) {
   wasm_store_t* store = scripts->getStore();
 
@@ -84,23 +105,27 @@ void linkEntityMethod(ComponentScriptEnvironment* scripts, World* world,
   wasm_func_t* func =
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);
 
-  scripts->addBinding(symbol, func);
+  scripts->addBinding(symbol.c_str(), func);
   wasm_functype_delete(func_type);
+}
+
+// Helper function to link a component API
+template <class ComponentType>
+void linkComponentApi(World* world, const char* symbol) {
+  ComponentScriptEnvironment* scripts = &world->scripts;
+  linkEntityMethod<Entity_getComponent<ComponentType>>(
+      scripts, world, std::string("Entity_get") + symbol, methodType_Entity);
+  linkEntityMethod<Entity_hasComponent<ComponentType>>(
+      scripts, world, std::string("Entity_has") + symbol, methodType_Entity);
+  linkEntityMethod<Entity_addComponent<ComponentType>>(
+      scripts, world, std::string("Entity_add") + symbol, methodType_Entity);
 }
 
 void ScriptEntity::linkScriptApi(World* world) {
   ComponentScriptEnvironment* scripts = &world->scripts;
 
-  linkEntityMethod<Entity_getComponent>(scripts, world, "Entity_getComponent",
-                                        methodType_Entity);
-  linkEntityMethod<Entity_hasComponent<PointLightComponent>>(
-      scripts, world, "Entity_hasPointLight", methodType_Entity);
-  linkEntityMethod<Entity_addComponent<PointLightComponent>>(
-      scripts, world, "Entity_addPointLight", methodType_Entity);
-  linkEntityMethod<Entity_hasComponent<TransformComponent>>(
-      scripts, world, "Entity_hasTransform", methodType_Entity);
-  linkEntityMethod<Entity_addComponent<TransformComponent>>(
-      scripts, world, "Entity_addTransform", methodType_Entity);
+  linkComponentApi<PointLightComponent>(world, "PointLight");
+  linkComponentApi<TransformComponent>(world, "Transform");
 }
 
 }  // namespace core
