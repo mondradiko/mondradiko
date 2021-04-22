@@ -31,7 +31,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
       // TODO(marceline-cramer) Import other kinds?
 
       types::string binding_name(import_name->data, import_name->size);
-      wasm_func_t* binding_func = scripts->getBinding(binding_name);
+      wasm_func_t* binding_func = scripts->createBinding(binding_name, this);
 
       if (binding_func == nullptr) {
         log_err_fmt("Script binding \"%s\" is missing", binding_name.c_str());
