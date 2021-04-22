@@ -43,8 +43,9 @@ class ScriptInstance {
   // TODO(marceline-cramer) Make observers in ScriptEnvironment for events
   // TODO(marceline-cramer) Define entrypoint classes and their sizes
 
+  ScriptEnvironment* const scripts;
+
  protected:
-  ScriptEnvironment* scripts;
 
   //////////////////////////////////////////////////////////////////////////////
   // Callback helpers
