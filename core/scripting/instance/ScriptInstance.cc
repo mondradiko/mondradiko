@@ -105,6 +105,15 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
   if (_memory == nullptr) {
     log_wrn("WebAssembly instance does not export its memory");
   }
+
+  _new_func = _getCallback("__new");
+  _pin_func = _getCallback("__pin");
+  _unpin_func = _getCallback("__unpin");
+  _collect_func = _getCallback("__collect");
+
+  if (!_new_func || !_pin_func || !_unpin_func || !_collect_func) {
+    log_wrn("WebAssembly instance does not export full AssemblyScript runtime");
+  }
 }
 
 ScriptInstance::~ScriptInstance() {
@@ -175,6 +184,64 @@ bool ScriptInstance::_runFunction(wasm_func_t* func, const wasm_val_t* args,
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// AssemblyScript memory management helpers
+////////////////////////////////////////////////////////////////////////////////
+
+bool ScriptInstance::_ASNew(uint32_t size, uint32_t id, uint32_t* ptr) {
+  std::array<wasm_val_t, 2> args;
+
+  auto& size_arg = args[0];
+  size_arg.kind = WASM_I32;
+  size_arg.of.i32 = size;
+
+  auto& id_arg = args[1];
+  id_arg.kind = WASM_I32;
+  id_arg.of.i32 = id;
+
+  wasm_val_t ptr_result;
+
+  if (!_runFunction(_new_func, args.data(), args.size(), &ptr_result, 1)) {
+    log_err("Failed to allocate AssemblyScript object");
+    return false;
+  }
+
+  *ptr = ptr_result.of.i32;
+  return true;
+}
+
+bool ScriptInstance::_ASPin(uint32_t ptr) {
+  wasm_val_t ptr_arg;
+  ptr_arg.kind = WASM_I32;
+  ptr_arg.of.i32 = ptr;
+
+  if (!_runFunction(_pin_func, &ptr_arg, 1, nullptr, 0)) {
+    log_err("Failed to pin AssemblyScript object");
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool ScriptInstance::_ASUnpin(uint32_t ptr) {
+  wasm_val_t ptr_arg;
+  ptr_arg.kind = WASM_I32;
+  ptr_arg.of.i32 = ptr;
+
+  if (!_runFunction(_unpin_func, &ptr_arg, 1, nullptr, 0)) {
+    log_err("Failed to unpin AssemblyScript object");
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool ScriptInstance::_ASCollect() {
+  if (!_runFunction(_collect_func, nullptr, 0, nullptr, 0)) {
+    log_err("Failed to perform AssemblyScript garbage collection");
+    return false;
+  } else {
+    return true;
   }
 }
 

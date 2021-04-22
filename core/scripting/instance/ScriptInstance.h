@@ -95,6 +95,41 @@ class ScriptInstance {
   bool _runFunction(wasm_func_t*, const wasm_val_t*, size_t, wasm_val_t*,
                     size_t);
 
+  //////////////////////////////////////////////////////////////////////////////
+  // AssemblyScript memory management helpers
+  // See for more details:
+  // https://www.assemblyscript.org/garbage-collection.html#runtime-interface
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @brief Allocates a new garbage-collected instance of an object.
+   * @param size The size of the object to allocate.
+   * @param id The ID of the class to instantiate.
+   * @param ptr The new pointer to the object.
+   * @return True on success, false on failure.
+   */
+  bool _ASNew(uint32_t, uint32_t, uint32_t*);
+
+  /**
+   * @brief Pins an object so that it is not garbage collected.
+   * @param ptr The pointer to the object.
+   * @return True on success, false on failure.
+   */
+  bool _ASPin(uint32_t);
+
+  /**
+   * @brief Unpins an object so that it can be garbage collected.
+   * @param ptr The pointer to the object.
+   * @return True on success, false on failure.
+   */
+  bool _ASUnpin(uint32_t);
+
+  /**
+   * @brief Performs a full garbage collection.
+   * @return True on success, false on failure.
+   */
+  bool _ASCollect();
+
  private:
   wasm_instance_t* _module_instance = nullptr;
   wasm_extern_vec_t _instance_externs;
@@ -102,6 +137,12 @@ class ScriptInstance {
   // Exported data
   wasm_memory_t* _memory = nullptr;
   types::unordered_map<types::string, wasm_func_t*> _callbacks;
+
+  // AssemblyScript runtime functions
+  wasm_func_t* _new_func = nullptr;
+  wasm_func_t* _pin_func = nullptr;
+  wasm_func_t* _unpin_func = nullptr;
+  wasm_func_t* _collect_func = nullptr;
 };
 
 }  // namespace core
