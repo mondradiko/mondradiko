@@ -106,39 +106,8 @@ void ScriptEnvironment::linkAssemblyScriptEnv() {
 
   // See: https://www.assemblyscript.org/exports-and-imports.html#imports-2
 
-  {  // Link abort()
-    wasm_valtype_t* ps[] = {wasm_valtype_new_i32(), wasm_valtype_new_i32(),
-                            wasm_valtype_new_i32(), wasm_valtype_new_i32()};
-
-    wasm_valtype_vec_t params, results;
-    wasm_valtype_vec_new(&params, 4, ps);
-    wasm_valtype_vec_new_empty(&results);
-
-    wasm_functype_t* abort_func_type = wasm_functype_new(&params, &results);
-
-    wasm_func_t* abort_func =
-        wasmtime_func_new_with_env(store, abort_func_type, abortCallback, this,
-                                   interruptCallbackFinalizer);
-    wasm_functype_delete(abort_func_type);
-
-    addBinding("abort", abort_func);
-  }
-
-  {  // Link seed()
-    wasm_valtype_t* rs = wasm_valtype_new_f64();
-
-    wasm_valtype_vec_t params, results;
-    wasm_valtype_vec_new_empty(&params);
-    wasm_valtype_vec_new(&results, 1, &rs);
-
-    wasm_functype_t* seed_func_type = wasm_functype_new(&params, &results);
-
-    wasm_func_t* seed_func = wasmtime_func_new_with_env(
-        store, seed_func_type, seedCallback, this, interruptCallbackFinalizer);
-    wasm_functype_delete(seed_func_type);
-
-    addBinding("seed", seed_func);
-  }
+  addBindingFactory("abort", abortFactory);
+  addBindingFactory("seed", seedFactory);
 }
 
 void ScriptEnvironment::collectFunc(wasm_func_t* func) {
@@ -333,6 +302,49 @@ bool ScriptEnvironment::handleError(wasmtime_error_t* error,
   wasm_byte_vec_delete(&error_message);
   log_err_fmt("Wasmtime error thrown: %s", error_string.c_str());
   return true;
+}
+
+wasm_func_t* ScriptEnvironment::abortFactory(ScriptInstance* instance) {
+  ScriptEnvironment* scripts = instance->scripts;
+
+  wasm_valtype_t* ps[] = {wasm_valtype_new_i32(), wasm_valtype_new_i32(),
+                          wasm_valtype_new_i32(), wasm_valtype_new_i32()};
+
+  wasm_valtype_vec_t params, results;
+  wasm_valtype_vec_new(&params, 4, ps);
+  wasm_valtype_vec_new_empty(&results);
+
+  wasm_functype_t* abort_func_type = wasm_functype_new(&params, &results);
+
+  wasm_func_t* func = wasmtime_func_new_with_env(
+      scripts->getStore(), abort_func_type, abortCallback, scripts,
+      interruptCallbackFinalizer);
+  wasm_functype_delete(abort_func_type);
+
+  scripts->collectFunc(func);
+
+  return func;
+}
+
+wasm_func_t* ScriptEnvironment::seedFactory(ScriptInstance* instance) {
+  ScriptEnvironment* scripts = instance->scripts;
+
+  wasm_valtype_t* rs = wasm_valtype_new_f64();
+
+  wasm_valtype_vec_t params, results;
+  wasm_valtype_vec_new_empty(&params);
+  wasm_valtype_vec_new(&results, 1, &rs);
+
+  wasm_functype_t* seed_func_type = wasm_functype_new(&params, &results);
+
+  wasm_func_t* func = wasmtime_func_new_with_env(
+      scripts->getStore(), seed_func_type, seedCallback, scripts,
+      interruptCallbackFinalizer);
+  wasm_functype_delete(seed_func_type);
+
+  scripts->collectFunc(func);
+
+  return func;
 }
 
 }  // namespace core

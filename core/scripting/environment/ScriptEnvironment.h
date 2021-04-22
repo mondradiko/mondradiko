@@ -181,6 +181,10 @@ class ScriptEnvironment {
   wasm_store_t* store = nullptr;
   wasmtime_interrupt_handle_t* interrupt_handle = nullptr;
 
+  // Callbacks
+  static wasm_func_t* abortFactory(ScriptInstance*);
+  static wasm_func_t* seedFactory(ScriptInstance*);
+
   types::vector<wasm_func_t*> func_collection;
   types::vector<void*> object_registry;
   types::unordered_map<types::string, void*> static_objects;
