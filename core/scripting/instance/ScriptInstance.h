@@ -53,8 +53,6 @@ class ScriptInstance {
 
   ScriptEnvironment* const scripts;
 
- protected:
-
   //////////////////////////////////////////////////////////////////////////////
   // Callback helpers
   //////////////////////////////////////////////////////////////////////////////
@@ -64,21 +62,21 @@ class ScriptInstance {
    * @param symbol The symbol of the callback.
    * @param func The callback's function.
    */
-  void _addCallback(const types::string&, wasm_func_t*);
+  void addCallback(const types::string&, wasm_func_t*);
 
   /**
    * @brief Checks if a callback is available.
    * @param symbol The symbol of the callback.
    * @return True if the callback is available, false if not.
    */
-  bool _hasCallback(const types::string&);
+  bool hasCallback(const types::string&);
 
   /**
    * @brief Retrieves a callback's function.
    * @param symbol The symbol of the callback.
    * @return The wasm_func_t of the callback, or nullptr if unavailable.
    */
-  wasm_func_t* _getCallback(const types::string&);
+  wasm_func_t* getCallback(const types::string&);
 
   /**
    * @brief Runs a callback, while performing proper error checking.
@@ -89,7 +87,7 @@ class ScriptInstance {
    * @param result_num The number of results.
    * @return True on success, false on an invalid callback or a trap throw.
    */
-  bool _runCallback(const types::string&, const wasm_val_t*, size_t,
+  bool runCallback(const types::string&, const wasm_val_t*, size_t,
                     wasm_val_t*, size_t);
 
   /**
@@ -101,7 +99,7 @@ class ScriptInstance {
    * @param result_num The number of results.
    * @return True on success, false on an invalid callback or a trap throw.
    */
-  bool _runFunction(wasm_func_t*, const wasm_val_t*, size_t, wasm_val_t*,
+  bool runFunction(wasm_func_t*, const wasm_val_t*, size_t, wasm_val_t*,
                     size_t);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -117,27 +115,27 @@ class ScriptInstance {
    * @param ptr The new pointer to the object.
    * @return True on success, false on failure.
    */
-  bool _ASNew(uint32_t, uint32_t, uint32_t*);
+  bool AS_new(uint32_t, uint32_t, uint32_t*);
 
   /**
    * @brief Pins an object so that it is not garbage collected.
    * @param ptr The pointer to the object.
    * @return True on success, false on failure.
    */
-  bool _ASPin(uint32_t);
+  bool AS_pin(uint32_t);
 
   /**
    * @brief Unpins an object so that it can be garbage collected.
    * @param ptr The pointer to the object.
    * @return True on success, false on failure.
    */
-  bool _ASUnpin(uint32_t);
+  bool AS_unpin(uint32_t);
 
   /**
    * @brief Performs a full garbage collection.
    * @return True on success, false on failure.
    */
-  bool _ASCollect();
+  bool AS_collect();
 
   //////////////////////////////////////////////////////////////////////////////
   // AssemblyScript object management helpers
@@ -148,7 +146,7 @@ class ScriptInstance {
    * @param ptr The pointer to the object in Wasm memory.
    * @return The pointer to the header if valid, nullptr otherwise.
    */
-  ASObjectHeader* _ASGetHeader(uint32_t);
+  ASObjectHeader* AS_getHeader(uint32_t);
 
   /**
    * @brief Asserts that an AssemblyScript object is of a certain type.
@@ -156,7 +154,7 @@ class ScriptInstance {
    * @param id The ID of the type to check.
    * @return The pointer to the header if valid, nullptr if assertion fails.
    */
-  ASObjectHeader* _ASAssertType(uint32_t, uint32_t);
+  ASObjectHeader* AS_assertType(uint32_t, uint32_t);
 
   /**
    * @brief Retrieves a string from AssemblyScript memory.
@@ -164,7 +162,7 @@ class ScriptInstance {
    * @param data The copy of that string.
    * @return True on success, false on an invalid runtime or assertion failure.
    */
-  bool _ASGetString(uint32_t, types::string*);
+  bool AS_getString(uint32_t, types::string*);
 
   /**
    * @brief Creates an AssemblyScript string.
@@ -172,7 +170,7 @@ class ScriptInstance {
    * @param ptr The pointer to the new string in Wasm memory.
    * @return True on success, false on an invalid runtime.
    */
-  bool _ASNewString(const types::string&, uint32_t*);
+  bool AS_newString(const types::string&, uint32_t*);
 
  private:
   wasm_instance_t* _module_instance = nullptr;

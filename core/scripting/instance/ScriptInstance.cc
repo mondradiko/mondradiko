@@ -82,7 +82,7 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
         case WASM_EXTERN_FUNC: {
           wasm_func_t* callback = wasm_extern_as_func(exported);
           types::string callback_name(export_name->data, export_name->size);
-          _addCallback(callback_name, callback);
+          addCallback(callback_name, callback);
 
           log_inf_fmt("Imported callback %s", callback_name.c_str());
           log_inf_fmt("Param arity: %zu", wasm_func_param_arity(callback));
@@ -109,10 +109,10 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
     log_wrn("WebAssembly instance does not export its memory");
   }
 
-  _new_func = _getCallback("__new");
-  _pin_func = _getCallback("__pin");
-  _unpin_func = _getCallback("__unpin");
-  _collect_func = _getCallback("__collect");
+  _new_func = getCallback("__new");
+  _pin_func = getCallback("__pin");
+  _unpin_func = getCallback("__unpin");
+  _collect_func = getCallback("__collect");
 
   if (!_new_func || !_pin_func || !_unpin_func || !_collect_func) {
     log_wrn("WebAssembly instance does not export full AssemblyScript runtime");
@@ -130,16 +130,16 @@ ScriptInstance::~ScriptInstance() {
 // Callback helpers
 ////////////////////////////////////////////////////////////////////////////////
 
-void ScriptInstance::_addCallback(const types::string& symbol,
-                                  wasm_func_t* func) {
+void ScriptInstance::addCallback(const types::string& symbol,
+                                 wasm_func_t* func) {
   _callbacks.emplace(symbol, func);
 }
 
-bool ScriptInstance::_hasCallback(const types::string& symbol) {
+bool ScriptInstance::hasCallback(const types::string& symbol) {
   return _callbacks.find(symbol) != _callbacks.end();
 }
 
-wasm_func_t* ScriptInstance::_getCallback(const types::string& symbol) {
+wasm_func_t* ScriptInstance::getCallback(const types::string& symbol) {
   auto iter = _callbacks.find(symbol);
 
   if (iter != _callbacks.end()) {
@@ -149,9 +149,9 @@ wasm_func_t* ScriptInstance::_getCallback(const types::string& symbol) {
   }
 }
 
-bool ScriptInstance::_runCallback(const types::string& symbol,
-                                  const wasm_val_t* args, size_t arg_num,
-                                  wasm_val_t* results, size_t result_num) {
+bool ScriptInstance::runCallback(const types::string& symbol,
+                                 const wasm_val_t* args, size_t arg_num,
+                                 wasm_val_t* results, size_t result_num) {
   auto iter = _callbacks.find(symbol);
 
   if (iter == _callbacks.end()) {
@@ -159,7 +159,7 @@ bool ScriptInstance::_runCallback(const types::string& symbol,
     return false;
   }
 
-  if (_runFunction(iter->second, args, arg_num, results, result_num)) {
+  if (runFunction(iter->second, args, arg_num, results, result_num)) {
     return true;
   } else {
     log_err_fmt("Error while running callback %s", symbol.c_str());
@@ -167,9 +167,9 @@ bool ScriptInstance::_runCallback(const types::string& symbol,
   }
 }
 
-bool ScriptInstance::_runFunction(wasm_func_t* func, const wasm_val_t* args,
-                                  size_t arg_num, wasm_val_t* results,
-                                  size_t result_num) {
+bool ScriptInstance::runFunction(wasm_func_t* func, const wasm_val_t* args,
+                                 size_t arg_num, wasm_val_t* results,
+                                 size_t result_num) {
   if (func == nullptr) {
     log_err_fmt("Attempted to run null function");
     return false;
@@ -191,7 +191,7 @@ bool ScriptInstance::_runFunction(wasm_func_t* func, const wasm_val_t* args,
 // AssemblyScript memory management helpers
 ////////////////////////////////////////////////////////////////////////////////
 
-bool ScriptInstance::_ASNew(uint32_t size, uint32_t id, uint32_t* ptr) {
+bool ScriptInstance::AS_new(uint32_t size, uint32_t id, uint32_t* ptr) {
   std::array<wasm_val_t, 2> args;
 
   auto& size_arg = args[0];
@@ -204,7 +204,7 @@ bool ScriptInstance::_ASNew(uint32_t size, uint32_t id, uint32_t* ptr) {
 
   wasm_val_t ptr_result;
 
-  if (!_runFunction(_new_func, args.data(), args.size(), &ptr_result, 1)) {
+  if (!runFunction(_new_func, args.data(), args.size(), &ptr_result, 1)) {
     log_err("Failed to allocate AssemblyScript object");
     return false;
   }
@@ -213,12 +213,12 @@ bool ScriptInstance::_ASNew(uint32_t size, uint32_t id, uint32_t* ptr) {
   return true;
 }
 
-bool ScriptInstance::_ASPin(uint32_t ptr) {
+bool ScriptInstance::AS_pin(uint32_t ptr) {
   wasm_val_t ptr_arg;
   ptr_arg.kind = WASM_I32;
   ptr_arg.of.i32 = ptr;
 
-  if (!_runFunction(_pin_func, &ptr_arg, 1, nullptr, 0)) {
+  if (!runFunction(_pin_func, &ptr_arg, 1, nullptr, 0)) {
     log_err("Failed to pin AssemblyScript object");
     return false;
   } else {
@@ -226,12 +226,12 @@ bool ScriptInstance::_ASPin(uint32_t ptr) {
   }
 }
 
-bool ScriptInstance::_ASUnpin(uint32_t ptr) {
+bool ScriptInstance::AS_unpin(uint32_t ptr) {
   wasm_val_t ptr_arg;
   ptr_arg.kind = WASM_I32;
   ptr_arg.of.i32 = ptr;
 
-  if (!_runFunction(_unpin_func, &ptr_arg, 1, nullptr, 0)) {
+  if (!runFunction(_unpin_func, &ptr_arg, 1, nullptr, 0)) {
     log_err("Failed to unpin AssemblyScript object");
     return false;
   } else {
@@ -239,8 +239,8 @@ bool ScriptInstance::_ASUnpin(uint32_t ptr) {
   }
 }
 
-bool ScriptInstance::_ASCollect() {
-  if (!_runFunction(_collect_func, nullptr, 0, nullptr, 0)) {
+bool ScriptInstance::AS_collect() {
+  if (!runFunction(_collect_func, nullptr, 0, nullptr, 0)) {
     log_err("Failed to perform AssemblyScript garbage collection");
     return false;
   } else {
@@ -252,7 +252,7 @@ bool ScriptInstance::_ASCollect() {
 // AssemblyScript object management helpers
 ////////////////////////////////////////////////////////////////////////////////
 
-ASObjectHeader* ScriptInstance::_ASGetHeader(uint32_t ptr) {
+ASObjectHeader* ScriptInstance::AS_getHeader(uint32_t ptr) {
   if (_memory == nullptr) {
     log_err("Wasm instance does not export memory");
     return nullptr;
@@ -268,12 +268,12 @@ ASObjectHeader* ScriptInstance::_ASGetHeader(uint32_t ptr) {
   return reinterpret_cast<ASObjectHeader*>(header_addr);
 }
 
-ASObjectHeader* ScriptInstance::_ASAssertType(uint32_t ptr, uint32_t id) {
+ASObjectHeader* ScriptInstance::AS_assertType(uint32_t ptr, uint32_t id) {
   if (ptr == 0) {
     return nullptr;
   }
 
-  ASObjectHeader* header = _ASGetHeader(ptr);
+  ASObjectHeader* header = AS_getHeader(ptr);
 
   if (header->rt_id != id) {
     return nullptr;
@@ -282,14 +282,14 @@ ASObjectHeader* ScriptInstance::_ASAssertType(uint32_t ptr, uint32_t id) {
   }
 }
 
-bool ScriptInstance::_ASGetString(uint32_t ptr, types::string* data) {
+bool ScriptInstance::AS_getString(uint32_t ptr, types::string* data) {
   if (_memory == nullptr) {
     log_err("Wasm instance does not export memory");
     return false;
   }
 
   // The type ID of String is 1
-  ASObjectHeader* header = _ASAssertType(ptr, 1);
+  ASObjectHeader* header = AS_assertType(ptr, 1);
 
   if (header == nullptr) {
     log_err("Object is not a string");
@@ -308,7 +308,7 @@ bool ScriptInstance::_ASGetString(uint32_t ptr, types::string* data) {
   return true;
 }
 
-bool ScriptInstance::_ASNewString(const types::string& data, uint32_t* ptr) {
+bool ScriptInstance::AS_newString(const types::string& data, uint32_t* ptr) {
   if (_memory == nullptr) {
     log_err("Wasm instance does not export memory");
     return false;
@@ -317,7 +317,7 @@ bool ScriptInstance::_ASNewString(const types::string& data, uint32_t* ptr) {
   uint32_t size = data.length() << 1;
 
   // The type ID of String is 1
-  if (!_ASNew(size, 1, ptr)) {
+  if (!AS_new(size, 1, ptr)) {
     log_err("Failed to allocate AssemblyScript string");
     return false;
   }
