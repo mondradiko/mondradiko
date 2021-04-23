@@ -4,6 +4,7 @@
 #include "core/scripting/environment/ScriptEnvironment.h"
 
 #include <ctime>
+#include <sstream>
 
 #include "core/scripting/instance/ScriptInstance.h"
 #include "log/log.h"
@@ -23,16 +24,25 @@ static wasm_trap_t* interruptCallback(const wasmtime_caller_t* caller,
 static wasm_trap_t* abortCallback(const wasmtime_caller_t* caller, void* env,
                                   const wasm_val_t args[],
                                   wasm_val_t results[]) {
-  // TODO(marceline-cramer) Parse arguments and print abort info
-  ScriptEnvironment* scripts = reinterpret_cast<ScriptEnvironment*>(env);
-  log_err("AssemblyScript called abort()");
+  ScriptInstance* instance = reinterpret_cast<ScriptInstance*>(env);
+  ScriptEnvironment* scripts = instance->scripts;
 
-  wasm_message_t message;
-  wasm_name_new_from_string(&message, "AssemblyScript abort()");
-  wasm_trap_t* trap = wasm_trap_new(scripts->getStore(), &message);
-  wasm_name_delete(&message);
+  types::string message;
+  instance->AS_getString(args[0].of.i32, &message);
 
-  return trap;
+  types::string file;
+  instance->AS_getString(args[1].of.i32, &file);
+
+  uint32_t line = args[2].of.i32;
+  uint32_t column = args[3].of.i32;
+
+  std::ostringstream error_message;
+  error_message << "abort(): ";
+  error_message << message << " at " << file << ":" << line << ":" << column;
+
+  log_err_fmt("%s", error_message.str().c_str());
+
+  return scripts->createTrap(error_message.str());
 }
 
 static wasm_trap_t* seedCallback(const wasmtime_caller_t* caller, void* env,
@@ -300,7 +310,7 @@ wasm_func_t* ScriptEnvironment::abortFactory(ScriptInstance* instance) {
   wasm_functype_t* abort_func_type = wasm_functype_new(&params, &results);
 
   wasm_func_t* func = wasmtime_func_new_with_env(
-      scripts->getStore(), abort_func_type, abortCallback, scripts,
+      scripts->getStore(), abort_func_type, abortCallback, instance,
       interruptCallbackFinalizer);
   wasm_functype_delete(abort_func_type);
 
@@ -321,7 +331,7 @@ wasm_func_t* ScriptEnvironment::seedFactory(ScriptInstance* instance) {
   wasm_functype_t* seed_func_type = wasm_functype_new(&params, &results);
 
   wasm_func_t* func = wasmtime_func_new_with_env(
-      scripts->getStore(), seed_func_type, seedCallback, scripts,
+      scripts->getStore(), seed_func_type, seedCallback, instance,
       interruptCallbackFinalizer);
   wasm_functype_delete(seed_func_type);
 
