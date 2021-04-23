@@ -27,7 +27,7 @@ namespace core {
 
 World::World(AssetPool* asset_pool, Filesystem* fs,
              WorldScriptEnvironment* world_script_environment)
-    : StaticScriptObject(world_script_environment, "World"),
+    : StaticScriptObject(world_script_environment),
       asset_pool(asset_pool),
       fs(fs),
       scripts(asset_pool, this),

@@ -14,8 +14,8 @@ class StaticScriptObject {
   // Defined in generated API linker
   static void linkScriptApi(ScriptEnvironment*, T*);
 
-  StaticScriptObject(ScriptEnvironment* scripts, const char* symbol)
-      : scripts(scripts), _static_symbol(symbol) {
+  StaticScriptObject(ScriptEnvironment* scripts)
+      : scripts(scripts), _static_symbol(typeid(T).name()) {
     if (scripts != nullptr &&
         scripts->storeStaticObject(_static_symbol, this)) {
       linkScriptApi(scripts, static_cast<T*>(this));

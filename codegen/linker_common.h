@@ -149,8 +149,11 @@ static wasm_trap_t* staticObjectMethodWrapper(const wasmtime_caller_t* caller,
                                               void* env,
                                               const wasm_val_t args[],
                                               wasm_val_t results[]) {
-  ObjectType* self = reinterpret_cast<ObjectType*>(env);
-  return ((*self).*method)(args, results);
+  ScriptInstance* instance = reinterpret_cast<ScriptInstance*>(env);
+  const char* symbol = typeid(ObjectType).name();
+  ObjectType* self =
+      reinterpret_cast<ObjectType*>(instance->scripts->getStaticObject(symbol));
+  return ((*self).*method)(instance, args, results);
 }
 
 template <class ObjectType, BoundClassdefMethod<ObjectType> method,
