@@ -3,6 +3,9 @@
 
 #include "core/scripting/instance/ScriptInstance.h"
 
+#include <codecvt>
+#include <locale>
+
 #include "core/scripting/environment/ScriptEnvironment.h"
 #include "log/log.h"
 #include "types/containers/string.h"
@@ -243,6 +246,92 @@ bool ScriptInstance::_ASCollect() {
   } else {
     return true;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AssemblyScript object management helpers
+////////////////////////////////////////////////////////////////////////////////
+
+ASObjectHeader* ScriptInstance::_ASGetHeader(uint32_t ptr) {
+  if (_memory == nullptr) {
+    log_err("Wasm instance does not export memory");
+    return nullptr;
+  }
+
+  if (ptr < sizeof(ASObjectHeader)) {
+    log_err("Object pointer is not valid");
+    return nullptr;
+  }
+
+  byte_t* memory = wasm_memory_data(_memory);
+  byte_t* header_addr = &memory[ptr] - sizeof(ASObjectHeader);
+  return reinterpret_cast<ASObjectHeader*>(header_addr);
+}
+
+ASObjectHeader* ScriptInstance::_ASAssertType(uint32_t ptr, uint32_t id) {
+  if (ptr == 0) {
+    return nullptr;
+  }
+
+  ASObjectHeader* header = _ASGetHeader(ptr);
+
+  if (header->rt_id != id) {
+    return nullptr;
+  } else {
+    return header;
+  }
+}
+
+bool ScriptInstance::_ASGetString(uint32_t ptr, types::string* data) {
+  if (_memory == nullptr) {
+    log_err("Wasm instance does not export memory");
+    return false;
+  }
+
+  // The type ID of String is 1
+  ASObjectHeader* header = _ASAssertType(ptr, 1);
+
+  if (header == nullptr) {
+    log_err("Object is not a string");
+    return false;
+  }
+
+  byte_t* memory = wasm_memory_data(_memory);
+
+  // TODO(marceline-cramer) Find better way to convert from UTF-16
+  char16_t* utf_begin = reinterpret_cast<char16_t*>(&memory[ptr]);
+  char16_t* utf_end = utf_begin + header->rt_size / 2;
+
+  std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+  *data = convert.to_bytes(utf_begin, utf_end);
+
+  return true;
+}
+
+bool ScriptInstance::_ASNewString(const types::string& data, uint32_t* ptr) {
+  if (_memory == nullptr) {
+    log_err("Wasm instance does not export memory");
+    return false;
+  }
+
+  uint32_t size = data.length() << 1;
+
+  // The type ID of String is 1
+  if (!_ASNew(size, 1, ptr)) {
+    log_err("Failed to allocate AssemblyScript string");
+    return false;
+  }
+
+  byte_t* memory = wasm_memory_data(_memory);
+  char16_t* utf_begin = reinterpret_cast<char16_t*>(&memory[*ptr]);
+
+  memset(utf_begin, 0, size);
+
+  for (uint32_t i = 0; i < data.length(); i++) {
+    utf_begin[i] = data[i];
+  }
+
+  return true;
 }
 
 }  // namespace core

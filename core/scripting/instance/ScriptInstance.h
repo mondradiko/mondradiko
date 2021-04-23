@@ -35,6 +35,14 @@ namespace core {
 // Forward declarations
 class ScriptEnvironment;
 
+struct ASObjectHeader {
+  uint32_t mm_info;
+  uint32_t gc_info;
+  uint32_t gc_info_2;
+  uint32_t rt_id;
+  uint32_t rt_size;
+};
+
 class ScriptInstance {
  public:
   ScriptInstance(ScriptEnvironment*, wasm_module_t*);
@@ -130,6 +138,41 @@ class ScriptInstance {
    * @return True on success, false on failure.
    */
   bool _ASCollect();
+
+  //////////////////////////////////////////////////////////////////////////////
+  // AssemblyScript object management helpers
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @brief Gets an AssemblyScript object's header.
+   * @param ptr The pointer to the object in Wasm memory.
+   * @return The pointer to the header if valid, nullptr otherwise.
+   */
+  ASObjectHeader* _ASGetHeader(uint32_t);
+
+  /**
+   * @brief Asserts that an AssemblyScript object is of a certain type.
+   * @param ptr The pointer to the object in Wasm memory.
+   * @param id The ID of the type to check.
+   * @return The pointer to the header if valid, nullptr if assertion fails.
+   */
+  ASObjectHeader* _ASAssertType(uint32_t, uint32_t);
+
+  /**
+   * @brief Retrieves a string from AssemblyScript memory.
+   * @param ptr The pointer to the string in Wasm memory.
+   * @param data The copy of that string.
+   * @return True on success, false on an invalid runtime or assertion failure.
+   */
+  bool _ASGetString(uint32_t, types::string*);
+
+  /**
+   * @brief Creates an AssemblyScript string.
+   * @param data The string to copy into memory.
+   * @param ptr The pointer to the new string in Wasm memory.
+   * @return True on success, false on an invalid runtime.
+   */
+  bool _ASNewString(const types::string&, uint32_t*);
 
  private:
   wasm_instance_t* _module_instance = nullptr;
