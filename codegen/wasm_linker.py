@@ -30,7 +30,8 @@ STATIC_OBJECT_METHOD_WRAP = \
 
 C_TYPES_TO_WASM = {
     "self": "WASM_I32",
-    "double": "WASM_F64"
+    "double": "WASM_F64",
+    "string": "WASM_I32"
 }
 
 

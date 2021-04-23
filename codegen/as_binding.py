@@ -6,7 +6,8 @@ from codegen import Codegen, preamble
 
 C_TYPES_TO_AS = {
     "self": "i32",
-    "double": "f64"
+    "double": "f64",
+    "string": "string"
 }
 
 
