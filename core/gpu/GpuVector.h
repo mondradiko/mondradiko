@@ -49,7 +49,11 @@ void GpuVector::writeElement(uint32_t index, const ElementType& element) {
   }
 
   size_t needed_size = (index + 1) * element_granularity;
-  reserve(needed_size);
+
+  if (needed_size > buffer_size) {
+    size_t larger_size = buffer_size << 1;
+    reserve(needed_size > larger_size ? needed_size : larger_size);
+  }
 
   memcpy(static_cast<char*>(allocation_info.pMappedData) +
              index * element_granularity,
