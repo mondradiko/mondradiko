@@ -106,14 +106,17 @@ assets::AssetId Bundler::getAssetByAlias(const std::string& alias) {
   return iter->second;
 }
 
+std::filesystem::path Bundler::getAssetPath(const toml::table& asset) {
+  const auto& asset_file = asset.at("file").as_string();
+  auto asset_path = source_root / asset_file.str;
+  return asset_path;
+}
+
 void Bundler::bundle() {
   const auto assets = toml::find<toml::array>(manifest, "assets");
 
   for (const auto& asset_table : assets) {
     const auto& asset = asset_table.as_table();
-
-    const auto& asset_file = asset.at("file").as_string();
-    auto asset_path = source_root / asset_file.str;
 
     std::string asset_type;
     std::string alias = "";
@@ -124,6 +127,7 @@ void Bundler::bundle() {
       if (iter != asset.end()) {
         asset_type = iter->second.as_string().str;
       } else {
+        auto asset_path = getAssetPath(asset);
         asset_type = asset_path.extension().string().substr(1);
       }
     }
@@ -145,8 +149,7 @@ void Bundler::bundle() {
     }
 
     {
-      log_dbg_fmt("Converting %s asset %s", asset_type.c_str(),
-                  asset_path.c_str());
+      log_dbg_fmt("Converting %s asset", asset_type.c_str());
 
       // TODO(marceline-cramer) Converted asset caching
       auto iter = converters.find(asset_type);
