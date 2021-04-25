@@ -183,8 +183,7 @@ UserInterface::~UserInterface() {
 }
 
 void UserInterface::displayMessage(const char* message) {
-  messages += message;
-  messages += '\n';
+  ui_script->handleMessage(message);
 }
 
 bool UserInterface::update(double dt) {

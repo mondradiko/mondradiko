@@ -57,8 +57,6 @@ class UserInterface : public RenderPass {
 
   types::vector<UiPanel*> panels;
 
-  types::string messages;
-
   GpuShader* panel_vertex_shader = nullptr;
   GpuShader* panel_fragment_shader = nullptr;
   GpuDescriptorSetLayout* panel_layout = nullptr;

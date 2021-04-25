@@ -16,6 +16,7 @@ class UiScript : public ScriptInstance {
   UiScript(ScriptEnvironment*, wasm_module_t*);
 
   uint32_t bindPanel(UiPanel*);
+  void handleMessage(const types::string&);
   void update(double);
 
  private:
