@@ -27,6 +27,7 @@ class Bundler : public converter::BundlerInterface {
                            converter::ConverterInterface::AssetOffset) final;
   void addConverter(std::string, const converter::ConverterInterface*) final;
   assets::AssetId getAssetByAlias(const std::string&) final;
+  std::filesystem::path getAssetPath(const toml::table&) final;
   void bundle() final;
 
  private:
