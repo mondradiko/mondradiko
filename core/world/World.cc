@@ -322,14 +322,15 @@ void World::updateComponents(
   }
 }
 
-wasm_trap_t* World::spawnEntity(const wasm_val_t args[], wasm_val_t results[]) {
+wasm_trap_t* World::spawnEntity(ScriptInstance*, const wasm_val_t args[],
+                                wasm_val_t results[]) {
   EntityId new_entity = registry.create();
   results[0].kind = WASM_I32;
   results[0].of.i32 = new_entity;
   return nullptr;
 }
 
-wasm_trap_t* World::spawnEntityAt(const wasm_val_t args[],
+wasm_trap_t* World::spawnEntityAt(ScriptInstance*, const wasm_val_t args[],
                                   wasm_val_t results[]) {
   EntityId new_entity = registry.create();
 

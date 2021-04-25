@@ -3,6 +3,7 @@
 
 #include "core/ui/GlyphStyle.h"
 
+#include "core/scripting/instance/ScriptInstance.h"
 #include "core/ui/UiPanel.h"
 
 namespace mondradiko {
@@ -62,20 +63,23 @@ GlyphStyleUniform GlyphStyle::getUniform() const {
   return ubo;
 }
 
-wasm_trap_t* GlyphStyle::setOffset(const wasm_val_t args[], wasm_val_t[]) {
+wasm_trap_t* GlyphStyle::setOffset(ScriptInstance*, const wasm_val_t args[],
+                                   wasm_val_t[]) {
   _offset.x = args[1].of.f64;
   _offset.y = args[2].of.f64;
 
   return nullptr;
 }
 
-wasm_trap_t* GlyphStyle::setScale(const wasm_val_t args[], wasm_val_t[]) {
+wasm_trap_t* GlyphStyle::setScale(ScriptInstance*, const wasm_val_t args[],
+                                  wasm_val_t[]) {
   _scale = args[1].of.f64;
 
   return nullptr;
 }
 
-wasm_trap_t* GlyphStyle::setColor(const wasm_val_t args[], wasm_val_t[]) {
+wasm_trap_t* GlyphStyle::setColor(ScriptInstance*, const wasm_val_t args[],
+                                  wasm_val_t[]) {
   _color.r = args[1].of.f64;
   _color.g = args[2].of.f64;
   _color.b = args[3].of.f64;

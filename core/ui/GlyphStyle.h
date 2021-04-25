@@ -36,9 +36,9 @@ class GlyphStyle : public DynamicScriptObject<GlyphStyle> {
   //
   // Scripting methods
   //
-  wasm_trap_t* setOffset(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* setScale(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* setColor(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setOffset(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setScale(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setColor(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
 
  private:
   GlyphLoader* glyphs;

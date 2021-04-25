@@ -21,7 +21,8 @@ namespace codegen {
 using namespace core;
 
 template <class ClassdefType>
-using BoundClassdefMethod = wasm_trap_t* (ClassdefType::*)(const wasm_val_t[],
+using BoundClassdefMethod = wasm_trap_t* (ClassdefType::*)(ScriptInstance*,
+                                                           const wasm_val_t[],
                                                            wasm_val_t[]);
 
 template <class ClassdefType>
@@ -95,7 +96,8 @@ static wasm_trap_t* dynamicObjectMethodWrapper(const wasmtime_caller_t* caller,
                                                void* env,
                                                const wasm_val_t args[],
                                                wasm_val_t results[]) {
-  ScriptEnvironment* scripts = reinterpret_cast<ScriptEnvironment*>(env);
+  ScriptInstance* instance = reinterpret_cast<ScriptInstance*>(env);
+  ScriptEnvironment* scripts = instance->scripts;
 
   uint32_t self_id = args[0].of.i32;
   void* self_raw = scripts->getFromRegistry(self_id);
@@ -109,7 +111,7 @@ static wasm_trap_t* dynamicObjectMethodWrapper(const wasmtime_caller_t* caller,
 
   ObjectType* self = reinterpret_cast<ObjectType*>(self_raw);
 
-  return ((*self).*method)(args, results);
+  return ((*self).*method)(instance, args, results);
 }
 
 template <class ObjectType, BoundClassdefMethod<ObjectType> method,
@@ -124,7 +126,7 @@ wasm_func_t* createDynamicObjectMethod(ScriptInstance* instance) {
   wasmtime_func_callback_with_env_t callback =
       dynamicObjectMethodWrapper<ObjectType, method>;
 
-  void* env = static_cast<void*>(scripts);
+  void* env = static_cast<void*>(instance);
 
   wasm_func_t* func =
       wasmtime_func_new_with_env(store, func_type, callback, env, finalizer);

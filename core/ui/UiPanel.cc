@@ -46,25 +46,29 @@ void UiPanel::writeUniform(PanelUniform* panel_uniform) {
   panel_uniform->color = _color;
 }
 
-wasm_trap_t* UiPanel::getWidth(const wasm_val_t[], wasm_val_t results[]) {
+wasm_trap_t* UiPanel::getWidth(ScriptInstance*, const wasm_val_t[],
+                               wasm_val_t results[]) {
   results[0].kind = WASM_F64;
   results[0].of.f64 = _size.x;
   return nullptr;
 }
 
-wasm_trap_t* UiPanel::getHeight(const wasm_val_t[], wasm_val_t results[]) {
+wasm_trap_t* UiPanel::getHeight(ScriptInstance*, const wasm_val_t[],
+                                wasm_val_t results[]) {
   results[0].kind = WASM_F64;
   results[0].of.f64 = _size.y;
   return nullptr;
 }
 
-wasm_trap_t* UiPanel::setSize(const wasm_val_t args[], wasm_val_t results[]) {
+wasm_trap_t* UiPanel::setSize(ScriptInstance*, const wasm_val_t args[],
+                              wasm_val_t results[]) {
   _size.x = args[1].of.f64;
   _size.y = args[2].of.f64;
   return nullptr;
 }
 
-wasm_trap_t* UiPanel::setColor(const wasm_val_t args[], wasm_val_t results[]) {
+wasm_trap_t* UiPanel::setColor(ScriptInstance*, const wasm_val_t args[],
+                               wasm_val_t results[]) {
   _color.r = args[1].of.f64;
   _color.g = args[2].of.f64;
   _color.b = args[3].of.f64;
@@ -73,7 +77,7 @@ wasm_trap_t* UiPanel::setColor(const wasm_val_t args[], wasm_val_t results[]) {
   return nullptr;
 }
 
-wasm_trap_t* UiPanel::createGlyphStyle(const wasm_val_t[],
+wasm_trap_t* UiPanel::createGlyphStyle(ScriptInstance*, const wasm_val_t[],
                                        wasm_val_t results[]) {
   GlyphStyle* new_style = new GlyphStyle(glyphs, scripts, this);
   _styles.push_back(new_style);
