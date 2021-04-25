@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include <filesystem>
-
 #include "converter/AssetBundleBuilder.h"
+#include "lib/include/toml_headers.h"
 #include "types/assets/AssetTypes.h"
 #include "types/assets/SerializedAsset_generated.h"
 
@@ -20,7 +19,7 @@ class ConverterInterface {
   using AssetOffset = flatbuffers::Offset<assets::SerializedAsset>;
   using AssetBuilder = flatbuffers::FlatBufferBuilder;
 
-  virtual AssetOffset convert(AssetBuilder*, std::filesystem::path) const = 0;
+  virtual AssetOffset convert(AssetBuilder*, const toml::table&) const = 0;
 };
 
 }  // namespace converter

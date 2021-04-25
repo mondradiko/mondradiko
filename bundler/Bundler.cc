@@ -159,7 +159,7 @@ void Bundler::bundle() {
       }
 
       flatbuffers::FlatBufferBuilder fbb;
-      auto asset_offset = iter->second->convert(&fbb, asset_path);
+      auto asset_offset = iter->second->convert(&fbb, asset);
 
       assets::AssetId asset_id;
       bundle_builder->addAsset(&asset_id, &fbb, asset_offset);

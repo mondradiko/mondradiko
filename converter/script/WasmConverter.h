@@ -16,7 +16,7 @@ class WasmConverter : public ConverterInterface {
   explicit WasmConverter(BundlerInterface* bundler) : _bundler(bundler) {}
 
   // ConverterInterface implementation
-  AssetOffset convert(AssetBuilder*, std::filesystem::path) const final;
+  AssetOffset convert(AssetBuilder*, const toml::table&) const final;
 
  private:
   BundlerInterface* _bundler;
