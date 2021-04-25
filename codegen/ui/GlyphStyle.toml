@@ -29,3 +29,9 @@ internal_header = "core/ui/GlyphStyle.h"
     g = "double"
     b = "double"
     a = "double"
+
+  [methods.setText]
+  param_list = ["text"]
+
+    [methods.setText.params]
+    text = "string"

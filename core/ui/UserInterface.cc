@@ -258,7 +258,7 @@ void UserInterface::beginFrame(uint32_t frame_index,
         style_indices.emplace(panel_style, style_index);
       }
 
-      panel_style->drawString(&test_string, style_index, messages);
+      panel_style->drawString(&test_string, style_index);
     }
   }
 

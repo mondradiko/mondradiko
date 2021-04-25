@@ -5,6 +5,7 @@
 
 #include "core/scripting/instance/ScriptInstance.h"
 #include "core/ui/UiPanel.h"
+#include "log/log.h"
 
 namespace mondradiko {
 namespace core {
@@ -14,17 +15,19 @@ GlyphStyle::GlyphStyle(GlyphLoader* glyphs, ScriptEnvironment* scripts,
     : DynamicScriptObject(scripts), glyphs(glyphs), _panel(panel) {
   _color = glm::vec4(1.0);
   _offset = glm::vec2(-0.45);
-  _scale = 0.2;
+  _scale = 0.15;
 }
 
 GlyphStyle::~GlyphStyle() {}
 
-void GlyphStyle::drawString(GlyphString* glyph_string, uint32_t style_index,
-                            const types::string& text) const {
+void GlyphStyle::drawString(GlyphString* glyph_string,
+                            uint32_t style_index) const {
+  const types::string& text = _text;
+
   double cursor = 0.0;
   double line = 0.0;
 
-  for (uint32_t i = 0; i < text.length(); i++) {
+  for (uint32_t i = 0; i < _text.length(); i++) {
     char c = text[i];
 
     if (c == ' ') {
@@ -84,6 +87,16 @@ wasm_trap_t* GlyphStyle::setColor(ScriptInstance*, const wasm_val_t args[],
   _color.g = args[2].of.f64;
   _color.b = args[3].of.f64;
   _color.a = args[4].of.f64;
+
+  return nullptr;
+}
+
+wasm_trap_t* GlyphStyle::setText(ScriptInstance* instance,
+                                 const wasm_val_t args[], wasm_val_t[]) {
+  types::string text;
+  if (instance->AS_getString(args[1].of.i32, &text)) {
+    _text = text;
+  }
 
   return nullptr;
 }
