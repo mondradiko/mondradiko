@@ -218,7 +218,9 @@ bool ScriptInstance::AS_pin(uint32_t ptr) {
   ptr_arg.kind = WASM_I32;
   ptr_arg.of.i32 = ptr;
 
-  if (!runFunction(_pin_func, &ptr_arg, 1, nullptr, 0)) {
+  wasm_val_t ptr_result;  // Unused
+
+  if (!runFunction(_pin_func, &ptr_arg, 1, &ptr_result, 1)) {
     log_err("Failed to pin AssemblyScript object");
     return false;
   } else {
