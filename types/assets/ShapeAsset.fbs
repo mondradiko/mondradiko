@@ -1,0 +1,22 @@
+// Copyright (c) 2021-2021 the Mondradiko contributors.
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
+include "types.fbs";
+
+namespace mondradiko.assets;
+
+enum ShapeType : uint8 {
+  Sphere
+}
+
+struct SphereShape {
+  radius:double;
+}
+
+table ShapeAsset {
+  type:ShapeType;
+
+  sphere:SphereShape;
+}
+
+root_type ShapeAsset;

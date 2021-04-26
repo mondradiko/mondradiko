@@ -11,6 +11,7 @@ flatc_schemas(ASSET_HEADERS
   assets/Registry.fbs
   assets/ScriptAsset.fbs
   assets/SerializedAsset.fbs
+  assets/ShapeAsset.fbs
   assets/TextureAsset.fbs
   assets/types.fbs
 )
