@@ -21,8 +21,19 @@ wasm_trap_t* PointLightComponent::setIntensity(ComponentScript*,
                                                wasm_val_t[]) {
   auto intensity = glm::vec3(args[1].of.f64, args[2].of.f64, args[3].of.f64);
   protocol::GlmToVec3(&_data.mutable_intensity(), intensity);
+  _updateAoe();
   return nullptr;
 }
+
+float PointLightComponent::_getMaxIntensity() {
+  // "i" for intensity
+  glm::vec3 i = glm::make_vec3(_data.intensity().v()->data());
+  float max_i = i.r > i.g ? i.r : i.g;
+  max_i = max_i > i.b ? max_i : i.b;
+  return max_i;
+}
+
+void PointLightComponent::_updateAoe() { _aoe.radius = _getMaxIntensity(); }
 
 // Template specialization to build UpdateComponents event
 template <>

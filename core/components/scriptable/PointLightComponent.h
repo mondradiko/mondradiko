@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/components/ScriptableComponent.h"
+#include "core/shapes/SphereShape.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/wasm_headers.h"
 #include "types/assets/PrefabAsset_generated.h"
@@ -26,7 +27,9 @@ class PointLightComponent
                                  protocol::PointLightComponent> {
  public:
   explicit PointLightComponent(const protocol::PointLightComponent& data)
-      : ScriptableComponent(data) {}
+      : ScriptableComponent(data) {
+    _updateAoe();
+  }
 
   explicit PointLightComponent(const assets::PointLightPrefab* prefab) {
     auto position = glm::make_vec3(prefab->position().v()->data());
@@ -34,11 +37,14 @@ class PointLightComponent
 
     auto intensity = glm::make_vec3(prefab->intensity().v()->data());
     protocol::GlmToVec3(&_data.mutable_intensity(), intensity);
+
+    _updateAoe();
   }
 
   PointLightComponent(const glm::vec3& position, const glm::vec3& intensity) {
     protocol::GlmToVec3(&_data.mutable_position(), position);
     protocol::GlmToVec3(&_data.mutable_intensity(), intensity);
+    _updateAoe();
   }
 
   PointLightComponent()
@@ -46,6 +52,7 @@ class PointLightComponent
                             glm::vec3(1.0, 0.0, 0.0)) {}
 
   void getUniform(PointLightUniform*);
+  const SphereShape& getAreaOfEffect() { return _aoe; }
 
   //
   // Script methods
@@ -53,6 +60,11 @@ class PointLightComponent
   wasm_trap_t* setIntensity(ComponentScript*, const wasm_val_t[], wasm_val_t[]);
 
  private:
+  SphereShape _aoe;
+
+  // Helper methods
+  float _getMaxIntensity();
+  void _updateAoe();
 };
 
 }  // namespace core
