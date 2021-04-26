@@ -16,6 +16,17 @@ void PointLightComponent::getUniform(PointLightUniform* uniform) {
   uniform->intensity = glm::vec4(intensity, 1.0);
 }
 
+glm::vec3 PointLightComponent::getSaturatedColor() {
+  glm::vec3 color = glm::make_vec3(_data.intensity().v()->data());
+
+  float intensity = _getMaxIntensity();
+  if (intensity > 0.0) {
+    color /= intensity;
+  }
+
+  return color;
+}
+
 wasm_trap_t* PointLightComponent::setIntensity(ComponentScript*,
                                                const wasm_val_t args[],
                                                wasm_val_t[]) {

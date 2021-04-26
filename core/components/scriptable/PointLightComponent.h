@@ -52,6 +52,7 @@ class PointLightComponent
                             glm::vec3(1.0, 0.0, 0.0)) {}
 
   void getUniform(PointLightUniform*);
+  glm::vec3 getSaturatedColor();
   const SphereShape& getAreaOfEffect() { return _aoe; }
 
   //
