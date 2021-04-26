@@ -6,13 +6,16 @@
 #include <fstream>
 #include <vector>
 
+#include "converter/BundlerInterface.h"
 #include "log/log.h"
 
 namespace mondradiko {
 namespace converter {
 
 WasmConverter::AssetOffset WasmConverter::convert(
-    AssetBuilder* fbb, std::filesystem::path wasm_path) const {
+    AssetBuilder* fbb, const toml::table& asset) const {
+  auto wasm_path = _bundler->getAssetPath(asset);
+
   std::ifstream script_file(wasm_path, std::ifstream::binary);
 
   if (!script_file) {
@@ -35,10 +38,10 @@ WasmConverter::AssetOffset WasmConverter::convert(
   script_asset.add_data(data_offset);
   auto script_offset = script_asset.Finish();
 
-  assets::SerializedAssetBuilder asset(*fbb);
-  asset.add_type(assets::AssetType::ScriptAsset);
-  asset.add_script(script_offset);
-  auto asset_offset = asset.Finish();
+  assets::SerializedAssetBuilder serialized_asset(*fbb);
+  serialized_asset.add_type(assets::AssetType::ScriptAsset);
+  serialized_asset.add_script(script_offset);
+  auto asset_offset = serialized_asset.Finish();
 
   return asset_offset;
 }

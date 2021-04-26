@@ -14,7 +14,7 @@ class TextGltfConverter : public GltfConverter {
       : GltfConverter(bundler) {}
 
   // ConverterInterface implementation
-  AssetOffset convert(AssetBuilder*, std::filesystem::path) const final;
+  AssetOffset convert(AssetBuilder*, const toml::table&) const final;
 };
 
 }  // namespace converter

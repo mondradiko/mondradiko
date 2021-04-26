@@ -262,14 +262,6 @@ void UserInterface::beginFrame(uint32_t frame_index,
     }
   }
 
-  frame.panels_descriptor = descriptor_pool->allocate(panel_layout);
-  frame.panels_descriptor->updateStorageBuffer(0, frame.panels);
-
-  frame.glyph_descriptor = descriptor_pool->allocate(glyph_set_layout);
-  frame.glyph_descriptor->updateImage(0, glyphs->getAtlas());
-  frame.glyph_descriptor->updateStorageBuffer(1, frame.styles);
-  frame.glyph_descriptor->updateStorageBuffer(2, glyphs->getGlyphs());
-
   frame.glyph_count = 0;
 
   for (uint32_t i = 0; i < test_string.size(); i++) {
@@ -280,6 +272,14 @@ void UserInterface::beginFrame(uint32_t frame_index,
   for (uint32_t i = 0; i < styles.size(); i++) {
     frame.styles->writeElement(i, styles[i]->getUniform());
   }
+
+  frame.panels_descriptor = descriptor_pool->allocate(panel_layout);
+  frame.panels_descriptor->updateStorageBuffer(0, frame.panels);
+
+  frame.glyph_descriptor = descriptor_pool->allocate(glyph_set_layout);
+  frame.glyph_descriptor->updateImage(0, glyphs->getAtlas());
+  frame.glyph_descriptor->updateStorageBuffer(1, frame.styles);
+  frame.glyph_descriptor->updateStorageBuffer(2, glyphs->getGlyphs());
 }
 
 void UserInterface::renderViewport(

@@ -24,6 +24,7 @@ class BundlerInterface {
                                    ConverterInterface::AssetOffset) = 0;
   virtual void addConverter(std::string, const ConverterInterface*) = 0;
   virtual assets::AssetId getAssetByAlias(const std::string&) = 0;
+  virtual std::filesystem::path getAssetPath(const toml::table&) = 0;
   virtual void bundle() = 0;
 };
 
