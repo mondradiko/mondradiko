@@ -16,6 +16,7 @@ class ShapeAsset : public Asset {
   ShapeAsset() {}
   ~ShapeAsset();
 
+  const AnyShape& getAnyShape() const { return _shape; }
   btCollisionShape* getCollisionShape() const { return _collision_shape; }
 
  protected:
