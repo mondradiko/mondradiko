@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/assets/AssetPool.h"
+#include "core/world/Entity.h"
 #include "lib/include/wasm_headers.h"
 
 namespace mondradiko {
@@ -22,7 +23,7 @@ class ScriptAsset : public Asset {
   explicit ScriptAsset(ScriptEnvironment* scripts) : scripts(scripts) {}
   ~ScriptAsset();
 
-  ComponentScript* createInstance(World*) const;
+  ComponentScript* createInstance(World*, EntityId) const;
 
  protected:
   // Asset implementation

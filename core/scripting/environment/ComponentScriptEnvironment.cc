@@ -51,7 +51,7 @@ void ComponentScriptEnvironment::update(double dt) {
 
     if (!script.getScriptAsset()) continue;
 
-    script.script_instance->update(e, dt);
+    script.script_instance->update(dt);
   }
 }
 
@@ -88,7 +88,8 @@ void ComponentScriptEnvironment::updateScript(EntityId entity,
       registry->get_or_emplace<ScriptComponent>(entity);
 
   if (needs_initialization) {
-    script_component.script_instance = script_asset->createInstance(world);
+    script_component.script_instance =
+        script_asset->createInstance(world, entity);
   }
 
   script_component.script_asset = script_asset;
