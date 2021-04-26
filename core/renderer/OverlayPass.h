@@ -5,9 +5,8 @@
 
 #include <array>
 
-#include "core/gpu/GpuPipeline.h"
 #include "core/renderer/RenderPass.h"
-#include "lib/include/glm_headers.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
@@ -17,30 +16,11 @@ class CVarScope;
 class GlyphLoader;
 class GpuDescriptorSetLayout;
 class GpuInstance;
+class GpuPipeline;
 class GpuShader;
 class GpuVector;
 class Renderer;
 class World;
-
-struct DebugDrawVertex {
-  glm::vec3 position;
-  glm::vec3 color;
-
-  static GpuPipeline::VertexBindings getVertexBindings() {
-    // VkVertexInputBindingDescription{binding, stride, inputRate}
-    return {
-        {0, sizeof(DebugDrawVertex), VK_VERTEX_INPUT_RATE_VERTEX},
-    };
-  }
-
-  static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
-    // VkVertexInputAttributeDescription{location, binding, format, offset}
-    return {
-        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DebugDrawVertex, position)},
-        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DebugDrawVertex, color)},
-    };
-  }
-};
 
 using DebugDrawIndex = uint16_t;
 
