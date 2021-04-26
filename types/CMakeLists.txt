@@ -24,6 +24,7 @@ flatc_schemas(PROTOCOL_HEADERS
   protocol/RelationshipComponent.fbs
   protocol/RigidBodyComponent.fbs
   protocol/ServerEvent.fbs
+  protocol/ShapeComponent.fbs
   protocol/SpectatorAvatar.fbs
   protocol/TransformComponent.fbs
   protocol/ScriptData.fbs

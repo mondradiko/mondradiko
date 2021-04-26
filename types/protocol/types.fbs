@@ -23,6 +23,7 @@ enum ComponentType : ushort {
   PointLightComponent,
   RelationshipComponent,
   RigidBodyComponent,
+  ShapeComponent,
   TransformComponent
 }
 
