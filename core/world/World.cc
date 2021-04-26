@@ -36,6 +36,8 @@ World::World(AssetPool* asset_pool, Filesystem* fs,
 
   asset_pool->initializeAssetType<PrefabAsset>(asset_pool);
 
+  physics.initializeAssets(asset_pool);
+
   registry.on_construct<TransformComponent>()
       .connect<&onTransformAuthorityConstruct>();
   registry.on_destroy<TransformComponent>()

@@ -3,6 +3,8 @@
 
 #include "core/physics/Physics.h"
 
+#include "core/assets/AssetPool.h"
+#include "core/assets/ShapeAsset.h"
 #include "core/components/internal/WorldTransform.h"
 #include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/world/World.h"
@@ -39,6 +41,10 @@ Physics::~Physics() {
   if (broadphase != nullptr) delete broadphase;
   if (dispatcher != nullptr) delete dispatcher;
   if (collision_configuration != nullptr) delete collision_configuration;
+}
+
+void Physics::initializeAssets(AssetPool* asset_pool) {
+  asset_pool->initializeAssetType<ShapeAsset>();
 }
 
 void Physics::update(double dt) {

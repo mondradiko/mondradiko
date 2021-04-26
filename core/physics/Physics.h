@@ -9,12 +9,15 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class AssetPool;
 class World;
 
 class Physics {
  public:
   explicit Physics(World*);
   ~Physics();
+
+  void initializeAssets(AssetPool*);
 
   void update(double);
 
