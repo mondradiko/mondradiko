@@ -18,7 +18,7 @@ uint32_t UiScript::bindPanel(UiPanel* panel) {
   arg.of.i32 = panel->getObjectKey();
 
   wasm_val_t result;
-  _runCallback("createPanel", &arg, 1, &result, 1);
+  runCallback("createPanel", &arg, 1, &result, 1);
   return result.of.i32;
 }
 
@@ -39,7 +39,7 @@ void UiScript::update(double dt) {
   wasm_val_t dt_arg;
   dt_arg.kind = WASM_F64;
   dt_arg.of.f64 = dt;
-  _runCallback("update", &dt_arg, 1, nullptr, 0);
+  runCallback("update", &dt_arg, 1, nullptr, 0);
 }
 
 }  // namespace core
