@@ -11,6 +11,7 @@ namespace core {
 
 // Forward declarations
 class AabbShape;
+class DebugDrawList;
 
 template <typename Impl>
 class Shape {
@@ -25,6 +26,8 @@ class Shape {
   };
 
   // "Virtual" methods
+  static void debugDraw(const Impl*, const glm::mat4&, const glm::vec3&,
+                        DebugDrawList*);
   static void getBoundingBox(const Impl*, const Transform*, AabbShape*);
   static btCollisionShape* createBulletShape(const Impl*);
 };
