@@ -5,6 +5,7 @@
 
 #include "core/components/internal/WorldTransform.h"
 #include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/synchronized/ShapeComponent.h"
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/CVarScope.h"
 #include "core/gpu/GpuDescriptorPool.h"
@@ -30,6 +31,7 @@ void OverlayPass::initCVars(CVarScope* cvars) {
 
   debug->addValue<BoolCVar>("enabled");
   debug->addValue<BoolCVar>("draw_lights");
+  debug->addValue<BoolCVar>("draw_shapes");
   debug->addValue<BoolCVar>("draw_transforms");
 }
 
@@ -148,6 +150,29 @@ void OverlayPass::beginFrame(uint32_t frame_index,
       debug_draw.drawLine(origin, x_axis, glm::vec3(1.0, 0.0, 0.0));
       debug_draw.drawLine(origin, y_axis, glm::vec3(0.0, 1.0, 0.0));
       debug_draw.drawLine(origin, z_axis, glm::vec3(0.0, 0.0, 1.0));
+    }
+  }
+
+  if (cvars->get<BoolCVar>("draw_shapes")) {
+    log_zone_named("Draw shapes");
+
+    auto shapes_view = world->registry.view<ShapeComponent>();
+
+    for (auto e : shapes_view) {
+      auto& shape = shapes_view.get(e);
+
+      if (!shape.isLoaded()) continue;
+
+      glm::vec3 color = glm::vec3(0.8, 0.8, 1.0);
+
+      glm::mat4 world_transform(1.0);
+      if (world->registry.has<WorldTransform>(e)) {
+        world_transform = world->registry.get<WorldTransform>(e).getTransform();
+      }
+
+      const AnyShape& any_shape = shape.getShape()->getAnyShape();
+
+      AnyShape::debugDraw(&any_shape, world_transform, color, &debug_draw);
     }
   }
 
