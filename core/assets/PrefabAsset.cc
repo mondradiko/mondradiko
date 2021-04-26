@@ -9,6 +9,7 @@
 #include "core/components/scriptable/TransformComponent.h"
 #include "core/components/synchronized/MeshRendererComponent.h"
 #include "core/components/synchronized/RigidBodyComponent.h"
+#include "core/components/synchronized/ShapeComponent.h"
 #include "core/scripting/environment/ComponentScriptEnvironment.h"
 #include "core/world/World.h"
 
@@ -41,6 +42,7 @@ EntityId PrefabAsset::instantiate(World* world) const {
                                      prefab->point_light);
   initComponent<RigidBodyComponent>(asset_pool, registry, self_id,
                                     prefab->rigid_body);
+  initComponent<ShapeComponent>(asset_pool, registry, self_id, prefab->shape);
   initComponent<TransformComponent>(asset_pool, registry, self_id,
                                     prefab->transform);
 
