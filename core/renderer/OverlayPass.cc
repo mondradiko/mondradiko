@@ -133,6 +133,8 @@ void OverlayPass::beginFrame(uint32_t frame_index,
   DebugDrawList debug_draw;
 
   if (cvars->get<BoolCVar>("draw_transforms")) {
+    log_zone_named("Draw transforms");
+
     auto transform_view = world->registry.view<WorldTransform>();
 
     for (auto& e : transform_view) {
@@ -150,6 +152,8 @@ void OverlayPass::beginFrame(uint32_t frame_index,
   }
 
   if (cvars->get<BoolCVar>("draw_lights")) {
+    log_zone_named("Draw point lights");
+
     auto point_lights_view = world->registry.view<PointLightComponent>();
 
     for (auto e : point_lights_view) {
