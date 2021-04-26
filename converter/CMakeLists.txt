@@ -8,6 +8,7 @@ set(CONVERTER_SRC
   script/WasmConverter.cc
   AssetBundleBuilder.cc
   PrefabBuilder.cc
+  ShapeConverter.cc
 )
 
 add_library(mondradiko-converter STATIC ${CONVERTER_SRC})

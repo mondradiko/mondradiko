@@ -7,6 +7,7 @@
 
 #include "converter/ConverterInterface.h"
 #include "converter/PrefabBuilder.h"
+#include "converter/ShapeConverter.h"
 #include "converter/prefab/BinaryGltfConverter.h"
 #include "converter/prefab/TextGltfConverter.h"
 #include "converter/script/WasmConverter.h"
@@ -33,6 +34,10 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
     auto wasm_converter = new WasmConverter(this);
     owned_converters.push_back(wasm_converter);
     addConverter("wat", wasm_converter);
+
+    auto shape_converter = new ShapeConverter(this);
+    owned_converters.push_back(shape_converter);
+    addConverter("shape", shape_converter);
   }
 
   if (std::filesystem::is_directory(manifest_path)) {

@@ -83,6 +83,16 @@ assets::AssetId PrefabBuilder::buildPrefab(BundlerInterface* bundler,
     prefab_builder.add_rigid_body(&rigid_body);
   }
 
+  if (prefab.find("shape") != prefab.end()) {
+    auto shape_table = prefab.at("shape").as_table();
+
+    std::string shape_alias = shape_table.at("shape_asset").as_string();
+    assets::AssetId shape_id = bundler->getAssetByAlias(shape_alias);
+
+    assets::ShapePrefab shape(shape_id);
+    prefab_builder.add_shape(&shape);
+  }
+
   if (prefab.find("transform") != prefab.end()) {
     auto transform_table = prefab.at("transform").as_table();
     assets::Vec3 position = getVec3(transform_table.at("position"));
