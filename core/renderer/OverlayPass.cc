@@ -31,6 +31,7 @@ void OverlayPass::initCVars(CVarScope* cvars) {
 
   debug->addValue<BoolCVar>("enabled");
   debug->addValue<BoolCVar>("draw_lights");
+  debug->addValue<BoolCVar>("draw_lights_aoe");
   debug->addValue<BoolCVar>("draw_shapes");
   debug->addValue<BoolCVar>("draw_transforms");
 }
@@ -184,6 +185,8 @@ void OverlayPass::beginFrame(uint32_t frame_index,
     for (auto e : point_lights_view) {
       auto& point_light = point_lights_view.get(e);
 
+      glm::vec3 color = point_light.getSaturatedColor();
+
       glm::mat4 world_transform(1.0);
       if (world->registry.has<WorldTransform>(e)) {
         world_transform = world->registry.get<WorldTransform>(e).getTransform();
@@ -194,10 +197,27 @@ void OverlayPass::beginFrame(uint32_t frame_index,
       glm::vec3 position =
           world_transform * glm::vec4(glm::vec3(uniform.position), 1.0);
 
-      glm::vec3 line_space(0.0, 0.1, 0.0);
-      glm::vec3 color(1.0, 1.0, 1.0);
+      debug_draw.drawIcosahedron(position, 0.1, color);
+    }
+  }
 
-      debug_draw.drawLine(position - line_space, position + line_space, color);
+  if (cvars->get<BoolCVar>("draw_lights_aoe")) {
+    log_zone_named("Draw point light areas of effect");
+
+    auto point_lights_view = world->registry.view<PointLightComponent>();
+
+    for (auto e : point_lights_view) {
+      auto& point_light = point_lights_view.get(e);
+
+      glm::vec3 color = point_light.getSaturatedColor();
+
+      glm::mat4 world_transform(1.0);
+      if (world->registry.has<WorldTransform>(e)) {
+        world_transform = world->registry.get<WorldTransform>(e).getTransform();
+      }
+
+      const auto& aoe = point_light.getAreaOfEffect();
+      SphereShape::debugDraw(&aoe, world_transform, color, &debug_draw);
     }
   }
 

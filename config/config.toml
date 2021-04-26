@@ -15,6 +15,7 @@ sdf_range = 4.0
 [renderer.debug]
 enabled = true
 draw_lights = true
+draw_lights_aoe = false
 draw_shapes = true
 draw_transforms = true
 
