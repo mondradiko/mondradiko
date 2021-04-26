@@ -14,7 +14,7 @@
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
-#include "core/renderer/DebugDraw.h"
+#include "core/renderer/DebugDrawList.h"
 #include "core/renderer/Renderer.h"
 #include "core/ui/GlyphLoader.h"
 #include "core/world/World.h"
