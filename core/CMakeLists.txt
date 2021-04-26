@@ -68,6 +68,8 @@ set(MONDRADIKO_CORE_SRC
   scripting/instance/UiScript.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
+  shapes/AnyShape.cc
+  shapes/SphereShape.cc
   ui/GlyphLoader.cc
   ui/GlyphStyle.cc
   ui/UiPanel.cc
