@@ -54,10 +54,9 @@ void GlyphStyle::drawString(GlyphString* glyph_string, uint32_t style_index,
 
 GlyphStyleUniform GlyphStyle::getUniform() const {
   GlyphStyleUniform ubo{};
-  ubo.transform =
-      _panel->getTrsTransform() *
-      glm::translate(glm::mat4(1.0), glm::vec3(_offset.x, -_offset.y, 0.0)) *
-      glm::scale(glm::mat4(1.0), glm::vec3(_scale));
+  ubo.transform = _panel->getPlaneTransform() *
+                  glm::translate(glm::mat4(1.0), glm::vec3(_offset, 0.0)) *
+                  glm::scale(glm::mat4(1.0), glm::vec3(_scale));
   ubo.color = _color;
   return ubo;
 }
