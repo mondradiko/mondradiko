@@ -15,6 +15,7 @@
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
+#include "core/renderer/DebugDraw.h"
 #include "core/renderer/Renderer.h"
 #include "core/ui/GlyphLoader.h"
 #include "core/world/World.h"
@@ -131,6 +132,8 @@ void OverlayPass::beginFrame(uint32_t frame_index,
 
   if (!cvars->get<BoolCVar>("enabled")) return;
 
+  DebugDrawList debug_draw;
+
   if (cvars->get<BoolCVar>("draw_transforms")) {
     auto transform_view = world->registry.view<WorldTransform>();
 
@@ -166,7 +169,6 @@ void OverlayPass::beginFrame(uint32_t frame_index,
 
       glm::vec3 line_space(0.0, 0.1, 0.0);
       glm::vec3 color(1.0, 1.0, 1.0);
-
       _debug_draw.drawLine(position - line_space, position + line_space, color);
     }
   }
@@ -199,7 +201,7 @@ void OverlayPass::beginFrame(uint32_t frame_index,
   }
 
   frame.index_count =
-      _debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
+    _debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
   _debug_draw.clear();
 }
 
