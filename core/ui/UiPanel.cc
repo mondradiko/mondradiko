@@ -54,7 +54,7 @@ glm::mat4 UiPanel::getInverseTransform() {
 
 double UiPanel::getPointDistance(const glm::vec3& position) {
   glm::vec3 normal = getNormal();
-  double position_dot = glm::dot(normal, position);
+  double position_dot = glm::dot(normal, position - _position);
   return position_dot;
 }
 
