@@ -3,6 +3,8 @@
 
 #include "core/ui/UserInterface.h"
 
+#include "core/components/internal/PointerComponent.h"
+#include "core/components/internal/WorldTransform.h"
 #include "core/cvars/CVarScope.h"
 #include "core/cvars/StringCVar.h"
 #include "core/gpu/GpuDescriptorPool.h"
@@ -194,6 +196,75 @@ void UserInterface::displayMessage(const char* message) {
 
 bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
   log_zone;
+
+  auto pointers_view = world->registry.view<PointerComponent>();
+  for (auto e : pointers_view) {
+    auto& pointer = pointers_view.get(e);
+
+    // Test if this pointer has a select event set (unsets if true)
+    bool selected = pointer.checkSelect();
+
+    glm::mat4 world_transform(1.0);
+    if (world->registry.has<WorldTransform>(e)) {
+      world_transform = world->registry.get<WorldTransform>(e).getTransform();
+    }
+
+    auto position = world_transform * glm::vec4(pointer.getPosition(), 1.0);
+    auto direction = world_transform * glm::vec4(pointer.getDirection(), 0.0);
+
+    double nearest_factor = -1.0;
+    UiPanel* nearest = nullptr;
+
+    // Find nearest panel
+    for (auto panel : panels) {
+      if (panel == nullptr) continue;
+
+      // Test collision
+      double d = panel->getRayIntersectFactor(position, direction);
+      if (d > 0.0) {
+        if (d < nearest_factor || nearest_factor < 0.0) {
+          nearest_factor = d;
+          nearest = panel;
+        }
+      }
+    }
+
+    if (nearest != nullptr) {
+      auto coords = nearest->getRayIntersectCoords(position, direction);
+
+      if (selected) {
+        // TODO(marceline-cramer) Pass to PanelImpl method instead
+        // Pass select coords to ui_script
+        ui_script->selectAt(coords);
+      }
+
+      // Draw X indicator at the collision point
+      if (debug_draw != nullptr) {
+        // Pale blue on hover, green on select
+        glm::vec3 color(0.5, 0.5, 1.0);
+        if (selected) {
+          color = glm::vec3(0.0, 1.0, 0.0);
+        }
+
+        auto plane_transform = nearest->getPlaneTransform();
+        glm::vec2 x_size(0.01, 0.01);
+        glm::vec3 x_offset = nearest->getNormal() * glm::vec3(0.01);
+
+        // Generate the vertices of the X
+        glm::vec3 tr = plane_transform * glm::vec4(coords + x_size, 0.0, 1.0);
+        glm::vec3 bl = plane_transform * glm::vec4(coords - x_size, 0.0, 1.0);
+
+        x_size.x = -x_size.x;
+
+        glm::vec3 tl = plane_transform * glm::vec4(coords + x_size, 0.0, 1.0);
+        glm::vec3 br = plane_transform * glm::vec4(coords - x_size, 0.0, 1.0);
+
+        // Draw the X
+        debug_draw->drawLine(tr + x_offset, bl + x_offset, color);
+        debug_draw->drawLine(tl + x_offset, br + x_offset, color);
+      }
+    }
+  }
 
   ui_script->update(dt);
 
