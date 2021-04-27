@@ -63,6 +63,10 @@ class PanelImpl {
     this.style.setOffset(0.0, 0.0);
   }
 
+  selectAt(x: f64, y: f64): void {
+    this.style.setOffset(x, y);
+  }
+
   update(dt: f64): void {
     this.transition_step += dt;
 
@@ -72,8 +76,6 @@ class PanelImpl {
     this.hue_offset += dt;
     let panel_color = HSVtoRGB(this.hue_offset / 3.0, 0.8, 0.1);
     this.panel.setColor(panel_color.r, panel_color.g, panel_color.b, 0.9);
-
-    this.style.setOffset(Math.sin(this.hue_offset) * 0.45, 0.0);
 
     if (this.transition_step > 3.0) {
       this.transition_step = 0.0;
@@ -86,6 +88,10 @@ let this_panel: PanelImpl;
 export function createPanel(new_panel: UiPanel): PanelImpl {
   this_panel = new PanelImpl(new_panel);
   return this_panel;
+}
+
+export function selectAt(x: f64, y: f64): void {
+  this_panel.selectAt(x, y);
 }
 
 export function update(dt: f64): void {

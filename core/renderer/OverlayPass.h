@@ -5,6 +5,7 @@
 
 #include <array>
 
+#include "core/renderer/DebugDraw.h"
 #include "core/renderer/RenderPass.h"
 #include "types/containers/vector.h"
 
@@ -31,6 +32,8 @@ class OverlayPass : public RenderPass {
   OverlayPass(const CVarScope*, const GlyphLoader*, Renderer*, World*);
   ~OverlayPass();
 
+  DebugDrawList* getDebugDraw() { return &_debug_draw; }
+
   // RenderPass implementation
   void createFrameData(uint32_t) final;
   void destroyFrameData() final;
@@ -51,6 +54,8 @@ class OverlayPass : public RenderPass {
   GpuShader* debug_vertex_shader = nullptr;
   GpuShader* debug_fragment_shader = nullptr;
   GpuPipeline* debug_pipeline = nullptr;
+
+  DebugDrawList _debug_draw;
 
   struct FrameData {
     GpuVector* debug_vertices = nullptr;

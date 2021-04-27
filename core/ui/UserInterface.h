@@ -13,6 +13,7 @@ namespace core {
 
 // Forward declarations
 class CVarScope;
+class DebugDrawList;
 class Filesystem;
 class GlyphLoader;
 class GpuDescriptorSetLayout;
@@ -24,16 +25,17 @@ class Renderer;
 class ScriptEnvironment;
 class UiPanel;
 class UiScript;
+class World;
 
 class UserInterface : public RenderPass {
  public:
   static void initCVars(CVarScope*);
 
-  UserInterface(const CVarScope*, Filesystem*, GlyphLoader*, Renderer*);
+  UserInterface(const CVarScope*, Filesystem*, GlyphLoader*, Renderer*, World*);
   ~UserInterface();
 
   void displayMessage(const char*);
-  bool update(double);
+  bool update(double, DebugDrawList*);
 
   // RenderPass implementation
   void createFrameData(uint32_t) final;
@@ -50,6 +52,7 @@ class UserInterface : public RenderPass {
   GlyphLoader* glyphs;
   GpuInstance* gpu;
   Renderer* renderer;
+  World* world;
 
   ScriptEnvironment* scripts = nullptr;
   wasm_module_t* script_module = nullptr;
