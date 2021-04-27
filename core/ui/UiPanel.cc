@@ -42,8 +42,9 @@ glm::mat4 UiPanel::getTrsTransform() {
 }
 
 void UiPanel::writeUniform(PanelUniform* panel_uniform) {
-  panel_uniform->transform = getTrsTransform();
+  panel_uniform->transform = getPlaneTransform();
   panel_uniform->color = _color;
+  panel_uniform->size = _size;
 }
 
 wasm_trap_t* UiPanel::getWidth(const wasm_val_t[], wasm_val_t results[]) {

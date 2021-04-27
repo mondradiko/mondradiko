@@ -20,6 +20,7 @@ class World;
 struct PanelUniform {
   glm::mat4 transform;
   glm::vec4 color;
+  glm::vec2 size;
 };
 
 class UiPanel : public DynamicScriptObject<UiPanel> {
