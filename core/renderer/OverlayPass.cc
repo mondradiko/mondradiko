@@ -15,7 +15,6 @@
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
-#include "core/renderer/DebugDraw.h"
 #include "core/renderer/Renderer.h"
 #include "core/ui/GlyphLoader.h"
 #include "core/world/World.h"
@@ -132,8 +131,6 @@ void OverlayPass::beginFrame(uint32_t frame_index,
 
   if (!cvars->get<BoolCVar>("enabled")) return;
 
-  DebugDrawList debug_draw;
-
   if (cvars->get<BoolCVar>("draw_transforms")) {
     auto transform_view = world->registry.view<WorldTransform>();
 
@@ -145,9 +142,9 @@ void OverlayPass::beginFrame(uint32_t frame_index,
       glm::vec3 y_axis = transform * glm::vec4(0.0, 1.0, 0.0, 1.0);
       glm::vec3 z_axis = transform * glm::vec4(0.0, 0.0, 1.0, 1.0);
 
-      debug_draw.drawLine(origin, x_axis, glm::vec3(1.0, 0.0, 0.0));
-      debug_draw.drawLine(origin, y_axis, glm::vec3(0.0, 1.0, 0.0));
-      debug_draw.drawLine(origin, z_axis, glm::vec3(0.0, 0.0, 1.0));
+      _debug_draw.drawLine(origin, x_axis, glm::vec3(1.0, 0.0, 0.0));
+      _debug_draw.drawLine(origin, y_axis, glm::vec3(0.0, 1.0, 0.0));
+      _debug_draw.drawLine(origin, z_axis, glm::vec3(0.0, 0.0, 1.0));
     }
   }
 
@@ -170,7 +167,7 @@ void OverlayPass::beginFrame(uint32_t frame_index,
       glm::vec3 line_space(0.0, 0.1, 0.0);
       glm::vec3 color(1.0, 1.0, 1.0);
 
-      debug_draw.drawLine(position - line_space, position + line_space, color);
+      _debug_draw.drawLine(position - line_space, position + line_space, color);
     }
   }
 
@@ -194,15 +191,16 @@ void OverlayPass::beginFrame(uint32_t frame_index,
       glm::vec3 end_pos = world_transform * glm::vec4(direction, 1.0);
       glm::vec3 end_color = glm::vec3(0.5, 0.5, 0.5);
 
-      auto start_vertex = debug_draw.makeVertex(start_pos, start_color);
-      auto end_vertex = debug_draw.makeVertex(end_pos, end_color);
+      auto start_vertex = _debug_draw.makeVertex(start_pos, start_color);
+      auto end_vertex = _debug_draw.makeVertex(end_pos, end_color);
 
-      debug_draw.drawLine(start_vertex, end_vertex);
+      _debug_draw.drawLine(start_vertex, end_vertex);
     }
   }
 
   frame.index_count =
-      debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
+      _debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
+  _debug_draw.clear();
 }
 
 void OverlayPass::renderViewport(RenderPhase phase,
