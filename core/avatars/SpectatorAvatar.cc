@@ -106,9 +106,9 @@ void SpectatorAvatar::deserialize(const ProtocolBuffer* protocol_data) {
 void SpectatorAvatar::_updateTransform() {
   auto position = camera_position;
 
-  glm::quat orientation =
-      glm::angleAxis(camera_tilt, glm::vec3(0.0, 0.0, 1.0)) *
-      glm::angleAxis(camera_pan, glm::vec3(0.0, 1.0, 0.0));
+  glm::quat orientation = glm::angleAxis(camera_pan + static_cast<float>(M_PI),
+                                         glm::vec3(0.0, -1.0, 0.0)) *
+                          glm::angleAxis(camera_tilt, glm::vec3(1.0, 0.0, 0.0));
 
   world->registry.emplace_or_replace<TransformComponent>(_self_id, position,
                                                          orientation);
