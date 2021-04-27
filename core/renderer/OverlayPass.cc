@@ -180,18 +180,18 @@ void OverlayPass::beginFrame(uint32_t frame_index,
     for (auto e : pointers_view) {
       auto& pointer = pointers_view.get(e);
 
-      glm::mat4 transform(1.0);
+      glm::mat4 world_transform(1.0);
       if (world->registry.has<WorldTransform>(e)) {
-        transform = world->registry.get<WorldTransform>(e).getTransform();
+        world_transform = world->registry.get<WorldTransform>(e).getTransform();
       }
 
       glm::vec3 position = pointer.getPosition();
       glm::vec3 direction = position + pointer.getDirection() * glm::vec3(10.0);
 
-      glm::vec3 start_pos = transform * glm::vec4(position, 1.0);
+      glm::vec3 start_pos = world_transform * glm::vec4(position, 1.0);
       glm::vec3 start_color = glm::vec3(0.0, 1.0, 1.0);
 
-      glm::vec3 end_pos = transform * glm::vec4(direction, 1.0);
+      glm::vec3 end_pos = world_transform * glm::vec4(direction, 1.0);
       glm::vec3 end_color = glm::vec3(0.5, 0.5, 0.5);
 
       auto start_vertex = debug_draw.makeVertex(start_pos, start_color);
