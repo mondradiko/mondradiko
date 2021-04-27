@@ -231,9 +231,9 @@ void OverlayPass::renderViewport(RenderPhase phase,
       graphics_state.rasterization_state = rasterization_state;
 
       GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::False;
-      depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Always;
+      depth_state.test_enable = GraphicsState::BoolFlag::True;
+      depth_state.write_enable = GraphicsState::BoolFlag::True;
+      depth_state.compare_op = GraphicsState::CompareOp::Less;
       graphics_state.depth_state = depth_state;
 
       debug_pipeline->cmdBind(command_buffer, graphics_state);
