@@ -133,7 +133,7 @@ void run(const ClientArgs& args) {
 
       if (!world.update(frame_info.dt)) break;
 
-      if (!ui.update(frame_info.dt)) break;
+      if (!ui.update(frame_info.dt, overlay_pass.getDebugDraw())) break;
 
       if (frame_info.should_render) {
         renderer.renderFrame();

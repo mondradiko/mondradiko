@@ -13,6 +13,7 @@ namespace core {
 
 // Forward declarations
 class CVarScope;
+class DebugDrawList;
 class Filesystem;
 class GlyphLoader;
 class GpuDescriptorSetLayout;
@@ -34,7 +35,7 @@ class UserInterface : public RenderPass {
   ~UserInterface();
 
   void displayMessage(const char*);
-  bool update(double);
+  bool update(double, DebugDrawList*);
 
   // RenderPass implementation
   void createFrameData(uint32_t) final;

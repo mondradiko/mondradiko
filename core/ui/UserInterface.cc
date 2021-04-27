@@ -13,6 +13,7 @@
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
+#include "core/renderer/DebugDraw.h"
 #include "core/renderer/Renderer.h"
 #include "core/scripting/ScriptEnvironment.h"
 #include "core/scripting/UiScript.h"
@@ -191,7 +192,7 @@ void UserInterface::displayMessage(const char* message) {
   messages += '\n';
 }
 
-bool UserInterface::update(double dt) {
+bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
   log_zone;
 
   ui_script->update(dt);
