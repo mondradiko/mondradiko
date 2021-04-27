@@ -5,13 +5,16 @@
 
 #include <string>
 
+#include "converter/BundlerInterface.h"
 #include "log/log.h"
 
 namespace mondradiko {
 namespace converter {
 
 ConverterInterface::AssetOffset TextGltfConverter::convert(
-    AssetBuilder* fbb, std::filesystem::path model_path) const {
+    AssetBuilder* fbb, const toml::table& asset) const {
+  auto model_path = _bundler->getAssetPath(asset);
+
   tinygltf::Model gltf_model;
   tinygltf::TinyGLTF gltf_context;
   std::string error;

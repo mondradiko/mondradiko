@@ -403,7 +403,6 @@ void Renderer::renderFrame() {
     log_zone_named("Begin frame");
 
     viewport_descriptor = frame.descriptor_pool->allocate(viewport_layout);
-    viewport_descriptor->updateDynamicBuffer(0, frame.viewports);
 
     for (auto& render_pass : render_passes) {
       render_pass->beginFrame(current_frame, frame.descriptor_pool);
@@ -458,6 +457,18 @@ void Renderer::renderFrame() {
   }
 
   {
+    log_zone_named("Write viewport uniforms");
+
+    for (uint32_t i = 0; i < viewports.size(); i++) {
+      ViewportUniform uniform;
+      viewports[i]->writeUniform(&uniform);
+      frame.viewports->writeElement(i, uniform);
+    }
+
+    viewport_descriptor->updateDynamicBuffer(0, frame.viewports);
+  }
+
+  {
     log_zone_named("Render viewports");
 
     for (uint32_t viewport_index = 0; viewport_index < viewports.size();
@@ -485,16 +496,6 @@ void Renderer::renderFrame() {
     }
 
     vkEndCommandBuffer(frame.command_buffer);
-  }
-
-  {
-    log_zone_named("Write viewport uniforms");
-
-    for (uint32_t i = 0; i < viewports.size(); i++) {
-      ViewportUniform uniform;
-      viewports[i]->writeUniform(&uniform);
-      frame.viewports->writeElement(i, uniform);
-    }
   }
 
   {
