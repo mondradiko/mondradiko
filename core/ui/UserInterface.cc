@@ -20,6 +20,7 @@
 #include "core/shaders/panel.vert.h"
 #include "core/ui/GlyphStyle.h"
 #include "core/ui/UiPanel.h"
+#include "core/world/World.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -32,12 +33,14 @@ void UserInterface::initCVars(CVarScope* cvars) {
 }
 
 UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
-                             GlyphLoader* glyphs, Renderer* renderer)
+                             GlyphLoader* glyphs, Renderer* renderer,
+                             World* world)
     : cvars(_cvars->getChild("ui")),
       fs(fs),
       glyphs(glyphs),
       gpu(renderer->getGpu()),
-      renderer(renderer) {
+      renderer(renderer),
+      world(world) {
   log_zone;
 
   {

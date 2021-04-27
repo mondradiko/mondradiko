@@ -24,12 +24,13 @@ class Renderer;
 class ScriptEnvironment;
 class UiPanel;
 class UiScript;
+class World;
 
 class UserInterface : public RenderPass {
  public:
   static void initCVars(CVarScope*);
 
-  UserInterface(const CVarScope*, Filesystem*, GlyphLoader*, Renderer*);
+  UserInterface(const CVarScope*, Filesystem*, GlyphLoader*, Renderer*, World*);
   ~UserInterface();
 
   void displayMessage(const char*);
@@ -50,6 +51,7 @@ class UserInterface : public RenderPass {
   GlyphLoader* glyphs;
   GpuInstance* gpu;
   Renderer* renderer;
+  World* world;
 
   ScriptEnvironment* scripts = nullptr;
   wasm_module_t* script_module = nullptr;

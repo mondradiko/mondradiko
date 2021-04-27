@@ -107,7 +107,7 @@ void run(const ClientArgs& args) {
   renderer.addRenderPass(&mesh_pass);
   renderer.addRenderPass(&overlay_pass);
 
-  UserInterface ui(&cvars, &fs, &glyphs, &renderer);
+  UserInterface ui(&cvars, &fs, &glyphs, &renderer, &world);
   renderer.addRenderPass(&ui);
 
   std::unique_ptr<NetworkClient> client;
