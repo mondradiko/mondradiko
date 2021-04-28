@@ -74,10 +74,15 @@ void run(const ClientArgs& args) {
   auto config = fs.loadToml(args.config_path);
 
   CVarScope cvars;
+
   GlyphLoader::initCVars(&cvars);
   Renderer::initCVars(&cvars);
   NetworkClient::initCVars(&cvars);
   UserInterface::initCVars(&cvars);
+
+  CVarScope* display_cvars = cvars.addChild("displays");
+  SdlDisplay::initCVars(display_cvars);
+
   cvars.loadConfig(config);
 
   for (auto bundle : args.bundle_paths) {
@@ -85,7 +90,7 @@ void run(const ClientArgs& args) {
   }
 
   std::unique_ptr<DisplayInterface> display;
-  display = std::make_unique<SdlDisplay>();
+  display = std::make_unique<SdlDisplay>(display_cvars);
 
   GpuInstance gpu(display.get());
   if (!display->createSession(&gpu)) {

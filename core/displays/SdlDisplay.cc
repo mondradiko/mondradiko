@@ -6,6 +6,8 @@
 #include <chrono>
 
 #include "core/avatars/SpectatorAvatar.h"
+#include "core/cvars/CVarScope.h"
+#include "core/cvars/FloatCVar.h"
 #include "core/displays/SdlViewport.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
@@ -14,7 +16,13 @@
 namespace mondradiko {
 namespace core {
 
-SdlDisplay::SdlDisplay() {
+void SdlDisplay::initCVars(CVarScope* cvars) {
+  CVarScope* sdl = cvars->addChild("sdl");
+
+  sdl->addValue<FloatCVar>("camera_speed", 0.0, 1000.0);
+}
+
+SdlDisplay::SdlDisplay(const CVarScope* cvars) : cvars(cvars->getChild("sdl")) {
   log_zone;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -303,7 +311,12 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 
   if (main_viewport != nullptr) {
     if (avatar != nullptr && SDL_GetRelativeMouseMode() == SDL_TRUE) {
-      float camera_speed = 5.0 * frame_info->dt;
+      float camera_speed = cvars->get<FloatCVar>("camera_speed");
+      camera_speed *= frame_info->dt;
+
+      if (key_state[SDL_SCANCODE_LSHIFT]) {
+        camera_speed *= 2.0;
+      }
 
       float truck = 0.0;
 
@@ -323,9 +336,9 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 
       float boom = 0.0;
 
-      if (key_state[SDL_SCANCODE_LSHIFT]) {
+      if (key_state[SDL_SCANCODE_Q]) {
         boom = -camera_speed;
-      } else if (key_state[SDL_SCANCODE_SPACE]) {
+      } else if (key_state[SDL_SCANCODE_E]) {
         boom = camera_speed;
       }
 
