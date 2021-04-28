@@ -331,9 +331,9 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 
       float boom = 0.0;
 
-      if (key_state[SDL_SCANCODE_LSHIFT]) {
+      if (key_state[SDL_SCANCODE_Q]) {
         boom = -camera_speed;
-      } else if (key_state[SDL_SCANCODE_SPACE]) {
+      } else if (key_state[SDL_SCANCODE_E]) {
         boom = camera_speed;
       }
 
