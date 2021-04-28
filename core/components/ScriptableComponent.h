@@ -9,11 +9,11 @@ namespace mondradiko {
 namespace core {
 
 template <typename Inheritor, typename DataType>
-class ScriptableComponent : public SynchronizedComponent<DataType> {
+class ScriptableComponent : public SynchronizedComponent<Inheritor, DataType> {
  public:
   ScriptableComponent() {}
   explicit ScriptableComponent(const DataType& data)
-      : SynchronizedComponent<DataType>(data) {}
+      : SynchronizedComponent<Inheritor, DataType>(data) {}
 
   // Defined in generated API linker
   static void linkScriptApi(ScriptEnvironment*, World*);

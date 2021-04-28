@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/components/InternalComponent.h"
+#include "lib/include/entt_headers.h"
 #include "lib/include/flatbuffers_headers.h"
 
 namespace mondradiko {
@@ -26,11 +27,12 @@ void buildUpdateComponents(
     protocol::UpdateComponentsBuilder*,
     flatbuffers::Offset<flatbuffers::Vector<const ProtocolComponentType*>>);
 
-template <typename DataType>
+template <typename Inheritor, typename DataType>
 class SynchronizedComponent : public InternalComponent {
  public:
   // Make data type public so other classes can use it
   using SerializedType = DataType;
+  static constexpr auto ID = entt::type_info<Inheritor>().id();
 
   SynchronizedComponent() {}
   explicit SynchronizedComponent(const SerializedType& data) : _data(data) {}

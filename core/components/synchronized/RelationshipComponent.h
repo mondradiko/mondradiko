@@ -11,7 +11,8 @@ namespace mondradiko {
 namespace core {
 
 class RelationshipComponent
-    : public SynchronizedComponent<protocol::RelationshipComponent> {
+    : public SynchronizedComponent<RelationshipComponent,
+                                   protocol::RelationshipComponent> {
  public:
   explicit RelationshipComponent(const protocol::RelationshipComponent& data)
       : SynchronizedComponent(data) {}
