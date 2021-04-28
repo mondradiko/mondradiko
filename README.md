@@ -30,6 +30,12 @@ Mondradiko's source code is licensed under [LGPL-v3](https://www.gnu.org/license
 
 Mondradiko's emblem is licensed under [CCBY-4.0](https://creativecommons.org/licenses/by/4.0/).
 
+The "mononoki" (aka "monoOne") font is licensed under
+[the SIL Open Font License](http://scripts.sil.org/OFL).
+Copyright (c) 2013, Matthias Tellen matthias.tellen@googlemail.com.
+The full license text is listed in `config/mononoki-LICENSE.txt`.
+([GitHub link](https://github.com/madmalik/mononoki/))
+
 Mondradiko includes the following third-party libraries (lib/ directory):
 
 - json.hpp : Copyright (c) 2013-2017 Niels Lohmann. MIT license.

@@ -71,8 +71,6 @@ bool g_interrupted = false;
 
 void run(const ClientArgs& args) {
   Filesystem fs;
-  auto config = fs.loadToml(args.config_path);
-
   CVarScope cvars;
 
   GlyphLoader::initCVars(&cvars);
@@ -83,7 +81,7 @@ void run(const ClientArgs& args) {
   CVarScope* display_cvars = cvars.addChild("displays");
   SdlDisplay::initCVars(display_cvars);
 
-  cvars.loadConfig(config);
+  cvars.loadConfigFromFile(&fs, args.config_path);
 
   for (auto bundle : args.bundle_paths) {
     fs.loadAssetBundle(bundle);

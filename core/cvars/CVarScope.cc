@@ -4,6 +4,8 @@
 #include "core/cvars/CVarScope.h"
 
 #include "core/cvars/CVarValueInterface.h"
+#include "core/cvars/FileCVar.h"
+#include "core/filesystem/Filesystem.h"
 
 namespace mondradiko {
 namespace core {
@@ -57,8 +59,13 @@ const CVarScope* CVarScope::getChild(const types::string& child_name) const {
   return iter->second;
 }
 
-void CVarScope::loadConfig(const toml::value& config) {
+void CVarScope::loadConfig(const toml::value& config,
+                           const std::filesystem::path& root) {
   const auto& config_values = config.as_table();
+
+  for (auto& file_cvar : _file_cvars) {
+    file_cvar->setRoot(root);
+  }
 
   for (auto child : children) {
     if (config_values.find(child.first) == config_values.end()) {
@@ -84,12 +91,19 @@ void CVarScope::loadConfig(const toml::value& config) {
                     getValuePath(config_value.first).c_str());
       }
     } else if (child != children.end()) {
-      child->second->loadConfig(config_value.second);
+      child->second->loadConfig(config_value.second, root);
     } else {
       log_inf_fmt("Ignoring config value %s",
                   getValuePath(config_value.first).c_str());
     }
   }
+}
+
+void CVarScope::loadConfigFromFile(Filesystem* fs,
+                                   const std::filesystem::path& path) {
+  toml::value config = fs->loadToml(path);
+  auto root = path.parent_path();
+  loadConfig(config, root);
 }
 
 void CVarScope::saveConfig(toml::value*) {}
