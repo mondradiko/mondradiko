@@ -10,7 +10,7 @@ metaverse_provider = ""
 camera_speed = 5.0
 
 [glyphs]
-font_path = "/usr/share/fonts/mononoki/mononoki-Regular.ttf"
+font_path = "mononoki-Regular.ttf"
 sdf_scale = 2.0
 sdf_border = 1.0
 sdf_range = 4.0
