@@ -6,6 +6,9 @@ update_rate = 20.0
 username = "ExampleUsername"
 metaverse_provider = ""
 
+[displays.sdl]
+camera_speed = 5.0
+
 [glyphs]
 font_path = "/usr/share/fonts/mononoki/mononoki-Regular.ttf"
 sdf_scale = 2.0

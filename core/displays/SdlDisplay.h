@@ -11,13 +11,16 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class CVarScope;
 class GpuInstance;
 class SdlViewport;
 class SpectatorAvatar;
 
 class SdlDisplay : public DisplayInterface {
  public:
-  SdlDisplay();
+  static void initCVars(CVarScope*);
+
+  SdlDisplay(const CVarScope*);
   ~SdlDisplay();
 
   bool getVulkanRequirements(VulkanRequirements*) final;
@@ -53,6 +56,7 @@ class SdlDisplay : public DisplayInterface {
   SdlViewport* main_viewport = nullptr;
 
  private:
+  const CVarScope* cvars;
   GpuInstance* gpu;
 
   // TODO(marceline-cramer) Move this into GpuInstance

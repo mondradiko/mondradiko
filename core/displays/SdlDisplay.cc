@@ -6,6 +6,8 @@
 #include <chrono>
 
 #include "core/avatars/SpectatorAvatar.h"
+#include "core/cvars/CVarScope.h"
+#include "core/cvars/FloatCVar.h"
 #include "core/displays/SdlViewport.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
@@ -14,7 +16,13 @@
 namespace mondradiko {
 namespace core {
 
-SdlDisplay::SdlDisplay() {
+void SdlDisplay::initCVars(CVarScope* cvars) {
+  CVarScope* sdl = cvars->addChild("sdl");
+
+  sdl->addValue<FloatCVar>("camera_speed", 0.0, 1000.0);
+}
+
+SdlDisplay::SdlDisplay(const CVarScope* cvars) : cvars(cvars->getChild("sdl")) {
   log_zone;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
