@@ -6,6 +6,7 @@
 #include "core/components/internal/PointerComponent.h"
 #include "core/components/internal/WorldTransform.h"
 #include "core/cvars/CVarScope.h"
+#include "core/cvars/FileCVar.h"
 #include "core/cvars/StringCVar.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
@@ -32,7 +33,7 @@ namespace core {
 void UserInterface::initCVars(CVarScope* cvars) {
   CVarScope* ui = cvars->addChild("ui");
 
-  ui->addValue<StringCVar>("script_path");
+  ui->addValue<FileCVar>("script_path");
 }
 
 UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
@@ -56,7 +57,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
   {
     log_zone_named("Load UI script module");
 
-    auto script_path = cvars->get<StringCVar>("script_path").str();
+    auto script_path = cvars->get<FileCVar>("script_path").getPath();
 
     types::vector<char> script_data;
     if (!fs->loadBinaryFile(script_path, &script_data)) {
