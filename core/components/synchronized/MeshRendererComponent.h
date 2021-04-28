@@ -13,7 +13,8 @@ namespace mondradiko {
 namespace core {
 
 class MeshRendererComponent
-    : public SynchronizedComponent<protocol::MeshRendererComponent> {
+    : public SynchronizedComponent<MeshRendererComponent,
+                                   protocol::MeshRendererComponent> {
  public:
   explicit MeshRendererComponent(const protocol::MeshRendererComponent& data)
       : SynchronizedComponent(data) {}

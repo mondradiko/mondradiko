@@ -15,7 +15,8 @@ namespace core {
 class WorldTransform;
 
 class RigidBodyComponent
-    : public SynchronizedComponent<protocol::RigidBodyComponent> {
+    : public SynchronizedComponent<RigidBodyComponent,
+                                   protocol::RigidBodyComponent> {
  public:
   explicit RigidBodyComponent(const assets::RigidBodyPrefab*);
   ~RigidBodyComponent();
