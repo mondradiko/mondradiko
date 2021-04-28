@@ -20,7 +20,7 @@ class SdlDisplay : public DisplayInterface {
  public:
   static void initCVars(CVarScope*);
 
-  SdlDisplay(const CVarScope*);
+  explicit SdlDisplay(const CVarScope*);
   ~SdlDisplay();
 
   bool getVulkanRequirements(VulkanRequirements*) final;
