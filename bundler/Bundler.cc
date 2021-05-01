@@ -30,9 +30,15 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
     owned_converters.push_back(text_gltf_converter);
     addConverter("gltf", text_gltf_converter);
 
-    auto wasm_converter = new WasmConverter(this);
-    owned_converters.push_back(wasm_converter);
-    addConverter("wat", wasm_converter);
+    auto binary_wasm_converter
+      = new WasmConverter(this, assets::ScriptType::WasmBinary);
+    owned_converters.push_back(binary_wasm_converter);
+    addConverter("wasm", binary_wasm_converter);
+
+    auto text_wasm_converter
+      = new WasmConverter(this, assets::ScriptType::WasmText);
+    owned_converters.push_back(text_wasm_converter);
+    addConverter("wat", text_wasm_converter);
   }
 
   if (std::filesystem::is_directory(manifest_path)) {

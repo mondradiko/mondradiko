@@ -33,8 +33,7 @@ WasmConverter::AssetOffset WasmConverter::convert(
   auto data_offset = fbb->CreateVector(script_data);
 
   assets::ScriptAssetBuilder script_asset(*fbb);
-  // TODO(marceline-cramer) Binary Wasm scripts
-  script_asset.add_type(assets::ScriptType::WasmText);
+  script_asset.add_type(_script_type);
   script_asset.add_data(data_offset);
   auto script_offset = script_asset.Finish();
 
