@@ -9,6 +9,7 @@
 #include "core/scripting/environment/ScriptEnvironment.h"
 #include "log/log.h"
 #include "types/containers/string.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
@@ -253,6 +254,37 @@ bool ScriptInstance::AS_collect() {
 ////////////////////////////////////////////////////////////////////////////////
 // AssemblyScript object management helpers
 ////////////////////////////////////////////////////////////////////////////////
+
+bool ScriptInstance::AS_construct(const types::string& object_name,
+                                  const wasm_val_t* args, size_t arg_num,
+                                  uint32_t* ptr) {
+  types::string constructor_name = object_name + "#constructor";
+
+  wasm_func_t* constructor_func = getCallback(constructor_name);
+  if (constructor_func == nullptr) {
+    log_err_fmt("Object %s does not export constructor", object_name.c_str());
+    return false;
+  }
+
+  types::vector<wasm_val_t> constructor_args(1 + arg_num);
+
+  auto& this_arg = constructor_args[0];
+  this_arg.kind = WASM_I32;
+  this_arg.of.i32 = 0;  // Passing 0 to a constructor allocates a new object
+
+  memcpy(&constructor_args[1], args, arg_num * sizeof(wasm_val_t));
+
+  wasm_val_t this_result;
+
+  if (runFunction(constructor_func, constructor_args.data(),
+                  constructor_args.size(), &this_result, 1)) {
+    *ptr = this_result.of.i32;
+    return true;
+  } else {
+    log_err_fmt("Failed to construct %s", object_name.c_str());
+    return false;
+  }
+}
 
 ASObjectHeader* ScriptInstance::AS_getHeader(uint32_t ptr) {
   if (_memory == nullptr) {

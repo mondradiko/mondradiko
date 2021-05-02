@@ -87,8 +87,8 @@ class ScriptInstance {
    * @param result_num The number of results.
    * @return True on success, false on an invalid callback or a trap throw.
    */
-  bool runCallback(const types::string&, const wasm_val_t*, size_t,
-                    wasm_val_t*, size_t);
+  bool runCallback(const types::string&, const wasm_val_t*, size_t, wasm_val_t*,
+                   size_t);
 
   /**
    * @brief Runs a function directly, while performing proper error checking.
@@ -100,7 +100,7 @@ class ScriptInstance {
    * @return True on success, false on an invalid callback or a trap throw.
    */
   bool runFunction(wasm_func_t*, const wasm_val_t*, size_t, wasm_val_t*,
-                    size_t);
+                   size_t);
 
   //////////////////////////////////////////////////////////////////////////////
   // AssemblyScript memory management helpers
@@ -140,6 +140,16 @@ class ScriptInstance {
   //////////////////////////////////////////////////////////////////////////////
   // AssemblyScript object management helpers
   //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @brief Instantiates an AssemblyScript object.
+   * @param object_name The name of the AssemblyScript object.
+   * @param args A pointer to an array of arguments to pass to the constructor.
+   * @param arg_num The number of arguments.
+   * @param ptr The pointer to the new instance of the object.
+   * @return True on success, false on a trap throw or invalid runtime.
+   */
+  bool AS_construct(const types::string&, const wasm_val_t*, size_t, uint32_t*);
 
   /**
    * @brief Gets an AssemblyScript object's header.
