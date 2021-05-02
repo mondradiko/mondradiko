@@ -37,6 +37,8 @@ struct ClientArgs {
   std::string server_ip = "127.0.0.1";
   int server_port = 10555;
 
+  std::string display = "sdl";
+
   std::vector<std::string> bundle_paths = {"./"};
 
   std::string config_path = "./config.toml";
@@ -59,6 +61,8 @@ int ClientArgs::parse(int argc, const char* const argv[]) {
   CLI::Option* port_op =
       app.add_option("-p,--port", server_port, "Domain server port", true);
   port_op->needs(server_op);
+
+  app.add_option("-d,--display", display, "Display to use {sdl, openxr}", true);
 
   app.add_option("-b,--bundle", bundle_paths, "Paths to asset bundles", true);
   app.add_option("-c,--config", config_path, "Path to config file", true);
@@ -88,7 +92,15 @@ void run(const ClientArgs& args) {
   }
 
   std::unique_ptr<DisplayInterface> display;
-  display = std::make_unique<SdlDisplay>(display_cvars);
+
+  if (args.display == "sdl") {
+    display = std::make_unique<SdlDisplay>(display_cvars);
+  } else if (args.display == "openxr") {
+    display = std::make_unique<OpenXrDisplay>();
+  } else {
+    log_ftl_fmt("Unrecognized display \"%s\" (must be {sdl, openxr})",
+                args.display.c_str());
+  }
 
   GpuInstance gpu(display.get());
   if (!display->createSession(&gpu)) {
