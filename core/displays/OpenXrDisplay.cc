@@ -127,8 +127,6 @@ OpenXrDisplay::OpenXrDisplay() {
 OpenXrDisplay::~OpenXrDisplay() {
   log_zone;
 
-  destroySession();
-
   if (enable_validation_layers && debug_messenger != VK_NULL_HANDLE)
     ext_xrDestroyDebugUtilsMessengerEXT(debug_messenger);
 
