@@ -3,6 +3,7 @@
 
 #include "core/renderer/Renderer.h"
 
+#include "core/cvars/BoolCVar.h"
 #include "core/cvars/CVarScope.h"
 #include "core/displays/DisplayInterface.h"
 #include "core/displays/Viewport.h"
@@ -21,8 +22,9 @@ namespace core {
 
 void Renderer::initCVars(CVarScope* cvars) {
   CVarScope* renderer = cvars->addChild("renderer");
-
   OverlayPass::initCVars(renderer);
+
+  renderer->addValue<BoolCVar>("queue_stall");
 }
 
 Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
@@ -528,6 +530,11 @@ void Renderer::renderFrame() {
         VK_SUCCESS) {
       log_ftl("Failed to submit primary frame command buffer.");
     }
+  }
+
+  if (cvars->get<BoolCVar>("queue_stall")) {
+    log_zone_named("Stall queue after submit");
+    vkQueueWaitIdle(gpu->graphics_queue);
   }
 
   {
