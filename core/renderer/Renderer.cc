@@ -473,8 +473,7 @@ void Renderer::renderFrame() {
 
     for (uint32_t viewport_index = 0; viewport_index < viewports.size();
          viewport_index++) {
-      viewport_descriptor->updateDynamicOffset(
-          0, viewport_index * sizeof(ViewportUniform));
+      viewport_descriptor->updateDynamicOffset(0, viewport_index);
       viewports[viewport_index]->beginRenderPass(frame.command_buffer,
                                                  render_pass);
 
