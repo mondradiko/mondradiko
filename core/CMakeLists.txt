@@ -70,6 +70,7 @@ set(MONDRADIKO_CORE_SRC
   ui/GlyphStyle.cc
   ui/UiPanel.cc
   ui/UserInterface.cc
+  world/IdentifierFactory.cc
   world/ScriptEntity.cc
   world/World.cc
   world/WorldEventSorter.cc
