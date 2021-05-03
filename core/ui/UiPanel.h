@@ -14,7 +14,7 @@ namespace core {
 // Forward declarations
 class GlyphLoader;
 class GlyphStyle;
-class ScriptEnvironment;
+class UiScript;
 class World;
 
 struct PanelUniform {
@@ -24,10 +24,11 @@ struct PanelUniform {
 
 class UiPanel : public DynamicScriptObject<UiPanel> {
  public:
-  UiPanel(GlyphLoader*, ScriptEnvironment*);
+  UiPanel(GlyphLoader*, UiScript*, const types::string&);
   ~UiPanel();
 
   void update(double);
+  void handleMessage(const types::string&);
 
   glm::mat4 getPlaneTransform();
   glm::mat4 getTrsTransform();
@@ -48,6 +49,10 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
 
  private:
   GlyphLoader* glyphs;
+  UiScript* ui_script;
+
+  types::string _impl;
+  uint32_t _this_ptr;
 
   StyleList _styles;
 

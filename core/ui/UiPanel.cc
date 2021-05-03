@@ -5,29 +5,65 @@
 
 #include <cmath>
 
-#include "core/scripting/environment/ScriptEnvironment.h"
+#include "core/scripting/instance/UiScript.h"
 #include "core/ui/GlyphLoader.h"
 #include "core/ui/GlyphStyle.h"
+#include "log/log.h"
 
 namespace mondradiko {
 namespace core {
 
-UiPanel::UiPanel(GlyphLoader* glyphs, ScriptEnvironment* scripts)
-    : DynamicScriptObject(scripts), glyphs(glyphs) {
+UiPanel::UiPanel(GlyphLoader* glyphs, UiScript* ui_script,
+                 const types::string& impl)
+    : DynamicScriptObject(ui_script->scripts),
+      glyphs(glyphs),
+      ui_script(ui_script),
+      _impl(impl) {
   _color = glm::vec4(0.0, 0.0, 0.0, 0.9);
   _position = glm::vec3(4.0, 1.25, 0.0);
   _orientation =
       glm::angleAxis(static_cast<float>(-M_PI_2), glm::vec3(0.0, 1.0, 0.0));
   _size = glm::vec2(1.6, 1.0);
+
+  wasm_val_t panel_arg;
+  panel_arg.kind = WASM_I32;
+  panel_arg.of.i32 = getObjectKey();
+
+  if (ui_script->AS_construct(impl, &panel_arg, 1, &_this_ptr)) {
+    ui_script->AS_pin(_this_ptr);
+  } else {
+    log_err_fmt("Failed to bind UI panel");
+    _this_ptr = 0;
+  }
 }
 
 UiPanel::~UiPanel() {
+  ui_script->AS_unpin(_this_ptr);
+
   for (auto& style : _styles) {
     if (style != nullptr) delete style;
   }
 }
 
-void UiPanel::update(double dt) {}
+void UiPanel::update(double dt) {
+  types::string update_callback = _impl + "#update";
+  if (!ui_script->hasCallback(update_callback)) {
+    log_wrn_fmt("UI script does not export %s", update_callback.c_str());
+    return;
+  }
+
+  std::array<wasm_val_t, 2> args;
+
+  auto& this_arg = args[0];
+  this_arg.kind = WASM_I32;
+  this_arg.of.i32 = _this_ptr;
+
+  auto& dt_arg = args[1];
+  dt_arg.kind = WASM_F64;
+  dt_arg.of.f64 = dt;
+
+  ui_script->runCallback(update_callback, args.data(), args.size(), nullptr, 0);
+}
 
 glm::mat4 UiPanel::getPlaneTransform() {
   auto translate = glm::translate(glm::mat4(1.0), _position);

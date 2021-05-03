@@ -70,8 +70,8 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
   }
 
   {  // Temp panel
-    UiPanel* temp_panel = new UiPanel(glyphs, scripts);
-    ui_script->bindPanel(temp_panel);
+    auto panel_impl = cvars->get<StringCVar>("panel_impl").str();
+    UiPanel* temp_panel = new UiPanel(glyphs, ui_script, panel_impl);
     panels.push_back(temp_panel);
   }
 
