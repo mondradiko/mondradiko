@@ -190,8 +190,6 @@ void UserInterface::displayMessage(const char* message) {
 bool UserInterface::update(double dt) {
   log_zone;
 
-  ui_script->update(dt);
-
   for (auto panel : panels) {
     if (panel != nullptr) {
       panel->update(dt);
