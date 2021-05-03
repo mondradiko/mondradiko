@@ -30,6 +30,7 @@ World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
       asset_pool(asset_pool),
       fs(fs),
       scripts(scripts),
+      _id_factory(&registry),
       physics(this) {
   log_zone;
 
