@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "core/assets/PrefabAsset.h"
+#include "core/components/internal/ChildComponent.h"
+#include "core/components/internal/ParentComponent.h"
 #include "core/components/internal/ScriptComponent.h"
 #include "core/components/internal/TransformAuthorityFlag.h"
 #include "core/components/internal/WorldTransform.h"
@@ -69,25 +71,102 @@ void World::initializePrefabs() {
 // Entity operations
 ///////////////////////////////////////////////////////////////////////////////
 
-void World::adopt(EntityId parent_id, EntityId child_id) {
-  if (!registry.has<RelationshipComponent>(parent_id)) {
-    registry.emplace<RelationshipComponent>(parent_id, parent_id);
+void World::adoptEntity(EntityId parent_id, EntityId child_id) {
+  ParentComponent* parent = registry.try_get<ParentComponent>(parent_id);
+
+  if (parent == nullptr) {
+    registry.emplace<ParentComponent>(parent_id, child_id);
   }
 
-  if (!registry.has<RelationshipComponent>(child_id)) {
-    registry.emplace<RelationshipComponent>(child_id, child_id);
+  ChildComponent* child = registry.try_get<ChildComponent>(child_id);
+
+  if (!registry.has<ChildComponent>(child_id)) {
+    child = &registry.emplace<ChildComponent>(child_id, child_id);
+    child->_parent = parent_id;
   }
 
-  auto& parent = registry.get<RelationshipComponent>(parent_id);
-  auto& child = registry.get<RelationshipComponent>(child_id);
-  parent._adopt(&child, this);
+  if (parent != nullptr) {
+    parent->_child_num++;
+
+    auto& first_child = registry.get<ChildComponent>(parent->_first_child);
+    auto& last_child = registry.get<ChildComponent>(first_child._prev_sibling);
+
+    first_child._prev_sibling = child_id;
+    last_child._next_sibling = child_id;
+
+    child->_prev_sibling = first_child._prev_sibling;
+    child->_next_sibling = parent->_first_child;
+  }
 }
 
-void World::orphan(EntityId child_id) {
-  if (registry.has<RelationshipComponent>(child_id)) {
-    auto& child = registry.get<RelationshipComponent>(child_id);
-    child._orphan(this);
+EntityId World::createEntity() {
+  EntityId entity = registry.create();
+  _id_factory.createEntityUuid(entity);
+  return entity;
+}
+
+void World::orphanEntity(EntityId child_id) {
+  ChildComponent* child = registry.try_get<ChildComponent>(child_id);
+  ParentComponent* parent = registry.try_get<ParentComponent>(child->_parent);
+
+  if (parent != nullptr) {
+    parent->_child_num--;
+
+    if (parent->_child_num > 0) {
+      if (parent->_first_child == child_id) {
+        parent->_first_child = child->_next_sibling;
+
+        auto& prev_child = registry.get<ChildComponent>(child->_prev_sibling);
+        prev_child._next_sibling = child->_next_sibling;
+
+        auto& next_child = registry.get<ChildComponent>(child->_next_sibling);
+        next_child._prev_sibling = child->_prev_sibling;
+      }
+    } else {
+      registry.remove<ParentComponent>(child->_parent);
+    }
   }
+
+  child->_next_sibling = child_id;
+  child->_prev_sibling = child_id;
+  child->_parent = NullEntity;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Query methods
+///////////////////////////////////////////////////////////////////////////////
+
+size_t World::getChildren(EntityId parent_id, EntityList* child_list) {
+  ParentComponent* parent = registry.try_get<ParentComponent>(parent_id);
+
+  if (parent != nullptr) {
+    int child_index = parent->_child_num;
+    EntityId child_id = parent->_first_child;
+
+    while (child_index >= 0) {
+      child_list->push_back(child_id);
+      ChildComponent* child = registry.try_get<ChildComponent>(child_id);
+      child_id = child->_next_sibling;
+      child_index--;
+    }
+
+    return parent->_child_num;
+  } else {
+    return 0;
+  }
+}
+
+size_t World::getChildrenRecursive(EntityId parent_id, EntityList* child_list) {
+  size_t child_index = child_list->size();
+  size_t children_processed = getChildren(parent_id, child_list);
+
+  while (child_index < child_list->size()) {
+    EntityId child_id = child_list->at(child_index);
+    children_processed += getChildrenRecursive(child_id, child_list);
+    child_index++;
+  }
+
+  return children_processed;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
