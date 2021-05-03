@@ -8,6 +8,7 @@
 #include "core/scripting/environment/ComponentScriptEnvironment.h"
 #include "core/scripting/object/StaticScriptObject.h"
 #include "core/world/Entity.h"
+#include "core/world/IdentifierFactory.h"
 #include "lib/include/flatbuffers_headers.h"
 
 namespace mondradiko {
@@ -80,6 +81,7 @@ class World : public StaticScriptObject<World> {
 
   EntityRegistry registry;
   ComponentScriptEnvironment scripts;
+  IdentifierFactory _id_factory;
   Physics physics;
 };
 

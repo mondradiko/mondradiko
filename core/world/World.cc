@@ -31,6 +31,7 @@ World::World(AssetPool* asset_pool, Filesystem* fs,
       asset_pool(asset_pool),
       fs(fs),
       scripts(asset_pool, this),
+      _id_factory(&registry),
       physics(this) {
   log_zone;
 
