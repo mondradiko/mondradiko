@@ -25,7 +25,7 @@ static wasm_trap_t* Entity_spawnChild(World* world, const wasm_val_t args[],
   }
 
   EntityId new_entity = world->registry.create();
-  world->adopt(self_id, new_entity);
+  world->adoptEntity(self_id, new_entity);
 
   results[0].kind = WASM_I32;
   results[0].of.i32 = new_entity;
