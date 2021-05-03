@@ -14,7 +14,7 @@ class StaticScriptObject {
   // Defined in generated API linker
   static void linkScriptApi(ScriptEnvironment*, T*);
 
-  StaticScriptObject(ScriptEnvironment* scripts)
+  StaticScriptObject(ScriptEnvironment* scripts)  // NOLINT (runtime/explicit)
       : scripts(scripts), _static_symbol(typeid(T).name()) {
     if (scripts != nullptr &&
         scripts->storeStaticObject(_static_symbol, this)) {

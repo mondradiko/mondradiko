@@ -143,11 +143,11 @@ template <class ComponentType>
 void linkComponentApi(World* world, const char* symbol) {
   ComponentScriptEnvironment* scripts = &world->scripts;
   linkEntityMethod<Entity_getComponent<ComponentType>, methodType_Entity>(
-      scripts, world, std::string("Entity_get") + symbol);
+      scripts, world, types::string("Entity_get") + symbol);
   linkEntityMethod<Entity_hasComponent<ComponentType>, methodType_Entity>(
-      scripts, world, std::string("Entity_has") + symbol);
+      scripts, world, types::string("Entity_has") + symbol);
   linkEntityMethod<Entity_addComponent<ComponentType>, methodType_Entity>(
-      scripts, world, std::string("Entity_add") + symbol);
+      scripts, world, types::string("Entity_add") + symbol);
 }
 
 void ScriptEntity::linkScriptApi(World* world) {

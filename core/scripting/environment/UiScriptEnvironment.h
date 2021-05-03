@@ -12,10 +12,10 @@ namespace core {
 class UserInterface;
 
 class UiScriptEnvironment : public ScriptEnvironment {
-public:
-  UiScriptEnvironment(UserInterface*);
+ public:
+  explicit UiScriptEnvironment(UserInterface*);
 
-private:
+ private:
   UserInterface* ui;
 };
 
