@@ -34,7 +34,7 @@ PrefabAsset::~PrefabAsset() {
 EntityId PrefabAsset::instantiate(ScriptEnvironment* scripts,
                                   World* world) const {
   EntityRegistry* registry = &world->registry;
-  EntityId self_id = registry->create();
+  EntityId self_id = world->createEntity();
 
   initComponent<MeshRendererComponent>(asset_pool, registry, self_id,
                                        prefab->mesh_renderer);
@@ -50,7 +50,7 @@ EntityId PrefabAsset::instantiate(ScriptEnvironment* scripts,
       if (!child) continue;
 
       EntityId child_id = child->instantiate(scripts, world);
-      world->adopt(self_id, child_id);
+      world->adoptEntity(self_id, child_id);
     }
   }
 
