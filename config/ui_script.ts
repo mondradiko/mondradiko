@@ -46,6 +46,8 @@ export class PanelImpl {
     main_panel = this;
   }
 
+  selectAt(x: f64, y: f64): void {}
+
   handleMessage(message: string): void {
     let style: GlyphStyle;
 

@@ -13,13 +13,15 @@ class BundlerInterface;
 
 class WasmConverter : public ConverterInterface {
  public:
-  explicit WasmConverter(BundlerInterface* bundler) : _bundler(bundler) {}
+  explicit WasmConverter(BundlerInterface* bundler, assets::ScriptType script_type)
+    : _bundler(bundler), _script_type(script_type) {}
 
   // ConverterInterface implementation
   AssetOffset convert(AssetBuilder*, const toml::table&) const final;
 
  private:
   BundlerInterface* _bundler;
+  const assets::ScriptType _script_type;
 };
 
 }  // namespace converter

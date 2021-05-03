@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/scripting/instance/ScriptInstance.h"
+#include "lib/include/glm_headers.h"
 
 namespace mondradiko {
 namespace core {

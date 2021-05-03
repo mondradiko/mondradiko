@@ -58,15 +58,13 @@ bool g_interrupted = false;
 
 void run(const ServerArgs& args) {
   Filesystem fs;
-  auto config = fs.loadToml(args.config_path);
-
   CVarScope cvars;
 
   CVarScope* server_cvars = cvars.addChild("server");
   server_cvars->addValue<FloatCVar>("max_tps", 1.0, 100.0);
   server_cvars->addValue<FloatCVar>("update_rate", 0.1, 20.0);
 
-  cvars.loadConfig(config);
+  cvars.loadConfigFromFile(&fs, args.config_path);
 
   for (auto bundle : args.bundle_paths) {
     fs.loadAssetBundle(bundle);

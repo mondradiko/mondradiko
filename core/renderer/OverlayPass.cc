@@ -3,6 +3,7 @@
 
 #include "core/renderer/OverlayPass.h"
 
+#include "core/components/internal/PointerComponent.h"
 #include "core/components/internal/WorldTransform.h"
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/cvars/BoolCVar.h"
@@ -31,6 +32,7 @@ void OverlayPass::initCVars(CVarScope* cvars) {
   debug->addValue<BoolCVar>("enabled");
   debug->addValue<BoolCVar>("draw_lights");
   debug->addValue<BoolCVar>("draw_transforms");
+  debug->addValue<BoolCVar>("draw_pointers");
 }
 
 OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
@@ -143,9 +145,9 @@ void OverlayPass::beginFrame(uint32_t frame_index,
       glm::vec3 y_axis = transform * glm::vec4(0.0, 1.0, 0.0, 1.0);
       glm::vec3 z_axis = transform * glm::vec4(0.0, 0.0, 1.0, 1.0);
 
-      debug_draw.drawLine(origin, x_axis, glm::vec3(1.0, 0.0, 0.0));
-      debug_draw.drawLine(origin, y_axis, glm::vec3(0.0, 1.0, 0.0));
-      debug_draw.drawLine(origin, z_axis, glm::vec3(0.0, 0.0, 1.0));
+      _debug_draw.drawLine(origin, x_axis, glm::vec3(1.0, 0.0, 0.0));
+      _debug_draw.drawLine(origin, y_axis, glm::vec3(0.0, 1.0, 0.0));
+      _debug_draw.drawLine(origin, z_axis, glm::vec3(0.0, 0.0, 1.0));
     }
   }
 
@@ -167,13 +169,40 @@ void OverlayPass::beginFrame(uint32_t frame_index,
 
       glm::vec3 line_space(0.0, 0.1, 0.0);
       glm::vec3 color(1.0, 1.0, 1.0);
+      _debug_draw.drawLine(position - line_space, position + line_space, color);
+    }
+  }
 
-      debug_draw.drawLine(position - line_space, position + line_space, color);
+  if (cvars->get<BoolCVar>("draw_pointers")) {
+    auto pointers_view = world->registry.view<PointerComponent>();
+
+    for (auto e : pointers_view) {
+      auto& pointer = pointers_view.get(e);
+
+      glm::mat4 world_transform(1.0);
+      if (world->registry.has<WorldTransform>(e)) {
+        world_transform = world->registry.get<WorldTransform>(e).getTransform();
+      }
+
+      glm::vec3 position = pointer.getPosition();
+      glm::vec3 direction = position + pointer.getDirection() * glm::vec3(10.0);
+
+      glm::vec3 start_pos = world_transform * glm::vec4(position, 1.0);
+      glm::vec3 start_color = glm::vec3(0.0, 1.0, 1.0);
+
+      glm::vec3 end_pos = world_transform * glm::vec4(direction, 1.0);
+      glm::vec3 end_color = glm::vec3(0.5, 0.5, 0.5);
+
+      auto start_vertex = _debug_draw.makeVertex(start_pos, start_color);
+      auto end_vertex = _debug_draw.makeVertex(end_pos, end_color);
+
+      _debug_draw.drawLine(start_vertex, end_vertex);
     }
   }
 
   frame.index_count =
-      debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
+    _debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
+  _debug_draw.clear();
 }
 
 void OverlayPass::renderViewport(RenderPhase phase,
@@ -202,9 +231,9 @@ void OverlayPass::renderViewport(RenderPhase phase,
       graphics_state.rasterization_state = rasterization_state;
 
       GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::False;
-      depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Always;
+      depth_state.test_enable = GraphicsState::BoolFlag::True;
+      depth_state.write_enable = GraphicsState::BoolFlag::True;
+      depth_state.compare_op = GraphicsState::CompareOp::Less;
       graphics_state.depth_state = depth_state;
 
       debug_pipeline->cmdBind(command_buffer, graphics_state);

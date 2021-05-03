@@ -7,8 +7,8 @@
 #include <lib/third_party/stb_rect_pack.h>
 
 #include "core/cvars/CVarScope.h"
+#include "core/cvars/FileCVar.h"
 #include "core/cvars/FloatCVar.h"
-#include "core/cvars/StringCVar.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
@@ -25,7 +25,7 @@ namespace core {
 void GlyphLoader::initCVars(CVarScope* cvars) {
   CVarScope* glyphs = cvars->addChild("glyphs");
 
-  glyphs->addValue<StringCVar>("font_path");
+  glyphs->addValue<FileCVar>("font_path");
   glyphs->addValue<FloatCVar>("sdf_scale", 1.0, 4.0);
   glyphs->addValue<FloatCVar>("sdf_border", 1.0, 10.0);
   glyphs->addValue<FloatCVar>("sdf_range", 1.0, 8.0);
@@ -40,7 +40,7 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
     log_ftl("Failed to initialize FreeType");
   }
 
-  const char* font_path = cvars->get<StringCVar>("font_path").c_str();
+  const char* font_path = cvars->get<FileCVar>("font_path").getPath().c_str();
 
   error = FT_New_Face(freetype, font_path, 0, &font_face);
   if (error) {

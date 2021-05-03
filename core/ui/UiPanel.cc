@@ -65,6 +65,30 @@ void UiPanel::update(double dt) {
   ui_script->runCallback(update_callback, args.data(), args.size(), nullptr, 0);
 }
 
+void UiPanel::selectAt(const glm::vec2& coords) {
+  types::string select_callback = _impl + "#selectAt";
+  if (!ui_script->hasCallback(select_callback)) {
+    log_wrn_fmt("UI script does not export %s", select_callback.c_str());
+    return;
+  }
+
+  std::array<wasm_val_t, 3> args;
+
+  auto& this_arg = args[0];
+  this_arg.kind = WASM_I32;
+  this_arg.of.i32 = _this_ptr;
+
+  auto& x_arg = args[1];
+  x_arg.kind = WASM_F64;
+  x_arg.of.f64 = coords.x;
+
+  auto& y_arg = args[2];
+  y_arg.kind = WASM_F64;
+  y_arg.of.f64 = coords.y;
+
+  ui_script->runCallback(select_callback, args.data(), args.size(), nullptr, 0);
+}
+
 glm::mat4 UiPanel::getPlaneTransform() {
   auto translate = glm::translate(glm::mat4(1.0), _position);
   auto rotate = glm::mat4(_orientation);
@@ -78,8 +102,60 @@ glm::mat4 UiPanel::getTrsTransform() {
 }
 
 void UiPanel::writeUniform(PanelUniform* panel_uniform) {
-  panel_uniform->transform = getTrsTransform();
+  panel_uniform->transform = getPlaneTransform();
   panel_uniform->color = _color;
+  panel_uniform->size = _size;
+}
+
+glm::mat4 UiPanel::getInverseTransform() {
+  auto rotate = glm::transpose(glm::mat4(_orientation));
+  return glm::translate(rotate, -_position);
+}
+
+double UiPanel::getPointDistance(const glm::vec3& position) {
+  glm::vec3 normal = getNormal();
+  double position_dot = glm::dot(normal, position - _position);
+  return position_dot;
+}
+
+glm::vec3 UiPanel::getNormal() {
+  return glm::mat4(_orientation) * glm::vec4(0.0, 0.0, 1.0, 1.0);
+}
+
+double UiPanel::getRayIntersectFactor(const glm::vec3& position,
+                                      const glm::vec3& direction) {
+  glm::vec3 normal = getNormal();
+
+  double direction_dot = glm::dot(normal, -direction);
+
+  // Catch NaNs
+  if (direction_dot == 0.0) return -1.0;
+
+  double factor = glm::dot(normal, position - _position) / direction_dot;
+
+  // Discard the ray tail
+  if (factor < 0.0) return -1.0;
+
+  glm::vec2 coords = getRayIntersectCoords(position, direction);
+  glm::vec2 abs_coords = glm::abs(coords) * glm::vec2(2.0);
+
+  // Discard out-of-bounds coords
+  if (abs_coords.x > _size.x || abs_coords.y > _size.y) return -1.0;
+
+  return factor;
+}
+
+glm::vec2 UiPanel::getRayIntersectCoords(const glm::vec3& position,
+                                         const glm::vec3& direction) {
+  glm::vec3 normal = getNormal();
+
+  double direction_dot = glm::dot(normal, -direction);
+  double factor = glm::dot(normal, position - _position) / direction_dot;
+
+  glm::vec3 world_coords = position + direction * glm::vec3(factor);
+  glm::vec2 panel_coords = getInverseTransform() * glm::vec4(world_coords, 1.0);
+
+  return panel_coords;
 }
 
 wasm_trap_t* UiPanel::getWidth(ScriptInstance*, const wasm_val_t[],
