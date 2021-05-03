@@ -40,8 +40,16 @@ class World : public StaticScriptObject<World> {
   //
   // Entity operations
   //
-  void adopt(EntityId, EntityId);
-  void orphan(EntityId);
+  void adoptEntity(EntityId, EntityId);
+  EntityId createEntity();
+  void orphanEntity(EntityId);
+
+  //
+  // Query methods
+  //
+  using EntityList = types::vector<EntityId>;
+  size_t getChildren(EntityId, EntityList*);
+  size_t getChildrenRecursive(EntityId, EntityList*);
 
   //
   // Observer callbacks
