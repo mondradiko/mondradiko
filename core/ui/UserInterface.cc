@@ -29,6 +29,7 @@ void UserInterface::initCVars(CVarScope* cvars) {
   CVarScope* ui = cvars->addChild("ui");
 
   ui->addValue<StringCVar>("script_path");
+  ui->addValue<StringCVar>("panel_impl");
 }
 
 UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,

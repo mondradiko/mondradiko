@@ -19,3 +19,4 @@ draw_transforms = true
 
 [ui]
 script_path = "ui_script.wasm"
+panel_impl = "PanelImpl"
