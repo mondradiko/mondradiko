@@ -22,9 +22,9 @@ class GpuPipeline;
 class GpuShader;
 class GpuVector;
 class Renderer;
-class ScriptEnvironment;
 class UiPanel;
 class UiScript;
+class UiScriptEnvironment;
 class World;
 
 class UserInterface : public RenderPass {
@@ -54,13 +54,11 @@ class UserInterface : public RenderPass {
   Renderer* renderer;
   World* world;
 
-  ScriptEnvironment* scripts = nullptr;
+  UiScriptEnvironment* scripts = nullptr;
   wasm_module_t* script_module = nullptr;
   UiScript* ui_script = nullptr;
 
   types::vector<UiPanel*> panels;
-
-  types::string messages;
 
   GpuShader* panel_vertex_shader = nullptr;
   GpuShader* panel_fragment_shader = nullptr;

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/scripting/ScriptInstance.h"
+#include "core/scripting/instance/ScriptInstance.h"
 #include "lib/include/glm_headers.h"
 
 namespace mondradiko {
@@ -16,9 +16,7 @@ class UiScript : public ScriptInstance {
  public:
   UiScript(ScriptEnvironment*, wasm_module_t*);
 
-  uint32_t bindPanel(UiPanel*);
-  void selectAt(const glm::vec2&);
-  void update(double);
+  void handleMessage(const types::string&);
 
  private:
 };

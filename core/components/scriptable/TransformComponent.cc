@@ -8,31 +8,28 @@
 namespace mondradiko {
 namespace core {
 
-wasm_trap_t* TransformComponent::getX(ScriptEnvironment*,
-                                      const wasm_val_t args[],
+wasm_trap_t* TransformComponent::getX(ComponentScript*, const wasm_val_t args[],
                                       wasm_val_t results[]) {
   results[0].kind = WASM_F64;
   results[0].of.f64 = _data.position().v()->Get(0);
   return nullptr;
 }
 
-wasm_trap_t* TransformComponent::getY(ScriptEnvironment*,
-                                      const wasm_val_t args[],
+wasm_trap_t* TransformComponent::getY(ComponentScript*, const wasm_val_t args[],
                                       wasm_val_t results[]) {
   results[0].kind = WASM_F64;
   results[0].of.f64 = _data.position().v()->Get(1);
   return nullptr;
 }
 
-wasm_trap_t* TransformComponent::getZ(ScriptEnvironment*,
-                                      const wasm_val_t args[],
+wasm_trap_t* TransformComponent::getZ(ComponentScript*, const wasm_val_t args[],
                                       wasm_val_t results[]) {
   results[0].kind = WASM_F64;
   results[0].of.f64 = _data.position().v()->Get(2);
   return nullptr;
 }
 
-wasm_trap_t* TransformComponent::setPosition(ScriptEnvironment*,
+wasm_trap_t* TransformComponent::setPosition(ComponentScript*,
                                              const wasm_val_t args[],
                                              wasm_val_t results[]) {
   auto position = glm::vec3(args[1].of.f64, args[2].of.f64, args[3].of.f64);
@@ -40,7 +37,7 @@ wasm_trap_t* TransformComponent::setPosition(ScriptEnvironment*,
   return nullptr;
 }
 
-wasm_trap_t* TransformComponent::getRotationW(ScriptEnvironment*,
+wasm_trap_t* TransformComponent::getRotationW(ComponentScript*,
                                               const wasm_val_t args[],
                                               wasm_val_t results[]) {
   results[0].kind = WASM_F64;
@@ -48,7 +45,7 @@ wasm_trap_t* TransformComponent::getRotationW(ScriptEnvironment*,
   return nullptr;
 }
 
-wasm_trap_t* TransformComponent::getRotationX(ScriptEnvironment*,
+wasm_trap_t* TransformComponent::getRotationX(ComponentScript*,
                                               const wasm_val_t args[],
                                               wasm_val_t results[]) {
   results[0].kind = WASM_F64;
@@ -56,7 +53,7 @@ wasm_trap_t* TransformComponent::getRotationX(ScriptEnvironment*,
   return nullptr;
 }
 
-wasm_trap_t* TransformComponent::getRotationY(ScriptEnvironment*,
+wasm_trap_t* TransformComponent::getRotationY(ComponentScript*,
                                               const wasm_val_t args[],
                                               wasm_val_t results[]) {
   results[0].kind = WASM_F64;
@@ -64,7 +61,7 @@ wasm_trap_t* TransformComponent::getRotationY(ScriptEnvironment*,
   return nullptr;
 }
 
-wasm_trap_t* TransformComponent::getRotationZ(ScriptEnvironment*,
+wasm_trap_t* TransformComponent::getRotationZ(ComponentScript*,
                                               const wasm_val_t args[],
                                               wasm_val_t results[]) {
   results[0].kind = WASM_F64;
@@ -72,7 +69,7 @@ wasm_trap_t* TransformComponent::getRotationZ(ScriptEnvironment*,
   return nullptr;
 }
 
-wasm_trap_t* TransformComponent::setRotation(ScriptEnvironment*,
+wasm_trap_t* TransformComponent::setRotation(ComponentScript*,
                                              const wasm_val_t args[],
                                              wasm_val_t results[]) {
   auto orientation =

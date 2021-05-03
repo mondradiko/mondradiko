@@ -3,17 +3,12 @@
 
 #pragma once
 
+#include "core/scripting/environment/ScriptEnvironment.h"
+
 namespace mondradiko {
 namespace core {
 
-// Forward declarations
-class ComponentScriptEnvironment;
-class World;
-
-class ScriptEntity {
- public:
-  static void linkScriptApi(World*);
-};
+class WorldScriptEnvironment : public ScriptEnvironment {};
 
 }  // namespace core
 }  // namespace mondradiko

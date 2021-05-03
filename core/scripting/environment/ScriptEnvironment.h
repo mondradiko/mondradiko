@@ -3,29 +3,25 @@
 
 #pragma once
 
-#include "core/assets/AssetPool.h"
-#include "core/world/Entity.h"
 #include "lib/include/wasm_headers.h"
 #include "types/containers/string.h"
 #include "types/containers/unordered_map.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class UserInterface;
-class World;
+class ScriptInstance;
+
+using ScriptBindingFactory = wasm_func_t* (*)(ScriptInstance*);
 
 class ScriptEnvironment {
  public:
   ScriptEnvironment();
   ~ScriptEnvironment();
 
-  void initializeAssets(AssetPool*);
-  void linkUiApis(UserInterface*);
-  void linkComponentApis(World*);
   void linkAssemblyScriptEnv();
-  void update(EntityRegistry*, AssetPool*, double);
 
   wasm_engine_t* getEngine() { return engine; }
   wasm_store_t* getStore() { return store; }
@@ -131,41 +127,19 @@ class ScriptEnvironment {
   void removeStaticObject(const char*);
 
   /**
-   * @brief Updates a local script. Overwrites existing script data, or
-   * instantiates a new script if necessary.
-   * @param registry The World's registry.
-   * @param asset_pool The World's asset pool.
-   * @param entity The EntityId of the ScriptComponent to update.
-   * @param script_asset The AssetId of the data's ScriptAsset.
-   * @param data A pointer to the script data, or nullptr.
-   * @param data_size The length in bytes of the data.
-   *
+   * @brief Adds a binding symbol's factory.
+   * @param symbol The symbol to link.
+   * @param factory The binding factory linked to the symbol.
    */
-  void updateScript(EntityRegistry*, AssetPool*, EntityId, AssetId,
-                    const uint8_t*, size_t);
+  void addBindingFactory(const types::string&, ScriptBindingFactory);
 
   /**
-   * @brief Destroys all ScriptComponents.
-   * @param registry The World's registry.
+   * @brief Creates a binding associated with a ScriptInstance.
+   * @param symbol The symbol of the binding factory.
+   * @param instance The ScriptInstance to be bound to.
+   * @return A wasm_func_t to bind to the instance.
    */
-  void destroyComponents(EntityRegistry*);
-
-  /**
-   * @brief Adds a binding symbol's callback to the ScriptEnvironment.
-   *
-   * @param symbol The name to link.
-   * @param func The function linked to the symbol.
-   *
-   */
-  void addBinding(const char*, wasm_func_t*);
-
-  /**
-   * @brief Attempts to look up a stored binding.
-   * @param symbol The binding to search for.
-   *
-   * @return The binding's Wasm function, or nullptr if it's not found.
-   */
-  wasm_func_t* getBinding(const types::string&);
+  wasm_func_t* createBinding(const types::string&, ScriptInstance*);
 
   /**
    * @brief Gets a Wasm function that interrupts the store when called.
@@ -190,10 +164,14 @@ class ScriptEnvironment {
   wasm_store_t* store = nullptr;
   wasmtime_interrupt_handle_t* interrupt_handle = nullptr;
 
+  // Callbacks
+  static wasm_func_t* abortFactory(ScriptInstance*);
+  static wasm_func_t* seedFactory(ScriptInstance*);
+
   types::vector<wasm_func_t*> func_collection;
   types::vector<void*> object_registry;
   types::unordered_map<types::string, void*> static_objects;
-  types::unordered_map<types::string, wasm_func_t*> bindings;
+  types::unordered_map<types::string, ScriptBindingFactory> binding_factories;
   wasm_func_t* interrupt_func = nullptr;
 };
 

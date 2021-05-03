@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/scripting/ScriptObject.h"
+#include "core/scripting/object/DynamicScriptObject.h"
 #include "core/ui/GlyphLoader.h"
 #include "lib/include/wasm_headers.h"
 #include "types/containers/string.h"
@@ -30,18 +30,21 @@ class GlyphStyle : public DynamicScriptObject<GlyphStyle> {
   explicit GlyphStyle(GlyphLoader*, ScriptEnvironment*, UiPanel*);
   ~GlyphStyle();
 
-  void drawString(GlyphString*, uint32_t, const types::string&) const;
+  void drawString(GlyphString*, uint32_t) const;
   GlyphStyleUniform getUniform() const;
 
   //
   // Scripting methods
   //
-  wasm_trap_t* setOffset(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* setScale(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* setColor(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setOffset(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setScale(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setColor(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setText(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
 
  private:
   GlyphLoader* glyphs;
+
+  types::string _text;
 
   UiPanel* _panel;
   glm::vec4 _color;

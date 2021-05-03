@@ -60,10 +60,12 @@ set(MONDRADIKO_CORE_SRC
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
   renderer/Renderer.cc
-  scripting/ComponentScript.cc
-  scripting/ScriptEnvironment.cc
-  scripting/ScriptInstance.cc
-  scripting/UiScript.cc
+  scripting/environment/ComponentScriptEnvironment.cc
+  scripting/environment/ScriptEnvironment.cc
+  scripting/environment/UiScriptEnvironment.cc
+  scripting/instance/ComponentScript.cc
+  scripting/instance/ScriptInstance.cc
+  scripting/instance/UiScript.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
   ui/GlyphLoader.cc

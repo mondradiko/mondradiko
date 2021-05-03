@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/scripting/ScriptObject.h"
+#include "core/scripting/object/DynamicScriptObject.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/wasm_headers.h"
 #include "types/containers/vector.h"
@@ -14,7 +14,7 @@ namespace core {
 // Forward declarations
 class GlyphLoader;
 class GlyphStyle;
-class ScriptEnvironment;
+class UiScript;
 class World;
 
 struct PanelUniform {
@@ -25,10 +25,12 @@ struct PanelUniform {
 
 class UiPanel : public DynamicScriptObject<UiPanel> {
  public:
-  UiPanel(GlyphLoader*, ScriptEnvironment*);
+  UiPanel(GlyphLoader*, UiScript*, const types::string&);
   ~UiPanel();
 
   void update(double);
+  void handleMessage(const types::string&);
+  void selectAt(const glm::vec2& coords);
 
   glm::mat4 getPlaneTransform();
   glm::mat4 getTrsTransform();
@@ -76,14 +78,19 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
   //
   // Scripting methods
   //
-  wasm_trap_t* getWidth(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* getHeight(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* setSize(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* setColor(const wasm_val_t[], wasm_val_t[]);
-  wasm_trap_t* createGlyphStyle(const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getWidth(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* getHeight(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setSize(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* setColor(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* createGlyphStyle(ScriptInstance*, const wasm_val_t[],
+                                wasm_val_t[]);
 
  private:
   GlyphLoader* glyphs;
+  UiScript* ui_script;
+
+  types::string _impl;
+  uint32_t _this_ptr;
 
   StyleList _styles;
 

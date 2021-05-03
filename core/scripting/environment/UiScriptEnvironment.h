@@ -3,16 +3,20 @@
 
 #pragma once
 
+#include "core/scripting/environment/ScriptEnvironment.h"
+
 namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class ComponentScriptEnvironment;
-class World;
+class UserInterface;
 
-class ScriptEntity {
+class UiScriptEnvironment : public ScriptEnvironment {
  public:
-  static void linkScriptApi(World*);
+  explicit UiScriptEnvironment(UserInterface*);
+
+ private:
+  UserInterface* ui;
 };
 
 }  // namespace core

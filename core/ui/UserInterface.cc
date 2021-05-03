@@ -18,8 +18,8 @@
 #include "core/gpu/GraphicsState.h"
 #include "core/renderer/DebugDraw.h"
 #include "core/renderer/Renderer.h"
-#include "core/scripting/ScriptEnvironment.h"
-#include "core/scripting/UiScript.h"
+#include "core/scripting/environment/UiScriptEnvironment.h"
+#include "core/scripting/instance/UiScript.h"
 #include "core/shaders/panel.frag.h"
 #include "core/shaders/panel.vert.h"
 #include "core/ui/GlyphStyle.h"
@@ -34,6 +34,7 @@ void UserInterface::initCVars(CVarScope* cvars) {
   CVarScope* ui = cvars->addChild("ui");
 
   ui->addValue<FileCVar>("script_path");
+  ui->addValue<StringCVar>("panel_impl");
 }
 
 UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
@@ -50,8 +51,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
   {
     log_zone_named("Bind script API");
 
-    scripts = new ScriptEnvironment;
-    scripts->linkUiApis(this);
+    scripts = new UiScriptEnvironment(this);
   }
 
   {
@@ -77,8 +77,8 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
   }
 
   {  // Temp panel
-    UiPanel* temp_panel = new UiPanel(glyphs, scripts);
-    ui_script->bindPanel(temp_panel);
+    auto panel_impl = cvars->get<StringCVar>("panel_impl").str();
+    UiPanel* temp_panel = new UiPanel(glyphs, ui_script, panel_impl);
     panels.push_back(temp_panel);
   }
 
@@ -191,8 +191,7 @@ UserInterface::~UserInterface() {
 }
 
 void UserInterface::displayMessage(const char* message) {
-  messages += message;
-  messages += '\n';
+  ui_script->handleMessage(message);
 }
 
 bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
@@ -234,9 +233,7 @@ bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
       auto coords = nearest->getRayIntersectCoords(position, direction);
 
       if (selected) {
-        // TODO(marceline-cramer) Pass to PanelImpl method instead
-        // Pass select coords to ui_script
-        ui_script->selectAt(coords);
+        nearest->selectAt(coords);
       }
 
       // Draw X indicator at the collision point
@@ -266,8 +263,6 @@ bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
       }
     }
   }
-
-  ui_script->update(dt);
 
   for (auto panel : panels) {
     if (panel != nullptr) {
@@ -336,7 +331,7 @@ void UserInterface::beginFrame(uint32_t frame_index,
         style_indices.emplace(panel_style, style_index);
       }
 
-      panel_style->drawString(&test_string, style_index, messages);
+      panel_style->drawString(&test_string, style_index);
     }
   }
 

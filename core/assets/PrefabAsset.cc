@@ -9,7 +9,7 @@
 #include "core/components/scriptable/TransformComponent.h"
 #include "core/components/synchronized/MeshRendererComponent.h"
 #include "core/components/synchronized/RigidBodyComponent.h"
-#include "core/scripting/ScriptEnvironment.h"
+#include "core/scripting/environment/ComponentScriptEnvironment.h"
 #include "core/world/World.h"
 
 namespace mondradiko {
@@ -31,8 +31,7 @@ PrefabAsset::~PrefabAsset() {
   if (prefab != nullptr) delete prefab;
 }
 
-EntityId PrefabAsset::instantiate(ScriptEnvironment* scripts,
-                                  World* world) const {
+EntityId PrefabAsset::instantiate(World* world) const {
   EntityRegistry* registry = &world->registry;
   EntityId self_id = registry->create();
 
@@ -49,15 +48,15 @@ EntityId PrefabAsset::instantiate(ScriptEnvironment* scripts,
     for (auto& child : children) {
       if (!child) continue;
 
-      EntityId child_id = child->instantiate(scripts, world);
+      EntityId child_id = child->instantiate(world);
       world->adopt(self_id, child_id);
     }
   }
 
   if (prefab->script) {
     // Update an entity's script to initialize the ScriptComponent
-    scripts->updateScript(registry, asset_pool, self_id, prefab->script->script,
-                          nullptr, static_cast<size_t>(0));
+    world->scripts.updateScript(self_id, prefab->script->script, nullptr,
+                                static_cast<size_t>(0));
   }
 
   return self_id;

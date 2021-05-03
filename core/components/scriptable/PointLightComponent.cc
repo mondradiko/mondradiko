@@ -16,7 +16,7 @@ void PointLightComponent::getUniform(PointLightUniform* uniform) {
   uniform->intensity = glm::vec4(intensity, 1.0);
 }
 
-wasm_trap_t* PointLightComponent::setIntensity(ScriptEnvironment*,
+wasm_trap_t* PointLightComponent::setIntensity(ComponentScript*,
                                                const wasm_val_t args[],
                                                wasm_val_t[]) {
   auto intensity = glm::vec3(args[1].of.f64, args[2].of.f64, args[3].of.f64);

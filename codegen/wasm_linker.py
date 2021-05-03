@@ -17,20 +17,21 @@ METHOD_TYPE_FORMAT = "wasm_functype_t* methodType_{0}_{1}()"
 
 
 COMPONENT_METHOD_WRAP = \
-    "codegen::linkComponentMethod<{1}, &{1}::{2}>(scripts, world, \"{1}_{2}\", codegen::methodType_{0}_{2});"
+    "codegen::linkComponentMethod<{1}, &{1}::{2}, codegen::methodType_{0}_{2}>(scripts, world, \"{1}_{2}\");"
 
 
 DYNAMIC_OBJECT_METHOD_WRAP = \
-    "codegen::linkDynamicObjectMethod<{1}, &{1}::{2}>(scripts, \"{1}_{2}\", codegen::methodType_{0}_{2});"
+    "codegen::linkDynamicObjectMethod<{1}, &{1}::{2}, codegen::methodType_{0}_{2}>(scripts, \"{1}_{2}\");"
 
 
 STATIC_OBJECT_METHOD_WRAP = \
-    "codegen::linkStaticObjectMethod<{1}, &{1}::{2}>(scripts, self, \"{1}_{2}\", codegen::methodType_{0}_{2});"
+    "codegen::linkStaticObjectMethod<{1}, &{1}::{2}, codegen::methodType_{0}_{2}>(scripts, self, \"{1}_{2}\");"
 
 
 C_TYPES_TO_WASM = {
     "self": "WASM_I32",
-    "double": "WASM_F64"
+    "double": "WASM_F64",
+    "string": "WASM_I32"
 }
 
 

@@ -18,25 +18,23 @@
 #include "core/components/synchronized/RelationshipComponent.h"
 #include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/filesystem/Filesystem.h"
-#include "core/scripting/ScriptEnvironment.h"
+#include "core/scripting/environment/WorldScriptEnvironment.h"
 #include "log/log.h"
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 namespace core {
 
-World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
-    : StaticScriptObject(scripts, "World"),
+World::World(AssetPool* asset_pool, Filesystem* fs,
+             WorldScriptEnvironment* world_script_environment)
+    : StaticScriptObject(world_script_environment),
       asset_pool(asset_pool),
       fs(fs),
-      scripts(scripts),
+      scripts(asset_pool, this),
       physics(this) {
   log_zone;
 
   asset_pool->initializeAssetType<PrefabAsset>(asset_pool);
-
-  scripts->initializeAssets(asset_pool);
-  scripts->linkComponentApis(this);
 
   registry.on_construct<TransformComponent>()
       .connect<&onTransformAuthorityConstruct>();
@@ -48,11 +46,7 @@ World::World(AssetPool* asset_pool, Filesystem* fs, ScriptEnvironment* scripts)
       .connect<&onTransformAuthorityDestroy>();
 }
 
-World::~World() {
-  log_zone;
-
-  scripts->destroyComponents(&registry);
-}
+World::~World() { log_zone; }
 
 void World::initializePrefabs() {
   types::vector<AssetId> prefabs;
@@ -60,7 +54,7 @@ void World::initializePrefabs() {
 
   for (auto prefab_id : prefabs) {
     auto prefab = asset_pool->load<PrefabAsset>(prefab_id);
-    prefab->instantiate(scripts, this);
+    prefab->instantiate(this);
   }
 }
 
@@ -263,7 +257,7 @@ bool World::update(double dt) {
     }
   }
 
-  scripts->update(&registry, asset_pool, dt);
+  scripts.update(dt);
 
   log_frame_mark;
   return true;
@@ -328,14 +322,15 @@ void World::updateComponents(
   }
 }
 
-wasm_trap_t* World::spawnEntity(const wasm_val_t args[], wasm_val_t results[]) {
+wasm_trap_t* World::spawnEntity(ScriptInstance*, const wasm_val_t args[],
+                                wasm_val_t results[]) {
   EntityId new_entity = registry.create();
   results[0].kind = WASM_I32;
   results[0].of.i32 = new_entity;
   return nullptr;
 }
 
-wasm_trap_t* World::spawnEntityAt(const wasm_val_t args[],
+wasm_trap_t* World::spawnEntityAt(ScriptInstance*, const wasm_val_t args[],
                                   wasm_val_t results[]) {
   EntityId new_entity = registry.create();
 
