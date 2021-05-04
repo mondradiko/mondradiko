@@ -28,25 +28,41 @@ GpuBuffer::~GpuBuffer() {
 void GpuBuffer::reserve(size_t target_size) {
   if (target_size <= buffer_size) return;
 
-  if (allocation != nullptr)
-    vmaDestroyBuffer(gpu->allocator, buffer, allocation);
+  // Save old allocation for if we need to copy
+  VmaAllocation old_allocation = allocation;
+  VkBuffer old_buffer = buffer;
+  VmaAllocationInfo old_info = allocation_info;
 
-  allocation = nullptr;
+  VkBufferCreateInfo buffer_ci{};
+  buffer_ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buffer_ci.size = target_size;
+  buffer_ci.usage = buffer_usage_flags;
+  buffer_ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-  VkBufferCreateInfo bufferInfo{};
-  bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  bufferInfo.size = target_size;
-  bufferInfo.usage = buffer_usage_flags;
-  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  VmaAllocationCreateInfo allocation_ci{};
+  allocation_ci.usage = memory_usage;
 
-  VmaAllocationCreateInfo allocationCreateInfo{};
-  if (memory_usage == VMA_MEMORY_USAGE_CPU_TO_GPU)
-    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-  allocationCreateInfo.usage = memory_usage;
+  if (memory_usage == VMA_MEMORY_USAGE_CPU_TO_GPU) {
+    allocation_ci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+  } else {
+    if (old_allocation != nullptr) {
+      vmaDestroyBuffer(gpu->allocator, old_buffer, old_allocation);
+    }
 
-  if (vmaCreateBuffer(gpu->allocator, &bufferInfo, &allocationCreateInfo,
-                      &buffer, &allocation, &allocation_info) != VK_SUCCESS) {
+    old_allocation = nullptr;
+  }
+
+  if (vmaCreateBuffer(gpu->allocator, &buffer_ci, &allocation_ci, &buffer,
+                      &allocation, &allocation_info) != VK_SUCCESS) {
     log_ftl("Failed to allocate Vulkan buffer.");
+  }
+
+  if (old_allocation != nullptr) {
+    if (memory_usage == VMA_MEMORY_USAGE_CPU_TO_GPU && buffer_size > 0) {
+      memcpy(allocation_info.pMappedData, old_info.pMappedData, buffer_size);
+    }
+
+    vmaDestroyBuffer(gpu->allocator, old_buffer, old_allocation);
   }
 
   buffer_size = target_size;
