@@ -22,6 +22,7 @@ class GpuPipeline;
 class GpuShader;
 class GpuVector;
 class Renderer;
+class UiDrawList;
 class UiPanel;
 class UiScript;
 class UiScriptEnvironment;
@@ -73,6 +74,8 @@ class UserInterface : public RenderPass {
   GpuDescriptorSetLayout* glyph_set_layout = nullptr;
   VkPipelineLayout glyph_pipeline_layout = VK_NULL_HANDLE;
   GpuPipeline* glyph_pipeline = nullptr;
+
+  UiDrawList* current_draw = nullptr;
 
   struct FrameData {
     GpuVector* panels = nullptr;

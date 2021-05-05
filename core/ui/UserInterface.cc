@@ -25,6 +25,7 @@
 #include "core/shaders/ui_draw.frag.h"
 #include "core/shaders/ui_draw.vert.h"
 #include "core/ui/GlyphStyle.h"
+#include "core/ui/UiDrawList.h"
 #include "core/ui/UiPanel.h"
 #include "core/world/World.h"
 #include "log/log.h"
@@ -185,10 +186,18 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
         renderer->getTransparentSubpass(), glyphs->getVertexShader(),
         glyphs->getFragmentShader(), vertex_bindings, attribute_descriptions);
   }
+
+  {
+    log_zone_named("Create UI draw list");
+
+    current_draw = new UiDrawList;
+  }
 }
 
 UserInterface::~UserInterface() {
   log_zone;
+
+  if (current_draw != nullptr) delete current_draw;
 
   if (glyph_pipeline != nullptr) delete glyph_pipeline;
   if (glyph_pipeline_layout != VK_NULL_HANDLE)
@@ -289,9 +298,11 @@ bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
     }
   }
 
+  current_draw->clear();
+
   for (auto panel : panels) {
     if (panel != nullptr) {
-      panel->update(dt);
+      panel->update(dt, current_draw);
     }
   }
 

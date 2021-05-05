@@ -45,7 +45,9 @@ UiPanel::~UiPanel() {
   }
 }
 
-void UiPanel::update(double dt) {
+void UiPanel::update(double dt, UiDrawList* ui_draw) {
+  _current_draw = ui_draw;
+
   types::string update_callback = _impl + "#update";
   if (!ui_script->hasCallback(update_callback)) {
     log_wrn_fmt("UI script does not export %s", update_callback.c_str());
