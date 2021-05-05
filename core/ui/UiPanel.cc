@@ -8,6 +8,7 @@
 #include "core/scripting/instance/UiScript.h"
 #include "core/ui/GlyphLoader.h"
 #include "core/ui/GlyphStyle.h"
+#include "core/ui/UiDrawList.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -198,6 +199,23 @@ wasm_trap_t* UiPanel::createGlyphStyle(ScriptInstance*, const wasm_val_t[],
 
   results[0].kind = WASM_I32;
   results[0].of.i32 = new_style->getObjectKey();
+
+  return nullptr;
+}
+
+wasm_trap_t* UiPanel::drawTriangle(ScriptInstance*, const wasm_val_t args[],
+                                   wasm_val_t[]) {
+  glm::vec2 position1 = glm::vec2(args[1].of.f64, args[2].of.f64);
+  glm::vec2 position2 = glm::vec2(args[3].of.f64, args[4].of.f64);
+  glm::vec2 position3 = glm::vec2(args[5].of.f64, args[6].of.f64);
+  glm::vec4 color = glm::vec4(args[7].of.f64, args[8].of.f64, args[9].of.f64,
+                              args[10].of.f64);
+
+  auto vertex1 = _current_draw->makeVertex(position1, color);
+  auto vertex2 = _current_draw->makeVertex(position2, color);
+  auto vertex3 = _current_draw->makeVertex(position3, color);
+
+  _current_draw->drawTriangle(vertex1, vertex2, vertex3);
 
   return nullptr;
 }
