@@ -321,6 +321,10 @@ void UserInterface::createFrameData(uint32_t frame_count) {
                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     frame.styles = new GpuVector(gpu, sizeof(GlyphStyleUniform),
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    frame.ui_draw_vertices = new GpuVector(gpu, sizeof(UiDrawList::Vertex),
+                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    frame.ui_draw_indices = new GpuVector(gpu, sizeof(UiDrawList::Index),
+                                          VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
   }
 }
 
@@ -331,6 +335,8 @@ void UserInterface::destroyFrameData() {
     if (frame.panels != nullptr) delete frame.panels;
     if (frame.glyph_instances != nullptr) delete frame.glyph_instances;
     if (frame.styles != nullptr) delete frame.styles;
+    if (frame.ui_draw_vertices != nullptr) delete frame.ui_draw_vertices;
+    if (frame.ui_draw_indices != nullptr) delete frame.ui_draw_indices;
   }
 }
 
@@ -375,6 +381,9 @@ void UserInterface::beginFrame(uint32_t frame_index,
 
   frame.panels->writeData(0, panel_uniforms);
 
+  frame.ui_draw_count =
+      current_draw->writeData(frame.ui_draw_vertices, frame.ui_draw_indices);
+
   frame.glyph_count = test_string.size();
   frame.glyph_instances->writeData(0, test_string);
 
@@ -403,11 +412,11 @@ void UserInterface::renderViewport(
   auto& frame = frame_data[current_frame];
 
   {
-    log_zone_named("Render panels");
+    log_zone_named("Render panels and UI draw");
+
+    GraphicsState graphics_state;
 
     {
-      GraphicsState graphics_state;
-
       GraphicsState::InputAssemblyState input_assembly_state{};
       input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::TriangleStrip;
@@ -436,6 +445,26 @@ void UserInterface::renderViewport(
     viewport_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 0);
     frame.panels_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 1);
     vkCmdDraw(command_buffer, 4, frame.panel_count, 0, 0);
+
+    {
+      GraphicsState::InputAssemblyState input_assembly_state{};
+      input_assembly_state.primitive_topology =
+          GraphicsState::PrimitiveTopology::TriangleList;
+      input_assembly_state.primitive_restart_enable =
+          GraphicsState::BoolFlag::False;
+      graphics_state.input_assembly_state = input_assembly_state;
+
+      ui_pipeline->cmdBind(command_buffer, graphics_state);
+    }
+
+    VkBuffer vertex_buffers[] = {frame.ui_draw_vertices->getBuffer()};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+    vkCmdBindIndexBuffer(command_buffer, frame.ui_draw_indices->getBuffer(), 0,
+                         VK_INDEX_TYPE_UINT32);
+    viewport_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 0);
+    frame.panels_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 1);
+    vkCmdDrawIndexed(command_buffer, frame.ui_draw_count, 1, 0, 0, 0);
   }
 
   {

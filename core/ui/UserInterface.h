@@ -85,6 +85,10 @@ class UserInterface : public RenderPass {
 
     GpuVector* styles = nullptr;
 
+    GpuVector* ui_draw_vertices = nullptr;
+    GpuVector* ui_draw_indices = nullptr;
+    uint32_t ui_draw_count;
+
     GpuDescriptorSet* panels_descriptor = nullptr;
     GpuDescriptorSet* glyph_descriptor = nullptr;
   };
