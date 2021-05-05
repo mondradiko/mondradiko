@@ -70,6 +70,7 @@ set(MONDRADIKO_CORE_SRC
   network/NetworkServer.cc
   ui/GlyphLoader.cc
   ui/GlyphStyle.cc
+  ui/UiDrawList.cc
   ui/UiPanel.cc
   ui/UserInterface.cc
   world/ScriptEntity.cc
