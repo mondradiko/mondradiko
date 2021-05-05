@@ -387,6 +387,7 @@ void Renderer::renderFrame() {
     log_zone_named("Fence frame");
 
     vkWaitForFences(gpu->device, 1, &frame.is_in_use, VK_TRUE, UINT64_MAX);
+    vkResetFences(gpu->device, 1, &frame.is_in_use);
   }
 
   {
@@ -461,12 +462,15 @@ void Renderer::renderFrame() {
   {
     log_zone_named("Write viewport uniforms");
 
+    types::vector<ViewportUniform> uniforms(viewports.size());
+
     for (uint32_t i = 0; i < viewports.size(); i++) {
       ViewportUniform uniform;
       viewports[i]->writeUniform(&uniform);
-      frame.viewports->writeElement(i, uniform);
+      uniforms[i] = uniform;
     }
 
+    frame.viewports->writeData(0, uniforms);
     viewport_descriptor->updateDynamicBuffer(0, frame.viewports);
   }
 
@@ -523,8 +527,6 @@ void Renderer::renderFrame() {
       submitInfo.signalSemaphoreCount = 0;
       submitInfo.pSignalSemaphores = nullptr;
     }
-
-    vkResetFences(gpu->device, 1, &frame.is_in_use);
 
     if (vkQueueSubmit(gpu->graphics_queue, 1, &submitInfo, frame.is_in_use) !=
         VK_SUCCESS) {

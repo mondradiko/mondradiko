@@ -311,11 +311,13 @@ void UserInterface::beginFrame(uint32_t frame_index,
   GlyphStyleList styles;
   types::unordered_map<GlyphStyle*, uint32_t> style_indices;
   GlyphString test_string;
+  types::vector<PanelUniform> panel_uniforms;
 
   for (auto panel : panels) {
     PanelUniform panel_uniform{};
     panel->writeUniform(&panel_uniform);
-    frame.panels->writeElement(frame.panel_count, panel_uniform);
+    panel_uniforms.emplace_back(panel_uniform);
+
     frame.panel_count++;
 
     auto panel_styles = panel->getStyles();
@@ -335,16 +337,18 @@ void UserInterface::beginFrame(uint32_t frame_index,
     }
   }
 
-  frame.glyph_count = 0;
+  frame.panels->writeData(0, panel_uniforms);
 
-  for (uint32_t i = 0; i < test_string.size(); i++) {
-    frame.glyph_instances->writeElement(frame.glyph_count, test_string[i]);
-    frame.glyph_count++;
-  }
+  frame.glyph_count = test_string.size();
+  frame.glyph_instances->writeData(0, test_string);
+
+  types::vector<GlyphStyleUniform> style_uniforms(styles.size());
 
   for (uint32_t i = 0; i < styles.size(); i++) {
-    frame.styles->writeElement(i, styles[i]->getUniform());
+    style_uniforms[i] = styles[i]->getUniform();
   }
+
+  frame.styles->writeData(0, style_uniforms);
 
   frame.panels_descriptor = descriptor_pool->allocate(panel_layout);
   frame.panels_descriptor->updateStorageBuffer(0, frame.panels);
