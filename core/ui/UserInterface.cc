@@ -22,6 +22,8 @@
 #include "core/scripting/instance/UiScript.h"
 #include "core/shaders/panel.frag.h"
 #include "core/shaders/panel.vert.h"
+#include "core/shaders/ui_draw.frag.h"
+#include "core/shaders/ui_draw.vert.h"
 #include "core/ui/GlyphStyle.h"
 #include "core/ui/UiPanel.h"
 #include "core/world/World.h"
@@ -91,6 +93,12 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     panel_fragment_shader =
         new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_panel_frag,
                       sizeof(shaders_panel_frag));
+    ui_vertex_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_ui_draw_vert,
+                      sizeof(shaders_ui_draw_vert));
+    ui_fragment_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_ui_draw_frag,
+                      sizeof(shaders_ui_draw_frag));
   }
 
   {
@@ -154,6 +162,19 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
   }
 
   {
+    log_zone_named("Create UI pipeline");
+
+    auto vertex_bindings = UiDrawList::Vertex::getVertexBindings();
+    auto attribute_descriptions =
+        UiDrawList::Vertex::getAttributeDescriptions();
+
+    ui_pipeline = new GpuPipeline(
+        gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getTransparentSubpass(), ui_vertex_shader, ui_fragment_shader,
+        vertex_bindings, attribute_descriptions);
+  }
+
+  {
     log_zone_named("Create glyph pipeline");
 
     auto vertex_bindings = GlyphInstance::getVertexBindings();
@@ -174,10 +195,14 @@ UserInterface::~UserInterface() {
     vkDestroyPipelineLayout(gpu->device, glyph_pipeline_layout, nullptr);
   if (glyph_set_layout != nullptr) delete glyph_set_layout;
 
+  if (ui_pipeline != nullptr) delete ui_pipeline;
+
   if (panel_pipeline != nullptr) delete panel_pipeline;
   if (panel_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, panel_pipeline_layout, nullptr);
   if (panel_layout != nullptr) delete panel_layout;
+  if (ui_vertex_shader != nullptr) delete ui_vertex_shader;
+  if (ui_fragment_shader != nullptr) delete ui_fragment_shader;
   if (panel_vertex_shader != nullptr) delete panel_vertex_shader;
   if (panel_fragment_shader != nullptr) delete panel_fragment_shader;
 

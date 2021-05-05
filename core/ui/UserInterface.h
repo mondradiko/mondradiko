@@ -66,6 +66,10 @@ class UserInterface : public RenderPass {
   VkPipelineLayout panel_pipeline_layout = VK_NULL_HANDLE;
   GpuPipeline* panel_pipeline = nullptr;
 
+  GpuShader* ui_vertex_shader = nullptr;
+  GpuShader* ui_fragment_shader = nullptr;
+  GpuPipeline* ui_pipeline = nullptr;
+
   GpuDescriptorSetLayout* glyph_set_layout = nullptr;
   VkPipelineLayout glyph_pipeline_layout = VK_NULL_HANDLE;
   GpuPipeline* glyph_pipeline = nullptr;
