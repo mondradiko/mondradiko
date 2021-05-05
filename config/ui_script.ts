@@ -3,6 +3,7 @@
 
 import GlyphStyle from "../builddir/codegen/ui/GlyphStyle";
 import UiPanel from "../builddir/codegen/ui/UiPanel";
+import Vector2 from "../builddir/codegen/types/Vector2";
 
 class QueuedMessage {
   lifespan: f64 = 5.0;
@@ -11,10 +12,10 @@ class QueuedMessage {
   max_height: f64 = 0.05;
   height: f64 = this.max_height;
 
-  constructor(public text: string, public style: GlyphStyle, offset: f64) {
+  constructor(public text: string, public style: GlyphStyle, public offset_x: f64, offset_y: f64) {
     this.style.setColor(1.0, 1.0, 1.0, 1.0);
     this.style.setText(this.text);
-    this.setOffset(offset);
+    this.setOffset(offset_y);
   }
 
   update(dt: f64): bool {
@@ -29,8 +30,64 @@ class QueuedMessage {
     return this.lifespan > 0.0;
   }
 
-  setOffset(offset: f64): void {
-    this.style.setOffset(-0.45, offset);
+  setOffset(offset_y: f64): void {
+    this.style.setOffset(this.offset_x, offset_y);
+  }
+}
+
+function drawCircle(panel: UiPanel,
+                    x: f64, y: f64, radius: f64,
+                    r: f64, g: f64, b: f64, alpha: f64): void {
+  let center = new Vector2(x, y);
+  let last_spoke = new Vector2(radius + x, y);
+  let delta: f64 = Math.PI / 16.0;
+  let limit: f64 = Math.PI * 2.0 + delta;
+  for (let theta = delta; theta < limit; theta += delta) {
+    let new_spoke = new Vector2(
+      Math.cos(theta) * radius,
+      Math.sin(theta) * radius);
+    new_spoke.add(center);
+
+    panel.drawTriangle(
+      x, y,
+      last_spoke.x, last_spoke.y,
+      new_spoke.x, new_spoke.y,
+      r, g, b, alpha);
+
+    last_spoke = new_spoke;
+  }
+}
+
+class PolkaDot {
+  lifespan: f64 = 0.5;
+  age: f64 = this.lifespan;
+  grow_duration: f64 = 0.05;
+  shrink_duration: f64 = 0.25;
+  fade_duration: f64 = 0.05;
+
+  constructor(public x: f64, public y: f64, public radius: f64, public r: f64, public g: f64, public b: f64) {}
+
+  update(dt: f64, panel: UiPanel): bool {
+    this.age -= dt;
+
+    if (this.age < 0.0) return false;
+
+    let radius = this.radius;
+    if (this.age < this.shrink_duration) {
+      radius *= this.age / this.shrink_duration;
+    } else if (this.age > this.lifespan - this.grow_duration) {
+      radius *= (this.lifespan - this.age) /
+                (this.lifespan - this.grow_duration);
+    }
+
+    let alpha = 1.0;
+    if (this.age < this.fade_duration) {
+      alpha *= this.age / this.fade_duration;
+    }
+
+    drawCircle(panel, this.x, this.y, radius, this.r, this.g, this.b, alpha);
+
+    return true;
   }
 }
 
@@ -41,12 +98,24 @@ export class PanelImpl {
   message_queue: Array<QueuedMessage> = [];
   log_bottom: f64 = -0.45;
   last_message: f64 = 0.0;
+  polka_dot_queue: Array<PolkaDot> = [];
+  last_polka_dot: f64 = 0.0;
 
   constructor(public panel: UiPanel) {
     main_panel = this;
   }
 
-  selectAt(x: f64, y: f64): void {}
+  selectAt(x: f64, y: f64): void {
+    let polka_dot = new PolkaDot(x, y, 0.05, 1.0, 1.0, 1.0);
+    this.polka_dot_queue.push(polka_dot);
+
+    let e = 1000.0;
+    let rx = Math.round(x * e) / e;
+    let ry = Math.round(y * e) / e;
+
+    let message_text = `Selected at: (${rx}, ${ry})`;
+    this.handleMessage(message_text);
+  }
 
   handleMessage(message: string): void {
     let style: GlyphStyle;
@@ -57,7 +126,9 @@ export class PanelImpl {
       style = this.panel.createGlyphStyle();
     }
 
-    let new_message = new QueuedMessage(message, style, this.log_bottom);
+    let offset_x = -0.45 * this.panel.getWidth();
+
+    let new_message = new QueuedMessage(message, style, offset_x, this.log_bottom);
     this.message_queue.push(new_message);
     this.log_bottom += new_message.height;
 
@@ -72,6 +143,21 @@ export class PanelImpl {
   }
 
   update(dt: f64): void {
+    this.last_polka_dot -= dt;
+
+    while (this.last_polka_dot < 0.0) {
+      let x = Math.random() - 0.5;
+      let y = Math.random() - 0.5;
+
+      x *= this.panel.getWidth() * 0.95;
+      y *= this.panel.getHeight() * 0.95;
+
+      let polka_dot = new PolkaDot(x, y, 0.01, 0.8, 0.0, 0.8);
+      this.polka_dot_queue.push(polka_dot);
+
+      this.last_polka_dot += 0.002;
+    }
+
     this.last_message -= dt;
 
     this.log_bottom = -0.45;
@@ -89,6 +175,18 @@ export class PanelImpl {
         message.style.setText("");
         this.style_pool.push(message.style);
         this.message_queue.splice(i, 1);
+      }
+    }
+
+    i = 0;
+
+    while (i < this.polka_dot_queue.length) {
+      let polka_dot = this.polka_dot_queue[i];
+
+      if (polka_dot.update(dt, this.panel)) {
+        i++;
+      } else {
+        this.polka_dot_queue.splice(i, 1);
       }
     }
   }

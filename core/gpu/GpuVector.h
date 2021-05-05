@@ -9,6 +9,7 @@
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuInstance.h"
 #include "log/log.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
@@ -29,7 +30,7 @@ class GpuVector : public GpuBuffer {
   }
 
   template <typename ElementType>
-  void writeElement(uint32_t, const ElementType&);
+  void writeData(uint32_t, const types::vector<ElementType>&);
 
   size_t getGranularity() { return element_granularity; }
 
@@ -40,7 +41,8 @@ class GpuVector : public GpuBuffer {
 };
 
 template <typename ElementType>
-void GpuVector::writeElement(uint32_t index, const ElementType& element) {
+void GpuVector::writeData(uint32_t offset,
+                          const types::vector<ElementType>& data) {
   if (sizeof(ElementType) > element_granularity) {
     log_err_fmt("Element size %lu of type %s exceeds granularity of %lu",
                 sizeof(ElementType), typeid(ElementType).name(),
@@ -48,16 +50,25 @@ void GpuVector::writeElement(uint32_t index, const ElementType& element) {
     return;
   }
 
-  size_t needed_size = (index + 1) * element_granularity;
+  size_t copy_size = data.size() * element_granularity;
+  size_t needed_size = copy_size + offset;
 
   if (needed_size > buffer_size) {
     size_t larger_size = buffer_size << 1;
     reserve(needed_size > larger_size ? needed_size : larger_size);
   }
 
-  memcpy(static_cast<char*>(allocation_info.pMappedData) +
-             index * element_granularity,
-         reinterpret_cast<const char*>(&element), sizeof(ElementType));
+  if (sizeof(ElementType) == element_granularity) {
+    memcpy(static_cast<char*>(allocation_info.pMappedData) + offset,
+           reinterpret_cast<const char*>(data.data()), copy_size);
+  } else {
+    for (size_t i = 0; i < data.size(); i++) {
+      char* dst = static_cast<char*>(allocation_info.pMappedData) +
+                  (i * element_granularity) + offset;
+      const char* src = reinterpret_cast<const char*>(&data[i]);
+      memcpy(dst, src, sizeof(ElementType));
+    }
+  }
 }
 
 }  // namespace core

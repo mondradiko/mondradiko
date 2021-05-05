@@ -33,3 +33,18 @@ dependencies = ["GlyphStyle"]
 
   [methods.createGlyphStyle]
   return_class = "GlyphStyle"
+
+  [methods.drawTriangle]
+  param_list = ["x1", "y1", "x2", "y2", "x3", "y3", "r", "g", "b", "a"]
+
+    [methods.drawTriangle.params]
+    x1 = "double"
+    y1 = "double"
+    x2 = "double"
+    y2 = "double"
+    x3 = "double"
+    y3 = "double"
+    r = "double"
+    g = "double"
+    b = "double"
+    a = "double"

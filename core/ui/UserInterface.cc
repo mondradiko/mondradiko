@@ -22,7 +22,10 @@
 #include "core/scripting/instance/UiScript.h"
 #include "core/shaders/panel.frag.h"
 #include "core/shaders/panel.vert.h"
+#include "core/shaders/ui_draw.frag.h"
+#include "core/shaders/ui_draw.vert.h"
 #include "core/ui/GlyphStyle.h"
+#include "core/ui/UiDrawList.h"
 #include "core/ui/UiPanel.h"
 #include "core/world/World.h"
 #include "log/log.h"
@@ -91,6 +94,12 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     panel_fragment_shader =
         new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_panel_frag,
                       sizeof(shaders_panel_frag));
+    ui_vertex_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_ui_draw_vert,
+                      sizeof(shaders_ui_draw_vert));
+    ui_fragment_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_ui_draw_frag,
+                      sizeof(shaders_ui_draw_frag));
   }
 
   {
@@ -154,6 +163,19 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
   }
 
   {
+    log_zone_named("Create UI pipeline");
+
+    auto vertex_bindings = UiDrawList::Vertex::getVertexBindings();
+    auto attribute_descriptions =
+        UiDrawList::Vertex::getAttributeDescriptions();
+
+    ui_pipeline = new GpuPipeline(
+        gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
+        renderer->getTransparentSubpass(), ui_vertex_shader, ui_fragment_shader,
+        vertex_bindings, attribute_descriptions);
+  }
+
+  {
     log_zone_named("Create glyph pipeline");
 
     auto vertex_bindings = GlyphInstance::getVertexBindings();
@@ -164,20 +186,32 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
         renderer->getTransparentSubpass(), glyphs->getVertexShader(),
         glyphs->getFragmentShader(), vertex_bindings, attribute_descriptions);
   }
+
+  {
+    log_zone_named("Create UI draw list");
+
+    current_draw = new UiDrawList;
+  }
 }
 
 UserInterface::~UserInterface() {
   log_zone;
+
+  if (current_draw != nullptr) delete current_draw;
 
   if (glyph_pipeline != nullptr) delete glyph_pipeline;
   if (glyph_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, glyph_pipeline_layout, nullptr);
   if (glyph_set_layout != nullptr) delete glyph_set_layout;
 
+  if (ui_pipeline != nullptr) delete ui_pipeline;
+
   if (panel_pipeline != nullptr) delete panel_pipeline;
   if (panel_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, panel_pipeline_layout, nullptr);
   if (panel_layout != nullptr) delete panel_layout;
+  if (ui_vertex_shader != nullptr) delete ui_vertex_shader;
+  if (ui_fragment_shader != nullptr) delete ui_fragment_shader;
   if (panel_vertex_shader != nullptr) delete panel_vertex_shader;
   if (panel_fragment_shader != nullptr) delete panel_fragment_shader;
 
@@ -264,9 +298,11 @@ bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
     }
   }
 
+  current_draw->clear();
+
   for (auto panel : panels) {
     if (panel != nullptr) {
-      panel->update(dt);
+      panel->update(dt, current_draw);
     }
   }
 
@@ -285,6 +321,10 @@ void UserInterface::createFrameData(uint32_t frame_count) {
                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     frame.styles = new GpuVector(gpu, sizeof(GlyphStyleUniform),
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    frame.ui_draw_vertices = new GpuVector(gpu, sizeof(UiDrawList::Vertex),
+                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    frame.ui_draw_indices = new GpuVector(gpu, sizeof(UiDrawList::Index),
+                                          VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
   }
 }
 
@@ -295,6 +335,8 @@ void UserInterface::destroyFrameData() {
     if (frame.panels != nullptr) delete frame.panels;
     if (frame.glyph_instances != nullptr) delete frame.glyph_instances;
     if (frame.styles != nullptr) delete frame.styles;
+    if (frame.ui_draw_vertices != nullptr) delete frame.ui_draw_vertices;
+    if (frame.ui_draw_indices != nullptr) delete frame.ui_draw_indices;
   }
 }
 
@@ -311,11 +353,13 @@ void UserInterface::beginFrame(uint32_t frame_index,
   GlyphStyleList styles;
   types::unordered_map<GlyphStyle*, uint32_t> style_indices;
   GlyphString test_string;
+  types::vector<PanelUniform> panel_uniforms;
 
   for (auto panel : panels) {
     PanelUniform panel_uniform{};
     panel->writeUniform(&panel_uniform);
-    frame.panels->writeElement(frame.panel_count, panel_uniform);
+    panel_uniforms.emplace_back(panel_uniform);
+
     frame.panel_count++;
 
     auto panel_styles = panel->getStyles();
@@ -335,16 +379,21 @@ void UserInterface::beginFrame(uint32_t frame_index,
     }
   }
 
-  frame.glyph_count = 0;
+  frame.panels->writeData(0, panel_uniforms);
 
-  for (uint32_t i = 0; i < test_string.size(); i++) {
-    frame.glyph_instances->writeElement(frame.glyph_count, test_string[i]);
-    frame.glyph_count++;
-  }
+  frame.ui_draw_count =
+      current_draw->writeData(frame.ui_draw_vertices, frame.ui_draw_indices);
+
+  frame.glyph_count = test_string.size();
+  frame.glyph_instances->writeData(0, test_string);
+
+  types::vector<GlyphStyleUniform> style_uniforms(styles.size());
 
   for (uint32_t i = 0; i < styles.size(); i++) {
-    frame.styles->writeElement(i, styles[i]->getUniform());
+    style_uniforms[i] = styles[i]->getUniform();
   }
+
+  frame.styles->writeData(0, style_uniforms);
 
   frame.panels_descriptor = descriptor_pool->allocate(panel_layout);
   frame.panels_descriptor->updateStorageBuffer(0, frame.panels);
@@ -363,11 +412,11 @@ void UserInterface::renderViewport(
   auto& frame = frame_data[current_frame];
 
   {
-    log_zone_named("Render panels");
+    log_zone_named("Render panels and UI draw");
+
+    GraphicsState graphics_state;
 
     {
-      GraphicsState graphics_state;
-
       GraphicsState::InputAssemblyState input_assembly_state{};
       input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::TriangleStrip;
@@ -396,6 +445,26 @@ void UserInterface::renderViewport(
     viewport_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 0);
     frame.panels_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 1);
     vkCmdDraw(command_buffer, 4, frame.panel_count, 0, 0);
+
+    {
+      GraphicsState::InputAssemblyState input_assembly_state{};
+      input_assembly_state.primitive_topology =
+          GraphicsState::PrimitiveTopology::TriangleList;
+      input_assembly_state.primitive_restart_enable =
+          GraphicsState::BoolFlag::False;
+      graphics_state.input_assembly_state = input_assembly_state;
+
+      ui_pipeline->cmdBind(command_buffer, graphics_state);
+    }
+
+    VkBuffer vertex_buffers[] = {frame.ui_draw_vertices->getBuffer()};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+    vkCmdBindIndexBuffer(command_buffer, frame.ui_draw_indices->getBuffer(), 0,
+                         VK_INDEX_TYPE_UINT32);
+    viewport_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 0);
+    frame.panels_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 1);
+    vkCmdDrawIndexed(command_buffer, frame.ui_draw_count, 1, 0, 0, 0);
   }
 
   {

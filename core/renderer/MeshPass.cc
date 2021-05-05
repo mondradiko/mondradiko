@@ -259,11 +259,7 @@ void MeshPass::beginFrame(uint32_t frame_index,
     }
   }
 
-  {
-    for (uint32_t i = 0; i < point_light_uniforms.size(); i++) {
-      frame.point_lights->writeElement(i, point_light_uniforms[i]);
-    }
-  }
+  frame.point_lights->writeData(0, point_light_uniforms);
 
   types::unordered_map<AssetId, uint32_t> material_assets;
   types::vector<MaterialUniform> frame_materials;
@@ -344,17 +340,11 @@ void MeshPass::beginFrame(uint32_t frame_index,
     target_commands->push_back(cmd);
   }
 
-  for (uint32_t i = 0; i < frame_materials.size(); i++) {
-    frame.material_buffer->writeElement(i, frame_materials[i]);
-  }
-
+  frame.material_buffer->writeData(0, frame_materials);
   frame.material_descriptor = descriptor_pool->allocate(material_layout);
   frame.material_descriptor->updateStorageBuffer(0, frame.material_buffer);
 
-  for (uint32_t i = 0; i < frame_meshes.size(); i++) {
-    frame.mesh_buffer->writeElement(i, frame_meshes[i]);
-  }
-
+  frame.mesh_buffer->writeData(0, frame_meshes);
   frame.mesh_descriptor = descriptor_pool->allocate(mesh_layout);
   frame.mesh_descriptor->updateStorageBuffer(0, frame.mesh_buffer);
   frame.mesh_descriptor->updateStorageBuffer(1, frame.point_lights);

@@ -14,6 +14,7 @@ namespace core {
 // Forward declarations
 class GlyphLoader;
 class GlyphStyle;
+class UiDrawList;
 class UiScript;
 class World;
 
@@ -28,7 +29,7 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
   UiPanel(GlyphLoader*, UiScript*, const types::string&);
   ~UiPanel();
 
-  void update(double);
+  void update(double, UiDrawList*);
   void handleMessage(const types::string&);
   void selectAt(const glm::vec2& coords);
 
@@ -84,6 +85,7 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
   wasm_trap_t* setColor(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
   wasm_trap_t* createGlyphStyle(ScriptInstance*, const wasm_val_t[],
                                 wasm_val_t[]);
+  wasm_trap_t* drawTriangle(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
 
  private:
   GlyphLoader* glyphs;
@@ -98,6 +100,8 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
   glm::vec3 _position;
   glm::quat _orientation;
   glm::vec2 _size;
+
+  UiDrawList* _current_draw;
 };
 
 }  // namespace core

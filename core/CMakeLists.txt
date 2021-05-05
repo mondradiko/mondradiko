@@ -18,6 +18,8 @@ spirv_shaders(SHADER_HEADERS
   shaders/mesh_forward.vert
   shaders/panel.frag
   shaders/panel.vert
+  shaders/ui_draw.frag
+  shaders/ui_draw.vert
 )
 
 #
@@ -70,6 +72,7 @@ set(MONDRADIKO_CORE_SRC
   network/NetworkServer.cc
   ui/GlyphLoader.cc
   ui/GlyphStyle.cc
+  ui/UiDrawList.cc
   ui/UiPanel.cc
   ui/UserInterface.cc
   world/ScriptEntity.cc

@@ -59,14 +59,8 @@ void DebugDrawList::drawLine(const glm::vec3& start, const glm::vec3& end,
 
 DebugDrawList::Index DebugDrawList::writeData(GpuVector* vertex_vector,
                                               GpuVector* index_vector) {
-  for (Index i = 0; i < _vertices.size(); i++) {
-    vertex_vector->writeElement(i, _vertices[i]);
-  }
-
-  for (Index i = 0; i < _indices.size(); i++) {
-    index_vector->writeElement(i, _indices[i]);
-  }
-
+  vertex_vector->writeData(0, _vertices);
+  index_vector->writeData(0, _indices);
   return _indices.size();
 }
 
