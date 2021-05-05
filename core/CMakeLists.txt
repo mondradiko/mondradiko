@@ -18,6 +18,8 @@ spirv_shaders(SHADER_HEADERS
   shaders/mesh_forward.vert
   shaders/panel.frag
   shaders/panel.vert
+  shaders/ui_draw.frag
+  shaders/ui_draw.vert
 )
 
 #
