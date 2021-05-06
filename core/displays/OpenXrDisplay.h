@@ -23,6 +23,7 @@ class OpenXrDisplay : public DisplayInterface {
   bool getVulkanRequirements(VulkanRequirements*) final;
   bool getVulkanDevice(VkInstance, VkPhysicalDevice*) final;
   bool createSession(GpuInstance*) final;
+  void setUserInterface(UserInterface*) final {}
   const Avatar* getAvatar(World*) final;
   void destroySession() final;
 

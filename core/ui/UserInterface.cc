@@ -57,32 +57,15 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     scripts = new UiScriptEnvironment(this);
   }
 
-  {
-    log_zone_named("Load UI script module");
-
-    auto script_path = cvars->get<FileCVar>("script_path").getPath();
-
-    types::vector<char> script_data;
-    if (!fs->loadBinaryFile(script_path, &script_data)) {
-      log_ftl("Failed to load UI script file");
-    }
-
-    script_module = scripts->loadBinaryModule(script_data);
-    if (script_module == nullptr) {
-      log_ftl("Failed to load UI script module");
-    }
-  }
-
-  {
-    log_zone_named("Instantiate UI script");
-
-    ui_script = new UiScript(scripts, script_module);
-  }
-
   {  // Temp panel
-    auto panel_impl = cvars->get<StringCVar>("panel_impl").str();
-    UiPanel* temp_panel = new UiPanel(glyphs, ui_script, panel_impl);
+    UiPanel* temp_panel = new UiPanel(glyphs, scripts);
     panels.push_back(temp_panel);
+  }
+
+  {
+    log_zone_named("Load initial UI script");
+
+    loadUiScript();
   }
 
   {
@@ -222,6 +205,52 @@ UserInterface::~UserInterface() {
   if (ui_script != nullptr) delete ui_script;
   if (script_module != nullptr) wasm_module_delete(script_module);
   if (scripts != nullptr) delete scripts;
+}
+
+void UserInterface::loadUiScript() {
+  log_zone;
+
+  UiScript* old_script = ui_script;
+
+  {
+    log_zone_named("Load UI script module");
+
+    auto script_path = cvars->get<FileCVar>("script_path").getPath();
+
+    log_msg_fmt("Loading UI script from: %s", script_path.c_str());
+
+    types::vector<char> script_data;
+    if (!fs->loadBinaryFile(script_path, &script_data)) {
+      log_ftl("Failed to load UI script file");
+    }
+
+    script_module = scripts->loadBinaryModule(script_data);
+    if (script_module == nullptr) {
+      log_ftl("Failed to load UI script module");
+    }
+  }
+
+  {
+    log_zone_named("Instantiate UI script");
+
+    ui_script = new UiScript(scripts, script_module);
+  }
+
+  {
+    log_zone_named("Bind to panels");
+
+    auto panel_impl = cvars->get<StringCVar>("panel_impl").str();
+
+    for (auto panel : panels) {
+      panel->bindUiScript(ui_script, panel_impl);
+    }
+  }
+
+  {
+    log_zone_named("Destroy old UI script");
+
+    if (old_script != nullptr) delete old_script;
+  }
 }
 
 void UserInterface::displayMessage(const char* message) {
