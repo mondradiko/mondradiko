@@ -105,7 +105,9 @@ export class PanelImpl {
     main_panel = this;
   }
 
-  selectAt(x: f64, y: f64): void {
+  onHover(x: f64, y: f64): void {}
+
+  onSelect(x: f64, y: f64): void {
     let polka_dot = new PolkaDot(x, y, 0.05, 1.0, 1.0, 1.0);
     this.polka_dot_queue.push(polka_dot);
 
@@ -116,6 +118,10 @@ export class PanelImpl {
     let message_text = `Selected at: (${rx}, ${ry})`;
     this.handleMessage(message_text);
   }
+
+  onDrag(x: f64, y: f64): void {}
+
+  onDeselect(x: f64, y: f64): void {}
 
   handleMessage(message: string): void {
     let style: GlyphStyle;
