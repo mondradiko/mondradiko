@@ -30,6 +30,7 @@ void OverlayPass::initCVars(CVarScope* cvars) {
   CVarScope* debug = cvars->addChild("debug");
 
   debug->addValue<BoolCVar>("enabled");
+  debug->addValue<BoolCVar>("draw_grid");
   debug->addValue<BoolCVar>("draw_lights");
   debug->addValue<BoolCVar>("draw_transforms");
   debug->addValue<BoolCVar>("draw_pointers");
@@ -134,6 +135,29 @@ void OverlayPass::beginFrame(uint32_t frame_index,
 
   DebugDrawList debug_draw;
 
+  if (cvars->get<BoolCVar>("draw_grid")) {
+    int grid_width = 10;
+    int grid_height = 10;
+    float grid_space = 1.0;
+    glm::vec4 color = glm::vec4(0.0, 1.0, 0.0, 1.0);
+
+    // X lines
+    for (int x = -grid_width; x <= grid_width; x++) {
+      float y = grid_height * grid_space;
+      glm::vec3 start = glm::vec3(x * grid_space, 0.0, y);
+      glm::vec3 end = glm::vec3(x * grid_space, 0.0, -y);
+      _debug_draw.drawLine(start, end, color);
+    }
+
+    // Y lines
+    for (int y = -grid_height; y <= grid_height; y++) {
+      float x = grid_width * grid_space;
+      glm::vec3 start = glm::vec3(x, 0.0, y * grid_space);
+      glm::vec3 end = glm::vec3(-x, 0.0, y * grid_space);
+      _debug_draw.drawLine(start, end, color);
+    }
+  }
+
   if (cvars->get<BoolCVar>("draw_transforms")) {
     auto transform_view = world->registry.view<WorldTransform>();
 
@@ -201,7 +225,7 @@ void OverlayPass::beginFrame(uint32_t frame_index,
   }
 
   frame.index_count =
-    _debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
+      _debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
   _debug_draw.clear();
 }
 
