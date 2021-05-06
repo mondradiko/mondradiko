@@ -40,7 +40,8 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
     log_ftl("Failed to initialize FreeType");
   }
 
-  auto font_path = cvars->get<FileCVar>("font_path").getPath().string();
+  auto font_path =
+    cvars->get<FileCVar>("font_path").getPath().string();  // NOLINT
   error = FT_New_Face(freetype, font_path.c_str(), 0, &font_face);
   if (error) {
     log_ftl_fmt("Failed to load font %s", font_path);
