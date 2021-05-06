@@ -17,7 +17,8 @@ class SpectatorAvatar : public Avatar {
   explicit SpectatorAvatar(World*);
   ~SpectatorAvatar();
 
-  void onClick();
+  void onClickPress();
+  void onClickRelease();
   void moveCamera(float, float, float, float, float);
 
   glm::vec3 getPosition() { return camera_position; }

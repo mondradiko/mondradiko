@@ -237,7 +237,17 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
           if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
             SDL_SetRelativeMouseMode(SDL_TRUE);
           } else if (avatar != nullptr) {
-            avatar->onClick();
+            avatar->onClickPress();
+          }
+        }
+
+        break;
+      }
+
+      case SDL_MOUSEBUTTONUP: {
+        if (e.button.button == SDL_BUTTON_LEFT) {
+          if (avatar != nullptr) {
+            avatar->onClickRelease();
           }
         }
 

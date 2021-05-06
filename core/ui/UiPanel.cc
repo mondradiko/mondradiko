@@ -80,10 +80,11 @@ void UiPanel::update(double dt, UiDrawList* ui_draw) {
   ui_script->runCallback(update_callback, args.data(), args.size(), nullptr, 0);
 }
 
-void UiPanel::selectAt(const glm::vec2& coords) {
-  types::string select_callback = _impl + "#selectAt";
-  if (!ui_script->hasCallback(select_callback)) {
-    log_wrn_fmt("UI script does not export %s", select_callback.c_str());
+void UiPanel::runCallbackWithCoords(const types::string& method,
+                                    const glm::vec2& coords) {
+  types::string callback = _impl + "#" + method;
+  if (!ui_script->hasCallback(callback)) {
+    log_wrn_fmt("UI script does not export %s", callback.c_str());
     return;
   }
 
@@ -101,7 +102,23 @@ void UiPanel::selectAt(const glm::vec2& coords) {
   y_arg.kind = WASM_F64;
   y_arg.of.f64 = coords.y;
 
-  ui_script->runCallback(select_callback, args.data(), args.size(), nullptr, 0);
+  ui_script->runCallback(callback, args.data(), args.size(), nullptr, 0);
+}
+
+void UiPanel::onHover(const glm::vec2& coords) {
+  runCallbackWithCoords("onHover", coords);
+}
+
+void UiPanel::onSelect(const glm::vec2& coords) {
+  runCallbackWithCoords("onSelect", coords);
+}
+
+void UiPanel::onDrag(const glm::vec2& coords) {
+  runCallbackWithCoords("onDrag", coords);
+}
+
+void UiPanel::onDeselect(const glm::vec2& coords) {
+  runCallbackWithCoords("onDeselect", coords);
 }
 
 glm::mat4 UiPanel::getPlaneTransform() {

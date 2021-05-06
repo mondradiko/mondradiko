@@ -33,7 +33,13 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
   void bindUiScript(UiScript*, const types::string&);
   void update(double, UiDrawList*);
   void handleMessage(const types::string&);
-  void selectAt(const glm::vec2& coords);
+
+  void runCallbackWithCoords(const types::string&, const glm::vec2&);
+
+  void onHover(const glm::vec2&);
+  void onSelect(const glm::vec2&);
+  void onDrag(const glm::vec2&);
+  void onDeselect(const glm::vec2&);
 
   glm::mat4 getPlaneTransform();
   glm::mat4 getTrsTransform();
