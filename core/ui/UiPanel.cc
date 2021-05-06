@@ -17,7 +17,7 @@ namespace core {
 UiPanel::UiPanel(GlyphLoader* glyphs, ScriptEnvironment* scripts)
     : DynamicScriptObject(scripts), glyphs(glyphs) {
   _color = glm::vec4(0.0, 0.0, 0.0, 0.9);
-  _position = glm::vec3(4.0, 1.25, 0.0);
+  _position = glm::vec3(1.0, 1.25, 0.0);
   _orientation =
       glm::angleAxis(static_cast<float>(-M_PI_2), glm::vec3(0.0, 1.0, 0.0));
   _size = glm::vec2(1.6, 1.0);

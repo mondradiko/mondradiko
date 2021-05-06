@@ -23,6 +23,7 @@ queue_stall = false
 
 [renderer.debug]
 enabled = true
+draw_grid = false
 draw_lights = true
 draw_transforms = true
 draw_pointers = true
