@@ -14,35 +14,47 @@
 namespace mondradiko {
 namespace core {
 
-UiPanel::UiPanel(GlyphLoader* glyphs, UiScript* ui_script,
-                 const types::string& impl)
-    : DynamicScriptObject(ui_script->scripts),
-      glyphs(glyphs),
-      ui_script(ui_script),
-      _impl(impl) {
+UiPanel::UiPanel(GlyphLoader* glyphs, ScriptEnvironment* scripts)
+    : DynamicScriptObject(scripts), glyphs(glyphs) {
   _color = glm::vec4(0.0, 0.0, 0.0, 0.9);
   _position = glm::vec3(4.0, 1.25, 0.0);
   _orientation =
       glm::angleAxis(static_cast<float>(-M_PI_2), glm::vec3(0.0, 1.0, 0.0));
   _size = glm::vec2(1.6, 1.0);
+}
+
+UiPanel::~UiPanel() {
+  bindUiScript(nullptr, "");
+
+  for (auto& style : _styles) {
+    if (style != nullptr) delete style;
+  }
+}
+
+void UiPanel::bindUiScript(UiScript* new_script,
+                           const types::string& new_impl) {
+  if (ui_script != nullptr) ui_script->AS_unpin(_this_ptr);
+
+  if (new_script == nullptr) return;
+
+  ui_script = new_script;
+  _impl = new_impl;
+
+  for (auto& style : _styles) {
+    if (style != nullptr) delete style;
+  }
+
+  _styles.clear();
 
   wasm_val_t panel_arg;
   panel_arg.kind = WASM_I32;
   panel_arg.of.i32 = getObjectKey();
 
-  if (ui_script->AS_construct(impl, &panel_arg, 1, &_this_ptr)) {
+  if (ui_script->AS_construct(_impl, &panel_arg, 1, &_this_ptr)) {
     ui_script->AS_pin(_this_ptr);
   } else {
     log_err_fmt("Failed to bind UI panel");
     _this_ptr = 0;
-  }
-}
-
-UiPanel::~UiPanel() {
-  ui_script->AS_unpin(_this_ptr);
-
-  for (auto& style : _styles) {
-    if (style != nullptr) delete style;
   }
 }
 

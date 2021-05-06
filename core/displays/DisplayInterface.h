@@ -14,6 +14,7 @@ namespace core {
 class Avatar;
 class GpuInstance;
 class Renderer;
+class UserInterface;
 class Viewport;
 class World;
 
@@ -43,6 +44,7 @@ class DisplayInterface {
   virtual bool getVulkanRequirements(VulkanRequirements*) = 0;
   virtual bool getVulkanDevice(VkInstance, VkPhysicalDevice*) = 0;
   virtual bool createSession(GpuInstance*) = 0;
+  virtual void setUserInterface(UserInterface*) = 0;
   virtual const Avatar* getAvatar(World*) = 0;
   virtual void destroySession() = 0;
 

@@ -14,6 +14,7 @@ namespace core {
 // Forward declarations
 class GlyphLoader;
 class GlyphStyle;
+class ScriptEnvironment;
 class UiDrawList;
 class UiScript;
 class World;
@@ -26,9 +27,10 @@ struct PanelUniform {
 
 class UiPanel : public DynamicScriptObject<UiPanel> {
  public:
-  UiPanel(GlyphLoader*, UiScript*, const types::string&);
+  UiPanel(GlyphLoader*, ScriptEnvironment*);
   ~UiPanel();
 
+  void bindUiScript(UiScript*, const types::string&);
   void update(double, UiDrawList*);
   void handleMessage(const types::string&);
   void selectAt(const glm::vec2& coords);
@@ -89,8 +91,8 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
 
  private:
   GlyphLoader* glyphs;
-  UiScript* ui_script;
 
+  UiScript* ui_script = nullptr;
   types::string _impl;
   uint32_t _this_ptr;
 

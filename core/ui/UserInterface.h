@@ -35,6 +35,7 @@ class UserInterface : public RenderPass {
   UserInterface(const CVarScope*, Filesystem*, GlyphLoader*, Renderer*, World*);
   ~UserInterface();
 
+  void loadUiScript();
   void displayMessage(const char*);
   bool update(double, DebugDrawList*);
 

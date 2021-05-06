@@ -26,6 +26,7 @@ class SdlDisplay : public DisplayInterface {
   bool getVulkanRequirements(VulkanRequirements*) final;
   bool getVulkanDevice(VkInstance, VkPhysicalDevice*) final;
   bool createSession(GpuInstance*) final;
+  void setUserInterface(UserInterface*) final;
   const Avatar* getAvatar(World*) final;
   void destroySession() final;
 
@@ -58,6 +59,8 @@ class SdlDisplay : public DisplayInterface {
  private:
   const CVarScope* cvars;
   GpuInstance* gpu;
+
+  UserInterface* ui = nullptr;
 
   // TODO(marceline-cramer) Move this into GpuInstance
   uint32_t present_queue_family;

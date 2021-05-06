@@ -10,6 +10,7 @@
 #include "core/cvars/FloatCVar.h"
 #include "core/displays/SdlViewport.h"
 #include "core/gpu/GpuInstance.h"
+#include "core/ui/UserInterface.h"
 #include "log/log.h"
 #include "types/build_config.h"
 
@@ -181,6 +182,8 @@ bool SdlDisplay::createSession(GpuInstance* _gpu) {
   return true;
 }
 
+void SdlDisplay::setUserInterface(UserInterface* new_ui) { ui = new_ui; }
+
 const Avatar* SdlDisplay::getAvatar(World* world) {
   avatar = new SpectatorAvatar(world);
   return avatar;
@@ -245,6 +248,13 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
         switch (e.key.keysym.scancode) {
           case SDL_SCANCODE_ESCAPE: {
             SDL_SetRelativeMouseMode(SDL_FALSE);
+            break;
+          }
+
+          case SDL_SCANCODE_F5: {
+            if (ui != nullptr) {
+              ui->loadUiScript();
+            }
             break;
           }
 

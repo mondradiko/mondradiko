@@ -123,6 +123,7 @@ void run(const ClientArgs& args) {
 
   UserInterface ui(&cvars, &fs, &glyphs, &renderer, &world);
   renderer.addRenderPass(&ui);
+  display->setUserInterface(&ui);
 
   std::unique_ptr<NetworkClient> client;
 
