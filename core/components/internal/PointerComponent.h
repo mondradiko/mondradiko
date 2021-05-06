@@ -17,21 +17,34 @@ class PointerComponent : public InternalComponent {
   const glm::vec3& getPosition() const { return _position; }
   const glm::vec3& getDirection() const { return _direction; }
 
-  void setSelect() { _select = true; }
+  enum class State { Hover, Select, Drag, Deselect };
 
-  bool checkSelect() {
+  void setSelect() { _select = true, _dirty = true; }
+  void unsetSelect() { _select = false, _dirty = true; }
+
+  State getState() const {
     if (_select) {
-      _select = false;
-      return true;
+      if (_dirty) {
+        return State::Select;
+      } else {
+        return State::Drag;
+      }
+    } else {
+      if (_dirty) {
+        return State::Deselect;
+      } else {
+        return State::Hover;
+      }
     }
-
-    return false;
   }
 
  private:
+  friend class UserInterface;
+
   glm::vec3 _position;
   glm::vec3 _direction;
 
+  bool _dirty = false;
   bool _select = false;
 };
 

@@ -264,8 +264,8 @@ bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
   for (auto e : pointers_view) {
     auto& pointer = pointers_view.get(e);
 
-    // Test if this pointer has a select event set (unsets if true)
-    bool selected = pointer.checkSelect();
+    PointerComponent::State pointer_state = pointer.getState();
+    pointer._dirty = false;
 
     glm::mat4 world_transform(1.0);
     if (world->registry.has<WorldTransform>(e)) {
@@ -295,18 +295,35 @@ bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
     if (nearest != nullptr) {
       auto coords = nearest->getRayIntersectCoords(position, direction);
 
-      if (selected) {
-        nearest->selectAt(coords);
+      glm::vec3 color;  // Used for debug draw
+      switch (pointer_state) {
+        case PointerComponent::State::Hover: {
+          nearest->onHover(coords);
+          color = glm::vec3(0.5, 0.5, 1.0);
+          break;
+        }
+
+        case PointerComponent::State::Select: {
+          nearest->onSelect(coords);
+          color = glm::vec3(0.0, 1.0, 0.0);
+          break;
+        }
+
+        case PointerComponent::State::Drag: {
+          nearest->onDrag(coords);
+          color = glm::vec3(0.0, 0.0, 1.0);
+          break;
+        }
+
+        case PointerComponent::State::Deselect: {
+          nearest->onDeselect(coords);
+          color = glm::vec3(1.0, 0.0, 0.0);
+          break;
+        }
       }
 
       // Draw X indicator at the collision point
       if (debug_draw != nullptr) {
-        // Pale blue on hover, green on select
-        glm::vec3 color(0.5, 0.5, 1.0);
-        if (selected) {
-          color = glm::vec3(0.0, 1.0, 0.0);
-        }
-
         auto plane_transform = nearest->getPlaneTransform();
         glm::vec2 x_size(0.01, 0.01);
         glm::vec3 x_offset = nearest->getNormal() * glm::vec3(0.01);
