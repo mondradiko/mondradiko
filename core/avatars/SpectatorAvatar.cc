@@ -27,8 +27,12 @@ SpectatorAvatar::SpectatorAvatar(World* world) : world(world) {
 
 SpectatorAvatar::~SpectatorAvatar() { world->registry.destroy(_self_id); }
 
-void SpectatorAvatar::onClick() {
+void SpectatorAvatar::onClickPress() {
   world->registry.get<PointerComponent>(_self_id).setSelect();
+}
+
+void SpectatorAvatar::onClickRelease() {
+  world->registry.get<PointerComponent>(_self_id).unsetSelect();
 }
 
 void SpectatorAvatar::moveCamera(float pan, float tilt, float truck,
