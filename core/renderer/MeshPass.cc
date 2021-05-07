@@ -127,17 +127,17 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
     auto attribute_descriptions = MeshVertex::getAttributeDescriptions();
 
     depth_pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, pipeline_layout, renderer->getMainRenderPass(),
         renderer->getDepthSubpass(), depth_vertex_shader, depth_fragment_shader,
         vertex_bindings, attribute_descriptions);
 
     forward_pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, pipeline_layout, renderer->getMainRenderPass(),
         renderer->getForwardSubpass(), forward_vertex_shader,
         forward_fragment_shader, vertex_bindings, attribute_descriptions);
 
     transparent_pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, pipeline_layout, renderer->getMainRenderPass(),
         renderer->getTransparentSubpass(), forward_vertex_shader,
         forward_fragment_shader, vertex_bindings, attribute_descriptions);
   }
@@ -228,7 +228,7 @@ void MeshPass::destroyFrameData() {
   }
 }
 
-void MeshPass::beginFrame(uint32_t frame_index,
+void MeshPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
                           GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
@@ -350,7 +350,8 @@ void MeshPass::beginFrame(uint32_t frame_index,
   frame.mesh_descriptor->updateStorageBuffer(1, frame.point_lights);
 }
 
-void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
+void MeshPass::renderViewport(VkCommandBuffer command_buffer,
+                              uint32_t viewport_index, RenderPhase phase,
                               const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 

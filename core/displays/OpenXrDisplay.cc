@@ -258,7 +258,7 @@ bool OpenXrDisplay::getVulkanDevice(VkInstance vk_instance,
   return true;
 }
 
-void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
+void OpenXrDisplay::pollEvents(PollEventsInfo* poll_info) {
   log_zone;
 
   XrEventDataBuffer event{};
@@ -357,7 +357,7 @@ void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
   }
 }
 
-void OpenXrDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
+void OpenXrDisplay::beginFrame(BeginFrameInfo* frame_info) {
   log_zone;
 
   current_frame_state = XrFrameState{};
@@ -402,7 +402,7 @@ void OpenXrDisplay::acquireViewports(types::vector<Viewport*>* acquired) {
   }
 }
 
-void OpenXrDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
+void OpenXrDisplay::endFrame(BeginFrameInfo* frame_info) {
   XrCompositionLayerBaseHeader* layer = nullptr;
   XrCompositionLayerProjection projection_layer{};
   projection_layer.type = XR_TYPE_COMPOSITION_LAYER_PROJECTION;

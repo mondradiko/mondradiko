@@ -11,7 +11,7 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class DisplayInterface;
+class Display;
 class GpuImage;
 class GpuInstance;
 class Renderer;
@@ -44,18 +44,31 @@ struct ViewportImage {
 
 class Viewport {
  public:
-  Viewport(DisplayInterface* display, GpuInstance* gpu, Renderer* renderer)
+  Viewport(Display* display, GpuInstance* gpu, Renderer* renderer)
       : display(display), gpu(gpu), renderer(renderer) {}
   virtual ~Viewport() { _destroyImages(); }
 
+  GpuImage* getHdrImage() { return _hdr_image; }
+  GpuImage* getOverlayImage() { return _overlay_image; }
+  GpuImage* getDepthImage() { return _depth_image; }
+
   /**
-   * @brief Begins a viewport's final render pass on a command buffer.
+   * @brief Begins a render pass on this viewport's framebuffer.
    * @param command_buffer Command buffer to record on.
    * @param render_pass Render pass to be begin.
    *
    * @note This method is implemented in the Viewport base class.
    */
-  void beginRenderPass(VkCommandBuffer, VkRenderPass);
+  void beginRender(VkCommandBuffer, VkRenderPass);
+
+  /**
+   * @brief Begins compositing on this viewport's framebuffer.
+   * @param command_buffer Command buffer to record on.
+   * @param render_pass Render pass to be begin.
+   *
+   * @note This method is implemented in the Viewport base class.
+   */
+  void beginComposite(VkCommandBuffer, VkRenderPass);
 
   /**
    * @brief Acquires a Viewport swapchain's image.
@@ -149,11 +162,14 @@ class Viewport {
   uint32_t _image_height;
 
  private:
-  DisplayInterface* display;
+  Display* display;
   GpuInstance* gpu;
   Renderer* renderer;
 
-  GpuImage* _depth_image;
+  GpuImage* _hdr_image = nullptr;
+  GpuImage* _overlay_image = nullptr;
+  GpuImage* _depth_image = nullptr;
+  VkFramebuffer _framebuffer = VK_NULL_HANDLE;
   uint32_t _current_image_index = 0;
 };
 

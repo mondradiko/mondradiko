@@ -194,6 +194,19 @@ void createVkColorBlendState(const GraphicsState& graphics_state,
       return;
     }
 
+    case GraphicsState::BlendMode::AlphaPremultiplied: {
+      info->blendEnable = VK_TRUE;
+
+      info->srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+      info->dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+      info->colorBlendOp = VK_BLEND_OP_ADD;
+      info->srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+      info->dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+      info->alphaBlendOp = VK_BLEND_OP_ADD;
+
+      return;
+    }
+
     default: {
       log_ftl("Invalid GraphicsState");
       return;

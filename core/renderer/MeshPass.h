@@ -56,9 +56,9 @@ class MeshPass : public RenderPass {
   void createFrameData(uint32_t) final;
   void destroyFrameData() final;
 
-  void beginFrame(uint32_t, GpuDescriptorPool*) final;
+  void beginFrame(uint32_t, uint32_t, GpuDescriptorPool*) final;
   void render(RenderPhase, VkCommandBuffer) final {}
-  void renderViewport(RenderPhase, VkCommandBuffer,
+  void renderViewport(VkCommandBuffer, uint32_t, RenderPhase,
                       const GpuDescriptorSet*) final;
   void endFrame() final {}
 

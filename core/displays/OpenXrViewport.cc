@@ -136,17 +136,17 @@ VkSemaphore OpenXrViewport::_acquireImage(uint32_t* image_index) {
 
   xrAcquireSwapchainImage(swapchain, &acquireInfo, image_index);
 
-  XrSwapchainImageWaitInfo waitInfo{};
-  waitInfo.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO;
-  waitInfo.timeout = XR_INFINITE_DURATION;
-
-  xrWaitSwapchainImage(swapchain, &waitInfo);
-
   return VK_NULL_HANDLE;
 }
 
 void OpenXrViewport::_releaseImage(uint32_t, VkSemaphore) {
   log_zone;
+
+  XrSwapchainImageWaitInfo waitInfo{};
+  waitInfo.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO;
+  waitInfo.timeout = XR_INFINITE_DURATION;
+
+  xrWaitSwapchainImage(swapchain, &waitInfo);
 
   XrSwapchainImageReleaseInfo release_info{};
   release_info.type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO;

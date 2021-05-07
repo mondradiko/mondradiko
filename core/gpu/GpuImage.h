@@ -20,6 +20,7 @@ class GpuImage {
 
   void transitionLayout(VkImageLayout);
 
+  void updateLayout(VkImageLayout new_layout) { layout = new_layout; }
   VkImageLayout getLayout() const { return layout; }
   VkImage getImage() const { return image; }
   VkImageView getView() const { return view; }

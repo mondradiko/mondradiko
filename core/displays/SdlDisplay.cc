@@ -204,7 +204,7 @@ void SdlDisplay::destroySession() {
   surface = VK_NULL_HANDLE;
 }
 
-void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
+void SdlDisplay::pollEvents(PollEventsInfo* poll_info) {
   log_zone;
 
   if (main_viewport == nullptr) {
@@ -304,7 +304,7 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
   }
 }
 
-void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
+void SdlDisplay::beginFrame(BeginFrameInfo* frame_info) {
   log_zone;
 
   {
@@ -378,7 +378,7 @@ void SdlDisplay::acquireViewports(types::vector<Viewport*>* viewports) {
   viewports->at(0) = main_viewport;
 }
 
-void SdlDisplay::endFrame(DisplayBeginFrameInfo* frame_info) { log_zone; }
+void SdlDisplay::endFrame(BeginFrameInfo* frame_info) { log_zone; }
 
 }  // namespace core
 }  // namespace mondradiko

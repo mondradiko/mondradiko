@@ -140,8 +140,8 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     GpuPipeline::AttributeDescriptions attribute_descriptions;
 
     panel_pipeline = new GpuPipeline(
-        gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getTransparentSubpass(), panel_vertex_shader,
+        gpu, panel_pipeline_layout, renderer->getMainRenderPass(),
+        renderer->getOverlaySubpass(), panel_vertex_shader,
         panel_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 
@@ -153,8 +153,8 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
         UiDrawList::Vertex::getAttributeDescriptions();
 
     ui_pipeline = new GpuPipeline(
-        gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getTransparentSubpass(), ui_vertex_shader, ui_fragment_shader,
+        gpu, panel_pipeline_layout, renderer->getMainRenderPass(),
+        renderer->getOverlaySubpass(), ui_vertex_shader, ui_fragment_shader,
         vertex_bindings, attribute_descriptions);
   }
 
@@ -165,8 +165,8 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     auto attribute_descriptions = GlyphInstance::getAttributeDescriptions();
 
     glyph_pipeline = new GpuPipeline(
-        gpu, glyph_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getTransparentSubpass(), glyphs->getVertexShader(),
+        gpu, glyph_pipeline_layout, renderer->getMainRenderPass(),
+        renderer->getOverlaySubpass(), glyphs->getVertexShader(),
         glyphs->getFragmentShader(), vertex_bindings, attribute_descriptions);
   }
 
@@ -386,11 +386,11 @@ void UserInterface::destroyFrameData() {
   }
 }
 
-void UserInterface::beginFrame(uint32_t frame_index,
+void UserInterface::beginFrame(uint32_t frame_index, uint32_t viewport_count,
                                GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  renderer->addPassToPhase(RenderPhase::Transparent, this);
+  renderer->addPassToPhase(RenderPhase::Overlay, this);
 
   current_frame = frame_index;
   auto& frame = frame_data[current_frame];
@@ -451,7 +451,7 @@ void UserInterface::beginFrame(uint32_t frame_index,
 }
 
 void UserInterface::renderViewport(
-    RenderPhase phase, VkCommandBuffer command_buffer,
+    VkCommandBuffer command_buffer, uint32_t viewport_index, RenderPhase phase,
     const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 
@@ -482,7 +482,8 @@ void UserInterface::renderViewport(
       graphics_state.depth_state = depth_state;
 
       GraphicsState::ColorBlendState color_blend_state{};
-      color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
+      color_blend_state.blend_mode =
+          GraphicsState::BlendMode::AlphaPremultiplied;
       graphics_state.color_blend_state = color_blend_state;
 
       panel_pipeline->cmdBind(command_buffer, graphics_state);
@@ -538,7 +539,8 @@ void UserInterface::renderViewport(
       graphics_state.depth_state = depth_state;
 
       GraphicsState::ColorBlendState color_blend_state{};
-      color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
+      color_blend_state.blend_mode =
+          GraphicsState::BlendMode::AlphaPremultiplied;
       graphics_state.color_blend_state = color_blend_state;
 
       glyph_pipeline->cmdBind(command_buffer, graphics_state);

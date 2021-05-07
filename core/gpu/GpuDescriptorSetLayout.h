@@ -29,7 +29,7 @@ class GpuDescriptorSetLayout {
   void addStorageBuffer(uint32_t);
   void addDynamicUniformBuffer(uint32_t);
   // void addDynamicStorageBuffer();
-  // void addInputAttachment();
+  void addInputAttachment();
 
   VkDescriptorSetLayout getSetLayout();
   uint32_t getBufferSize(uint32_t index) { return buffer_sizes[index]; }
