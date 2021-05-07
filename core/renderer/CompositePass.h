@@ -19,7 +19,7 @@ class Renderer;
 
 class CompositePass : public RenderPass {
  public:
-  CompositePass(Renderer*);
+  explicit CompositePass(Renderer*);
   ~CompositePass();
 
   // RenderPass implementation
