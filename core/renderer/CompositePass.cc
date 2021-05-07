@@ -67,7 +67,7 @@ CompositePass::CompositePass(Renderer* renderer)
     GpuPipeline::AttributeDescriptions attribute_descriptions{};
 
     _pipeline = new GpuPipeline(
-        gpu, _pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, _pipeline_layout, renderer->getCompositeRenderPass(),
         renderer->getCompositeSubpass(), _vertex_shader, _fragment_shader,
         vertex_bindings, attribute_descriptions);
   }

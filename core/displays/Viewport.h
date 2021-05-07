@@ -53,13 +53,22 @@ class Viewport {
   GpuImage* getDepthImage() { return _depth_image; }
 
   /**
-   * @brief Begins a viewport's final render pass on a command buffer.
+   * @brief Begins a render pass on this viewport's framebuffer.
    * @param command_buffer Command buffer to record on.
    * @param render_pass Render pass to be begin.
    *
    * @note This method is implemented in the Viewport base class.
    */
-  void beginRenderPass(VkCommandBuffer, VkRenderPass);
+  void beginRender(VkCommandBuffer, VkRenderPass);
+
+  /**
+   * @brief Begins compositing on this viewport's framebuffer.
+   * @param command_buffer Command buffer to record on.
+   * @param render_pass Render pass to be begin.
+   *
+   * @note This method is implemented in the Viewport base class.
+   */
+  void beginComposite(VkCommandBuffer, VkRenderPass);
 
   /**
    * @brief Acquires a Viewport swapchain's image.
@@ -157,9 +166,10 @@ class Viewport {
   GpuInstance* gpu;
   Renderer* renderer;
 
-  GpuImage* _hdr_image;
-  GpuImage* _overlay_image;
-  GpuImage* _depth_image;
+  GpuImage* _hdr_image = nullptr;
+  GpuImage* _overlay_image = nullptr;
+  GpuImage* _depth_image = nullptr;
+  VkFramebuffer _framebuffer = VK_NULL_HANDLE;
   uint32_t _current_image_index = 0;
 };
 

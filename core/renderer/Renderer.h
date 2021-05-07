@@ -45,12 +45,14 @@ class Renderer {
   }
 
   // TODO(marceline-cramer) Wrapper class for subpass manipulation
-  VkRenderPass getViewportRenderPass() const { return render_pass; }
+  VkRenderPass getMainRenderPass() const { return _main_rp; }
   uint32_t getDepthSubpass() { return 0; }
   uint32_t getOverlaySubpass() { return 1; }
   uint32_t getForwardSubpass() { return 2; }
   uint32_t getTransparentSubpass() { return 3; }
-  uint32_t getCompositeSubpass() { return 4; }
+
+  VkRenderPass getCompositeRenderPass() const { return _composite_rp; }
+  uint32_t getCompositeSubpass() { return 0; }
 
   GpuImage* getErrorImage() { return error_image; }
 
@@ -59,7 +61,8 @@ class Renderer {
   Display* display;
   GpuInstance* gpu;
 
-  VkRenderPass render_pass = VK_NULL_HANDLE;
+  VkRenderPass _main_rp = VK_NULL_HANDLE;
+  VkRenderPass _composite_rp = VK_NULL_HANDLE;
 
   GpuDescriptorSetLayout* viewport_layout = nullptr;
 

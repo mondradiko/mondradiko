@@ -12,8 +12,50 @@
 namespace mondradiko {
 namespace core {
 
-void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
-                               VkRenderPass render_pass) {
+void Viewport::beginRender(VkCommandBuffer command_buffer,
+                           VkRenderPass render_pass) {
+  log_zone;
+
+  std::array<VkClearValue, 3> clear_values;
+
+  clear_values[0].depthStencil = {1.0f};
+  clear_values[1].color = {0.0, 0.0, 0.0, 1.0};
+  clear_values[2].color = {0.0, 0.0, 0.0, 0.0};
+
+  VkRenderPassBeginInfo render_pass_info{};
+  render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  render_pass_info.renderPass = render_pass;
+  render_pass_info.framebuffer = _framebuffer;
+
+  VkRect2D render_area{};
+  render_area.offset = {0, 0};
+  render_area.extent = {_image_width, _image_height};
+
+  render_pass_info.renderArea = render_area;
+  render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
+  render_pass_info.pClearValues = clear_values.data();
+
+  vkCmdBeginRenderPass(command_buffer, &render_pass_info,
+                       VK_SUBPASS_CONTENTS_INLINE);
+
+  VkViewport viewport{};
+  viewport.x = 0;
+  viewport.y = 0;
+  viewport.width = static_cast<float>(_image_width);
+  viewport.height = static_cast<float>(_image_height);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+
+  VkRect2D scissor{};
+  scissor.offset = {0, 0};
+  scissor.extent = {_image_width, _image_height};
+
+  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+}
+
+void Viewport::beginComposite(VkCommandBuffer command_buffer,
+                              VkRenderPass render_pass) {
   log_zone;
 
   std::array<VkClearValue, 4> clear_values;
@@ -21,7 +63,7 @@ void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
   clear_values[0].color = {0.2, 0.0, 0.0, 1.0};
   clear_values[1].depthStencil = {1.0f};
   clear_values[2].color = {0.0, 0.0, 0.0, 1.0};
-  clear_values[2].color = {0.0, 0.0, 0.0, 0.0};
+  clear_values[3].color = {0.0, 0.0, 0.0, 0.0};
 
   VkRenderPassBeginInfo render_pass_info{};
   render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -83,6 +125,28 @@ void Viewport::_createImages() {
         new GpuImage(gpu, depth_format, w, h, 1, depth_usage, memory_usage);
   }
 
+  {
+    log_zone_named("Create offscreen framebuffer");
+
+    std::array<VkImageView, 3> framebuffer_attachments = {
+        _depth_image->getView(), _hdr_image->getView(),
+        _overlay_image->getView()};
+
+    VkFramebufferCreateInfo framebuffer_info{};
+    framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebuffer_info.renderPass = renderer->getMainRenderPass();
+    framebuffer_info.attachmentCount = framebuffer_attachments.size();
+    framebuffer_info.pAttachments = framebuffer_attachments.data();
+    framebuffer_info.width = _image_width;
+    framebuffer_info.height = _image_height;
+    framebuffer_info.layers = 1;
+
+    if (vkCreateFramebuffer(gpu->device, &framebuffer_info, nullptr,
+                            &_framebuffer) != VK_SUCCESS) {
+      log_ftl("Failed to create framebuffer.");
+    }
+  }
+
   for (uint32_t i = 0; i < _images.size(); i++) {
     VkImageViewCreateInfo view_info{};
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -116,7 +180,7 @@ void Viewport::_createImages() {
 
     VkFramebufferCreateInfo framebuffer_info{};
     framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebuffer_info.renderPass = renderer->getViewportRenderPass();
+    framebuffer_info.renderPass = renderer->getCompositeRenderPass();
     framebuffer_info.attachmentCount = framebuffer_attachments.size();
     framebuffer_info.pAttachments = framebuffer_attachments.data();
     framebuffer_info.width = _image_width;
@@ -145,6 +209,10 @@ void Viewport::_destroyImages() {
 
   if (_depth_image != nullptr) delete _depth_image;
   _depth_image = nullptr;
+
+  if (_framebuffer != VK_NULL_HANDLE)
+    vkDestroyFramebuffer(gpu->device, _framebuffer, nullptr);
+  _framebuffer = VK_NULL_HANDLE;
 }
 
 }  // namespace core

@@ -82,7 +82,7 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
         DebugDrawList::Vertex::getAttributeDescriptions();
 
     debug_pipeline = new GpuPipeline(
-        gpu, debug_pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, debug_pipeline_layout, renderer->getMainRenderPass(),
         renderer->getOverlaySubpass(), debug_vertex_shader,
         debug_fragment_shader, vertex_bindings, attribute_descriptions);
   }

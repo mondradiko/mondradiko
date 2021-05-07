@@ -140,7 +140,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     GpuPipeline::AttributeDescriptions attribute_descriptions;
 
     panel_pipeline = new GpuPipeline(
-        gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, panel_pipeline_layout, renderer->getMainRenderPass(),
         renderer->getOverlaySubpass(), panel_vertex_shader,
         panel_fragment_shader, vertex_bindings, attribute_descriptions);
   }
@@ -153,7 +153,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
         UiDrawList::Vertex::getAttributeDescriptions();
 
     ui_pipeline = new GpuPipeline(
-        gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, panel_pipeline_layout, renderer->getMainRenderPass(),
         renderer->getOverlaySubpass(), ui_vertex_shader, ui_fragment_shader,
         vertex_bindings, attribute_descriptions);
   }
@@ -165,7 +165,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     auto attribute_descriptions = GlyphInstance::getAttributeDescriptions();
 
     glyph_pipeline = new GpuPipeline(
-        gpu, glyph_pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, glyph_pipeline_layout, renderer->getMainRenderPass(),
         renderer->getOverlaySubpass(), glyphs->getVertexShader(),
         glyphs->getFragmentShader(), vertex_bindings, attribute_descriptions);
   }

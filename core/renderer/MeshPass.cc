@@ -127,17 +127,17 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
     auto attribute_descriptions = MeshVertex::getAttributeDescriptions();
 
     depth_pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, pipeline_layout, renderer->getMainRenderPass(),
         renderer->getDepthSubpass(), depth_vertex_shader, depth_fragment_shader,
         vertex_bindings, attribute_descriptions);
 
     forward_pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, pipeline_layout, renderer->getMainRenderPass(),
         renderer->getForwardSubpass(), forward_vertex_shader,
         forward_fragment_shader, vertex_bindings, attribute_descriptions);
 
     transparent_pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, pipeline_layout, renderer->getMainRenderPass(),
         renderer->getTransparentSubpass(), forward_vertex_shader,
         forward_fragment_shader, vertex_bindings, attribute_descriptions);
   }
