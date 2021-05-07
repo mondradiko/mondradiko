@@ -58,7 +58,6 @@ class SdlDisplay : public Display {
 
  private:
   const CVarScope* cvars;
-  GpuInstance* gpu;
 
   UserInterface* ui = nullptr;
 

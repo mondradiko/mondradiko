@@ -10,6 +10,10 @@ namespace mondradiko {
 namespace core {
 
 VkFormat Display::getHdrFormat() {
+  if (gpu == nullptr) {
+    log_ftl("Display::gpu has not been initialized");
+  }
+
   types::vector<VkFormat> hdr_candidates = {
       VK_FORMAT_R16G16B16_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT,
       VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT};
