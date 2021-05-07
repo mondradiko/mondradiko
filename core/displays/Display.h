@@ -26,20 +26,20 @@ struct VulkanRequirements {
   types::vector<types::string> device_extensions;
 };
 
-struct DisplayPollEventsInfo {
-  Renderer* renderer;
-  bool should_run;
-  bool should_quit;
-};
-
-struct DisplayBeginFrameInfo {
-  double dt;
-  bool should_render;
-};
-
-class DisplayInterface {
+class Display {
  public:
-  virtual ~DisplayInterface() {}
+  virtual ~Display() {}
+
+  struct PollEventsInfo {
+    Renderer* renderer;
+    bool should_run;
+    bool should_quit;
+  };
+
+  struct BeginFrameInfo {
+    double dt;
+    bool should_render;
+  };
 
   virtual bool getVulkanRequirements(VulkanRequirements*) = 0;
   virtual bool getVulkanDevice(VkInstance, VkPhysicalDevice*) = 0;
@@ -52,12 +52,13 @@ class DisplayInterface {
   virtual VkImageLayout getFinalLayout() = 0;
   virtual VkFormat getDepthFormat() = 0;
 
-  virtual void pollEvents(DisplayPollEventsInfo*) = 0;
-  virtual void beginFrame(DisplayBeginFrameInfo*) = 0;
+  virtual void pollEvents(PollEventsInfo*) = 0;
+  virtual void beginFrame(BeginFrameInfo*) = 0;
   virtual void acquireViewports(types::vector<Viewport*>*) = 0;
-  virtual void endFrame(DisplayBeginFrameInfo*) = 0;
+  virtual void endFrame(BeginFrameInfo*) = 0;
 
- private:
+ protected:
+  GpuInstance* gpu;
 };
 
 }  // namespace core

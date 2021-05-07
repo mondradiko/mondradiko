@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/displays/DisplayInterface.h"
+#include "core/displays/Display.h"
 #include "lib/include/sdl2_headers.h"
 #include "types/containers/vector.h"
 
@@ -16,7 +16,7 @@ class GpuInstance;
 class SdlViewport;
 class SpectatorAvatar;
 
-class SdlDisplay : public DisplayInterface {
+class SdlDisplay : public Display {
  public:
   static void initCVars(CVarScope*);
 
@@ -38,10 +38,10 @@ class SdlDisplay : public DisplayInterface {
   }
   VkFormat getDepthFormat() final { return depth_format; }
 
-  void pollEvents(DisplayPollEventsInfo*) final;
-  void beginFrame(DisplayBeginFrameInfo*) final;
+  void pollEvents(PollEventsInfo*) final;
+  void beginFrame(BeginFrameInfo*) final;
   void acquireViewports(types::vector<Viewport*>*) final;
-  void endFrame(DisplayBeginFrameInfo*) final;
+  void endFrame(BeginFrameInfo*) final;
 
   SDL_Window* window = nullptr;
 

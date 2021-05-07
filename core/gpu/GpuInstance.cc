@@ -6,7 +6,7 @@
 #include <cstring>
 #include <set>
 
-#include "core/displays/DisplayInterface.h"
+#include "core/displays/Display.h"
 #include "core/gpu/vulkan_validation.h"
 #include "log/log.h"
 #include "types/build_config.h"
@@ -14,7 +14,7 @@
 namespace mondradiko {
 namespace core {
 
-GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
+GpuInstance::GpuInstance(Display* display) : display(display) {
   log_zone;
 
   VulkanRequirements requirements;
@@ -233,7 +233,7 @@ void GpuInstance::setupDebugMessenger() {
   }
 }
 
-void GpuInstance::findPhysicalDevice(DisplayInterface* display) {
+void GpuInstance::findPhysicalDevice(Display* display) {
   log_zone;
 
   if (!display->getVulkanDevice(instance, &physical_device)) {

@@ -5,7 +5,7 @@
 
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/CVarScope.h"
-#include "core/displays/DisplayInterface.h"
+#include "core/displays/Display.h"
 #include "core/displays/Viewport.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
@@ -27,8 +27,7 @@ void Renderer::initCVars(CVarScope* cvars) {
   renderer->addValue<BoolCVar>("queue_stall");
 }
 
-Renderer::Renderer(const CVarScope* cvars, DisplayInterface* display,
-                   GpuInstance* gpu)
+Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
     : cvars(cvars->getChild("renderer")), display(display), gpu(gpu) {
   log_zone;
 

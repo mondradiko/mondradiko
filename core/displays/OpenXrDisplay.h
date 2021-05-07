@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/displays/DisplayInterface.h"
+#include "core/displays/Display.h"
 #include "lib/include/openxr_headers.h"
 #include "types/containers/string.h"
 #include "types/containers/vector.h"
@@ -15,7 +15,7 @@ namespace core {
 class OpenXrViewport;
 class Renderer;
 
-class OpenXrDisplay : public DisplayInterface {
+class OpenXrDisplay : public Display {
  public:
   OpenXrDisplay();
   ~OpenXrDisplay();
@@ -38,10 +38,10 @@ class OpenXrDisplay : public DisplayInterface {
     return VK_FORMAT_D32_SFLOAT;
   }
 
-  void pollEvents(DisplayPollEventsInfo*) final;
-  void beginFrame(DisplayBeginFrameInfo*) final;
+  void pollEvents(PollEventsInfo*) final;
+  void beginFrame(BeginFrameInfo*) final;
   void acquireViewports(types::vector<Viewport*>*) final;
-  void endFrame(DisplayBeginFrameInfo*) final;
+  void endFrame(BeginFrameInfo*) final;
 
   bool enable_validation_layers = true;
 
@@ -56,8 +56,6 @@ class OpenXrDisplay : public DisplayInterface {
   XrSpace stage_space = XR_NULL_HANDLE;
 
  private:
-  GpuInstance* gpu;
-
   void createViewports(Renderer*);
 
   XrDebugUtilsMessengerCreateInfoEXT debug_messenger_info;

@@ -91,7 +91,7 @@ void run(const ClientArgs& args) {
     fs.loadAssetBundle(bundle);
   }
 
-  std::unique_ptr<DisplayInterface> display;
+  std::unique_ptr<Display> display;
 
   if (args.display == "sdl") {
     display = std::make_unique<SdlDisplay>(display_cvars);
@@ -138,14 +138,14 @@ void run(const ClientArgs& args) {
   }
 
   while (!g_interrupted) {
-    DisplayPollEventsInfo poll_info;
+    Display::PollEventsInfo poll_info;
     poll_info.renderer = &renderer;
 
     display->pollEvents(&poll_info);
     if (poll_info.should_quit) break;
 
     if (poll_info.should_run) {
-      DisplayBeginFrameInfo frame_info;
+      Display::BeginFrameInfo frame_info;
       display->beginFrame(&frame_info);
 
       if (!world.update(frame_info.dt)) break;

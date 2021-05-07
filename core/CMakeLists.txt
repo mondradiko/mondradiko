@@ -41,6 +41,7 @@ set(MONDRADIKO_CORE_SRC
   components/synchronized/RelationshipComponent.cc
   components/synchronized/RigidBodyComponent.cc
   cvars/CVarScope.cc
+  displays/Display.cc
   displays/OpenXrDisplay.cc
   displays/OpenXrViewport.cc
   displays/SdlDisplay.cc

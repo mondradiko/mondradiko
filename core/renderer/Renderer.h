@@ -11,7 +11,7 @@ namespace core {
 
 // Forward declarations
 class CVarScope;
-class DisplayInterface;
+class Display;
 class GpuBuffer;
 class GpuDescriptorPool;
 class GpuDescriptorSetLayout;
@@ -23,7 +23,7 @@ class Renderer {
  public:
   static void initCVars(CVarScope*);
 
-  Renderer(const CVarScope*, DisplayInterface*, GpuInstance*);
+  Renderer(const CVarScope*, Display*, GpuInstance*);
   ~Renderer();
 
   void addRenderPass(RenderPass*);
@@ -49,7 +49,7 @@ class Renderer {
 
  private:
   const CVarScope* cvars;
-  DisplayInterface* display;
+  Display* display;
   GpuInstance* gpu;
 
   VkRenderPass render_pass = VK_NULL_HANDLE;

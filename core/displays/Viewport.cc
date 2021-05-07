@@ -3,7 +3,7 @@
 
 #include "core/displays/Viewport.h"
 
-#include "core/displays/DisplayInterface.h"
+#include "core/displays/Display.h"
 #include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/renderer/Renderer.h"

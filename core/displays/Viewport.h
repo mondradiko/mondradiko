@@ -11,7 +11,7 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class DisplayInterface;
+class Display;
 class GpuImage;
 class GpuInstance;
 class Renderer;
@@ -44,7 +44,7 @@ struct ViewportImage {
 
 class Viewport {
  public:
-  Viewport(DisplayInterface* display, GpuInstance* gpu, Renderer* renderer)
+  Viewport(Display* display, GpuInstance* gpu, Renderer* renderer)
       : display(display), gpu(gpu), renderer(renderer) {}
   virtual ~Viewport() { _destroyImages(); }
 
@@ -149,7 +149,7 @@ class Viewport {
   uint32_t _image_height;
 
  private:
-  DisplayInterface* display;
+  Display* display;
   GpuInstance* gpu;
   Renderer* renderer;
 
