@@ -26,6 +26,7 @@ void main() {
   float duv = fwidth(dist);
   float pixel_dist = dist / max(duv, 0.001);
   color.a *= clamp(0.5 - pixel_dist, 0, 1);
+  color.rgb *= color.a;
 
   outColor = color;
 }

@@ -465,7 +465,8 @@ void UserInterface::renderViewport(
       graphics_state.depth_state = depth_state;
 
       GraphicsState::ColorBlendState color_blend_state{};
-      color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
+      color_blend_state.blend_mode =
+          GraphicsState::BlendMode::AlphaPremultiplied;
       graphics_state.color_blend_state = color_blend_state;
 
       panel_pipeline->cmdBind(command_buffer, graphics_state);
@@ -521,7 +522,8 @@ void UserInterface::renderViewport(
       graphics_state.depth_state = depth_state;
 
       GraphicsState::ColorBlendState color_blend_state{};
-      color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
+      color_blend_state.blend_mode =
+          GraphicsState::BlendMode::AlphaPremultiplied;
       graphics_state.color_blend_state = color_blend_state;
 
       glyph_pipeline->cmdBind(command_buffer, graphics_state);

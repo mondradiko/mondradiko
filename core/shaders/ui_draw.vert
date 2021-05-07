@@ -30,4 +30,5 @@ void main() {
   vec4 vert_position = vec4(vertPosition, 0.0, 1.0);
   gl_Position = camera.projection * camera.view * panel.transform * vert_position;
   fragColor = vertColor;
+  fragColor.rgb *= fragColor.a;
 }
