@@ -23,17 +23,24 @@ GpuDescriptorSet::GpuDescriptorSet(GpuInstance* gpu,
 
 GpuDescriptorSet::~GpuDescriptorSet() {}
 
+// Helper function for simple descriptor writes
+VkWriteDescriptorSet createDescriptorWrite(VkDescriptorSet dst_set,
+                                           uint32_t binding) {
+  VkWriteDescriptorSet descriptor_writes{};
+  descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  descriptor_writes.dstSet = dst_set;
+  descriptor_writes.dstBinding = binding;
+  descriptor_writes.dstArrayElement = 0;
+  descriptor_writes.descriptorCount = 1;
+  return descriptor_writes;
+}
+
 void GpuDescriptorSet::updateBuffer(uint32_t binding, GpuBuffer* buffer) {
   VkDescriptorBufferInfo buffer_info{};
   buffer_info.buffer = buffer->getBuffer(), buffer_info.offset = 0,
   buffer_info.range = set_layout->getBufferSize(binding);
 
-  VkWriteDescriptorSet descriptor_writes{};
-  descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  descriptor_writes.dstSet = descriptor_set;
-  descriptor_writes.dstBinding = binding;
-  descriptor_writes.dstArrayElement = 0;
-  descriptor_writes.descriptorCount = 1;
+  auto descriptor_writes = createDescriptorWrite(descriptor_set, binding);
   descriptor_writes.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
   descriptor_writes.pBufferInfo = &buffer_info;
 
@@ -47,12 +54,7 @@ void GpuDescriptorSet::updateDynamicBuffer(uint32_t binding,
   buffer_info.offset = 0;
   buffer_info.range = set_layout->getBufferSize(binding);
 
-  VkWriteDescriptorSet descriptor_writes{};
-  descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  descriptor_writes.dstSet = descriptor_set;
-  descriptor_writes.dstBinding = binding;
-  descriptor_writes.dstArrayElement = 0;
-  descriptor_writes.descriptorCount = 1;
+  auto descriptor_writes = createDescriptorWrite(descriptor_set, binding);
   descriptor_writes.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
   descriptor_writes.pBufferInfo = &buffer_info;
 
@@ -68,12 +70,7 @@ void GpuDescriptorSet::updateStorageBuffer(uint32_t binding,
   buffer_info.offset = 0;
   buffer_info.range = buffer->getBufferSize();
 
-  VkWriteDescriptorSet descriptor_writes{};
-  descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-  descriptor_writes.dstSet = descriptor_set;
-  descriptor_writes.dstBinding = binding;
-  descriptor_writes.dstArrayElement = 0;
-  descriptor_writes.descriptorCount = 1;
+  auto descriptor_writes = createDescriptorWrite(descriptor_set, binding);
   descriptor_writes.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
   descriptor_writes.pBufferInfo = &buffer_info;
 
@@ -85,13 +82,21 @@ void GpuDescriptorSet::updateImage(uint32_t binding, const GpuImage* image) {
   image_info.imageView = image->getView();
   image_info.imageLayout = image->getLayout();
 
-  VkWriteDescriptorSet descriptor_writes{};
-  descriptor_writes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  descriptor_writes.dstSet = descriptor_set;
-  descriptor_writes.dstBinding = binding;
-  descriptor_writes.dstArrayElement = 0;
-  descriptor_writes.descriptorCount = 1;
+  auto descriptor_writes = createDescriptorWrite(descriptor_set, binding);
   descriptor_writes.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  descriptor_writes.pImageInfo = &image_info;
+
+  vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
+}
+
+void GpuDescriptorSet::updateInputAttachment(uint32_t binding,
+                                             const GpuImage* image) {
+  VkDescriptorImageInfo image_info{};
+  image_info.imageView = image->getView();
+  image_info.imageLayout = image->getLayout();
+
+  auto descriptor_writes = createDescriptorWrite(descriptor_set, binding);
+  descriptor_writes.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
   descriptor_writes.pImageInfo = &image_info;
 
   vkUpdateDescriptorSets(gpu->device, 1, &descriptor_writes, 0, nullptr);
