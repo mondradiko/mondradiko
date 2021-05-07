@@ -166,6 +166,7 @@ void main() {
 
   if (material.is_unlit) {
     outColor = surface_albedo;
+    outColor.rgb /= max(vec3(1.0) - outColor.rgb, 0.001);
     return;
   }
 
@@ -197,6 +198,6 @@ void main() {
   }
 
   // TODO(marceline-cramer): Fix PBR so that tone mapping doesn't make JPEG bad
-  vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
-  outColor = vec4(tone_mapped, surface_albedo.a);
+  // vec3 tone_mapped = surface_luminance / (surface_luminance + vec3(1.0));
+  outColor = vec4(surface_luminance, surface_albedo.a);
 }

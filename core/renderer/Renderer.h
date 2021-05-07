@@ -10,6 +10,7 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class CompositePass;
 class CVarScope;
 class Display;
 class GpuBuffer;
@@ -39,11 +40,17 @@ class Renderer {
   GpuInstance* getGpu() { return gpu; }
   GpuDescriptorSetLayout* getViewportLayout() { return viewport_layout; }
 
+  Viewport* getCurrentViewport(uint32_t viewport_index) {
+    return frames_in_flight[current_frame].viewports[viewport_index];
+  }
+
   // TODO(marceline-cramer) Wrapper class for subpass manipulation
   VkRenderPass getViewportRenderPass() const { return render_pass; }
   uint32_t getDepthSubpass() { return 0; }
-  uint32_t getForwardSubpass() { return 1; }
-  uint32_t getTransparentSubpass() { return 2; }
+  uint32_t getOverlaySubpass() { return 1; }
+  uint32_t getForwardSubpass() { return 2; }
+  uint32_t getTransparentSubpass() { return 3; }
+  uint32_t getCompositeSubpass() { return 4; }
 
   GpuImage* getErrorImage() { return error_image; }
 
@@ -56,6 +63,8 @@ class Renderer {
 
   GpuDescriptorSetLayout* viewport_layout = nullptr;
 
+  CompositePass* composite_pass = nullptr;
+
   types::vector<RenderPass*> render_passes;
 
   struct PipelinedFrameData {
@@ -64,8 +73,10 @@ class Renderer {
     VkSemaphore on_render_finished;
     VkFence is_in_use;
 
+    types::vector<Viewport*> viewports;
+
     GpuDescriptorPool* descriptor_pool;
-    GpuVector* viewports;
+    GpuVector* viewport_data;
 
     using PassList = types::vector<RenderPass*>;
     static constexpr auto PhaseNum = static_cast<size_t>(RenderPhase::MAX);

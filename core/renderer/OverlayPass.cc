@@ -83,7 +83,7 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
 
     debug_pipeline = new GpuPipeline(
         gpu, debug_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getForwardSubpass(), debug_vertex_shader,
+        renderer->getOverlaySubpass(), debug_vertex_shader,
         debug_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 }
@@ -120,11 +120,11 @@ void OverlayPass::destroyFrameData() {
   }
 }
 
-void OverlayPass::beginFrame(uint32_t frame_index,
+void OverlayPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
                              GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  renderer->addPassToPhase(RenderPhase::Forward, this);
+  renderer->addPassToPhase(RenderPhase::Overlay, this);
 
   current_frame = frame_index;
   auto& frame = frame_data[current_frame];
@@ -229,8 +229,8 @@ void OverlayPass::beginFrame(uint32_t frame_index,
   _debug_draw.clear();
 }
 
-void OverlayPass::renderViewport(RenderPhase phase,
-                                 VkCommandBuffer command_buffer,
+void OverlayPass::renderViewport(VkCommandBuffer command_buffer,
+                                 uint32_t viewport_index, RenderPhase phase,
                                  const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 
@@ -256,7 +256,7 @@ void OverlayPass::renderViewport(RenderPhase phase,
 
       GraphicsState::DepthState depth_state{};
       depth_state.test_enable = GraphicsState::BoolFlag::True;
-      depth_state.write_enable = GraphicsState::BoolFlag::True;
+      depth_state.write_enable = GraphicsState::BoolFlag::False;
       depth_state.compare_op = GraphicsState::CompareOp::Less;
       graphics_state.depth_state = depth_state;
 

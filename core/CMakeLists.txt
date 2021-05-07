@@ -8,6 +8,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(shaders)
 spirv_shaders(SHADER_HEADERS
+  shaders/composite.vert
+  shaders/composite.frag
   shaders/debug.frag
   shaders/debug.vert
   shaders/glyph.frag
@@ -59,6 +61,7 @@ set(MONDRADIKO_CORE_SRC
   gpu/GpuPipeline.cc
   gpu/GpuShader.cc
   physics/Physics.cc
+  renderer/CompositePass.cc
   renderer/DebugDraw.cc
   renderer/MeshPass.cc
   renderer/OverlayPass.cc

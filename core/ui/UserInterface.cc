@@ -141,7 +141,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
 
     panel_pipeline = new GpuPipeline(
         gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getTransparentSubpass(), panel_vertex_shader,
+        renderer->getOverlaySubpass(), panel_vertex_shader,
         panel_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 
@@ -154,7 +154,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
 
     ui_pipeline = new GpuPipeline(
         gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getTransparentSubpass(), ui_vertex_shader, ui_fragment_shader,
+        renderer->getOverlaySubpass(), ui_vertex_shader, ui_fragment_shader,
         vertex_bindings, attribute_descriptions);
   }
 
@@ -166,7 +166,7 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
 
     glyph_pipeline = new GpuPipeline(
         gpu, glyph_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getTransparentSubpass(), glyphs->getVertexShader(),
+        renderer->getOverlaySubpass(), glyphs->getVertexShader(),
         glyphs->getFragmentShader(), vertex_bindings, attribute_descriptions);
   }
 
@@ -369,11 +369,11 @@ void UserInterface::destroyFrameData() {
   }
 }
 
-void UserInterface::beginFrame(uint32_t frame_index,
+void UserInterface::beginFrame(uint32_t frame_index, uint32_t viewport_count,
                                GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  renderer->addPassToPhase(RenderPhase::Transparent, this);
+  renderer->addPassToPhase(RenderPhase::Overlay, this);
 
   current_frame = frame_index;
   auto& frame = frame_data[current_frame];
@@ -434,7 +434,7 @@ void UserInterface::beginFrame(uint32_t frame_index,
 }
 
 void UserInterface::renderViewport(
-    RenderPhase phase, VkCommandBuffer command_buffer,
+    VkCommandBuffer command_buffer, uint32_t viewport_index, RenderPhase phase,
     const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 

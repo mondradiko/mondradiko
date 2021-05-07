@@ -13,6 +13,7 @@
 #include "core/gpu/GpuImage.h"
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuVector.h"
+#include "core/renderer/CompositePass.h"
 #include "core/renderer/OverlayPass.h"
 #include "core/renderer/RenderPass.h"
 #include "log/log.h"
@@ -90,6 +91,15 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
     depth_attachment_reference.layout =
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+    VkAttachmentReference hdr_attachment_reference{};
+    hdr_attachment_reference.attachment = 2;
+    hdr_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference overlay_attachment_reference{};
+    overlay_attachment_reference.attachment = 3;
+    overlay_attachment_reference.layout =
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
     types::vector<VkSubpassDescription> subpasses;
 
     {
@@ -101,10 +111,19 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
     }
 
     {
+      VkSubpassDescription overlay_pass{};
+      overlay_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+      overlay_pass.colorAttachmentCount = 1;
+      overlay_pass.pColorAttachments = &overlay_attachment_reference;
+      overlay_pass.pDepthStencilAttachment = &depth_attachment_reference;
+      subpasses.push_back(overlay_pass);
+    }
+
+    {
       VkSubpassDescription forward_pass{};
       forward_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
       forward_pass.colorAttachmentCount = 1;
-      forward_pass.pColorAttachments = &swapchain_attachment_reference;
+      forward_pass.pColorAttachments = &hdr_attachment_reference;
       forward_pass.pDepthStencilAttachment = &depth_attachment_reference;
       subpasses.push_back(forward_pass);
     }
@@ -113,9 +132,29 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       VkSubpassDescription transparent_pass{};
       transparent_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
       transparent_pass.colorAttachmentCount = 1;
-      transparent_pass.pColorAttachments = &swapchain_attachment_reference;
+      transparent_pass.pColorAttachments = &hdr_attachment_reference;
       transparent_pass.pDepthStencilAttachment = &depth_attachment_reference;
       subpasses.push_back(transparent_pass);
+    }
+
+    std::array<VkAttachmentReference, 2> composite_attachments;
+
+    {
+      auto& hdr = composite_attachments[0];
+      hdr.attachment = 2;
+      hdr.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+      auto& overlay = composite_attachments[1];
+      overlay.attachment = 3;
+      overlay.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+      VkSubpassDescription composite_pass{};
+      composite_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+      composite_pass.colorAttachmentCount = 1;
+      composite_pass.pColorAttachments = &swapchain_attachment_reference;
+      composite_pass.inputAttachmentCount = composite_attachments.size();
+      composite_pass.pInputAttachments = composite_attachments.data();
+      subpasses.push_back(composite_pass);
     }
 
     types::vector<VkSubpassDependency> dependencies;
@@ -132,25 +171,72 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
     }
 
     {
-      VkSubpassDependency depth_dep{};
-      depth_dep.srcSubpass = 0;
-      depth_dep.dstSubpass = 1;
-      depth_dep.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-      depth_dep.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-      depth_dep.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      depth_dep.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-      dependencies.push_back(depth_dep);
+      VkSubpassDependency o_d{};
+      o_d.srcSubpass = 0;
+      o_d.dstSubpass = 1;
+      o_d.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      o_d.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+      o_d.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      o_d.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+      dependencies.push_back(o_d);
     }
 
     {
-      VkSubpassDependency forward_dep{};
-      forward_dep.srcSubpass = 1;
-      forward_dep.dstSubpass = 2;
-      forward_dep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-      forward_dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-      forward_dep.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-      forward_dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-      dependencies.push_back(forward_dep);
+      VkSubpassDependency f_d{};
+      f_d.srcSubpass = 0;
+      f_d.dstSubpass = 2;
+      f_d.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      f_d.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+      f_d.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      f_d.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+      dependencies.push_back(f_d);
+    }
+
+    {
+      VkSubpassDependency f_o{};
+      f_o.srcSubpass = 1;
+      f_o.dstSubpass = 2;
+      f_o.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+      f_o.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+      f_o.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+      f_o.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+      dependencies.push_back(f_o);
+    }
+
+    {
+      VkSubpassDependency t_f{};
+      t_f.srcSubpass = 2;
+      t_f.dstSubpass = 3;
+      t_f.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      t_f.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      t_f.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      t_f.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      dependencies.push_back(t_f);
+    }
+
+    {
+      VkSubpassDependency t_o{};
+      t_o.srcSubpass = 1;
+      t_o.dstSubpass = 3;
+      t_o.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+      t_o.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+      t_o.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+      t_o.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+      dependencies.push_back(t_o);
+    }
+
+    {
+      VkSubpassDependency c_t{};
+      c_t.srcSubpass = 2;
+      c_t.dstSubpass = 4;
+      c_t.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+      c_t.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+      c_t.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      c_t.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+      dependencies.push_back(c_t);
+
+      c_t.srcSubpass = 3;
+      dependencies.push_back(c_t);
     }
 
     VkRenderPassCreateInfo ci{};
@@ -213,7 +299,7 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
 
       frame.descriptor_pool = new GpuDescriptorPool(gpu);
 
-      frame.viewports = new GpuVector(
+      frame.viewport_data = new GpuVector(
           // TODO(marceline-cramer) Better descriptor management
           gpu, sizeof(ViewportUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     }
@@ -241,6 +327,13 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
     transferDataToImage(error_image, error_data);
     error_image->transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
+
+  {
+    log_zone_named("Create render passes");
+
+    composite_pass = new CompositePass(this);
+    addRenderPass(composite_pass);
+  }
 }
 
 Renderer::~Renderer() {
@@ -249,6 +342,8 @@ Renderer::~Renderer() {
   if (error_image != nullptr) delete error_image;
 
   destroyFrameData();
+
+  if (composite_pass != nullptr) delete composite_pass;
 
   if (viewport_layout != nullptr) delete viewport_layout;
 
@@ -273,7 +368,7 @@ void Renderer::destroyFrameData() {
   }
 
   for (auto& frame : frames_in_flight) {
-    if (frame.viewports != nullptr) delete frame.viewports;
+    if (frame.viewport_data != nullptr) delete frame.viewport_data;
     if (frame.on_render_finished != VK_NULL_HANDLE)
       vkDestroySemaphore(gpu->device, frame.on_render_finished, nullptr);
     if (frame.is_in_use != VK_NULL_HANDLE)
@@ -421,6 +516,12 @@ void Renderer::renderFrame() {
     }
   }
 
+  {
+    log_zone_named("Retrieve viewports");
+
+    display->acquireViewports(&frame.viewports);
+  }
+
   GpuDescriptorSet* viewport_descriptor;
 
   {
@@ -429,7 +530,8 @@ void Renderer::renderFrame() {
     viewport_descriptor = frame.descriptor_pool->allocate(viewport_layout);
 
     for (auto& render_pass : render_passes) {
-      render_pass->beginFrame(current_frame, frame.descriptor_pool);
+      render_pass->beginFrame(current_frame, frame.viewports.size(),
+                              frame.descriptor_pool);
     }
   }
 
@@ -458,23 +560,22 @@ void Renderer::renderFrame() {
     }
   }
 
-  types::vector<Viewport*> viewports;
   types::vector<VkSemaphore> on_viewport_acquire(0);
   bool viewports_require_signal = false;
 
   {
     log_zone_named("Acquire viewports");
 
-    display->acquireViewports(&viewports);
-
-    for (uint32_t viewport_index = 0; viewport_index < viewports.size();
+    for (uint32_t viewport_index = 0; viewport_index < frame.viewports.size();
          viewport_index++) {
-      VkSemaphore on_image_acquire = viewports[viewport_index]->acquire();
+      Viewport* viewport = frame.viewports[viewport_index];
+
+      VkSemaphore on_image_acquire = viewport->acquire();
       if (on_image_acquire != VK_NULL_HANDLE) {
         on_viewport_acquire.push_back(on_image_acquire);
       }
 
-      if (viewports[viewport_index]->isSignalRequired()) {
+      if (viewport->isSignalRequired()) {
         viewports_require_signal = true;
       }
     }
@@ -483,26 +584,31 @@ void Renderer::renderFrame() {
   {
     log_zone_named("Write viewport uniforms");
 
-    types::vector<ViewportUniform> uniforms(viewports.size());
+    types::vector<ViewportUniform> uniforms(frame.viewports.size());
 
-    for (uint32_t i = 0; i < viewports.size(); i++) {
+    for (uint32_t i = 0; i < frame.viewports.size(); i++) {
       ViewportUniform uniform;
-      viewports[i]->writeUniform(&uniform);
+      frame.viewports[i]->writeUniform(&uniform);
       uniforms[i] = uniform;
     }
 
-    frame.viewports->writeData(0, uniforms);
-    viewport_descriptor->updateDynamicBuffer(0, frame.viewports);
+    frame.viewport_data->writeData(0, uniforms);
+    viewport_descriptor->updateDynamicBuffer(0, frame.viewport_data);
   }
 
   {
     log_zone_named("Render viewports");
 
-    for (uint32_t viewport_index = 0; viewport_index < viewports.size();
+    for (uint32_t viewport_index = 0; viewport_index < frame.viewports.size();
          viewport_index++) {
       viewport_descriptor->updateDynamicOffset(0, viewport_index);
-      viewports[viewport_index]->beginRenderPass(frame.command_buffer,
-                                                 render_pass);
+      Viewport* viewport = frame.viewports[viewport_index];
+      viewport->beginRenderPass(frame.command_buffer, render_pass);
+
+      viewport->getHdrImage()->updateLayout(
+          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+      viewport->getOverlayImage()->updateLayout(
+          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
       for (phase_idx = viewport_phase; phase_idx < frame.phases.size();
            phase_idx++) {
@@ -512,8 +618,16 @@ void Renderer::renderFrame() {
 
         auto& phase_passes = frame.phases[phase_idx];
         RenderPhase phase = static_cast<RenderPhase>(phase_idx);
+
+        if (phase == RenderPhase::Composite) {
+          viewport->getHdrImage()->updateLayout(
+              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+          viewport->getOverlayImage()->updateLayout(
+              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        }
+
         for (auto& pass : phase_passes) {
-          pass->renderViewport(phase, frame.command_buffer,
+          pass->renderViewport(frame.command_buffer, viewport_index, phase,
                                viewport_descriptor);
         }
       }
@@ -563,9 +677,9 @@ void Renderer::renderFrame() {
   {
     log_zone_named("Release viewports");
 
-    for (uint32_t viewportIndex = 0; viewportIndex < viewports.size();
+    for (uint32_t viewportIndex = 0; viewportIndex < frame.viewports.size();
          viewportIndex++) {
-      viewports[viewportIndex]->release(frame.on_render_finished);
+      frame.viewports[viewportIndex]->release(frame.on_render_finished);
     }
   }
 }
