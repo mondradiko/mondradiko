@@ -48,6 +48,7 @@ class Display {
   virtual const Avatar* getAvatar(World*) = 0;
   virtual void destroySession() = 0;
 
+  virtual VkFormat getHdrFormat();
   virtual VkFormat getSwapchainFormat() = 0;
   virtual VkImageLayout getFinalLayout() = 0;
   virtual VkFormat getDepthFormat() = 0;
