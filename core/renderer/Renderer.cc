@@ -58,6 +58,28 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       attachments.push_back(depth_desc);
     }
 
+    {
+      VkAttachmentDescription hdr_desc{};
+      hdr_desc.format = display->getHdrFormat();
+      hdr_desc.samples = VK_SAMPLE_COUNT_1_BIT;
+      hdr_desc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+      hdr_desc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+      hdr_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      hdr_desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      attachments.push_back(hdr_desc);
+    }
+
+    {
+      VkAttachmentDescription overlay_desc{};
+      overlay_desc.format = VK_FORMAT_R8G8B8A8_SRGB;
+      overlay_desc.samples = VK_SAMPLE_COUNT_1_BIT;
+      overlay_desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      overlay_desc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+      overlay_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      overlay_desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      attachments.push_back(overlay_desc);
+    }
+
     VkAttachmentReference swapchain_attachment_reference{};
     swapchain_attachment_reference.attachment = 0;
     swapchain_attachment_reference.layout =

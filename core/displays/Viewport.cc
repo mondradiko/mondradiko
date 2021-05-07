@@ -16,10 +16,12 @@ void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
                                VkRenderPass render_pass) {
   log_zone;
 
-  std::array<VkClearValue, 2> clear_values;
+  std::array<VkClearValue, 4> clear_values;
 
   clear_values[0].color = {0.2, 0.0, 0.0, 1.0};
   clear_values[1].depthStencil = {1.0f};
+  clear_values[2].color = {0.0, 0.0, 0.0, 1.0};
+  clear_values[2].color = {0.0, 0.0, 0.0, 0.0};
 
   VkRenderPassBeginInfo render_pass_info{};
   render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -54,9 +56,32 @@ void Viewport::beginRenderPass(VkCommandBuffer command_buffer,
 }
 
 void Viewport::_createImages() {
-  _depth_image = new GpuImage(
-      gpu, display->getDepthFormat(), _image_width, _image_height, 1,
-      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+  {
+    log_zone_named("Create offscreen images");
+
+    uint32_t w = _image_width;
+    uint32_t h = _image_height;
+    VmaMemoryUsage memory_usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+    VkFormat hdr_format = display->getHdrFormat();
+    VkImageUsageFlags hdr_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                  VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+
+    VkFormat overlay_format = VK_FORMAT_R8G8B8A8_SRGB;
+
+    VkImageUsageFlags overlay_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                      VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+
+    VkFormat depth_format = display->getDepthFormat();
+    VkImageUsageFlags depth_usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    _hdr_image =
+        new GpuImage(gpu, hdr_format, w, h, 1, hdr_usage, memory_usage);
+    _overlay_image =
+        new GpuImage(gpu, overlay_format, w, h, 1, overlay_usage, memory_usage);
+    _depth_image =
+        new GpuImage(gpu, depth_format, w, h, 1, depth_usage, memory_usage);
+  }
 
   for (uint32_t i = 0; i < _images.size(); i++) {
     VkImageViewCreateInfo view_info{};
@@ -85,8 +110,9 @@ void Viewport::_createImages() {
       log_ftl("Failed to create swapchain image view.");
     }
 
-    std::array<VkImageView, 2> framebuffer_attachments = {
-        _images[i].image_view, _depth_image->getView()};
+    std::array<VkImageView, 4> framebuffer_attachments = {
+        _images[i].image_view, _depth_image->getView(), _hdr_image->getView(),
+        _overlay_image->getView()};
 
     VkFramebufferCreateInfo framebuffer_info{};
     framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -110,6 +136,12 @@ void Viewport::_destroyImages() {
     vkDestroyFramebuffer(gpu->device, image.framebuffer, nullptr);
   }
   _images.resize(0);
+
+  if (_hdr_image != nullptr) delete _hdr_image;
+  _hdr_image = nullptr;
+
+  if (_overlay_image != nullptr) delete _overlay_image;
+  _overlay_image = nullptr;
 
   if (_depth_image != nullptr) delete _depth_image;
   _depth_image = nullptr;

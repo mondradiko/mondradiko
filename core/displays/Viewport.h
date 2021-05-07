@@ -48,6 +48,10 @@ class Viewport {
       : display(display), gpu(gpu), renderer(renderer) {}
   virtual ~Viewport() { _destroyImages(); }
 
+  GpuImage* getHdrImage() { return _hdr_image; }
+  GpuImage* getOverlayImage() { return _overlay_image; }
+  GpuImage* getDepthImage() { return _depth_image; }
+
   /**
    * @brief Begins a viewport's final render pass on a command buffer.
    * @param command_buffer Command buffer to record on.
@@ -153,6 +157,8 @@ class Viewport {
   GpuInstance* gpu;
   Renderer* renderer;
 
+  GpuImage* _hdr_image;
+  GpuImage* _overlay_image;
   GpuImage* _depth_image;
   uint32_t _current_image_index = 0;
 };
