@@ -72,8 +72,12 @@ class Renderer {
 
   struct PipelinedFrameData {
     // TODO(marceline-cramer) Use command pool per frame, per thread
-    VkCommandBuffer command_buffer;
+    VkCommandBuffer main_commands;
     VkSemaphore on_render_finished;
+
+    VkCommandBuffer composite_commands;
+    VkSemaphore on_composite_finished;
+
     VkFence is_in_use;
 
     types::vector<Viewport*> viewports;

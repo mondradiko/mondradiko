@@ -53,7 +53,7 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       hdr_desc.format = display->getHdrFormat();
       hdr_desc.samples = VK_SAMPLE_COUNT_1_BIT;
       hdr_desc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-      hdr_desc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+      hdr_desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
       hdr_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
       hdr_desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
       attachments.push_back(hdr_desc);
@@ -64,7 +64,7 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       overlay_desc.format = VK_FORMAT_R8G8B8A8_SRGB;
       overlay_desc.samples = VK_SAMPLE_COUNT_1_BIT;
       overlay_desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-      overlay_desc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+      overlay_desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
       overlay_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
       overlay_desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
       attachments.push_back(overlay_desc);
@@ -259,11 +259,6 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
     swapchain_attachment_reference.layout =
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentReference depth_attachment_reference{};
-    depth_attachment_reference.attachment = 1;
-    depth_attachment_reference.layout =
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
     std::array<VkAttachmentReference, 2> composite_attachments;
 
     auto& hdr_attachment_reference = composite_attachments[0];
@@ -325,16 +320,21 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
     current_frame = 0;
 
     for (auto& frame : frames_in_flight) {
+      std::array<VkCommandBuffer, 2> command_buffers;
+
       VkCommandBufferAllocateInfo alloc_info{};
       alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
       alloc_info.commandPool = gpu->command_pool;
       alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-      alloc_info.commandBufferCount = 1;
+      alloc_info.commandBufferCount = command_buffers.size();
 
       if (vkAllocateCommandBuffers(gpu->device, &alloc_info,
-                                   &frame.command_buffer) != VK_SUCCESS) {
+                                   command_buffers.data()) != VK_SUCCESS) {
         log_ftl("Failed to allocate frame command buffers.");
       }
+
+      frame.main_commands = command_buffers[0];
+      frame.composite_commands = command_buffers[1];
 
       VkSemaphoreCreateInfo semaphore_info{};
       semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -342,6 +342,11 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       if (vkCreateSemaphore(gpu->device, &semaphore_info, nullptr,
                             &frame.on_render_finished) != VK_SUCCESS) {
         log_ftl("Failed to create frame render finished semaphore.");
+      }
+
+      if (vkCreateSemaphore(gpu->device, &semaphore_info, nullptr,
+                            &frame.on_composite_finished) != VK_SUCCESS) {
+        log_ftl("Failed to create frame composite finished semaphore");
       }
 
       VkFenceCreateInfo fence_info{};
@@ -430,6 +435,8 @@ void Renderer::destroyFrameData() {
     if (frame.viewport_data != nullptr) delete frame.viewport_data;
     if (frame.on_render_finished != VK_NULL_HANDLE)
       vkDestroySemaphore(gpu->device, frame.on_render_finished, nullptr);
+    if (frame.on_composite_finished != VK_NULL_HANDLE)
+      vkDestroySemaphore(gpu->device, frame.on_composite_finished, nullptr);
     if (frame.is_in_use != VK_NULL_HANDLE)
       vkDestroyFence(gpu->device, frame.is_in_use, nullptr);
     if (frame.descriptor_pool != nullptr) delete frame.descriptor_pool;
@@ -594,16 +601,6 @@ void Renderer::renderFrame() {
     }
   }
 
-  {
-    log_zone_named("Begin command buffers");
-
-    VkCommandBufferBeginInfo begin_info{};
-    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    vkBeginCommandBuffer(frame.command_buffer, &begin_info);
-  }
-
   const size_t viewport_phase = static_cast<size_t>(RenderPhase::Depth);
   size_t phase_idx = 0;
 
@@ -614,28 +611,7 @@ void Renderer::renderFrame() {
       auto& phase_passes = frame.phases[phase_idx];
       RenderPhase phase = static_cast<RenderPhase>(phase_idx);
       for (auto& pass : phase_passes) {
-        pass->render(phase, frame.command_buffer);
-      }
-    }
-  }
-
-  types::vector<VkSemaphore> on_viewport_acquire(0);
-  bool viewports_require_signal = false;
-
-  {
-    log_zone_named("Acquire viewports");
-
-    for (uint32_t viewport_index = 0; viewport_index < frame.viewports.size();
-         viewport_index++) {
-      Viewport* viewport = frame.viewports[viewport_index];
-
-      VkSemaphore on_image_acquire = viewport->acquire();
-      if (on_image_acquire != VK_NULL_HANDLE) {
-        on_viewport_acquire.push_back(on_image_acquire);
-      }
-
-      if (viewport->isSignalRequired()) {
-        viewports_require_signal = true;
+        pass->render(phase, frame.main_commands);
       }
     }
   }
@@ -656,14 +632,20 @@ void Renderer::renderFrame() {
   }
 
   {
-    log_zone_named("Render viewports");
+    log_zone_named("Record main commands");
+
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(frame.main_commands, &begin_info);
 
     for (uint32_t viewport_index = 0; viewport_index < frame.viewports.size();
          viewport_index++) {
       viewport_descriptor->updateDynamicOffset(0, viewport_index);
       Viewport* viewport = frame.viewports[viewport_index];
 
-      viewport->beginRender(frame.command_buffer, _main_rp);
+      viewport->beginRender(frame.main_commands, _main_rp);
       viewport->getHdrImage()->updateLayout(
           VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
       viewport->getOverlayImage()->updateLayout(
@@ -674,46 +656,115 @@ void Renderer::renderFrame() {
         RenderPhase phase = static_cast<RenderPhase>(phase_idx);
 
         if (phase == RenderPhase::Composite) {
-          vkCmdEndRenderPass(frame.command_buffer);
-          viewport->beginComposite(frame.command_buffer, _composite_rp);
-          viewport->getHdrImage()->updateLayout(
-              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-          viewport->getOverlayImage()->updateLayout(
-              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+          break;
         } else if (phase_idx != viewport_phase) {
-          vkCmdNextSubpass(frame.command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+          vkCmdNextSubpass(frame.main_commands, VK_SUBPASS_CONTENTS_INLINE);
         }
 
         auto& phase_passes = frame.phases[phase_idx];
 
         for (auto& pass : phase_passes) {
-          pass->renderViewport(frame.command_buffer, viewport_index, phase,
+          pass->renderViewport(frame.main_commands, viewport_index, phase,
                                viewport_descriptor);
         }
       }
 
-      vkCmdEndRenderPass(frame.command_buffer);
+      vkCmdEndRenderPass(frame.main_commands);
     }
 
-    vkEndCommandBuffer(frame.command_buffer);
+    vkEndCommandBuffer(frame.main_commands);
   }
 
   {
-    log_zone_named("Submit to queue");
+    log_zone_named("Submit main commands");
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     VkPipelineStageFlags waitStages[] = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-
-    submitInfo.waitSemaphoreCount = on_viewport_acquire.size();
-    submitInfo.pWaitSemaphores = on_viewport_acquire.data();
-
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &frame.command_buffer;
+    submitInfo.pCommandBuffers = &frame.main_commands;
+
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &frame.on_render_finished;
+
+    if (vkQueueSubmit(gpu->graphics_queue, 1, &submitInfo, VK_NULL_HANDLE) !=
+        VK_SUCCESS) {
+      log_ftl("Failed to submit main commands");
+    }
+  }
+
+  {
+    log_zone_named("Record composite commands");
+
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(frame.composite_commands, &begin_info);
+
+    for (uint32_t viewport_index = 0; viewport_index < frame.viewports.size();
+         viewport_index++) {
+      viewport_descriptor->updateDynamicOffset(0, viewport_index);
+      Viewport* viewport = frame.viewports[viewport_index];
+
+      viewport->beginComposite(frame.composite_commands, _composite_rp);
+      viewport->getHdrImage()->updateLayout(
+          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+      viewport->getOverlayImage()->updateLayout(
+          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+      composite_pass->renderViewport(frame.composite_commands, viewport_index,
+                                     RenderPhase::Composite,
+                                     viewport_descriptor);
+
+      vkCmdEndRenderPass(frame.composite_commands);
+    }
+
+    vkEndCommandBuffer(frame.composite_commands);
+  }
+
+  types::vector<VkSemaphore> on_viewport_acquire;
+  types::vector<VkPipelineStageFlags> wait_stages;
+  bool viewports_require_signal = false;
+
+  {
+    log_zone_named("Acquire viewports");
+
+    for (uint32_t viewport_index = 0; viewport_index < frame.viewports.size();
+         viewport_index++) {
+      Viewport* viewport = frame.viewports[viewport_index];
+
+      VkSemaphore on_image_acquire = viewport->acquire();
+      if (on_image_acquire != VK_NULL_HANDLE) {
+        on_viewport_acquire.push_back(on_image_acquire);
+        wait_stages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+      }
+
+      if (viewport->isSignalRequired()) {
+        viewports_require_signal = true;
+      }
+    }
+  }
+
+  {
+    log_zone_named("Submit composite commands");
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    on_viewport_acquire.push_back(frame.on_render_finished);
+    wait_stages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+
+    submitInfo.waitSemaphoreCount = on_viewport_acquire.size();
+    submitInfo.pWaitSemaphores = on_viewport_acquire.data();
+    submitInfo.pWaitDstStageMask = wait_stages.data();
+
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &frame.composite_commands;
 
     if (viewports_require_signal) {
       submitInfo.signalSemaphoreCount = 1;
@@ -725,7 +776,7 @@ void Renderer::renderFrame() {
 
     if (vkQueueSubmit(gpu->graphics_queue, 1, &submitInfo, frame.is_in_use) !=
         VK_SUCCESS) {
-      log_ftl("Failed to submit primary frame command buffer.");
+      log_ftl("Failed to submit composite commands");
     }
   }
 
