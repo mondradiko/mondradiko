@@ -56,7 +56,11 @@ struct GraphicsState {
     DecrementAndWrap = (1 << 7)
   };
 
-  enum BlendMode : FlagData { Opaque = (1 << 0), AlphaBlend = (1 << 1) };
+  enum BlendMode : FlagData {
+    Opaque = (1 << 0),
+    AlphaBlend = (1 << 1),
+    AlphaPremultiplied = (1 << 2)
+  };
 
   struct InputAssemblyState {
     PrimitiveTopology primitive_topology;
