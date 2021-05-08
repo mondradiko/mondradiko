@@ -8,6 +8,7 @@
 #include "core/cvars/CVarScope.h"
 #include "core/cvars/FileCVar.h"
 #include "core/cvars/StringCVar.h"
+#include "core/displays/Viewport.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
@@ -460,33 +461,19 @@ void UserInterface::renderViewport(
   {
     log_zone_named("Render panels and UI draw");
 
-    GraphicsState graphics_state;
+    GraphicsState gs;
 
     {
-      GraphicsState::InputAssemblyState input_assembly_state{};
-      input_assembly_state.primitive_topology =
+      gs = GraphicsState::CreateGenericOpaque();
+      gs.input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::TriangleStrip;
-      input_assembly_state.primitive_restart_enable =
-          GraphicsState::BoolFlag::False;
-      graphics_state.input_assembly_state = input_assembly_state;
-
-      GraphicsState::RasterizatonState rasterization_state{};
-      rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-      rasterization_state.cull_mode = GraphicsState::CullMode::None;
-      graphics_state.rasterization_state = rasterization_state;
-
-      GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::True;
-      depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Less;
-      graphics_state.depth_state = depth_state;
-
-      GraphicsState::ColorBlendState color_blend_state{};
-      color_blend_state.blend_mode =
+      gs.rasterization_state.cull_mode = GraphicsState::CullMode::None;
+      gs.multisample_state.rasterization_samples =
+          renderer->getCurrentViewport(viewport_index)->getSampleCount();
+      gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+      gs.color_blend_state.blend_mode =
           GraphicsState::BlendMode::AlphaPremultiplied;
-      graphics_state.color_blend_state = color_blend_state;
-
-      panel_pipeline->cmdBind(command_buffer, graphics_state);
+      panel_pipeline->cmdBind(command_buffer, gs);
     }
 
     viewport_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 0);
@@ -494,14 +481,9 @@ void UserInterface::renderViewport(
     vkCmdDraw(command_buffer, 4, frame.panel_count, 0, 0);
 
     {
-      GraphicsState::InputAssemblyState input_assembly_state{};
-      input_assembly_state.primitive_topology =
+      gs.input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::TriangleList;
-      input_assembly_state.primitive_restart_enable =
-          GraphicsState::BoolFlag::False;
-      graphics_state.input_assembly_state = input_assembly_state;
-
-      ui_pipeline->cmdBind(command_buffer, graphics_state);
+      ui_pipeline->cmdBind(command_buffer, gs);
     }
 
     VkBuffer vertex_buffers[] = {frame.ui_draw_vertices->getBuffer()};
@@ -518,32 +500,16 @@ void UserInterface::renderViewport(
     log_zone_named("Render glyphs");
 
     {
-      GraphicsState graphics_state;
-
-      GraphicsState::InputAssemblyState input_assembly_state{};
-      input_assembly_state.primitive_topology =
+      auto gs = GraphicsState::CreateGenericOpaque();
+      gs.input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::TriangleStrip;
-      input_assembly_state.primitive_restart_enable =
-          GraphicsState::BoolFlag::False;
-      graphics_state.input_assembly_state = input_assembly_state;
-
-      GraphicsState::RasterizatonState rasterization_state{};
-      rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-      rasterization_state.cull_mode = GraphicsState::CullMode::None;
-      graphics_state.rasterization_state = rasterization_state;
-
-      GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::True;
-      depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Less;
-      graphics_state.depth_state = depth_state;
-
-      GraphicsState::ColorBlendState color_blend_state{};
-      color_blend_state.blend_mode =
+      gs.rasterization_state.cull_mode = GraphicsState::CullMode::None;
+      gs.multisample_state.rasterization_samples =
+          renderer->getCurrentViewport(viewport_index)->getSampleCount();
+      gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+      gs.color_blend_state.blend_mode =
           GraphicsState::BlendMode::AlphaPremultiplied;
-      graphics_state.color_blend_state = color_blend_state;
-
-      glyph_pipeline->cmdBind(command_buffer, graphics_state);
+      glyph_pipeline->cmdBind(command_buffer, gs);
     }
 
     viewport_descriptor->cmdBind(command_buffer, glyph_pipeline_layout, 0);

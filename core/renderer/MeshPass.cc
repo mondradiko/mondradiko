@@ -8,6 +8,7 @@
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/components/synchronized/MeshRendererComponent.h"
 #include "core/cvars/CVarScope.h"
+#include "core/displays/Viewport.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
@@ -356,7 +357,6 @@ void MeshPass::renderViewport(VkCommandBuffer command_buffer,
   log_zone;
 
   auto& frame = frame_data[current_frame];
-  GraphicsState graphics_state;
   GpuPipeline* current_pipeline;
 
   MeshPassCommandList* pass_commands;
@@ -366,52 +366,21 @@ void MeshPass::renderViewport(VkCommandBuffer command_buffer,
     pass_commands = &frame.forward_commands;
   }
 
-  GraphicsState::InputAssemblyState input_assembly_state{};
-  input_assembly_state.primitive_topology =
-      GraphicsState::PrimitiveTopology::TriangleList;
-  input_assembly_state.primitive_restart_enable =
-      GraphicsState::BoolFlag::False;
-  graphics_state.input_assembly_state = input_assembly_state;
+  auto gs = GraphicsState::CreateGenericOpaque();
 
-  GraphicsState::RasterizatonState rasterization_state{};
-  rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-  rasterization_state.cull_mode = GraphicsState::CullMode::Back;
-  graphics_state.rasterization_state = rasterization_state;
+  gs.rasterization_state.cull_mode = GraphicsState::CullMode::Back;
+  gs.multisample_state.rasterization_samples =
+      renderer->getCurrentViewport(viewport_index)->getSampleCount();
 
   if (phase == RenderPhase::Depth) {
     current_pipeline = depth_pipeline;
-
-    GraphicsState::DepthState depth_state{};
-    depth_state.test_enable = GraphicsState::BoolFlag::True;
-    depth_state.write_enable = GraphicsState::BoolFlag::True;
-    depth_state.compare_op = GraphicsState::CompareOp::Less;
-    graphics_state.depth_state = depth_state;
-
-    GraphicsState::ColorBlendState color_blend_state{};
-    graphics_state.color_blend_state = color_blend_state;
   } else if (phase == RenderPhase::Forward) {
     current_pipeline = forward_pipeline;
-
-    GraphicsState::DepthState depth_state{};
-    depth_state.test_enable = GraphicsState::BoolFlag::True;
-    depth_state.write_enable = GraphicsState::BoolFlag::False;
-    depth_state.compare_op = GraphicsState::CompareOp::Equal;
-    graphics_state.depth_state = depth_state;
-
-    GraphicsState::ColorBlendState color_blend_state{};
-    graphics_state.color_blend_state = color_blend_state;
+    gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+    gs.depth_state.compare_op = GraphicsState::CompareOp::Equal;
   } else {
     current_pipeline = transparent_pipeline;
-
-    GraphicsState::DepthState depth_state{};
-    depth_state.test_enable = GraphicsState::BoolFlag::True;
-    depth_state.write_enable = GraphicsState::BoolFlag::False;
-    depth_state.compare_op = GraphicsState::CompareOp::Less;
-    graphics_state.depth_state = depth_state;
-
-    GraphicsState::ColorBlendState color_blend_state{};
-    color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
-    graphics_state.color_blend_state = color_blend_state;
+    gs.color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
   }
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
@@ -425,11 +394,11 @@ void MeshPass::renderViewport(VkCommandBuffer command_buffer,
   vkCmdBindIndexBuffer(command_buffer, index_pool->getBuffer(), 0,
                        VK_INDEX_TYPE_UINT32);
 
-  current_pipeline->cmdBind(command_buffer, graphics_state);
+  current_pipeline->cmdBind(command_buffer, gs);
   executeMeshCommands(command_buffer, pass_commands->single_sided);
 
-  graphics_state.rasterization_state.cull_mode = GraphicsState::CullMode::None;
-  current_pipeline->cmdBind(command_buffer, graphics_state);
+  gs.rasterization_state.cull_mode = GraphicsState::CullMode::None;
+  current_pipeline->cmdBind(command_buffer, gs);
   executeMeshCommands(command_buffer, pass_commands->double_sided);
 }
 
