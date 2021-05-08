@@ -41,7 +41,7 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
   }
 
   auto font_path =
-    cvars->get<FileCVar>("font_path").getPath().string();  // NOLINT
+      cvars->get<FileCVar>("font_path").getPath().string();  // NOLINT
   error = FT_New_Face(freetype, font_path.c_str(), 0, &font_face);
   if (error) {
     log_ftl_fmt("Failed to load font %s", font_path);
@@ -124,7 +124,7 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
   }
 
   atlas_image =
-      new GpuImage(gpu, VK_FORMAT_R8G8B8A8_UNORM, atlas_width, atlas_height, 1,
+      new GpuImage(gpu, VK_FORMAT_R8G8B8A8_UNORM, atlas_width, atlas_height,
                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                    VMA_MEMORY_USAGE_GPU_ONLY);
 
