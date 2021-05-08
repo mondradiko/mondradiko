@@ -37,14 +37,20 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
 
     types::vector<VkAttachmentDescription> attachments;
 
+    bool msaa_enabled = display->getSampleCount() > 1;
+
     {
       VkAttachmentDescription depth_desc{};
       depth_desc.format = display->getDepthFormat();
       depth_desc.samples = VK_SAMPLE_COUNT_1_BIT;
-      depth_desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      depth_desc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
       depth_desc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
       depth_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
       depth_desc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+      if (msaa_enabled) attachments.push_back(depth_desc);
+
+      depth_desc.samples = display->getSampleCount();
+      depth_desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
       attachments.push_back(depth_desc);
     }
 
@@ -56,6 +62,15 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       hdr_desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
       hdr_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
       hdr_desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      if (msaa_enabled) attachments.push_back(hdr_desc);
+
+      hdr_desc.samples = display->getSampleCount();
+
+      if (msaa_enabled) {
+        hdr_desc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        hdr_desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      }
+
       attachments.push_back(hdr_desc);
     }
 
@@ -63,26 +78,54 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       VkAttachmentDescription overlay_desc{};
       overlay_desc.format = VK_FORMAT_R8G8B8A8_SRGB;
       overlay_desc.samples = VK_SAMPLE_COUNT_1_BIT;
-      overlay_desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      overlay_desc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
       overlay_desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
       overlay_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
       overlay_desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      if (msaa_enabled) attachments.push_back(overlay_desc);
+
+      overlay_desc.samples = display->getSampleCount();
+      overlay_desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+
+      if (msaa_enabled) {
+        overlay_desc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        overlay_desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      }
+
       attachments.push_back(overlay_desc);
     }
 
+    VkAttachmentReference depth_resolve_reference{};
+    depth_resolve_reference.attachment = 0;
+    depth_resolve_reference.layout =
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
     VkAttachmentReference depth_attachment_reference{};
-    depth_attachment_reference.attachment = 0;
+    depth_attachment_reference.attachment = 1;
     depth_attachment_reference.layout =
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+    VkAttachmentReference hdr_resolve_reference{};
+    hdr_resolve_reference.attachment = 2;
+    hdr_resolve_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
     VkAttachmentReference hdr_attachment_reference{};
-    hdr_attachment_reference.attachment = 1;
+    hdr_attachment_reference.attachment = 3;
     hdr_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    VkAttachmentReference overlay_resolve_reference{};
+    overlay_resolve_reference.attachment = 4;
+    overlay_resolve_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
     VkAttachmentReference overlay_attachment_reference{};
-    overlay_attachment_reference.attachment = 2;
+    overlay_attachment_reference.attachment = 5;
     overlay_attachment_reference.layout =
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    if (!msaa_enabled) {
+      hdr_resolve_reference.attachment = 1;
+      overlay_resolve_reference.attachment = 2;
+    }
 
     types::vector<VkSubpassDescription> subpasses;
 
@@ -90,7 +133,14 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       VkSubpassDescription depth_pass{};
       depth_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
       depth_pass.colorAttachmentCount = 0;
-      depth_pass.pDepthStencilAttachment = &depth_attachment_reference;
+
+      if (msaa_enabled) {
+        depth_pass.pDepthStencilAttachment = &depth_attachment_reference;
+        // depth_pass.pResolveAttachments = &depth_resolve_reference;
+      } else {
+        depth_pass.pDepthStencilAttachment = &depth_resolve_reference;
+      }
+
       subpasses.push_back(depth_pass);
     }
 
@@ -98,8 +148,16 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       VkSubpassDescription overlay_pass{};
       overlay_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
       overlay_pass.colorAttachmentCount = 1;
-      overlay_pass.pColorAttachments = &overlay_attachment_reference;
-      overlay_pass.pDepthStencilAttachment = &depth_attachment_reference;
+
+      if (msaa_enabled) {
+        overlay_pass.pColorAttachments = &overlay_attachment_reference;
+        overlay_pass.pResolveAttachments = &overlay_resolve_reference;
+        overlay_pass.pDepthStencilAttachment = &depth_attachment_reference;
+      } else {
+        overlay_pass.pColorAttachments = &overlay_resolve_reference;
+        overlay_pass.pDepthStencilAttachment = &depth_resolve_reference;
+      }
+
       subpasses.push_back(overlay_pass);
     }
 
@@ -107,8 +165,15 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       VkSubpassDescription forward_pass{};
       forward_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
       forward_pass.colorAttachmentCount = 1;
-      forward_pass.pColorAttachments = &hdr_attachment_reference;
-      forward_pass.pDepthStencilAttachment = &depth_attachment_reference;
+
+      if (msaa_enabled) {
+        forward_pass.pColorAttachments = &hdr_attachment_reference;
+        forward_pass.pDepthStencilAttachment = &depth_attachment_reference;
+      } else {
+        forward_pass.pColorAttachments = &hdr_resolve_reference;
+        forward_pass.pDepthStencilAttachment = &depth_resolve_reference;
+      }
+
       subpasses.push_back(forward_pass);
     }
 
@@ -116,14 +181,22 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       VkSubpassDescription transparent_pass{};
       transparent_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
       transparent_pass.colorAttachmentCount = 1;
-      transparent_pass.pColorAttachments = &hdr_attachment_reference;
-      transparent_pass.pDepthStencilAttachment = &depth_attachment_reference;
+
+      if (msaa_enabled) {
+        transparent_pass.pColorAttachments = &hdr_attachment_reference;
+        transparent_pass.pResolveAttachments = &hdr_resolve_reference;
+        transparent_pass.pDepthStencilAttachment = &depth_attachment_reference;
+      } else {
+        transparent_pass.pColorAttachments = &hdr_resolve_reference;
+        transparent_pass.pDepthStencilAttachment = &depth_resolve_reference;
+      }
+
       subpasses.push_back(transparent_pass);
     }
 
     types::vector<VkSubpassDependency> dependencies;
 
-    {
+    /*{
       VkSubpassDependency pre_dep{};
       pre_dep.srcSubpass = VK_SUBPASS_EXTERNAL;
       pre_dep.dstSubpass = 0;
@@ -132,7 +205,7 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       pre_dep.srcAccessMask = 0;
       pre_dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
       dependencies.push_back(pre_dep);
-    }
+    }*/
 
     {
       VkSubpassDependency o_d{};
@@ -174,7 +247,8 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       t_f.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
       t_f.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
       t_f.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-      t_f.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      t_f.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
       dependencies.push_back(t_f);
     }
 
@@ -224,7 +298,7 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
       VkAttachmentDescription depth_desc{};
       depth_desc.format = display->getDepthFormat();
       depth_desc.samples = VK_SAMPLE_COUNT_1_BIT;
-      depth_desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+      depth_desc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
       depth_desc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
       depth_desc.initialLayout =
           VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -380,7 +454,7 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
         0x00FF00FF, 0x00FF00FF, 0xFF00FFFF, 0xFF00FFFF};  // NOLINT
 
     error_image = new GpuImage(
-        gpu, VK_FORMAT_R8G8B8A8_UNORM, error_width, error_height, 1,
+        gpu, VK_FORMAT_R8G8B8A8_UNORM, error_width, error_height,
         VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
         VMA_MEMORY_USAGE_GPU_ONLY);
 
