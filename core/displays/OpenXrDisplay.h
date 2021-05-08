@@ -12,12 +12,13 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class CVarScope;
 class OpenXrViewport;
 class Renderer;
 
 class OpenXrDisplay : public Display {
  public:
-  OpenXrDisplay();
+  OpenXrDisplay(const CVarScope*);
   ~OpenXrDisplay();
 
   bool getVulkanRequirements(VulkanRequirements*) final;

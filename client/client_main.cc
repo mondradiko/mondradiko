@@ -81,10 +81,7 @@ void run(const ClientArgs& args) {
   Renderer::initCVars(&cvars);
   NetworkClient::initCVars(&cvars);
   UserInterface::initCVars(&cvars);
-
-  CVarScope* display_cvars = cvars.addChild("displays");
-  SdlDisplay::initCVars(display_cvars);
-
+  Display::initCVars(&cvars);
   cvars.loadConfigFromFile(&fs, args.config_path);
 
   for (auto bundle : args.bundle_paths) {
@@ -94,9 +91,9 @@ void run(const ClientArgs& args) {
   std::unique_ptr<Display> display;
 
   if (args.display == "sdl") {
-    display = std::make_unique<SdlDisplay>(display_cvars);
+    display = std::make_unique<SdlDisplay>(&cvars);
   } else if (args.display == "openxr") {
-    display = std::make_unique<OpenXrDisplay>();
+    display = std::make_unique<OpenXrDisplay>(&cvars);
   } else {
     log_ftl_fmt("Unrecognized display \"%s\" (must be {sdl, openxr})",
                 args.display.c_str());

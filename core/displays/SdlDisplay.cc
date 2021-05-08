@@ -23,7 +23,9 @@ void SdlDisplay::initCVars(CVarScope* cvars) {
   sdl->addValue<FloatCVar>("camera_speed", 0.0, 1000.0);
 }
 
-SdlDisplay::SdlDisplay(const CVarScope* cvars) : cvars(cvars->getChild("sdl")) {
+SdlDisplay::SdlDisplay(const CVarScope* parent_cvars)
+    : Display(parent_cvars),
+      cvars(parent_cvars->getChild("displays")->getChild("sdl")) {
   log_zone;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {

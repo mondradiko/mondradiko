@@ -12,6 +12,7 @@ namespace core {
 
 // Forward declarations
 class Avatar;
+class CVarScope;
 class GpuInstance;
 class Renderer;
 class UserInterface;
@@ -28,6 +29,9 @@ struct VulkanRequirements {
 
 class Display {
  public:
+  static void initCVars(CVarScope*);
+
+  Display(const CVarScope*);
   virtual ~Display() {}
 
   struct PollEventsInfo {
@@ -48,6 +52,7 @@ class Display {
   virtual const Avatar* getAvatar(World*) = 0;
   virtual void destroySession() = 0;
 
+  virtual VkSampleCountFlagBits getSampleCount();
   virtual VkFormat getHdrFormat();
   virtual VkFormat getSwapchainFormat() = 0;
   virtual VkImageLayout getFinalLayout() = 0;
@@ -60,6 +65,9 @@ class Display {
 
  protected:
   GpuInstance* gpu;
+
+ private:
+  const CVarScope* cvars;
 };
 
 }  // namespace core
