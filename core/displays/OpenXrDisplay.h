@@ -18,7 +18,7 @@ class Renderer;
 
 class OpenXrDisplay : public Display {
  public:
-  OpenXrDisplay(const CVarScope*);
+  explicit OpenXrDisplay(const CVarScope*);
   ~OpenXrDisplay();
 
   bool getVulkanRequirements(VulkanRequirements*) final;

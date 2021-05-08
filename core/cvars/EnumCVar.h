@@ -15,7 +15,7 @@ class EnumCVar : public CVarValueInterface {
  public:
   using EnumRange = types::vector<types::string>;
 
-  EnumCVar(const EnumRange& range) : range(range) {}
+  explicit EnumCVar(const EnumRange& range) : range(range) {}
 
   const types::string& str() const { return value; }
   const char* c_str() const { return value.c_str(); }

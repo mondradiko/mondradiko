@@ -16,7 +16,7 @@ void Viewport::beginRender(VkCommandBuffer command_buffer,
                            VkRenderPass render_pass) {
   log_zone;
 
-  std::vector<VkClearValue> clear_values;
+  types::vector<VkClearValue> clear_values;
 
   if (display->getSampleCount() > 1) {
     clear_values.resize(6);

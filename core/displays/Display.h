@@ -31,7 +31,7 @@ class Display {
  public:
   static void initCVars(CVarScope*);
 
-  Display(const CVarScope*);
+  explicit Display(const CVarScope*);
   virtual ~Display() {}
 
   struct PollEventsInfo {
