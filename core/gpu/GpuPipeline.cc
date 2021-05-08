@@ -41,182 +41,6 @@ GpuPipeline::~GpuPipeline() {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Pipeline object helper functions
-////////////////////////////////////////////////////////////////////////////////
-
-#define HANDLE_INVALID_FLAGS(state, ret) \
-  log_ftl("Invalid GraphicsState");      \
-  return ret
-
-VkBool32 createVkBool(GraphicsState::BoolFlag bool_flag) {
-  switch (bool_flag) {
-    case GraphicsState::BoolFlag::False:
-      return VK_FALSE;
-    case GraphicsState::BoolFlag::True:
-      return VK_TRUE;
-    default:
-      HANDLE_INVALID_FLAGS(bool_flag, VK_FALSE);
-  }
-}
-
-VkCompareOp createVkCompareOp(GraphicsState::CompareOp compare_op) {
-  switch (compare_op) {
-    case GraphicsState::CompareOp::Never:
-      return VK_COMPARE_OP_NEVER;
-    case GraphicsState::CompareOp::Less:
-      return VK_COMPARE_OP_LESS;
-    case GraphicsState::CompareOp::Equal:
-      return VK_COMPARE_OP_EQUAL;
-    case GraphicsState::CompareOp::LessOrEqual:
-      return VK_COMPARE_OP_LESS_OR_EQUAL;
-    case GraphicsState::CompareOp::Greater:
-      return VK_COMPARE_OP_GREATER;
-    case GraphicsState::CompareOp::NotEqual:
-      return VK_COMPARE_OP_NOT_EQUAL;
-    case GraphicsState::CompareOp::GreaterOrEqual:
-      return VK_COMPARE_OP_GREATER_OR_EQUAL;
-    case GraphicsState::CompareOp::Always:
-      return VK_COMPARE_OP_ALWAYS;
-    default:
-      HANDLE_INVALID_FLAGS(compare_op, VK_COMPARE_OP_MAX_ENUM);
-  }
-}
-
-VkPrimitiveTopology createVkPrimitiveTopology(
-    GraphicsState::PrimitiveTopology primitive_topology) {
-  switch (primitive_topology) {
-    case GraphicsState::PrimitiveTopology::PointList:
-      return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-    case GraphicsState::PrimitiveTopology::LineList:
-      return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-    case GraphicsState::PrimitiveTopology::LineStrip:
-      return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-    case GraphicsState::PrimitiveTopology::TriangleList:
-      return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    case GraphicsState::PrimitiveTopology::TriangleStrip:
-      return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-    case GraphicsState::PrimitiveTopology::TriangleFan:
-      return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
-    default:
-      HANDLE_INVALID_FLAGS(primitive_topology, VK_PRIMITIVE_TOPOLOGY_MAX_ENUM);
-  }
-}
-
-VkPolygonMode createVkPolygonMode(GraphicsState::PolygonMode polygon_mode) {
-  switch (polygon_mode) {
-    case GraphicsState::PolygonMode::Fill:
-      return VK_POLYGON_MODE_FILL;
-    case GraphicsState::PolygonMode::Line:
-      return VK_POLYGON_MODE_LINE;
-    case GraphicsState::PolygonMode::Point:
-      return VK_POLYGON_MODE_POINT;
-    default:
-      HANDLE_INVALID_FLAGS(polygon_mode, VK_POLYGON_MODE_MAX_ENUM);
-  }
-}
-
-VkCullModeFlags createVkCullMode(GraphicsState::CullMode cull_mode) {
-  switch (cull_mode) {
-    case GraphicsState::CullMode::None:
-      return VK_CULL_MODE_NONE;
-    case GraphicsState::CullMode::Front:
-      return VK_CULL_MODE_FRONT_BIT;
-    case GraphicsState::CullMode::Back:
-      return VK_CULL_MODE_BACK_BIT;
-    case GraphicsState::CullMode::Both:
-      return VK_CULL_MODE_FRONT_AND_BACK;
-    default:
-      HANDLE_INVALID_FLAGS(cull_mode, VK_CULL_MODE_FLAG_BITS_MAX_ENUM);
-  }
-}
-
-// VkStencilOp createVkStencilOp(GraphicsState::StencilOp stencil_op) {}
-
-void createVkInputAssemblyState(const GraphicsState& graphics_state,
-                                VkPipelineInputAssemblyStateCreateInfo* info) {
-  const auto& state = graphics_state.input_assembly_state;
-
-  info->sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-  info->topology = createVkPrimitiveTopology(state.primitive_topology);
-  info->primitiveRestartEnable = createVkBool(state.primitive_restart_enable);
-}
-
-void createVkRasterizationState(const GraphicsState& graphics_state,
-                                VkPipelineRasterizationStateCreateInfo* info) {
-  const auto& state = graphics_state.rasterization_state;
-
-  info->sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-  info->depthClampEnable = VK_FALSE;
-  info->rasterizerDiscardEnable = VK_FALSE;
-  info->polygonMode = createVkPolygonMode(state.polygon_mode);
-  info->cullMode = createVkCullMode(state.cull_mode);
-  info->frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-  info->depthBiasEnable = VK_FALSE;
-  info->lineWidth = 1.0f;
-}
-
-void createVkDepthStencilState(const GraphicsState& graphics_state,
-                               VkPipelineDepthStencilStateCreateInfo* info) {
-  const auto& depth_state = graphics_state.depth_state;
-
-  info->sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-  info->depthTestEnable = createVkBool(depth_state.test_enable);
-  info->depthWriteEnable = createVkBool(depth_state.write_enable);
-  info->depthCompareOp = createVkCompareOp(depth_state.compare_op);
-  info->depthBoundsTestEnable = VK_FALSE;
-  info->stencilTestEnable = VK_FALSE;
-}
-
-void createVkColorBlendState(const GraphicsState& graphics_state,
-                             VkPipelineColorBlendAttachmentState* info) {
-  const auto& color_blend_state = graphics_state.color_blend_state;
-
-  info->colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-
-  switch (color_blend_state.blend_mode) {
-    case GraphicsState::BlendMode::Opaque: {
-      info->blendEnable = VK_FALSE;
-      return;
-    }
-
-    case GraphicsState::BlendMode::AlphaBlend: {
-      info->blendEnable = VK_TRUE;
-
-      info->srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-      info->dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-      info->colorBlendOp = VK_BLEND_OP_ADD;
-      info->srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-      info->dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-      info->alphaBlendOp = VK_BLEND_OP_ADD;
-
-      return;
-    }
-
-    case GraphicsState::BlendMode::AlphaPremultiplied: {
-      info->blendEnable = VK_TRUE;
-
-      info->srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-      info->dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-      info->colorBlendOp = VK_BLEND_OP_ADD;
-      info->srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-      info->dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-      info->alphaBlendOp = VK_BLEND_OP_ADD;
-
-      return;
-    }
-
-    default: {
-      log_ftl("Invalid GraphicsState");
-      return;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Actual pipeline creation
-////////////////////////////////////////////////////////////////////////////////
 GpuPipeline::StateHash GpuPipeline::createPipeline(
     const GraphicsState& graphics_state) {
   log_zone;
@@ -245,8 +69,7 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   vertex_input_info.pVertexAttributeDescriptions =
       attribute_descriptions.data();
 
-  VkPipelineInputAssemblyStateCreateInfo input_assembly_info{};
-  createVkInputAssemblyState(graphics_state, &input_assembly_info);
+  auto input_assembly_info = graphics_state.createVkInputAssemblyState();
 
   // TODO(marceline-cramer) Get viewport state from Viewport
   VkViewport viewport{};
@@ -268,24 +91,10 @@ GpuPipeline::StateHash GpuPipeline::createPipeline(
   viewport_info.scissorCount = 1;
   viewport_info.pScissors = &scissor;
 
-  VkPipelineRasterizationStateCreateInfo rasterization_info{};
-  createVkRasterizationState(graphics_state, &rasterization_info);
-
-  VkPipelineMultisampleStateCreateInfo multisample_info{};
-  multisample_info.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-  multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-  multisample_info.sampleShadingEnable = VK_FALSE;
-  multisample_info.minSampleShading = 1.0f;
-  multisample_info.pSampleMask = nullptr;
-  multisample_info.alphaToCoverageEnable = VK_FALSE;
-  multisample_info.alphaToOneEnable = VK_FALSE;
-
-  VkPipelineDepthStencilStateCreateInfo depth_stencil_info{};
-  createVkDepthStencilState(graphics_state, &depth_stencil_info);
-
-  VkPipelineColorBlendAttachmentState color_blend_attachment{};
-  createVkColorBlendState(graphics_state, &color_blend_attachment);
+  auto rasterization_info = graphics_state.createVkRasterizationState();
+  auto multisample_info = graphics_state.createVkMultisampleState();
+  auto depth_stencil_info = graphics_state.createVkDepthStencilState();
+  auto color_blend_attachment = graphics_state.createVkColorBlendState();
 
   VkPipelineColorBlendStateCreateInfo color_blend_info{};
   color_blend_info.sType =
