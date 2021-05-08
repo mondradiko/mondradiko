@@ -115,31 +115,11 @@ void CompositePass::renderViewport(
   auto& frame = _frame_data[_current_frame];
 
   {
-    GraphicsState graphics_state;
-
-    GraphicsState::InputAssemblyState input_assembly_state{};
-    input_assembly_state.primitive_topology =
+    auto gs = GraphicsState::CreateGenericOpaque();
+    gs.input_assembly_state.primitive_topology =
         GraphicsState::PrimitiveTopology::TriangleStrip;
-    input_assembly_state.primitive_restart_enable =
-        GraphicsState::BoolFlag::False;
-    graphics_state.input_assembly_state = input_assembly_state;
-
-    GraphicsState::RasterizatonState rasterization_state{};
-    rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-    rasterization_state.cull_mode = GraphicsState::CullMode::None;
-    graphics_state.rasterization_state = rasterization_state;
-
-    GraphicsState::DepthState depth_state{};
-    depth_state.test_enable = GraphicsState::BoolFlag::False;
-    depth_state.write_enable = GraphicsState::BoolFlag::False;
-    depth_state.compare_op = GraphicsState::CompareOp::Less;
-    graphics_state.depth_state = depth_state;
-
-    GraphicsState::ColorBlendState color_blend_state{};
-    color_blend_state.blend_mode = GraphicsState::BlendMode::Opaque;
-    graphics_state.color_blend_state = color_blend_state;
-
-    _pipeline->cmdBind(command_buffer, graphics_state);
+    gs.depth_state.test_enable = GraphicsState::BoolFlag::False;
+    _pipeline->cmdBind(command_buffer, gs);
   }
 
   auto& input_attachment = frame.input_attachments[viewport_index];

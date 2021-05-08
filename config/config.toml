@@ -6,6 +6,9 @@ update_rate = 20.0
 username = "ExampleUsername"
 metaverse_provider = ""
 
+[displays]
+antialiasing = "none"
+
 [displays.sdl]
 camera_speed = 5.0
 

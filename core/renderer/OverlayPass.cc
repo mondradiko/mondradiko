@@ -8,6 +8,7 @@
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/CVarScope.h"
+#include "core/displays/Viewport.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
@@ -240,27 +241,13 @@ void OverlayPass::renderViewport(VkCommandBuffer command_buffer,
     log_zone_named("Render debug");
 
     {
-      GraphicsState graphics_state;
-
-      GraphicsState::InputAssemblyState input_assembly_state{};
-      input_assembly_state.primitive_topology =
+      auto gs = GraphicsState::CreateGenericOpaque();
+      gs.input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::LineList;
-      input_assembly_state.primitive_restart_enable =
-          GraphicsState::BoolFlag::False;
-      graphics_state.input_assembly_state = input_assembly_state;
-
-      GraphicsState::RasterizatonState rasterization_state{};
-      rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-      rasterization_state.cull_mode = GraphicsState::CullMode::None;
-      graphics_state.rasterization_state = rasterization_state;
-
-      GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::True;
-      depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Less;
-      graphics_state.depth_state = depth_state;
-
-      debug_pipeline->cmdBind(command_buffer, graphics_state);
+      gs.multisample_state.rasterization_samples =
+          renderer->getCurrentViewport(viewport_index)->getSampleCount();
+      gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+      debug_pipeline->cmdBind(command_buffer, gs);
     }
 
     // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout

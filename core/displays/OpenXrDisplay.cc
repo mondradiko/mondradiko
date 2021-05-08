@@ -33,7 +33,8 @@ void splitString(types::vector<types::string>* split,
   }
 }
 
-OpenXrDisplay::OpenXrDisplay() {
+OpenXrDisplay::OpenXrDisplay(const CVarScope* parent_cvars)
+    : Display(parent_cvars) {
   log_zone;
 
   {

@@ -16,11 +16,22 @@ void Viewport::beginRender(VkCommandBuffer command_buffer,
                            VkRenderPass render_pass) {
   log_zone;
 
-  std::array<VkClearValue, 3> clear_values;
+  types::vector<VkClearValue> clear_values;
 
-  clear_values[0].depthStencil = {1.0f};
-  clear_values[1].color = {0.0, 0.0, 0.0, 1.0};
-  clear_values[2].color = {0.0, 0.0, 0.0, 0.0};
+  if (display->getSampleCount() > 1) {
+    clear_values.resize(6);
+    clear_values[0].depthStencil = {1.0f};
+    clear_values[1] = clear_values[0];
+    clear_values[2].color = {0.0, 0.0, 0.0, 1.0};
+    clear_values[3] = clear_values[2];
+    clear_values[4].color = {0.0, 0.0, 0.0, 0.0};
+    clear_values[5] = clear_values[4];
+  } else {
+    clear_values.resize(3);
+    clear_values[0].depthStencil = {1.0f};
+    clear_values[1].color = {0.0, 0.0, 0.0, 1.0};
+    clear_values[2].color = {0.0, 0.0, 0.0, 0.0};
+  }
 
   VkRenderPassBeginInfo render_pass_info{};
   render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -98,6 +109,8 @@ void Viewport::beginComposite(VkCommandBuffer command_buffer,
 }
 
 void Viewport::_createImages() {
+  bool msaa_enabled = display->getSampleCount() > 1;
+
   {
     log_zone_named("Create offscreen images");
 
@@ -105,32 +118,53 @@ void Viewport::_createImages() {
     uint32_t h = _image_height;
     VmaMemoryUsage memory_usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    VkFormat hdr_format = display->getHdrFormat();
-    VkImageUsageFlags hdr_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-                                  VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    _sample_count = display->getSampleCount();
 
-    VkFormat overlay_format = VK_FORMAT_R8G8B8A8_SRGB;
-
-    VkImageUsageFlags overlay_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-                                      VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-
-    VkFormat depth_format = display->getDepthFormat();
+    VkImageUsageFlags msaa_usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+    VkImageUsageFlags input_usage = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    VkImageUsageFlags color_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     VkImageUsageFlags depth_usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    _hdr_image =
-        new GpuImage(gpu, hdr_format, w, h, 1, hdr_usage, memory_usage);
-    _overlay_image =
-        new GpuImage(gpu, overlay_format, w, h, 1, overlay_usage, memory_usage);
-    _depth_image =
-        new GpuImage(gpu, depth_format, w, h, 1, depth_usage, memory_usage);
+    VkFormat hdr_format = display->getHdrFormat();
+    VkFormat overlay_format = VK_FORMAT_R8G8B8A8_SRGB;
+    VkFormat depth_format = display->getDepthFormat();
+
+    _hdr_image = std::make_unique<GpuImage>(
+        gpu, hdr_format, w, h, color_usage | input_usage, memory_usage);
+
+    _overlay_image = std::make_unique<GpuImage>(
+        gpu, overlay_format, w, h, color_usage | input_usage, memory_usage);
+
+    _depth_image = std::make_unique<GpuImage>(gpu, depth_format, w, h,
+                                              depth_usage, memory_usage);
+
+    if (msaa_enabled) {
+      _hdr_msaa =
+          std::make_unique<GpuImage>(gpu, hdr_format, w, h, _sample_count,
+                                     color_usage | msaa_usage, memory_usage);
+      _overlay_msaa =
+          std::make_unique<GpuImage>(gpu, overlay_format, w, h, _sample_count,
+                                     color_usage | msaa_usage, memory_usage);
+      _depth_msaa =
+          std::make_unique<GpuImage>(gpu, depth_format, w, h, _sample_count,
+                                     depth_usage | msaa_usage, memory_usage);
+    }
   }
 
   {
     log_zone_named("Create offscreen framebuffer");
 
-    std::array<VkImageView, 3> framebuffer_attachments = {
-        _depth_image->getView(), _hdr_image->getView(),
-        _overlay_image->getView()};
+    types::vector<VkImageView> framebuffer_attachments;
+
+    if (msaa_enabled) {
+      framebuffer_attachments = {
+          _depth_image->getView(),   _depth_msaa->getView(),
+          _hdr_image->getView(),     _hdr_msaa->getView(),
+          _overlay_image->getView(), _overlay_msaa->getView()};
+    } else {
+      framebuffer_attachments = {_depth_image->getView(), _hdr_image->getView(),
+                                 _overlay_image->getView()};
+    }
 
     VkFramebufferCreateInfo framebuffer_info{};
     framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -200,15 +234,6 @@ void Viewport::_destroyImages() {
     vkDestroyFramebuffer(gpu->device, image.framebuffer, nullptr);
   }
   _images.resize(0);
-
-  if (_hdr_image != nullptr) delete _hdr_image;
-  _hdr_image = nullptr;
-
-  if (_overlay_image != nullptr) delete _overlay_image;
-  _overlay_image = nullptr;
-
-  if (_depth_image != nullptr) delete _depth_image;
-  _depth_image = nullptr;
 
   if (_framebuffer != VK_NULL_HANDLE)
     vkDestroyFramebuffer(gpu->device, _framebuffer, nullptr);
