@@ -179,7 +179,7 @@ VkPipelineColorBlendAttachmentState GraphicsState::createVkColorBlendState()
   VkPipelineColorBlendAttachmentState info{};
 
   info.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+                        VK_COLOR_COMPONENT_B_BIT;
 
   switch (color_blend_state.blend_mode) {
     case GraphicsState::BlendMode::Opaque: {
@@ -189,6 +189,7 @@ VkPipelineColorBlendAttachmentState GraphicsState::createVkColorBlendState()
 
     case GraphicsState::BlendMode::AlphaBlend: {
       info.blendEnable = VK_TRUE;
+      info.colorWriteMask |= VK_COLOR_COMPONENT_A_BIT;
 
       info.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
       info.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -202,6 +203,7 @@ VkPipelineColorBlendAttachmentState GraphicsState::createVkColorBlendState()
 
     case GraphicsState::BlendMode::AlphaPremultiplied: {
       info.blendEnable = VK_TRUE;
+      info.colorWriteMask |= VK_COLOR_COMPONENT_A_BIT;
 
       info.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
       info.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
