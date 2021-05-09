@@ -181,7 +181,7 @@ bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
     format_options[i] = static_cast<VkFormat>(format_codes[i]);
   }
 
-  types::vector<VkFormat> format_candidates = {VK_FORMAT_R8G8B8A8_SRGB,
+  types::vector<VkFormat> format_candidates = {VK_FORMAT_R8G8B8_UNORM,
                                                VK_FORMAT_R8G8B8A8_UNORM};
 
   if (!gpu->findFormatFromOptions(&format_options, &format_candidates,

@@ -130,7 +130,7 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
 
   swapchain_format = VK_FORMAT_MAX_ENUM;
   for (const auto& surface_format : surface_formats) {
-    if (surface_format.format == VK_FORMAT_B8G8R8A8_SRGB &&
+    if (surface_format.format == VK_FORMAT_B8G8R8A8_UNORM &&
         surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
       swapchain_format = surface_format.format;
       swapchain_color_space = surface_format.colorSpace;
