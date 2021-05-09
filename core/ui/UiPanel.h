@@ -94,6 +94,8 @@ class UiPanel : public DynamicScriptObject<UiPanel> {
   wasm_trap_t* createGlyphStyle(ScriptInstance*, const wasm_val_t[],
                                 wasm_val_t[]);
   wasm_trap_t* drawTriangle(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* drawCircle(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* drawRing(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
 
  private:
   GlyphLoader* glyphs;
