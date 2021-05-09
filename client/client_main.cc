@@ -78,6 +78,7 @@ void run(const ClientArgs& args) {
   CVarScope cvars;
 
   GlyphLoader::initCVars(&cvars);
+  GpuInstance::initCVars(&cvars);
   Renderer::initCVars(&cvars);
   NetworkClient::initCVars(&cvars);
   UserInterface::initCVars(&cvars);
@@ -99,7 +100,7 @@ void run(const ClientArgs& args) {
                 args.display.c_str());
   }
 
-  GpuInstance gpu(display.get());
+  GpuInstance gpu(&cvars, display.get());
   if (!display->createSession(&gpu)) {
     log_ftl("Failed to create display session!");
   }

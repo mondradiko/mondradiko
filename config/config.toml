@@ -18,6 +18,14 @@ sdf_scale = 2.0
 sdf_border = 1.0
 sdf_range = 4.0
 
+[gpu]
+
+# WARNING: Disabling this also disables Vulkan error logging,
+# meaning that the maintainers will not be able to help you if
+# you run into GPU bugs. However, disabling Vulkan validation
+# can also improve CPU-side performance by speeding up Vulkan calls.
+enable_validation = true
+
 [renderer]
 
 # Calls vkQueueWaitIdle after every submit.

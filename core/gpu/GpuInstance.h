@@ -10,12 +10,15 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class CVarScope;
 class Display;
 struct VulkanRequirements;
 
 class GpuInstance {
  public:
-  explicit GpuInstance(Display*);
+  static void initCVars(CVarScope*);
+
+  GpuInstance(const CVarScope*, Display*);
   ~GpuInstance();
 
   bool findFormatFromOptions(const types::vector<VkFormat>*,
@@ -25,8 +28,7 @@ class GpuInstance {
   VkCommandBuffer beginSingleTimeCommands();
   void endSingleTimeCommands(VkCommandBuffer);
 
-  bool enableValidationLayers = true;
-
+  const CVarScope* cvars;
   Display* display;
 
   VkInstance instance = VK_NULL_HANDLE;
@@ -49,11 +51,11 @@ class GpuInstance {
 
   bool checkValidationLayerSupport();
   void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT*);
-  void createInstance(VulkanRequirements*);
+  void createInstance(VulkanRequirements*, bool);
   void setupDebugMessenger();
   void findPhysicalDevice(Display*);
   void findQueueFamilies();
-  void createLogicalDevice(VulkanRequirements*);
+  void createLogicalDevice(VulkanRequirements*, bool);
   void createCommandPool();
   void createAllocator();
 
