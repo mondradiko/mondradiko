@@ -126,7 +126,7 @@ void Viewport::_createImages() {
     VkImageUsageFlags depth_usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
     VkFormat hdr_format = display->getHdrFormat();
-    VkFormat overlay_format = VK_FORMAT_R8G8B8A8_SRGB;
+    VkFormat overlay_format = VK_FORMAT_R8G8B8A8_UNORM;
     VkFormat depth_format = display->getDepthFormat();
 
     _hdr_image = std::make_unique<GpuImage>(

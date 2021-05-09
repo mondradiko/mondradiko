@@ -76,7 +76,7 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
 
     {
       VkAttachmentDescription overlay_desc{};
-      overlay_desc.format = VK_FORMAT_R8G8B8A8_SRGB;
+      overlay_desc.format = VK_FORMAT_R8G8B8A8_UNORM;
       overlay_desc.samples = VK_SAMPLE_COUNT_1_BIT;
       overlay_desc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
       overlay_desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -319,7 +319,7 @@ Renderer::Renderer(const CVarScope* cvars, Display* display, GpuInstance* gpu)
 
     {
       VkAttachmentDescription overlay_desc{};
-      overlay_desc.format = VK_FORMAT_R8G8B8A8_SRGB;
+      overlay_desc.format = VK_FORMAT_R8G8B8A8_UNORM;
       overlay_desc.samples = VK_SAMPLE_COUNT_1_BIT;
       overlay_desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
       overlay_desc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
