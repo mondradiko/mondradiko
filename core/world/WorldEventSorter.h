@@ -19,7 +19,7 @@ struct WorldEventT;
 namespace core {
 
 // Forward declarations
-struct World;
+class World;
 
 class WorldEventSorter {
  public:

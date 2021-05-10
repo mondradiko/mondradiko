@@ -44,12 +44,12 @@ GlyphLoader::GlyphLoader(const CVarScope* _cvars, Renderer* renderer)
       cvars->get<FileCVar>("font_path").getPath().string();  // NOLINT
   error = FT_New_Face(freetype, font_path.c_str(), 0, &font_face);
   if (error) {
-    log_ftl_fmt("Failed to load font %s", font_path);
+    log_ftl_fmt("Failed to load font %s", font_path.c_str());
   }
 
   sdf_font = msdfgen::adoptFreetypeFont(font_face);
   if (sdf_font == nullptr) {
-    log_ftl_fmt("msdfgen failed to adopt font %s", font_path);
+    log_ftl_fmt("msdfgen failed to adopt font %s", font_path.c_str());
   }
 
   types::vector<msdfgen::unicode_t> characters;
