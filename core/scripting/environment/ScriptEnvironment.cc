@@ -3,7 +3,6 @@
 
 #include "core/scripting/environment/ScriptEnvironment.h"
 
-#include <ctime>
 #include <sstream>
 
 #include "core/scripting/instance/ScriptInstance.h"
@@ -12,18 +11,19 @@
 namespace mondradiko {
 namespace core {
 
-static wasm_trap_t* interruptCallback(const wasmtime_caller_t* caller,
-                                      void* env, const wasm_val_t args[],
-                                      wasm_val_t results[]) {
+wasm_trap_t* ScriptEnvironment::interruptCallback(
+    const wasmtime_caller_t* caller, void* env, const wasm_val_t args[],
+    wasm_val_t results[]) {
   ScriptEnvironment* scripts = reinterpret_cast<ScriptEnvironment*>(env);
   log_err("Store interrupted");
   wasmtime_interrupt_handle_interrupt(scripts->getInterruptHandle());
   return nullptr;
 }
 
-static wasm_trap_t* abortCallback(const wasmtime_caller_t* caller, void* env,
-                                  const wasm_val_t args[],
-                                  wasm_val_t results[]) {
+wasm_trap_t* ScriptEnvironment::abortCallback(const wasmtime_caller_t* caller,
+                                              void* env,
+                                              const wasm_val_t args[],
+                                              wasm_val_t results[]) {
   ScriptInstance* instance = reinterpret_cast<ScriptInstance*>(env);
   ScriptEnvironment* scripts = instance->scripts;
 
@@ -45,18 +45,22 @@ static wasm_trap_t* abortCallback(const wasmtime_caller_t* caller, void* env,
   return scripts->createTrap(error_message.str());
 }
 
-static wasm_trap_t* seedCallback(const wasmtime_caller_t* caller, void* env,
-                                 const wasm_val_t args[],
-                                 wasm_val_t results[]) {
+wasm_trap_t* ScriptEnvironment::seedCallback(const wasmtime_caller_t* caller,
+                                             void* env, const wasm_val_t args[],
+                                             wasm_val_t results[]) {
+  ScriptInstance* instance = reinterpret_cast<ScriptInstance*>(env);
+  ScriptEnvironment* self = instance->scripts;
+
   results[0].kind = WASM_F64;
-  results[0].of.i64 = time(nullptr);  // Seed f64 value with i64 random int
+  results[0].of.i64 = self->_mersenne_twister();
+
   return nullptr;
 }
 
 // Dummy finalizer needed for wasmtime_func_new_with_env()
 static void interruptCallbackFinalizer(void*) {}
 
-ScriptEnvironment::ScriptEnvironment() {
+ScriptEnvironment::ScriptEnvironment() : _mersenne_twister(_random_device()) {
   log_zone;
 
   // Create a config to allow interrupts
