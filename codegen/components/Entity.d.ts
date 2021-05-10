@@ -8,6 +8,14 @@ import TransformComponent from "./TransformComponent";
   @external("Entity_spawnChild")
   spawnChild(): Entity
 
+  @external("Entity_spawnChildAt")
+  spawnChildAt(x: f64, y: f64, z: f64): Entity
+
+  @external("Entity_spawnScriptedChild")
+  spawnScriptedChild(script_impl: string): Entity
+
+  @external("Entity_spawnScriptedChildAt")
+  spawnScriptedChildAt(script_impl: string, x: f64, y: f64, z: f64): Entity
 
   /////////////////////
   // PointLightComponent
