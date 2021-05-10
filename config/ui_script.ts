@@ -38,24 +38,7 @@ class QueuedMessage {
 function drawCircle(panel: UiPanel,
                     x: f64, y: f64, radius: f64,
                     r: f64, g: f64, b: f64, alpha: f64): void {
-  let center = new Vector2(x, y);
-  let last_spoke = new Vector2(radius + x, y);
-  let delta: f64 = Math.PI / 16.0;
-  let limit: f64 = Math.PI * 2.0 + delta;
-  for (let theta = delta; theta < limit; theta += delta) {
-    let new_spoke = new Vector2(
-      Math.cos(theta) * radius,
-      Math.sin(theta) * radius);
-    new_spoke.add(center);
-
-    panel.drawTriangle(
-      x, y,
-      last_spoke.x, last_spoke.y,
-      new_spoke.x, new_spoke.y,
-      r, g, b, alpha);
-
-    last_spoke = new_spoke;
-  }
+  panel.drawCircle(x, y, radius, r, g, b, alpha);
 }
 
 class PolkaDot {

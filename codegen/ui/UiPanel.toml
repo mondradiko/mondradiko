@@ -48,3 +48,28 @@ dependencies = ["GlyphStyle"]
     g = "double"
     b = "double"
     a = "double"
+
+  [methods.drawCircle]
+  param_list = ["x", "y", "radius", "r", "g", "b", "a"]
+
+    [methods.drawCircle.params]
+    x = "double"
+    y = "double"
+    radius = "double"
+    r = "double"
+    g = "double"
+    b = "double"
+    a = "double"
+
+  [methods.drawRing]
+  param_list = ["x", "y", "inner_radius", "outer_radius", "r", "g", "b", "a"]
+
+    [methods.drawRing.params]
+    x = "double"
+    y = "double"
+    inner_radius = "double"
+    outer_radius = "double"
+    r = "double"
+    g = "double"
+    b = "double"
+    a = "double"

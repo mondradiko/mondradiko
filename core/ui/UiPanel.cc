@@ -249,5 +249,30 @@ wasm_trap_t* UiPanel::drawTriangle(ScriptInstance*, const wasm_val_t args[],
   return nullptr;
 }
 
+wasm_trap_t* UiPanel::drawCircle(ScriptInstance*, const wasm_val_t args[],
+                                 wasm_val_t[]) {
+  glm::vec2 center = glm::vec2(args[1].of.f64, args[2].of.f64);
+  float radius = args[3].of.f64;
+  glm::vec4 color =
+      glm::vec4(args[4].of.f64, args[5].of.f64, args[6].of.f64, args[7].of.f64);
+
+  _current_draw->drawCircle(center, radius, color);
+
+  return nullptr;
+}
+
+wasm_trap_t* UiPanel::drawRing(ScriptInstance*, const wasm_val_t args[],
+                               wasm_val_t[]) {
+  glm::vec2 center = glm::vec2(args[1].of.f64, args[2].of.f64);
+  float inner_radius = args[3].of.f64;
+  float outer_radius = args[4].of.f64;
+  glm::vec4 color =
+      glm::vec4(args[5].of.f64, args[6].of.f64, args[7].of.f64, args[8].of.f64);
+
+  _current_draw->drawRing(center, inner_radius, outer_radius, color);
+
+  return nullptr;
+}
+
 }  // namespace core
 }  // namespace mondradiko

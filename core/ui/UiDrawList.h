@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <array>
+
 #include "core/gpu/GpuPipeline.h"
 #include "lib/include/glm_headers.h"
 
@@ -14,6 +16,8 @@ class GpuVector;
 
 class UiDrawList {
  public:
+  UiDrawList();
+
   //////////////////////////////////////////////////////////////////////////////
   // Type definitions
   //////////////////////////////////////////////////////////////////////////////
@@ -68,6 +72,23 @@ class UiDrawList {
    */
   void drawTriangle(Index, Index, Index);
 
+  /**
+   * @brief Draws a circle.
+   * @param center The center of the circle.
+   * @param radius The radius of the circle.
+   * @param color The color of the circle.
+   */
+  void drawCircle(const glm::vec2&, float, const glm::vec4&);
+
+  /**
+   * @brief Draws a ring.
+   * @param center The center of the ring.
+   * @param inner_radius The inner radius of the ring.
+   * @param outer_radius The outer radius of the ring.
+   * @param color The color of the ring.
+   */
+  void drawRing(const glm::vec2&, float, float, const glm::vec4&);
+
   //////////////////////////////////////////////////////////////////////////////
   // Render commands
   //////////////////////////////////////////////////////////////////////////////
@@ -83,6 +104,10 @@ class UiDrawList {
  private:
   types::vector<Vertex> _vertices;
   types::vector<Index> _indices;
+
+  // For drawing circular shapes
+  constexpr static int SPOKE_COUNT = 64;
+  std::array<glm::vec2, SPOKE_COUNT> _spokes;
 };
 
 }  // namespace core
