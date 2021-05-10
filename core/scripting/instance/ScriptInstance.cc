@@ -202,6 +202,7 @@ bool ScriptInstance::AS_new(uint32_t size, uint32_t id, uint32_t* ptr) {
 
   if (!runFunction(_new_func, args.data(), args.size(), &ptr_result, 1)) {
     log_err("Failed to allocate AssemblyScript object");
+    *ptr = 0;
     return false;
   }
 
@@ -210,6 +211,11 @@ bool ScriptInstance::AS_new(uint32_t size, uint32_t id, uint32_t* ptr) {
 }
 
 bool ScriptInstance::AS_pin(uint32_t ptr) {
+  if (ptr == 0) {
+    log_err("Attempted to pin null object");
+    return false;
+  }
+
   wasm_val_t ptr_arg;
   ptr_arg.kind = WASM_I32;
   ptr_arg.of.i32 = ptr;
@@ -225,6 +231,11 @@ bool ScriptInstance::AS_pin(uint32_t ptr) {
 }
 
 bool ScriptInstance::AS_unpin(uint32_t ptr) {
+  if (ptr == 0) {
+    log_err("Attempted to unpin null object");
+    return false;
+  }
+
   wasm_val_t ptr_arg;
   ptr_arg.kind = WASM_I32;
   ptr_arg.of.i32 = ptr;
