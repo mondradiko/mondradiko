@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <array>
+
 #include "core/gpu/GpuPipeline.h"
 #include "lib/include/glm_headers.h"
 
