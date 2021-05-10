@@ -14,13 +14,6 @@ ScriptAsset::~ScriptAsset() {
   if (script_module) wasm_module_delete(script_module);
 }
 
-ComponentScript* ScriptAsset::createInstance(World* world,
-                                             EntityId self_id) const {
-  ComponentScript* instance =
-      new ComponentScript(scripts, world, script_module, self_id);
-  return instance;
-}
-
 bool ScriptAsset::_load(const assets::SerializedAsset* asset) {
   const assets::ScriptAsset* script = asset->script();
 

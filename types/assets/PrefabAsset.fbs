@@ -20,7 +20,8 @@ struct RigidBodyPrefab {
 }
 
 table ScriptPrefab {
-  script:uint32;
+  script_asset:uint32;
+  script_impl:string;
 }
 
 struct TransformPrefab {

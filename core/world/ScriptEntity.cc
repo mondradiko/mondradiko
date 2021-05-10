@@ -13,19 +13,75 @@
 namespace mondradiko {
 namespace core {
 
-wasm_functype_t* methodType_Entity() {
+static wasm_functype_t* methodType_Entity() {
   return wasm_functype_new_1_1(wasm_valtype_new_i32(), wasm_valtype_new_i32());
 }
 
-static wasm_trap_t* Entity_spawnChild(World* world, const wasm_val_t args[],
-                                      wasm_val_t results[]) {
-  EntityId self_id = args[0].of.i32;
+static wasm_functype_t* methodType_Entity_spawnChildAt() {
+  wasm_valtype_t* ps[] = {wasm_valtype_new_i32(), wasm_valtype_new_f64(),
+                          wasm_valtype_new_f64(), wasm_valtype_new_f64()};
+
+  wasm_valtype_vec_t p;
+  wasm_valtype_vec_new(&p, 4, ps);
+
+  wasm_valtype_t* rs[] = {wasm_valtype_new_i32()};
+  wasm_valtype_vec_t r;
+  wasm_valtype_vec_new(&r, 1, rs);
+
+  return wasm_functype_new(&p, &r);
+}
+
+static wasm_functype_t* methodType_Entity_spawnScriptedChild() {
+  wasm_valtype_t* ps[] = {wasm_valtype_new_i32(), wasm_valtype_new_i32()};
+
+  wasm_valtype_vec_t p;
+  wasm_valtype_vec_new(&p, 2, ps);
+
+  wasm_valtype_t* rs[] = {wasm_valtype_new_i32()};
+  wasm_valtype_vec_t r;
+  wasm_valtype_vec_new(&r, 1, rs);
+
+  return wasm_functype_new(&p, &r);
+}
+
+static wasm_functype_t* methodType_Entity_spawnScriptedChildAt() {
+  wasm_valtype_t* ps[] = {wasm_valtype_new_i32(), wasm_valtype_new_i32(),
+                          wasm_valtype_new_f64(), wasm_valtype_new_f64(),
+                          wasm_valtype_new_f64()};
+
+  wasm_valtype_vec_t p;
+  wasm_valtype_vec_new(&p, 5, ps);
+
+  wasm_valtype_t* rs[] = {wasm_valtype_new_i32()};
+  wasm_valtype_vec_t r;
+  wasm_valtype_vec_new(&r, 1, rs);
+
+  return wasm_functype_new(&p, &r);
+}
+
+// Helper function
+static wasm_trap_t* spawnChild(ComponentScript* instance,
+                               const wasm_val_t& self_arg,
+                               EntityId* new_entity) {
+  World* world = instance->world;
+
+  EntityId self_id = self_arg.of.i32;
   if (!world->registry.valid(self_id)) {
     return world->scripts.createTrap("Invalid entity ID");
   }
 
-  EntityId new_entity = world->registry.create();
-  world->adopt(self_id, new_entity);
+  *new_entity = world->registry.create();
+  world->adopt(self_id, *new_entity);
+
+  return nullptr;
+}
+
+static wasm_trap_t* Entity_spawnChild(ComponentScript* instance,
+                                      const wasm_val_t args[],
+                                      wasm_val_t results[]) {
+  EntityId new_entity;
+  wasm_trap_t* trap = spawnChild(instance, args[0], &new_entity);
+  if (trap != nullptr) return trap;
 
   results[0].kind = WASM_I32;
   results[0].of.i32 = new_entity;
@@ -33,9 +89,83 @@ static wasm_trap_t* Entity_spawnChild(World* world, const wasm_val_t args[],
   return nullptr;
 }
 
-template <class ComponentType>
-static wasm_trap_t* Entity_hasComponent(World* world, const wasm_val_t args[],
+static wasm_trap_t* Entity_spawnChildAt(ComponentScript* instance,
+                                        const wasm_val_t args[],
                                         wasm_val_t results[]) {
+  World* world = instance->world;
+
+  EntityId new_entity;
+  wasm_trap_t* trap = spawnChild(instance, args[0], &new_entity);
+  if (trap != nullptr) return trap;
+
+  results[0].kind = WASM_I32;
+  results[0].of.i32 = new_entity;
+
+  auto pos = glm::vec3(args[1].of.f64, args[2].of.f64, args[3].of.f64);
+  auto ori = glm::quat();
+  world->registry.emplace<TransformComponent>(new_entity, pos, ori);
+
+  return nullptr;
+}
+
+static wasm_trap_t* Entity_spawnScriptedChild(ComponentScript* instance,
+                                              const wasm_val_t args[],
+                                              wasm_val_t results[]) {
+  World* world = instance->world;
+
+  EntityId new_entity;
+  wasm_trap_t* trap = spawnChild(instance, args[0], &new_entity);
+  if (trap != nullptr) return trap;
+
+  results[0].kind = WASM_I32;
+  results[0].of.i32 = new_entity;
+
+  ComponentScriptEnvironment& scripts = world->scripts;
+
+  types::string impl;
+  if (!instance->AS_getString(args[1].of.i32, &impl)) {
+    return scripts.createTrap("script_impl is not a valid string");
+  }
+
+  scripts.instantiateScript(new_entity, instance->getAsset().getId(), impl);
+
+  return nullptr;
+}
+
+static wasm_trap_t* Entity_spawnScriptedChildAt(ComponentScript* instance,
+                                                const wasm_val_t args[],
+                                                wasm_val_t results[]) {
+  World* world = instance->world;
+
+  EntityId new_entity;
+  wasm_trap_t* trap = spawnChild(instance, args[0], &new_entity);
+  if (trap != nullptr) return trap;
+
+  results[0].kind = WASM_I32;
+  results[0].of.i32 = new_entity;
+
+  auto pos = glm::vec3(args[2].of.f64, args[3].of.f64, args[4].of.f64);
+  auto ori = glm::quat();
+  world->registry.emplace<TransformComponent>(new_entity, pos, ori);
+
+  ComponentScriptEnvironment& scripts = world->scripts;
+
+  types::string impl;
+  if (!instance->AS_getString(args[1].of.i32, &impl)) {
+    return scripts.createTrap("script_impl is not a valid string");
+  }
+
+  scripts.instantiateScript(new_entity, instance->getAsset().getId(), impl);
+
+  return nullptr;
+}
+
+template <class ComponentType>
+static wasm_trap_t* Entity_hasComponent(ComponentScript* instance,
+                                        const wasm_val_t args[],
+                                        wasm_val_t results[]) {
+  World* world = instance->world;
+
   EntityId self_id = args[0].of.i32;
   if (!world->registry.valid(self_id)) {
     return world->scripts.createTrap("Invalid entity ID");
@@ -53,8 +183,11 @@ static wasm_trap_t* Entity_hasComponent(World* world, const wasm_val_t args[],
 }
 
 template <class ComponentType>
-static wasm_trap_t* Entity_addComponent(World* world, const wasm_val_t args[],
+static wasm_trap_t* Entity_addComponent(ComponentScript* instance,
+                                        const wasm_val_t args[],
                                         wasm_val_t results[]) {
+  World* world = instance->world;
+
   EntityId self_id = args[0].of.i32;
   if (!world->registry.valid(self_id)) {
     return world->scripts.createTrap("Invalid entity ID");
@@ -71,8 +204,11 @@ static wasm_trap_t* Entity_addComponent(World* world, const wasm_val_t args[],
 }
 
 template <class ComponentType>
-static wasm_trap_t* Entity_getComponent(World* world, const wasm_val_t args[],
+static wasm_trap_t* Entity_getComponent(ComponentScript* instance,
+                                        const wasm_val_t args[],
                                         wasm_val_t results[]) {
+  World* world = instance->world;
+
   EntityId self_id = args[0].of.i32;
   if (!world->registry.valid(self_id)) {
     return world->scripts.createTrap("Invalid entity ID");
@@ -87,7 +223,7 @@ static wasm_trap_t* Entity_getComponent(World* world, const wasm_val_t args[],
   return nullptr;
 }
 
-using BoundEntityMethod = wasm_trap_t* (*)(World*, const wasm_val_t[],
+using BoundEntityMethod = wasm_trap_t* (*)(ComponentScript*, const wasm_val_t[],
                                            wasm_val_t[]);
 
 using EntityMethodTypeCallback = wasm_functype_t* (*)();
@@ -104,7 +240,7 @@ wasm_trap_t* entityMethodWrapper(const wasmtime_caller_t* caller, void* env,
     return world->scripts.createTrap("Invalid entity ID");
   }
 
-  return (*method)(world, args, results);
+  return (*method)(instance, args, results);
 }
 
 static void finalizer(void*) {}
@@ -155,6 +291,14 @@ void ScriptEntity::linkScriptApi(World* world) {
 
   linkEntityMethod<Entity_spawnChild, methodType_Entity>(scripts, world,
                                                          "Entity_spawnChild");
+  linkEntityMethod<Entity_spawnChildAt, methodType_Entity_spawnChildAt>(
+      scripts, world, "Entity_spawnChildAt");
+  linkEntityMethod<Entity_spawnScriptedChild,
+                   methodType_Entity_spawnScriptedChild>(
+      scripts, world, "Entity_spawnScriptedChild");
+  linkEntityMethod<Entity_spawnScriptedChildAt,
+                   methodType_Entity_spawnScriptedChildAt>(
+      scripts, world, "Entity_spawnScriptedChildAt");
 
   linkComponentApi<PointLightComponent>(world, "PointLight");
   linkComponentApi<TransformComponent>(world, "Transform");

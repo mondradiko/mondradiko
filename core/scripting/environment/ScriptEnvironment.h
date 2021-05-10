@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <random>
+
 #include "lib/include/wasm_headers.h"
 #include "types/containers/string.h"
 #include "types/containers/unordered_map.h"
@@ -164,7 +166,18 @@ class ScriptEnvironment {
   wasm_store_t* store = nullptr;
   wasmtime_interrupt_handle_t* interrupt_handle = nullptr;
 
+  // For seeding
+  std::random_device _random_device;
+  std::mt19937_64 _mersenne_twister;
+
   // Callbacks
+  static wasm_trap_t* interruptCallback(const wasmtime_caller_t*, void*,
+                                        const wasm_val_t[], wasm_val_t[]);
+  static wasm_trap_t* abortCallback(const wasmtime_caller_t*, void*,
+                                    const wasm_val_t[], wasm_val_t[]);
+  static wasm_trap_t* seedCallback(const wasmtime_caller_t*, void*,
+                                   const wasm_val_t[], wasm_val_t[]);
+
   static wasm_func_t* abortFactory(ScriptInstance*);
   static wasm_func_t* seedFactory(ScriptInstance*);
 

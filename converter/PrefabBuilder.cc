@@ -55,8 +55,18 @@ assets::AssetId PrefabBuilder::buildPrefab(BundlerInterface* bundler,
     std::string script_alias = script.at("script_asset").as_string();
     assets::AssetId script_id = bundler->getAssetByAlias(script_alias);
 
+    std::string script_impl;
+    if (script.find("script_impl") != script.end()) {
+      script_impl = script.at("script_impl").as_string();
+    } else {
+      script_impl = script_alias;
+    }
+
+    auto impl_offset = fbb.CreateString(script_impl);
+
     assets::ScriptPrefabBuilder script_prefab(fbb);
-    script_prefab.add_script(script_id);
+    script_prefab.add_script_asset(script_id);
+    script_prefab.add_script_impl(impl_offset);
     script_offset = script_prefab.Finish();
   }
 
