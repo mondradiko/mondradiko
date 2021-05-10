@@ -6,12 +6,14 @@
 #include "core/assets/Asset.h"
 #include "core/scripting/environment/ScriptEnvironment.h"
 #include "core/world/Entity.h"
+#include "types/containers/string.h"
 
 namespace mondradiko {
 namespace core {
 
 // Forward declarations
 class AssetPool;
+class ComponentScript;
 class World;
 
 class ComponentScriptEnvironment : public ScriptEnvironment {
@@ -26,15 +28,11 @@ class ComponentScriptEnvironment : public ScriptEnvironment {
   void update(double);
 
   /**
-   * @brief Updates a local script. Overwrites existing script data, or
-   * instantiates a new script if necessary.
-   * @param entity The EntityId of the ScriptComponent to update.
-   * @param script_id The AssetId of the data's ScriptAsset.
-   * @param data A pointer to the script data, or nullptr.
-   * @param data_size The length in bytes of the data.
-   *
    */
-  void updateScript(EntityId, AssetId, const uint8_t*, size_t);
+  void instantiateScript(EntityId, AssetId, const types::string&);
+
+  // Observer to clean up ScriptComponents
+  static void onScriptComponentDestroy(EntityRegistry&, EntityId);
 
  private:
   AssetPool* const asset_pool;

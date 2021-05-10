@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "core/assets/ScriptAsset.h"
 #include "core/components/InternalComponent.h"
+#include "types/containers/string.h"
 
 namespace mondradiko {
 namespace core {
@@ -14,14 +14,12 @@ class ComponentScript;
 
 class ScriptComponent : public InternalComponent {
  public:
-  const AssetHandle<ScriptAsset>& getScriptAsset() { return script_asset; }
-
  private:
   // Systems allowed to access private members directly
   friend class ComponentScriptEnvironment;
 
-  AssetHandle<ScriptAsset> script_asset;
-  ComponentScript* script_instance;
+  types::string _script_impl;
+  ComponentScript* _script_instance;
 };
 
 }  // namespace core

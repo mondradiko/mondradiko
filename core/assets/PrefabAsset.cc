@@ -54,9 +54,13 @@ EntityId PrefabAsset::instantiate(World* world) const {
   }
 
   if (prefab->script) {
-    // Update an entity's script to initialize the ScriptComponent
-    world->scripts.updateScript(self_id, prefab->script->script, nullptr,
-                                static_cast<size_t>(0));
+    if (prefab->script->script_impl.size() == 0) {
+      log_err("Script prefab does not have script_impl");
+    } else {
+      AssetId script_asset = prefab->script->script_asset;
+      types::string script_impl = prefab->script->script_impl;
+      world->scripts.instantiateScript(self_id, script_asset, script_impl);
+    }
   }
 
   return self_id;
