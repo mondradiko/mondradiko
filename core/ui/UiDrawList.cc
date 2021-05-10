@@ -130,10 +130,10 @@ void UiDrawList::drawRing(const glm::vec2& center, float inner_radius,
   }
 
   {  // Write edge triangles
-    size_t first_index = _indices.size();
+    size_t first_indice_index = _indices.size();
 
-    _indices.resize(first_index + (SPOKE_COUNT * 6));
-    Index* spoke_index = &_indices[first_index];
+    _indices.resize(first_indice_index + (SPOKE_COUNT * 6));
+    Index* spoke_index = &_indices[first_indice_index];
 
     Index last_inner = first_index + (SPOKE_COUNT * 2 - 1);
     Index last_outer = last_inner - 1;
