@@ -16,22 +16,26 @@
 namespace mondradiko {
 namespace core {
 
-ComponentScriptEnvironment::ComponentScriptEnvironment(AssetPool* asset_pool,
-                                                       World* world)
-    : asset_pool(asset_pool), world(world) {
+ComponentScriptEnvironment::ComponentScriptEnvironment(World* world)
+    : asset_pool(world->asset_pool), world(world) {
   log_zone;
 
   asset_pool->initializeAssetType<ScriptAsset>(this);
 
-  PointLightComponent::linkScriptApi(this, world);
-  TransformComponent::linkScriptApi(this, world);
-  ScriptEntity::linkScriptApi(world);
-
   world->registry.on_destroy<ScriptComponent>()
       .connect<&onScriptComponentDestroy>();
+
+  linkEnvironment(this, world);
 }
 
 ComponentScriptEnvironment::~ComponentScriptEnvironment() { log_zone; }
+
+void ComponentScriptEnvironment::linkEnvironment(ScriptEnvironment* scripts,
+                                                 World* world) {
+  PointLightComponent::linkScriptApi(scripts, world);
+  TransformComponent::linkScriptApi(scripts, world);
+  ScriptEntity::linkScriptApi(scripts, world);
+}
 
 void ComponentScriptEnvironment::update(double dt) {
   log_zone;

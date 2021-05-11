@@ -25,11 +25,10 @@ namespace core {
 
 // Forward declarations
 class Filesystem;
-class WorldScriptEnvironment;
 
 class World : public StaticScriptObject<World> {
  public:
-  World(AssetPool*, Filesystem*, WorldScriptEnvironment*);
+  World(AssetPool*, Filesystem*);
   ~World();
 
   void initializePrefabs();

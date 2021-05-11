@@ -45,8 +45,18 @@ struct ASObjectHeader {
 
 class ScriptInstance {
  public:
+  //////////////////////////////////////////////////////////////////////////////
+  // Setup
+  //////////////////////////////////////////////////////////////////////////////
+
+  ScriptInstance(ScriptEnvironment*);  // NOLINT
   ScriptInstance(ScriptEnvironment*, wasm_module_t*);
   ~ScriptInstance();
+
+  void initializeScript(wasm_module_t*);
+  void initializeScriptFromLinker(wasm_module_t*, wasmtime_linker_t*);
+  void initializeScriptRaw(wasm_module_t*, wasm_instance_t*);
+  void terminateScript();
 
   // TODO(marceline-cramer) Make observers in ScriptEnvironment for events
   // TODO(marceline-cramer) Define entrypoint classes and their sizes

@@ -18,20 +18,14 @@
 #include "core/components/synchronized/RelationshipComponent.h"
 #include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/filesystem/Filesystem.h"
-#include "core/scripting/environment/WorldScriptEnvironment.h"
 #include "log/log.h"
 #include "types/protocol/WorldEvent_generated.h"
 
 namespace mondradiko {
 namespace core {
 
-World::World(AssetPool* asset_pool, Filesystem* fs,
-             WorldScriptEnvironment* world_script_environment)
-    : StaticScriptObject(world_script_environment),
-      asset_pool(asset_pool),
-      fs(fs),
-      scripts(asset_pool, this),
-      physics(this) {
+World::World(AssetPool* asset_pool, Filesystem* fs)
+    : asset_pool(asset_pool), fs(fs), scripts(this), physics(this) {
   log_zone;
 
   asset_pool->initializeAssetType<PrefabAsset>(asset_pool);
