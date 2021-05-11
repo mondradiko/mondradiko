@@ -54,6 +54,7 @@ class ScriptInstance {
   ~ScriptInstance();
 
   void initializeScript(wasm_module_t*);
+  void initializeScriptFromLinker(wasm_module_t*, wasmtime_linker_t*);
   void initializeScriptRaw(wasm_module_t*, wasm_instance_t*);
   void terminateScript();
 

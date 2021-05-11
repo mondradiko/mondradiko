@@ -25,12 +25,17 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
 ScriptInstance::~ScriptInstance() { terminateScript(); }
 
 void ScriptInstance::initializeScript(wasm_module_t* script_module) {
+  wasmtime_linker_t* linker = wasmtime_linker_new(scripts->getStore());
+  initializeScriptFromLinker(script_module, linker);
+  wasmtime_linker_delete(linker);
+}
+
+void ScriptInstance::initializeScriptFromLinker(wasm_module_t* script_module,
+                                                wasmtime_linker_t* linker) {
   terminateScript();
 
   wasmtime_error_t* module_error = nullptr;
   wasm_trap_t* module_trap = nullptr;
-
-  types::vector<wasm_extern_t*> module_imports;
 
   {
     log_zone_named("Link module imports");
@@ -39,6 +44,13 @@ void ScriptInstance::initializeScript(wasm_module_t* script_module) {
     wasm_module_imports(script_module, &required_imports);
 
     for (uint32_t i = 0; i < required_imports.size; i++) {
+      const wasm_name_t* import_module =
+          wasm_importtype_module(required_imports.data[i]);
+      types::string module_string(import_module->data, import_module->size);
+
+      // Skip over WASI imports (they should be linked externally)
+      if (module_string == "wasi_snapshot_preview1") continue;
+
       const wasm_name_t* import_name =
           wasm_importtype_name(required_imports.data[i]);
 
@@ -49,28 +61,22 @@ void ScriptInstance::initializeScript(wasm_module_t* script_module) {
 
       if (binding_func == nullptr) {
         log_err_fmt("Script binding \"%s\" is missing", binding_name.c_str());
-        binding_func = scripts->getInterruptFunc();
+        continue;
       }
 
-      module_imports.push_back(wasm_func_as_extern(binding_func));
+      wasmtime_linker_define(linker, import_module, import_name,
+                             wasm_func_as_extern(binding_func));
     }
-
-    wasm_importtype_vec_delete(&required_imports);
   }
 
-  {
-    log_zone_named("Create module instance");
-
-    wasm_instance_t* script_instance;
-    module_error = wasmtime_instance_new(
-        scripts->getStore(), script_module, module_imports.data(),
-        module_imports.size(), &script_instance, &module_trap);
-    if (scripts->handleError(module_error, module_trap)) {
-      log_ftl("Failed to instantiate module");
-    }
-
-    initializeScriptRaw(script_module, script_instance);
+  wasm_instance_t* script_instance;
+  module_error = wasmtime_linker_instantiate(linker, script_module,
+                                             &script_instance, &module_trap);
+  if (scripts->handleError(module_error, module_trap)) {
+    log_ftl("Failed to instantiate Wasm instance");
   }
+
+  initializeScriptRaw(script_module, script_instance);
 }
 
 void ScriptInstance::initializeScriptRaw(wasm_module_t* script_module,
