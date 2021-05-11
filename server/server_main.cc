@@ -31,6 +31,8 @@ using namespace mondradiko::core;  // NOLINT
 struct ServerArgs {
   bool version = false;
 
+  std::string world_script;
+
   std::string server_ip = "127.0.0.1";
   int server_port = 10555;
 
@@ -45,10 +47,20 @@ int ServerArgs::parse(int argc, const char* const argv[]) {
   CLI::App app("Mondradiko server");
 
   app.add_flag("-v,--version", version, "Print version and exit");
+
+  CLI::Option* world_script_op = app.add_option("--world-script", world_script,
+                                                "The world script entrypoint");
+  world_script_op->check(CLI::ExistingFile);
+
+  // TODO(marceline-cramer): Bundled example world scripts
+  // world_script_op->required();
+
   app.add_option("-s,--server", server_ip, "Domain server IP", true);
   app.add_option("-p,--port", server_port, "Domain server port", true);
   app.add_option("-b,--bundle", bundle_paths, "Paths to asset bundles", true);
-  app.add_option("-c,--config", config_path, "Path to config file", true);
+  CLI::Option* config_op =
+      app.add_option("-c,--config", config_path, "Path to config file", true);
+  config_op->check(CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);
   return -1;
@@ -73,13 +85,18 @@ void run(const ServerArgs& args) {
   AssetPool asset_pool(&fs);
   MeshPass::initDummyAssets(&asset_pool);
 
-  WorldScriptEnvironment scripts;
   World world(&asset_pool, &fs);
+  std::unique_ptr<WorldScriptEnvironment> scripts;
   WorldEventSorter world_event_sorter(&world);
   NetworkServer server(&fs, &world_event_sorter, args.server_ip.c_str(),
                        args.server_port);
 
   world.initializePrefabs();
+
+  if (args.world_script.size() > 0) {
+    scripts =
+        std::make_unique<WorldScriptEnvironment>(&world, args.world_script);
+  }
 
   const double min_frame_time = 1.0 / server_cvars->get<FloatCVar>("max_tps");
   const double min_update_time =
@@ -114,6 +131,7 @@ void run(const ServerArgs& args) {
     double dt = std::chrono::duration<double, std::chrono::seconds::period>(
                     frame_start - last_frame)
                     .count();
+    if (scripts) scripts->update(dt);
     if (!world.update(dt)) break;
     last_frame = frame_start;
   }

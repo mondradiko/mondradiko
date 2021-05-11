@@ -19,6 +19,7 @@
 #include "core/renderer/MeshPass.h"
 #include "core/renderer/OverlayPass.h"
 #include "core/renderer/Renderer.h"
+#include "core/scripting/environment/WorldScriptEnvironment.h"
 #include "core/ui/GlyphLoader.h"
 #include "core/ui/UserInterface.h"
 #include "core/world/World.h"
@@ -33,6 +34,7 @@ struct ClientArgs {
   bool version = false;
 
   bool serverless = false;
+  std::string world_script;
 
   std::string server_ip = "127.0.0.1";
   int server_port = 10555;
@@ -53,6 +55,14 @@ int ClientArgs::parse(int argc, const char* const argv[]) {
 
   CLI::Option* serverless_op =
       app.add_flag("--serverless", serverless, "Run a serverless world");
+  CLI::Option* world_script_op =
+      app.add_option("--world-script", world_script,
+                     "The world script entrypoint (serverless only)");
+  world_script_op->check(CLI::ExistingFile);
+  world_script_op->needs(serverless_op);
+
+  // TODO(marceline-cramer): Bundled example world scripts
+  // serverless_op->needs(world_script_op);
 
   CLI::Option* server_op =
       app.add_option("-s,--server", server_ip, "Domain server IP", true);
@@ -65,7 +75,9 @@ int ClientArgs::parse(int argc, const char* const argv[]) {
   app.add_option("-d,--display", display, "Display to use {sdl, openxr}", true);
 
   app.add_option("-b,--bundle", bundle_paths, "Paths to asset bundles", true);
-  app.add_option("-c,--config", config_path, "Path to config file", true);
+  CLI::Option* config_op =
+      app.add_option("-c,--config", config_path, "Path to config file", true);
+  config_op->check(CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);
   return -1;
@@ -124,15 +136,23 @@ void run(const ClientArgs& args) {
   display->setUserInterface(&ui);
 
   std::unique_ptr<NetworkClient> client;
+  std::unique_ptr<WorldScriptEnvironment> scripts;
 
   const Avatar* avatar = display->getAvatar(&world);
 
   if (!args.serverless) {
     client = std::make_unique<NetworkClient>(&cvars, &fs, &ui, &world);
     client->connect(avatar, args.server_ip.c_str(), args.server_port);
-  } else {
+  }
+
+  if (args.serverless) {
     world.initializePrefabs();
     ui.displayMessage("Running serverless client");
+  }
+
+  if (args.world_script.size() > 0) {
+    scripts =
+        std::make_unique<WorldScriptEnvironment>(&world, args.world_script);
   }
 
   while (!g_interrupted) {
@@ -145,6 +165,8 @@ void run(const ClientArgs& args) {
     if (poll_info.should_run) {
       Display::BeginFrameInfo frame_info;
       display->beginFrame(&frame_info);
+
+      if (scripts) scripts->update(frame_info.dt);
 
       if (!world.update(frame_info.dt)) break;
 
