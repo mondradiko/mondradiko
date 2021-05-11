@@ -14,6 +14,8 @@ class ComponentScript;
 
 class ScriptComponent : public InternalComponent {
  public:
+  ComponentScript* getInstance() { return _script_instance; }
+
  private:
   // Systems allowed to access private members directly
   friend class ComponentScriptEnvironment;
