@@ -49,7 +49,7 @@ class ScriptInstance {
   // Setup
   //////////////////////////////////////////////////////////////////////////////
 
-  ScriptInstance(ScriptEnvironment*);
+  ScriptInstance(ScriptEnvironment*);  // NOLINT
   ScriptInstance(ScriptEnvironment*, wasm_module_t*);
   ~ScriptInstance();
 

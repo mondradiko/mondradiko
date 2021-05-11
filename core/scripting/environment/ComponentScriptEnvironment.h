@@ -18,7 +18,7 @@ class World;
 
 class ComponentScriptEnvironment : public ScriptEnvironment {
  public:
-  ComponentScriptEnvironment(World*);
+  explicit ComponentScriptEnvironment(World*);
   ~ComponentScriptEnvironment();
 
   static void linkEnvironment(ScriptEnvironment*, World*);
