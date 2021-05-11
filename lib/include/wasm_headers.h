@@ -4,4 +4,5 @@
 #pragma once
 
 #include <wasm.h>      // NOLINT
+#include <wasi.h>      // NOLINT
 #include <wasmtime.h>  // NOLINT
