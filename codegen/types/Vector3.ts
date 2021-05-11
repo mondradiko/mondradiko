@@ -8,6 +8,10 @@ export default class Vector3 {
 
   constructor(public x: f64, public y: f64, public z: f64) {}
 
+  static random(): Vector3 {
+    return new Vector3(Math.random(), Math.random(), Math.random());
+  }
+
   clone(): Vector3 { return new Vector3(this.x, this.y, this.z); }
 
   static readonly Zero: Vector3 = new Vector3(0.0, 0.0, 0.0);
@@ -38,44 +42,50 @@ export default class Vector3 {
    * Vector-to-vector arithmetic
    */
 
-  add(other: Vector3): void {
+  add(other: Vector3): Vector3 {
     this.x += other.x;
     this.y += other.y;
     this.z += other.z;
+    return this;
   }
 
-  sub(other: Vector3): void {
+  sub(other: Vector3): Vector3 {
     this.x -= other.x;
     this.y -= other.y;
     this.z -= other.z;
+    return this;
   }
 
-  mul(other: Vector3): void {
+  mul(other: Vector3): Vector3 {
     this.x *= other.x;
     this.y *= other.y;
     this.z *= other.z;
+    return this;
   }
 
-  div(other: Vector3): void {
+  div(other: Vector3): Vector3 {
     this.x /= other.x;
     this.y /= other.y;
     this.z /= other.z;
+    return this;
   }
 
   /**
    * Vector-to-scalar arithmetic
    */
 
-  scale(s: f64): void {
+  scale(s: f64): Vector3 {
     this.x *= s;
     this.y *= s;
     this.z *= s;
+    return this;
   }
 
-  set(s: f64): void {
+  set(s: f64): Vector3 {
     this.x = s;
     this.y = s;
     this.z = s;
+    return this;
   }
 
   /**
