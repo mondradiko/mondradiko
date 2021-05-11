@@ -70,6 +70,7 @@ set(MONDRADIKO_CORE_SRC
   scripting/environment/ComponentScriptEnvironment.cc
   scripting/environment/ScriptEnvironment.cc
   scripting/environment/UiScriptEnvironment.cc
+  scripting/environment/WorldScriptEnvironment.cc
   scripting/instance/ComponentScript.cc
   scripting/instance/ScriptInstance.cc
   scripting/instance/UiScript.cc
