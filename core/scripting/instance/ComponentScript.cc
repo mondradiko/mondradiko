@@ -5,13 +5,14 @@
 
 #include <array>
 
-#include "core/scripting/environment/ScriptEnvironment.h"
+#include "core/scripting/environment/ComponentScriptEnvironment.h"
 #include "log/log.h"
 
 namespace mondradiko {
 namespace core {
 
-ComponentScript::ComponentScript(ScriptEnvironment* scripts, World* world,
+ComponentScript::ComponentScript(ComponentScriptEnvironment* scripts,
+                                 World* world,
                                  const AssetHandle<ScriptAsset>& asset,
                                  EntityId self_id, const types::string& impl)
     : WorldScript(scripts, world),

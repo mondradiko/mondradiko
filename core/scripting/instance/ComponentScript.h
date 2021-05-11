@@ -13,12 +13,14 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class ComponentScriptEnvironment;
 class World;
 
 class ComponentScript : public WorldScript {
  public:
-  ComponentScript(ScriptEnvironment*, World*, const AssetHandle<ScriptAsset>&,
-                  EntityId, const types::string&);
+  ComponentScript(ComponentScriptEnvironment*, World*,
+                  const AssetHandle<ScriptAsset>&, EntityId,
+                  const types::string&);
   ~ComponentScript();
 
   const AssetHandle<ScriptAsset>& getAsset() { return _asset; }
