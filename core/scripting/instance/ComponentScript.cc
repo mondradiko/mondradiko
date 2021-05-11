@@ -14,11 +14,12 @@ namespace core {
 ComponentScript::ComponentScript(ScriptEnvironment* scripts, World* world,
                                  const AssetHandle<ScriptAsset>& asset,
                                  EntityId self_id, const types::string& impl)
-    : ScriptInstance(scripts, asset->getModule()),
-      world(world),
+    : WorldScript(scripts, world),
       _asset(asset),
       _impl(impl),
       _self_id(self_id) {
+  initializeScript(asset->getModule());
+
   wasm_val_t self_arg;
   self_arg.kind = WASM_I32;
   self_arg.of.i32 = _self_id;
