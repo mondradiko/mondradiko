@@ -18,8 +18,10 @@ class World;
 
 class ComponentScriptEnvironment : public ScriptEnvironment {
  public:
-  ComponentScriptEnvironment(AssetPool*, World*);
+  ComponentScriptEnvironment(World*);
   ~ComponentScriptEnvironment();
+
+  static void linkEnvironment(ScriptEnvironment*, World*);
 
   /**
    * @brief Updates all ScriptComponents in the world.

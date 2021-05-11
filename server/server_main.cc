@@ -74,7 +74,7 @@ void run(const ServerArgs& args) {
   MeshPass::initDummyAssets(&asset_pool);
 
   WorldScriptEnvironment scripts;
-  World world(&asset_pool, &fs, &scripts);
+  World world(&asset_pool, &fs);
   WorldEventSorter world_event_sorter(&world);
   NetworkServer server(&fs, &world_event_sorter, args.server_ip.c_str(),
                        args.server_port);

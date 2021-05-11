@@ -108,7 +108,7 @@ void run(const ClientArgs& args) {
   AssetPool asset_pool(&fs);
 
   // TODO(marceline-cramer) Serverless world scripts
-  World world(&asset_pool, &fs, nullptr);
+  World world(&asset_pool, &fs);
 
   Renderer renderer(&cvars, display.get(), &gpu);
   GlyphLoader glyphs(&cvars, &renderer);
