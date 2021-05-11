@@ -10,7 +10,6 @@
 #include "converter/AssetBundleBuilder.h"
 #include "converter/BundlerInterface.h"
 #include "converter/ConverterInterface.h"
-#include "converter/PrefabBuilder.h"
 #include "lib/include/toml_headers.h"
 #include "types/assets/SerializedAsset_generated.h"
 #include "types/containers/vector.h"
@@ -38,8 +37,6 @@ class Bundler : public converter::BundlerInterface {
   toml::value manifest;
 
   converter::AssetBundleBuilder* bundle_builder = nullptr;
-  converter::PrefabBuilder* prefab_builder = nullptr;
-
   std::map<std::string, const converter::ConverterInterface*> converters;
   std::map<std::string, assets::AssetId> asset_aliases;
 
