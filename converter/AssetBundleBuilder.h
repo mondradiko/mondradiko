@@ -4,6 +4,7 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 #include <thread>
 #include <unordered_set>
 #include <vector>
@@ -29,6 +30,7 @@ class AssetBundleBuilder {
                                flatbuffers::FlatBufferBuilder*,
                                flatbuffers::Offset<assets::SerializedAsset>);
   assets::AssetResult addInitialPrefab(assets::AssetId);
+  assets::AssetResult addBundleExport(const std::string&, assets::AssetId);
   assets::AssetResult buildBundle(const char*);
 
  private:
@@ -40,6 +42,11 @@ class AssetBundleBuilder {
   struct AssetToSave {
     assets::AssetId id;
     size_t size;
+  };
+
+  struct AssetToExport {
+    std::string alias;
+    assets::AssetId id;
   };
 
   struct LumpToSave {
@@ -58,6 +65,7 @@ class AssetBundleBuilder {
 
   std::vector<LumpToSave*> lumps;
   std::unordered_set<assets::AssetId> used_ids;
+  std::vector<AssetToExport> exported_assets;
   std::vector<assets::AssetId> initial_prefabs;
 
   void launchFinalizer(LumpToSave*);
