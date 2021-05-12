@@ -10,6 +10,7 @@
 #include "core/filesystem/Filesystem.h"
 #include "lib/include/entt_headers.h"
 #include "log/log.h"
+#include "types/containers/string.h"
 #include "types/containers/unordered_map.h"
 #include "types/containers/vector.h"
 
@@ -119,10 +120,31 @@ class AssetPool {
     pool.clear();
   }
 
+  void addAlias(const types::string& alias, AssetId id) {
+    auto iter = aliases.find(alias);
+    if (iter != aliases.end()) {
+      log_err_fmt("Alias '%s' is already taken", alias.c_str());
+      return;
+    }
+
+    aliases.emplace(alias, id);
+  }
+
+  AssetId lookUpAlias(const types::string& alias) {
+    auto iter = aliases.find(alias);
+    if (iter != aliases.end()) {
+      return iter->second;
+    } else {
+      log_err_fmt("Alias '%s' not found", alias.c_str());
+      return NullAsset;
+    }
+  }
+
  private:
   Filesystem* fs;
 
   types::vector<Asset*> templates;
+  types::unordered_map<types::string, AssetId> aliases;
   types::unordered_map<AssetId, Asset*> pool;
 };
 
