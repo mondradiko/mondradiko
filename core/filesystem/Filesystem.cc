@@ -5,6 +5,7 @@
 
 #include <sstream>
 
+#include "core/assets/AssetPool.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -41,6 +42,18 @@ void Filesystem::getChecksums(
     asset_bundle->getChecksums(bundle_checksums);
     local_checksums.insert(local_checksums.end(), bundle_checksums.begin(),
                            bundle_checksums.end());
+  }
+}
+
+void Filesystem::indexExports(AssetPool* asset_pool) {
+  types::unordered_map<types::string, assets::AssetId> exports;
+
+  for (auto asset_bundle : asset_bundles) {
+    asset_bundle->getBundleExports(&exports);
+  }
+
+  for (auto iter : exports) {
+    asset_pool->addAlias(iter.first, iter.second);
   }
 }
 

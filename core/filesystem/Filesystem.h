@@ -14,6 +14,9 @@
 namespace mondradiko {
 namespace core {
 
+// Forward declarations
+class AssetPool;
+
 class Filesystem {
  public:
   Filesystem();
@@ -21,6 +24,7 @@ class Filesystem {
 
   bool loadAssetBundle(const std::filesystem::path&);
   void getChecksums(types::vector<assets::LumpHash>&);
+  void indexExports(AssetPool*);
   void getInitialPrefabs(types::vector<assets::AssetId>&);
   bool loadAsset(const assets::SerializedAsset**, AssetId);
 
