@@ -29,6 +29,7 @@ World::World(AssetPool* asset_pool, Filesystem* fs)
   log_zone;
 
   asset_pool->initializeAssetType<PrefabAsset>(asset_pool);
+  fs->indexExports(asset_pool);
 
   registry.on_construct<TransformComponent>()
       .connect<&onTransformAuthorityConstruct>();
