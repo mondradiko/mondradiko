@@ -131,9 +131,9 @@ void run(const ServerArgs& args) {
     double dt = std::chrono::duration<double, std::chrono::seconds::period>(
                     frame_start - last_frame)
                     .count();
+    last_frame = frame_start;
     if (scripts) scripts->update(dt);
     if (!world.update(dt)) break;
-    last_frame = frame_start;
   }
 }
 
