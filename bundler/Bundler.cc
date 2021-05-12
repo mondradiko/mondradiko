@@ -183,6 +183,10 @@ void Bundler::bundle() {
     }
   }
 
+  for (auto& iter : asset_aliases) {
+    bundle_builder->addBundleExport(iter.first, iter.second);
+  }
+
   bundle_builder->buildBundle("registry.bin");
 }
 
