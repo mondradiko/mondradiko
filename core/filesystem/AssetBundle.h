@@ -7,6 +7,7 @@
 
 #include "core/filesystem/AssetLump.h"
 #include "types/assets/AssetTypes.h"
+#include "types/containers/string.h"
 #include "types/containers/unordered_map.h"
 #include "types/containers/vector.h"
 
@@ -21,12 +22,15 @@ class AssetBundle {
   assets::AssetResult loadRegistry(const char*);
 
   void getChecksums(types::vector<assets::LumpHash>&);
+  void getBundleExports(types::unordered_map<types::string, assets::AssetId>*);
   void getInitialPrefabs(types::vector<assets::AssetId>&);
   bool isAssetRegistered(assets::AssetId);
   bool loadAsset(const assets::SerializedAsset**, assets::AssetId);
 
  private:
   std::filesystem::path bundle_root;
+
+  types::unordered_map<types::string, assets::AssetId> bundle_exports;
 
   types::vector<assets::AssetId> initial_prefabs;
 

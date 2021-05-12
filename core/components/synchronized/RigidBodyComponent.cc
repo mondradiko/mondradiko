@@ -12,8 +12,6 @@ RigidBodyComponent::RigidBodyComponent(const assets::RigidBodyPrefab* prefab) {
   _data.mutate_mass(prefab->mass());
 }
 
-RigidBodyComponent::~RigidBodyComponent() { _destroy(nullptr); }
-
 WorldTransform RigidBodyComponent::makeWorldTransform() {
   auto transform = _rigid_body->getCenterOfMassTransform();
   auto body_position = transform.getOrigin();
@@ -25,22 +23,6 @@ WorldTransform RigidBodyComponent::makeWorldTransform() {
                         body_orientation.y(), body_orientation.z());
 
   return WorldTransform(position, orientation);
-}
-
-void RigidBodyComponent::_destroy(btDynamicsWorld* dynamics_world) {
-  if (_rigid_body != nullptr) {
-    if (dynamics_world != nullptr) {
-      dynamics_world->removeRigidBody(_rigid_body);
-    }
-
-    delete _rigid_body;
-    _rigid_body = nullptr;
-  }
-
-  if (_motion_state != nullptr) {
-    delete _motion_state;
-    _motion_state = nullptr;
-  }
 }
 
 }  // namespace core

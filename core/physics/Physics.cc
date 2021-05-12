@@ -23,6 +23,10 @@ Physics::Physics(World* world) : world(world) {
                                                collision_configuration);
   dynamics_world->setGravity(btVector3(0, -1.0, 0));
 
+  world->registry.set<Physics*>(this);
+  world->registry.on_destroy<RigidBodyComponent>()
+      .connect<&onRigidBodyComponentDestroy>();
+
   log_inf_fmt("Bullet Physics: %.2f %s precision", 0.01f * btGetVersion(),
               btIsDoublePrecision() ? "double" : "single");
 
@@ -90,6 +94,26 @@ void Physics::update(double dt) {
       auto new_transform = rigid_body.makeWorldTransform();
       registry.emplace_or_replace<WorldTransform>(e, new_transform);
     }
+  }
+}
+
+void Physics::onRigidBodyComponentDestroy(EntityRegistry& registry,
+                                          EntityId id) {
+  auto& rigid_body = registry.get<RigidBodyComponent>(id);
+  Physics* self = registry.ctx<Physics*>();
+
+  if (rigid_body._rigid_body != nullptr) {
+    if (self->dynamics_world != nullptr) {
+      self->dynamics_world->removeRigidBody(rigid_body._rigid_body);
+    }
+
+    delete rigid_body._rigid_body;
+    rigid_body._rigid_body = nullptr;
+  }
+
+  if (rigid_body._motion_state != nullptr) {
+    delete rigid_body._motion_state;
+    rigid_body._motion_state = nullptr;
   }
 }
 

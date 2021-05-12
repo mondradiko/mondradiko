@@ -6,6 +6,7 @@
 #include <cstring>
 #include <fstream>
 
+#include "core/assets/AssetPool.h"
 #include "log/log.h"
 #include "types/assets/Registry_generated.h"
 #include "types/build_config.h"
@@ -84,6 +85,20 @@ AssetResult AssetBundle::loadRegistry(const char* registry_name) {
       log_err_fmt("Registry lump count exceeds limit of %lu",
                   ASSET_LUMP_MAX_ASSETS);
       return AssetResult::BadSize;
+    }
+  }
+
+  {
+    log_zone_named("Register exports");
+
+    auto exports = registry->exports();
+    if (exports != nullptr) {
+      for (uint32_t i = 0; i < exports->size(); i++) {
+        auto bundle_export = exports->Get(i);
+        auto alias = bundle_export->alias()->str();
+        auto id = bundle_export->id();
+        bundle_exports.emplace(alias, id);
+      }
     }
   }
 
@@ -183,6 +198,11 @@ void AssetBundle::getChecksums(types::vector<LumpHash>& checksums) {
   for (uint32_t i = 0; i < lump_cache.size(); i++) {
     checksums[i] = lump_cache[i].checksum;
   }
+}
+
+void AssetBundle::getBundleExports(
+    types::unordered_map<types::string, assets::AssetId>* exports) {
+  exports->merge(bundle_exports);
 }
 
 void AssetBundle::getInitialPrefabs(types::vector<AssetId>& prefabs) {

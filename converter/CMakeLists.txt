@@ -4,10 +4,10 @@
 set(CONVERTER_SRC
   prefab/BinaryGltfConverter.cc
   prefab/GltfConverter.cc
+  prefab/PrefabBuilder.cc
   prefab/TextGltfConverter.cc
   script/WasmConverter.cc
   AssetBundleBuilder.cc
-  PrefabBuilder.cc
 )
 
 add_library(mondradiko-converter STATIC ${CONVERTER_SRC})

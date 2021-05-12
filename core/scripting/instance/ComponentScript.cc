@@ -20,7 +20,11 @@ ComponentScript::ComponentScript(ComponentScriptEnvironment* scripts,
       _impl(impl),
       _self_id(self_id) {
   initializeScript(asset->getModule());
+}
 
+ComponentScript::~ComponentScript() { AS_unpin(_this_ptr); }
+
+void ComponentScript::construct() {
   wasm_val_t self_arg;
   self_arg.kind = WASM_I32;
   self_arg.of.i32 = _self_id;
@@ -39,8 +43,6 @@ ComponentScript::ComponentScript(ComponentScriptEnvironment* scripts,
     log_wrn_fmt("Component script %s does not export update", _impl.c_str());
   }
 }
-
-ComponentScript::~ComponentScript() { AS_unpin(_this_ptr); }
 
 void ComponentScript::update(double dt) {
   if (_update == nullptr) return;

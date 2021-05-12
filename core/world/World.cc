@@ -18,6 +18,7 @@
 #include "core/components/synchronized/RelationshipComponent.h"
 #include "core/components/synchronized/RigidBodyComponent.h"
 #include "core/filesystem/Filesystem.h"
+#include "core/scripting/instance/ScriptInstance.h"
 #include "log/log.h"
 #include "types/protocol/WorldEvent_generated.h"
 
@@ -29,6 +30,7 @@ World::World(AssetPool* asset_pool, Filesystem* fs)
   log_zone;
 
   asset_pool->initializeAssetType<PrefabAsset>(asset_pool);
+  fs->indexExports(asset_pool);
 
   registry.on_construct<TransformComponent>()
       .connect<&onTransformAuthorityConstruct>();
@@ -331,6 +333,27 @@ wasm_trap_t* World::spawnEntityAt(ScriptInstance*, const wasm_val_t args[],
   registry.emplace<TransformComponent>(
       new_entity, glm::vec3(args[0].of.f64, args[1].of.f64, args[2].of.f64),
       glm::quat());
+
+  results[0].kind = WASM_I32;
+  results[0].of.i32 = new_entity;
+  return nullptr;
+}
+
+wasm_trap_t* World::spawnPrefab(ScriptInstance* instance,
+                                const wasm_val_t args[], wasm_val_t results[]) {
+  types::string prefab_alias;
+  if (!instance->AS_getString(args[0].of.i32, &prefab_alias)) {
+    return scripts.createTrap("Failed to get script_alias");
+  }
+
+  AssetId prefab_id = asset_pool->lookUpAlias(prefab_alias);
+  auto prefab_asset = asset_pool->load<PrefabAsset>(prefab_id);
+
+  if (!prefab_asset) {
+    return scripts.createTrap("Failed to load script_alias");
+  }
+
+  EntityId new_entity = prefab_asset->instantiate(this);
 
   results[0].kind = WASM_I32;
   results[0].of.i32 = new_entity;

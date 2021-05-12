@@ -33,12 +33,12 @@ class ComponentScriptEnvironment : public ScriptEnvironment {
    */
   void instantiateScript(EntityId, AssetId, const types::string&);
 
-  // Observer to clean up ScriptComponents
-  static void onScriptComponentDestroy(EntityRegistry&, EntityId);
-
  private:
   AssetPool* const asset_pool;
   World* const world;
+
+  // Observer to clean up ScriptComponents
+  static void onScriptComponentDestroy(EntityRegistry&, EntityId);
 };
 
 }  // namespace core

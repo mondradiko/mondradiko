@@ -3,9 +3,8 @@
 
 #pragma once
 
+#include "converter/ConverterInterface.h"
 #include "lib/include/toml_headers.h"
-#include "types/assets/AssetTypes.h"
-#include "types/assets/SerializedAsset_generated.h"
 
 namespace mondradiko {
 namespace converter {
@@ -13,9 +12,15 @@ namespace converter {
 // Forward declarations
 class BundlerInterface;
 
-class PrefabBuilder {
+class PrefabBuilder : public ConverterInterface {
  public:
-  assets::AssetId buildPrefab(BundlerInterface*, const toml::table&);
+  PrefabBuilder(BundlerInterface*);
+
+  // ConverterInterface implementation
+  AssetOffset convert(AssetBuilder*, const toml::table&) const final;
+
+ private:
+  BundlerInterface* bundler;
 };
 
 }  // namespace converter
