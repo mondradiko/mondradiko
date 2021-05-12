@@ -18,7 +18,6 @@ class RigidBodyComponent
     : public SynchronizedComponent<protocol::RigidBodyComponent> {
  public:
   explicit RigidBodyComponent(const assets::RigidBodyPrefab*);
-  ~RigidBodyComponent();
 
   // TODO(marceline-cramer) Rigid body network sync
 
@@ -30,9 +29,6 @@ class RigidBodyComponent
 
   btRigidBody* _rigid_body = nullptr;
   btMotionState* _motion_state = nullptr;
-
-  // Helper methods
-  void _destroy(btDynamicsWorld*);
 };
 
 }  // namespace core
