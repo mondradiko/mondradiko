@@ -25,6 +25,7 @@ class ComponentScript : public WorldScript {
 
   const AssetHandle<ScriptAsset>& getAsset() { return _asset; }
 
+  void construct();
   void update(double);
 
   // TODO(marceline-cramer) Actually update instance data
@@ -34,8 +35,8 @@ class ComponentScript : public WorldScript {
   AssetHandle<ScriptAsset> _asset;
   types::string _impl;
   EntityId _self_id;
-  uint32_t _this_ptr;
 
+  uint32_t _this_ptr = 0;
   wasm_func_t* _update = nullptr;
 };
 

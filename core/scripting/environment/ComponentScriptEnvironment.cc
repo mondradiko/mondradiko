@@ -77,6 +77,8 @@ void ComponentScriptEnvironment::instantiateScript(EntityId entity,
   auto& component = registry->emplace<ScriptComponent>(entity);
   component._script_impl = impl;
   component._script_instance = instance;
+
+  instance->construct();
 }
 
 void ComponentScriptEnvironment::onScriptComponentDestroy(
