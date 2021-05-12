@@ -1,10 +1,11 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "core/ui/GlyphStyle.h"
+#include "core/ui/glyph/GlyphStyle.h"
 
 #include "core/scripting/instance/ScriptInstance.h"
-#include "core/ui/UiPanel.h"
+#include "core/ui/glyph/GlyphLoader.h"
+#include "core/ui/panels/UiPanel.h"
 #include "log/log.h"
 
 namespace mondradiko {

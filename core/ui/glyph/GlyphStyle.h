@@ -4,8 +4,8 @@
 #pragma once
 
 #include "core/scripting/object/DynamicScriptObject.h"
-#include "core/ui/GlyphLoader.h"
-#include "lib/include/wasm_headers.h"
+#include "core/ui/glyph/GlyphInstance.h"
+#include "lib/include/glm_headers.h"
 #include "types/containers/string.h"
 #include "types/containers/vector.h"
 
@@ -13,17 +13,10 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class GlyphLoader;
 class ScriptEnvironment;
 class UiPanel;
 class World;
-
-struct GlyphStyleUniform {
-  glm::mat4 transform;
-  glm::vec4 color;
-};
-
-using GlyphString = types::vector<GlyphInstance>;
-using GlyphStyleList = types::vector<class GlyphStyle*>;
 
 class GlyphStyle : public DynamicScriptObject<GlyphStyle> {
  public:

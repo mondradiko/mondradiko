@@ -3,7 +3,7 @@
 
 #include "core/scripting/instance/UiScript.h"
 
-#include "core/ui/UiPanel.h"
+#include "core/ui/panels/UiPanel.h"
 #include "log/log.h"
 
 namespace mondradiko {

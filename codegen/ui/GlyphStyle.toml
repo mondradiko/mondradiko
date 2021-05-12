@@ -4,7 +4,7 @@
 name = "GlyphStyle"
 storage_type = "dynamic_object"
 internal_name = "GlyphStyle"
-internal_header = "core/ui/GlyphStyle.h"
+internal_header = "core/ui/glyph/GlyphStyle.h"
 
 [methods]
 

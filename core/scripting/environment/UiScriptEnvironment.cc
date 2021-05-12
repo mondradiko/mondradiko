@@ -3,8 +3,8 @@
 
 #include "core/scripting/environment/UiScriptEnvironment.h"
 
-#include "core/ui/GlyphStyle.h"
-#include "core/ui/UiPanel.h"
+#include "core/ui/glyph/GlyphStyle.h"
+#include "core/ui/panels/UiPanel.h"
 #include "log/log.h"
 
 namespace mondradiko {

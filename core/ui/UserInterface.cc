@@ -25,9 +25,10 @@
 #include "core/shaders/panel.vert.h"
 #include "core/shaders/ui_draw.frag.h"
 #include "core/shaders/ui_draw.vert.h"
-#include "core/ui/GlyphStyle.h"
 #include "core/ui/UiDrawList.h"
-#include "core/ui/UiPanel.h"
+#include "core/ui/glyph/GlyphLoader.h"
+#include "core/ui/glyph/GlyphStyle.h"
+#include "core/ui/panels/UiPanel.h"
 #include "core/world/World.h"
 #include "log/log.h"
 
