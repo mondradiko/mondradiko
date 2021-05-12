@@ -35,14 +35,17 @@ class StaticScriptObject {
     // If the new host turns out to be nullptr, quit
     if (_host_environment == nullptr) return false;
 
+    // Upcast to implementation
+    T* impl = static_cast<T*>(this);
+
     // Otherwise, store ourselves
-    if (!_host_environment->storeStaticObject(_static_symbol, this)) {
+    if (!_host_environment->storeStaticObject(_static_symbol, impl)) {
       // If an object of our type was already registered, quit
       return false;
     }
 
     // Link our script API and exit successfully
-    linkScriptApi(_host_environment, static_cast<T*>(this));
+    linkScriptApi(_host_environment, impl);
     return true;
   }
 
