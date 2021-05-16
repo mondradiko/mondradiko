@@ -1,0 +1,16 @@
+[bundle]
+name = "Mondradiko Example World: Holodeck"
+compression = "LZ4"
+
+[[assets]]
+file = "../../assets/Holodeck/Holodeck.gltf"
+alias = "Holodeck"
+initial_prefab = true
+
+[[assets]]
+type = "prefab"
+initial_prefab = true
+
+  [assets.point_light]
+  position = [0.0, 1.5, 0.0]
+  intensity = [100.0, 100.0, 100.0]
