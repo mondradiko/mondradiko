@@ -1,7 +1,7 @@
 // Copyright (c) 2020-2021 the Mondradiko contributors.
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "core/ui/GlyphLoader.h"
+#include "core/ui/glyph/GlyphLoader.h"
 
 #define STB_RECT_PACK_IMPLEMENTATION
 #include <lib/third_party/stb_rect_pack.h>
@@ -14,6 +14,7 @@
 #include "core/gpu/GpuInstance.h"
 #include "core/gpu/GpuShader.h"
 #include "core/renderer/Renderer.h"
+#include "core/ui/glyph/GlyphInstance.h"
 #include "log/log.h"
 #include "shaders/glyph.frag.h"
 #include "shaders/glyph.vert.h"

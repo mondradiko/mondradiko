@@ -5,9 +5,8 @@
 
 #include <array>
 
-#include "core/gpu/GpuPipeline.h"
-#include "lib/include/glm_headers.h"
 #include "lib/include/msdfgen_headers.h"
+#include "lib/include/vulkan_headers.h"
 #include "types/containers/unordered_map.h"
 
 namespace mondradiko {
@@ -17,33 +16,9 @@ namespace core {
 class CVarScope;
 class GpuBuffer;
 class GpuImage;
+class GpuInstance;
 class GpuShader;
 class Renderer;
-
-struct GlyphUniform {
-  glm::vec2 atlas_coords[4];
-  glm::vec2 glyph_coords[4];
-};
-
-struct GlyphInstance {
-  glm::vec2 position;
-  uint32_t style_index;
-  uint32_t glyph_index;
-
-  static GpuPipeline::VertexBindings getVertexBindings() {
-    // VkVertexInputBindingDescription{binding, stride, inputRate}
-    return {
-        {0, sizeof(GlyphInstance), VK_VERTEX_INPUT_RATE_INSTANCE},
-    };
-  }
-
-  static GpuPipeline::AttributeDescriptions getAttributeDescriptions() {
-    // VkVertexInputAttributeDescription{location, binding, format, offset}
-    return {{0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(GlyphInstance, position)},
-            {1, 0, VK_FORMAT_R32_UINT, offsetof(GlyphInstance, style_index)},
-            {2, 0, VK_FORMAT_R32_UINT, offsetof(GlyphInstance, glyph_index)}};
-  }
-};
 
 class GlyphLoader {
  public:

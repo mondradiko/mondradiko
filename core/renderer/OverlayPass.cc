@@ -18,7 +18,6 @@
 #include "core/gpu/GraphicsState.h"
 #include "core/renderer/DebugDraw.h"
 #include "core/renderer/Renderer.h"
-#include "core/ui/GlyphLoader.h"
 #include "core/world/World.h"
 #include "log/log.h"
 #include "shaders/debug.frag.h"

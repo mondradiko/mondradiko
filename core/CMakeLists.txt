@@ -76,10 +76,10 @@ set(MONDRADIKO_CORE_SRC
   scripting/instance/UiScript.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
-  ui/GlyphLoader.cc
-  ui/GlyphStyle.cc
+  ui/glyph/GlyphLoader.cc
+  ui/glyph/GlyphStyle.cc
+  ui/panels/UiPanel.cc
   ui/UiDrawList.cc
-  ui/UiPanel.cc
   ui/UserInterface.cc
   world/ScriptEntity.cc
   world/World.cc
