@@ -69,8 +69,6 @@ void ComponentScriptEnvironment::instantiateScript(EntityId entity,
     return;
   }
 
-  log_msg_fmt("%lu", sizeof(ComponentScript));
-
   auto asset = asset_pool->load<ScriptAsset>(script_id);
   auto instance = new ComponentScript(this, world, asset, entity, impl);
 

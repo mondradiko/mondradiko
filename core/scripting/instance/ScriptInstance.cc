@@ -113,7 +113,6 @@ void ScriptInstance::initializeScriptRaw(wasm_module_t* script_module,
         }
 
         case WASM_EXTERN_MEMORY: {
-          log_dbg("h");
           _memory = wasm_extern_as_memory(exported);
           break;
         }
