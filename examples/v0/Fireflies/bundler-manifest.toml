@@ -1,0 +1,20 @@
+[bundle]
+name = "Mondradiko Example World: Fireflies"
+compression = "LZ4"
+
+[[assets]]
+file = "../../assets/Sponza/Sponza.gltf"
+alias = "scene"
+initial_prefab = true
+
+[[assets]]
+file = "./Fireflies.wat"
+alias = "Fireflies"
+
+[[assets]]
+type = "prefab"
+initial_prefab = true
+
+  [assets.script]
+  script_asset = "Fireflies"
+  script_impl = "Fireflies"

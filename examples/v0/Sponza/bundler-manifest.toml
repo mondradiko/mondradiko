@@ -1,0 +1,66 @@
+[bundle]
+name = "Mondradiko Example World: Sponza"
+compression = "LZ4"
+
+[[assets]]
+file = "../../assets/Sponza/Sponza.gltf"
+alias = "Sponza"
+
+[[assets]]
+file = "../../assets/Arisu/Arisu.vrm"
+alias = "Arisu"
+
+[[assets]]
+file = "SlidingLight.wat"
+alias = "SlidingLight"
+
+[[assets]]
+type = "prefab"
+initial_prefab = true
+children = ["Sponza"]
+
+[[assets]]
+type = "prefab"
+initial_prefab = true
+children = ["Arisu"]
+
+  [assets.point_light]
+  position = [0.0, 1.5, 0.0]
+  intensity = [100.0, 0.0, 100.0]
+
+  [assets.script]
+  script_asset = "SlidingLight"
+  script_impl = "SlidingLight"
+
+  [assets.transform]
+  position = [0.0, 0.0, 0.0]
+
+[[assets]]
+type = "prefab"
+initial_prefab = true
+
+  [assets.point_light]
+  position = [0.0, 1.5, 0.0]
+  intensity = [0.0, 100.0, 100.0]
+
+  [assets.script]
+  script_asset = "SlidingLight"
+  script_impl = "SlidingLight"
+
+  [assets.transform]
+  position = [-3.0, 0.0, -4.0]
+
+[[assets]]
+type = "prefab"
+initial_prefab = true
+
+  [assets.point_light]
+  position = [0.0, 1.5, 0.0]
+  intensity = [100.0, 100.0, 0.0]
+
+  [assets.script]
+  script_asset = "SlidingLight"
+  script_impl = "SlidingLight"
+
+  [assets.transform]
+  position = [7.0, 0.0, 3.0]
