@@ -78,13 +78,18 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
   }
 
   {
-    log_zone_named("Create debug pipeline");
+    log_zone_named("Create debug pipelines");
 
     auto vertex_bindings = DebugDrawList::Vertex::getVertexBindings();
     auto attribute_descriptions =
         DebugDrawList::Vertex::getAttributeDescriptions();
 
-    debug_pipeline = new GpuPipeline(
+    depth_debug_pipeline = new GpuPipeline(
+        gpu, debug_pipeline_layout, renderer->getMainRenderPass(),
+        renderer->getDepthSubpass(), debug_vertex_shader, debug_fragment_shader,
+        vertex_bindings, attribute_descriptions);
+
+    overlay_debug_pipeline = new GpuPipeline(
         gpu, debug_pipeline_layout, renderer->getMainRenderPass(),
         renderer->getOverlaySubpass(), debug_vertex_shader,
         debug_fragment_shader, vertex_bindings, attribute_descriptions);
@@ -96,7 +101,8 @@ OverlayPass::~OverlayPass() {
 
   if (debug_vertex_shader != nullptr) delete debug_vertex_shader;
   if (debug_fragment_shader != nullptr) delete debug_fragment_shader;
-  if (debug_pipeline != nullptr) delete debug_pipeline;
+  if (overlay_debug_pipeline != nullptr) delete overlay_debug_pipeline;
+  if (depth_debug_pipeline != nullptr) delete depth_debug_pipeline;
   if (debug_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, debug_pipeline_layout, nullptr);
 }
@@ -127,6 +133,7 @@ void OverlayPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
                              GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
+  renderer->addPassToPhase(RenderPhase::Depth, this);
   renderer->addPassToPhase(RenderPhase::Overlay, this);
 
   current_frame = frame_index;
@@ -287,13 +294,26 @@ void OverlayPass::renderViewport(VkCommandBuffer command_buffer,
   {
     log_zone_named("Render debug");
 
+    GpuPipeline* debug_pipeline;
+
+    if (phase == RenderPhase::Depth) {
+      debug_pipeline = depth_debug_pipeline;
+    } else {
+      debug_pipeline = overlay_debug_pipeline;
+    }
+
     {
       auto gs = GraphicsState::CreateGenericOpaque();
       gs.input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::LineList;
       gs.multisample_state.rasterization_samples =
           renderer->getCurrentViewport(viewport_index)->getSampleCount();
-      gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+
+      if (phase != RenderPhase::Depth) {
+        gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+        gs.depth_state.compare_op = GraphicsState::CompareOp::Equal;
+      }
+
       debug_pipeline->cmdBind(command_buffer, gs);
     }
 
