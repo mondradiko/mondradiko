@@ -6,15 +6,26 @@
 #include <chrono>
 
 #include "core/avatars/SpectatorAvatar.h"
+#include "core/cvars/CVarScope.h"
+#include "core/cvars/FloatCVar.h"
 #include "core/displays/SdlViewport.h"
 #include "core/gpu/GpuInstance.h"
+#include "core/ui/UserInterface.h"
 #include "log/log.h"
 #include "types/build_config.h"
 
 namespace mondradiko {
 namespace core {
 
-SdlDisplay::SdlDisplay() {
+void SdlDisplay::initCVars(CVarScope* cvars) {
+  CVarScope* sdl = cvars->addChild("sdl");
+
+  sdl->addValue<FloatCVar>("camera_speed", 0.0, 1000.0);
+}
+
+SdlDisplay::SdlDisplay(const CVarScope* parent_cvars)
+    : Display(parent_cvars),
+      cvars(parent_cvars->getChild("displays")->getChild("sdl")) {
   log_zone;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -119,7 +130,7 @@ bool SdlDisplay::getVulkanDevice(VkInstance instance,
 
   swapchain_format = VK_FORMAT_MAX_ENUM;
   for (const auto& surface_format : surface_formats) {
-    if (surface_format.format == VK_FORMAT_B8G8R8A8_SRGB &&
+    if (surface_format.format == VK_FORMAT_B8G8R8A8_UNORM &&
         surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
       swapchain_format = surface_format.format;
       swapchain_color_space = surface_format.colorSpace;
@@ -173,6 +184,8 @@ bool SdlDisplay::createSession(GpuInstance* _gpu) {
   return true;
 }
 
+void SdlDisplay::setUserInterface(UserInterface* new_ui) { ui = new_ui; }
+
 const Avatar* SdlDisplay::getAvatar(World* world) {
   avatar = new SpectatorAvatar(world);
   return avatar;
@@ -193,7 +206,7 @@ void SdlDisplay::destroySession() {
   surface = VK_NULL_HANDLE;
 }
 
-void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
+void SdlDisplay::pollEvents(PollEventsInfo* poll_info) {
   log_zone;
 
   if (main_viewport == nullptr) {
@@ -223,7 +236,21 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
 
       case SDL_MOUSEBUTTONDOWN: {
         if (e.button.button == SDL_BUTTON_LEFT) {
-          SDL_SetRelativeMouseMode(SDL_TRUE);
+          if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+          } else if (avatar != nullptr) {
+            avatar->onClickPress();
+          }
+        }
+
+        break;
+      }
+
+      case SDL_MOUSEBUTTONUP: {
+        if (e.button.button == SDL_BUTTON_LEFT) {
+          if (avatar != nullptr) {
+            avatar->onClickRelease();
+          }
         }
 
         break;
@@ -233,6 +260,13 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
         switch (e.key.keysym.scancode) {
           case SDL_SCANCODE_ESCAPE: {
             SDL_SetRelativeMouseMode(SDL_FALSE);
+            break;
+          }
+
+          case SDL_SCANCODE_F5: {
+            if (ui != nullptr) {
+              ui->loadUiScript();
+            }
             break;
           }
 
@@ -272,7 +306,7 @@ void SdlDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
   }
 }
 
-void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
+void SdlDisplay::beginFrame(BeginFrameInfo* frame_info) {
   log_zone;
 
   {
@@ -299,7 +333,12 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 
   if (main_viewport != nullptr) {
     if (avatar != nullptr && SDL_GetRelativeMouseMode() == SDL_TRUE) {
-      float camera_speed = 5.0 * frame_info->dt;
+      float camera_speed = cvars->get<FloatCVar>("camera_speed");
+      camera_speed *= frame_info->dt;
+
+      if (key_state[SDL_SCANCODE_LSHIFT]) {
+        camera_speed *= 2.0;
+      }
 
       float truck = 0.0;
 
@@ -319,9 +358,9 @@ void SdlDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
 
       float boom = 0.0;
 
-      if (key_state[SDL_SCANCODE_LSHIFT]) {
+      if (key_state[SDL_SCANCODE_Q]) {
         boom = -camera_speed;
-      } else if (key_state[SDL_SCANCODE_SPACE]) {
+      } else if (key_state[SDL_SCANCODE_E]) {
         boom = camera_speed;
       }
 
@@ -341,7 +380,7 @@ void SdlDisplay::acquireViewports(types::vector<Viewport*>* viewports) {
   viewports->at(0) = main_viewport;
 }
 
-void SdlDisplay::endFrame(DisplayBeginFrameInfo* frame_info) { log_zone; }
+void SdlDisplay::endFrame(BeginFrameInfo* frame_info) { log_zone; }
 
 }  // namespace core
 }  // namespace mondradiko

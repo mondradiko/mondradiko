@@ -4,7 +4,7 @@
 name = "UiPanel"
 storage_type = "dynamic_object"
 internal_name = "UiPanel"
-internal_header = "core/ui/UiPanel.h"
+internal_header = "core/ui/panels/UiPanel.h"
 dependencies = ["GlyphStyle"]
 
 [methods]
@@ -33,3 +33,43 @@ dependencies = ["GlyphStyle"]
 
   [methods.createGlyphStyle]
   return_class = "GlyphStyle"
+
+  [methods.drawTriangle]
+  param_list = ["x1", "y1", "x2", "y2", "x3", "y3", "r", "g", "b", "a"]
+
+    [methods.drawTriangle.params]
+    x1 = "double"
+    y1 = "double"
+    x2 = "double"
+    y2 = "double"
+    x3 = "double"
+    y3 = "double"
+    r = "double"
+    g = "double"
+    b = "double"
+    a = "double"
+
+  [methods.drawCircle]
+  param_list = ["x", "y", "radius", "r", "g", "b", "a"]
+
+    [methods.drawCircle.params]
+    x = "double"
+    y = "double"
+    radius = "double"
+    r = "double"
+    g = "double"
+    b = "double"
+    a = "double"
+
+  [methods.drawRing]
+  param_list = ["x", "y", "inner_radius", "outer_radius", "r", "g", "b", "a"]
+
+    [methods.drawRing.params]
+    x = "double"
+    y = "double"
+    inner_radius = "double"
+    outer_radius = "double"
+    r = "double"
+    g = "double"
+    b = "double"
+    a = "double"

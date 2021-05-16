@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "core/world/Entity.h"
 #include "lib/include/bullet_headers.h"
 
 namespace mondradiko {
@@ -29,6 +30,11 @@ class Physics {
   btCollisionDispatcher* dispatcher = nullptr;
   btSequentialImpulseConstraintSolver* solver = nullptr;
   btDiscreteDynamicsWorld* dynamics_world = nullptr;
+
+  btCollisionShape* default_shape = nullptr;
+
+  // Observer to clean up RigidBodyComponents
+  static void onRigidBodyComponentDestroy(EntityRegistry&, EntityId);
 };
 
 }  // namespace core

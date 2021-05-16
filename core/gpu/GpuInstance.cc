@@ -6,7 +6,9 @@
 #include <cstring>
 #include <set>
 
-#include "core/displays/DisplayInterface.h"
+#include "core/cvars/BoolCVar.h"
+#include "core/cvars/CVarScope.h"
+#include "core/displays/Display.h"
 #include "core/gpu/vulkan_validation.h"
 #include "log/log.h"
 #include "types/build_config.h"
@@ -14,28 +16,41 @@
 namespace mondradiko {
 namespace core {
 
-GpuInstance::GpuInstance(DisplayInterface* display) : display(display) {
+void GpuInstance::initCVars(CVarScope* cvars) {
+  CVarScope* gpu = cvars->addChild("gpu");
+
+  gpu->addValue<BoolCVar>("enable_validation");
+}
+
+GpuInstance::GpuInstance(const CVarScope* parent_scope, Display* display)
+    : cvars(parent_scope->getChild("gpu")), display(display) {
   log_zone;
 
   VulkanRequirements requirements;
   display->getVulkanRequirements(&requirements);
 
-  if (enableValidationLayers) {
+  bool enable_validation = cvars->get<BoolCVar>("enable_validation");
+
+  if (enable_validation) {
     if (!checkValidationLayerSupport()) {
       log_wrn("Vulkan validation layers requested, but not available.");
-      enableValidationLayers = false;
+      enable_validation = false;
     }
   }
 
-  createInstance(&requirements);
+  if (!enable_validation) {
+    log_wrn("Vulkan validation layers are disabled. Proceed with caution.");
+  }
 
-  if (enableValidationLayers) {
+  createInstance(&requirements, enable_validation);
+
+  if (enable_validation) {
     setupDebugMessenger();
   }
 
   findPhysicalDevice(display);
   findQueueFamilies();
-  createLogicalDevice(&requirements);
+  createLogicalDevice(&requirements, enable_validation);
   createCommandPool();
   createAllocator();
 }
@@ -54,7 +69,7 @@ GpuInstance::~GpuInstance() {
 
   if (device != VK_NULL_HANDLE) vkDestroyDevice(device, nullptr);
 
-  if (enableValidationLayers && debugMessenger != VK_NULL_HANDLE)
+  if (debugMessenger != VK_NULL_HANDLE)
     ext_vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 
   if (instance != VK_NULL_HANDLE) vkDestroyInstance(instance, nullptr);
@@ -173,7 +188,8 @@ void GpuInstance::populateDebugMessengerCreateInfo(
   createInfo->pfnUserCallback = debugCallbackVulkan;
 }
 
-void GpuInstance::createInstance(VulkanRequirements* requirements) {
+void GpuInstance::createInstance(VulkanRequirements* requirements,
+                                 bool enable_validation) {
   log_zone;
 
   types::vector<const char*> extensionNames;
@@ -199,7 +215,7 @@ void GpuInstance::createInstance(VulkanRequirements* requirements) {
   createInfo.ppEnabledExtensionNames = extensionNames.data();
 
   VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-  if (enableValidationLayers) {
+  if (enable_validation) {
     createInfo.enabledLayerCount =
         static_cast<uint32_t>(validationLayers.size());
     createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -233,7 +249,7 @@ void GpuInstance::setupDebugMessenger() {
   }
 }
 
-void GpuInstance::findPhysicalDevice(DisplayInterface* display) {
+void GpuInstance::findPhysicalDevice(Display* display) {
   log_zone;
 
   if (!display->getVulkanDevice(instance, &physical_device)) {
@@ -261,7 +277,8 @@ void GpuInstance::findQueueFamilies() {
   }
 }
 
-void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
+void GpuInstance::createLogicalDevice(VulkanRequirements* requirements,
+                                      bool enable_validation) {
   log_zone;
 
   types::vector<const char*> extensionNames;
@@ -295,7 +312,7 @@ void GpuInstance::createLogicalDevice(VulkanRequirements* requirements) {
   createInfo.ppEnabledExtensionNames = extensionNames.data();
   createInfo.pEnabledFeatures = &deviceFeatures;
 
-  if (enableValidationLayers) {
+  if (enable_validation) {
     createInfo.enabledLayerCount =
         static_cast<uint32_t>(validationLayers.size());
     createInfo.ppEnabledLayerNames = validationLayers.data();

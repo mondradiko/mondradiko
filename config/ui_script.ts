@@ -1,93 +1,186 @@
 // To compile:
-// $ asc -b ui_script.wasm -O3 ui_script.ts
+// $ asc -b ui_script.wasm -O3 --exportRuntime ui_script.ts
 
 import GlyphStyle from "../builddir/codegen/ui/GlyphStyle";
 import UiPanel from "../builddir/codegen/ui/UiPanel";
+import Vector2 from "../builddir/codegen/types/Vector2";
 
-function clamp(x: f64, lower: f64, upper: f64): f64 {
-  if (x < lower)
-    x = lower;
-  if (x > upper)
-    x = upper;
-  return x;
+class QueuedMessage {
+  lifespan: f64 = 5.0;
+  fade_duration: f64 = 0.25;
+
+  max_height: f64 = 0.05;
+  height: f64 = this.max_height;
+
+  constructor(public text: string, public style: GlyphStyle, public offset_x: f64, offset_y: f64) {
+    this.style.setColor(1.0, 1.0, 1.0, 1.0);
+    this.style.setText(this.text);
+    this.setOffset(offset_y);
+  }
+
+  update(dt: f64): bool {
+    this.lifespan -= dt;
+
+    if (this.lifespan < this.fade_duration) {
+      let alpha: f64 = this.lifespan / this.fade_duration;
+      this.style.setColor(1.0, 1.0, 1.0, alpha);
+      this.height = this.lifespan * this.max_height / this.fade_duration;
+    }
+
+    return this.lifespan > 0.0;
+  }
+
+  setOffset(offset_y: f64): void {
+    this.style.setOffset(this.offset_x, offset_y);
+  }
 }
 
-function smoothstep(x: f64): f64 {
-  x = clamp(x, 0.0, 1.0);
-  return x * x * (3 - 2 * x);
+function drawCircle(panel: UiPanel,
+                    x: f64, y: f64, radius: f64,
+                    r: f64, g: f64, b: f64, alpha: f64): void {
+  panel.drawCircle(x, y, radius, r, g, b, alpha);
 }
 
-class Color {
-  constructor(public r: f64, public g: f64, public b: f64) {}
+class PolkaDot {
+  lifespan: f64 = 0.5;
+  age: f64 = this.lifespan;
+  grow_duration: f64 = 0.05;
+  shrink_duration: f64 = 0.25;
+  fade_duration: f64 = 0.05;
+
+  constructor(public x: f64, public y: f64, public radius: f64, public r: f64, public g: f64, public b: f64) {}
+
+  update(dt: f64, panel: UiPanel): bool {
+    this.age -= dt;
+
+    if (this.age < 0.0) return false;
+
+    let radius = this.radius;
+    if (this.age < this.shrink_duration) {
+      radius *= this.age / this.shrink_duration;
+    } else if (this.age > this.lifespan - this.grow_duration) {
+      radius *= (this.lifespan - this.age) /
+                (this.lifespan - this.grow_duration);
+    }
+
+    let alpha = 1.0;
+    if (this.age < this.fade_duration) {
+      alpha *= this.age / this.fade_duration;
+    }
+
+    drawCircle(panel, this.x, this.y, radius, this.r, this.g, this.b, alpha);
+
+    return true;
+  }
 }
 
-function HSVtoRGB(h: f64, s: f64, v: f64): Color {
-  if (s == 0.0) return new Color(v, v, v);
+let main_panel: PanelImpl;
 
-  let i = Math.floor(h * 6.0);
-  let f = (h * 6.0) - i;
-  let p = v * (1.0 - s);
-  let q = v * (1.0 - s * f);
-  let t = v * (1.0 - s * (1.0 - f));
-
-  i %= 6;
-
-  if (i == 0) return new Color(v, t, p);
-  if (i == 1) return new Color(q, v, p);
-  if (i == 2) return new Color(p, v, t);
-  if (i == 3) return new Color(p, q, v);
-  if (i == 4) return new Color(t, p, v);
-  if (i == 5) return new Color(v, p, p);
-
-  return new Color(1.0, 0.0, 1.0);
-}
-
-class PanelImpl {
-  hue_offset: f64 = 0.0;
-
-  style: GlyphStyle;
-
-  transition_step: f64;
-  transition_time: f64 = 0.25;
-  target_width: f64;
-  target_height: f64;
+export class PanelImpl {
+  style_pool: Array<GlyphStyle> = [];
+  message_queue: Array<QueuedMessage> = [];
+  log_bottom: f64 = -0.45;
+  last_message: f64 = 0.0;
+  polka_dot_queue: Array<PolkaDot> = [];
+  last_polka_dot: f64 = 0.0;
 
   constructor(public panel: UiPanel) {
-    this.transition_step = 0.0;
-    this.target_width = panel.getWidth();
-    this.target_height = panel.getHeight();
-    panel.setSize(0.0, 0.0);
+    main_panel = this;
+  }
 
-    this.style = panel.createGlyphStyle();
-    this.style.setColor(1.0, 0.0, 1.0, 1.0);
-    this.style.setOffset(0.0, 0.0);
+  onHover(x: f64, y: f64): void {}
+
+  onSelect(x: f64, y: f64): void {
+    let polka_dot = new PolkaDot(x, y, 0.05, 1.0, 1.0, 1.0);
+    this.polka_dot_queue.push(polka_dot);
+
+    let e = 1000.0;
+    let rx = Math.round(x * e) / e;
+    let ry = Math.round(y * e) / e;
+
+    let message_text = `Selected at: (${rx}, ${ry})`;
+    this.handleMessage(message_text);
+  }
+
+  onDrag(x: f64, y: f64): void {}
+
+  onDeselect(x: f64, y: f64): void {}
+
+  handleMessage(message: string): void {
+    let style: GlyphStyle;
+
+    if (this.style_pool.length > 0) {
+      style = this.style_pool.pop();
+    } else {
+      style = this.panel.createGlyphStyle();
+    }
+
+    let offset_x = -0.45 * this.panel.getWidth();
+
+    let new_message = new QueuedMessage(message, style, offset_x, this.log_bottom);
+    this.message_queue.push(new_message);
+    this.log_bottom += new_message.height;
+
+    this.last_message += 0.5;
+    if (this.last_message > 0.0) {
+      if (this.last_message > 5.0) {
+        this.last_message = 5.0;
+      }
+
+      new_message.lifespan += this.last_message;
+    }
   }
 
   update(dt: f64): void {
-    this.transition_step += dt;
+    this.last_polka_dot -= dt;
 
-    let lerp = smoothstep(this.transition_step / this.transition_time);
-    this.panel.setSize(this.target_width * lerp, this.target_height * lerp);
+    while (this.last_polka_dot < 0.0) {
+      let x = Math.random() - 0.5;
+      let y = Math.random() - 0.5;
 
-    this.hue_offset += dt;
-    let panel_color = HSVtoRGB(this.hue_offset / 3.0, 0.8, 0.1);
-    this.panel.setColor(panel_color.r, panel_color.g, panel_color.b, 0.9);
+      x *= this.panel.getWidth() * 0.95;
+      y *= this.panel.getHeight() * 0.95;
 
-    this.style.setOffset(Math.sin(this.hue_offset) * 0.45, 0.0);
+      let polka_dot = new PolkaDot(x, y, 0.01, 0.8, 0.0, 0.8);
+      this.polka_dot_queue.push(polka_dot);
 
-    if (this.transition_step > 3.0) {
-      this.transition_step = 0.0;
+      this.last_polka_dot += 0.002;
+    }
+
+    this.last_message -= dt;
+
+    this.log_bottom = -0.45;
+
+    let i: i32 = 0;
+
+    while (i < this.message_queue.length) {
+      let message = this.message_queue[i];
+
+      if (message.update(dt)) {
+        this.log_bottom += message.height;
+        message.setOffset(this.log_bottom);
+        i++;
+      } else {
+        message.style.setText("");
+        this.style_pool.push(message.style);
+        this.message_queue.splice(i, 1);
+      }
+    }
+
+    i = 0;
+
+    while (i < this.polka_dot_queue.length) {
+      let polka_dot = this.polka_dot_queue[i];
+
+      if (polka_dot.update(dt, this.panel)) {
+        i++;
+      } else {
+        this.polka_dot_queue.splice(i, 1);
+      }
     }
   }
 }
 
-let this_panel: PanelImpl;
-
-export function createPanel(new_panel: UiPanel): PanelImpl {
-  this_panel = new PanelImpl(new_panel);
-  return this_panel;
-}
-
-export function update(dt: f64): void {
-  this_panel.update(dt);
+export function handleMessage(message: string): void {
+  main_panel.handleMessage(message);
 }

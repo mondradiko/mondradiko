@@ -13,6 +13,7 @@ namespace core {
 
 // Forward declarations
 class CVarScope;
+class DebugDrawList;
 class Filesystem;
 class GlyphLoader;
 class GpuDescriptorSetLayout;
@@ -21,26 +22,29 @@ class GpuPipeline;
 class GpuShader;
 class GpuVector;
 class Renderer;
+class UiDrawList;
 class UiPanel;
 class UiScript;
 class UiScriptEnvironment;
+class World;
 
 class UserInterface : public RenderPass {
  public:
   static void initCVars(CVarScope*);
 
-  UserInterface(const CVarScope*, Filesystem*, GlyphLoader*, Renderer*);
+  UserInterface(const CVarScope*, Filesystem*, GlyphLoader*, Renderer*, World*);
   ~UserInterface();
 
+  void loadUiScript();
   void displayMessage(const char*);
-  bool update(double);
+  bool update(double, DebugDrawList*);
 
   // RenderPass implementation
   void createFrameData(uint32_t) final;
   void destroyFrameData() final;
-  void beginFrame(uint32_t, GpuDescriptorPool*) final;
+  void beginFrame(uint32_t, uint32_t, GpuDescriptorPool*) final;
   void render(RenderPhase, VkCommandBuffer) final {}
-  void renderViewport(RenderPhase, VkCommandBuffer,
+  void renderViewport(VkCommandBuffer, uint32_t, RenderPhase,
                       const GpuDescriptorSet*) final;
   void endFrame() final {}
 
@@ -50,6 +54,7 @@ class UserInterface : public RenderPass {
   GlyphLoader* glyphs;
   GpuInstance* gpu;
   Renderer* renderer;
+  World* world;
 
   UiScriptEnvironment* scripts = nullptr;
   wasm_module_t* script_module = nullptr;
@@ -63,9 +68,15 @@ class UserInterface : public RenderPass {
   VkPipelineLayout panel_pipeline_layout = VK_NULL_HANDLE;
   GpuPipeline* panel_pipeline = nullptr;
 
+  GpuShader* ui_vertex_shader = nullptr;
+  GpuShader* ui_fragment_shader = nullptr;
+  GpuPipeline* ui_pipeline = nullptr;
+
   GpuDescriptorSetLayout* glyph_set_layout = nullptr;
   VkPipelineLayout glyph_pipeline_layout = VK_NULL_HANDLE;
   GpuPipeline* glyph_pipeline = nullptr;
+
+  UiDrawList* current_draw = nullptr;
 
   struct FrameData {
     GpuVector* panels = nullptr;
@@ -74,6 +85,10 @@ class UserInterface : public RenderPass {
     uint32_t glyph_count;
 
     GpuVector* styles = nullptr;
+
+    GpuVector* ui_draw_vertices = nullptr;
+    GpuVector* ui_draw_indices = nullptr;
+    uint32_t ui_draw_count;
 
     GpuDescriptorSet* panels_descriptor = nullptr;
     GpuDescriptorSet* glyph_descriptor = nullptr;

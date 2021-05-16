@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include "core/components/internal/PointerComponent.h"
 #include "core/components/scriptable/TransformComponent.h"
 #include "core/world/World.h"
 #include "types/protocol/SpectatorAvatar_generated.h"
@@ -19,9 +20,20 @@ SpectatorAvatar::SpectatorAvatar(World* world) : world(world) {
 
   _self_id = world->registry.create();
   _addEntity(_self_id);
+
+  world->registry.emplace<PointerComponent>(_self_id, glm::vec3(0.0),
+                                            glm::vec3(0.0, 0.0, 1.0));
 }
 
 SpectatorAvatar::~SpectatorAvatar() { world->registry.destroy(_self_id); }
+
+void SpectatorAvatar::onClickPress() {
+  world->registry.get<PointerComponent>(_self_id).setSelect();
+}
+
+void SpectatorAvatar::onClickRelease() {
+  world->registry.get<PointerComponent>(_self_id).unsetSelect();
+}
 
 void SpectatorAvatar::moveCamera(float pan, float tilt, float truck,
                                  float dolly, float boom) {
@@ -102,9 +114,9 @@ void SpectatorAvatar::deserialize(const ProtocolBuffer* protocol_data) {
 void SpectatorAvatar::_updateTransform() {
   auto position = camera_position;
 
-  glm::quat orientation =
-      glm::angleAxis(camera_tilt, glm::vec3(0.0, 0.0, 1.0)) *
-      glm::angleAxis(camera_pan, glm::vec3(0.0, 1.0, 0.0));
+  glm::quat orientation = glm::angleAxis(camera_pan + static_cast<float>(M_PI),
+                                         glm::vec3(0.0, -1.0, 0.0)) *
+                          glm::angleAxis(camera_tilt, glm::vec3(1.0, 0.0, 0.0));
 
   world->registry.emplace_or_replace<TransformComponent>(_self_id, position,
                                                          orientation);

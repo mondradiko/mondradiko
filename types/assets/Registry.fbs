@@ -10,6 +10,11 @@ struct AssetEntry {
   size:uint32;
 }
 
+table BundleExport {
+  alias:string;
+  id:uint32;
+}
+
 table LumpEntry {
   checksum:LumpHash;
   file_size:uint64;
@@ -23,6 +28,7 @@ table Registry {
   minor_version:int;
   patch_version:int;
   initial_prefabs:[uint32];
+  exports:[BundleExport];
   lumps:[LumpEntry];
 }
 

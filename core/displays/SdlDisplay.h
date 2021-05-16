@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core/displays/DisplayInterface.h"
+#include "core/displays/Display.h"
 #include "lib/include/sdl2_headers.h"
 #include "types/containers/vector.h"
 
@@ -11,18 +11,22 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class CVarScope;
 class GpuInstance;
 class SdlViewport;
 class SpectatorAvatar;
 
-class SdlDisplay : public DisplayInterface {
+class SdlDisplay : public Display {
  public:
-  SdlDisplay();
+  static void initCVars(CVarScope*);
+
+  explicit SdlDisplay(const CVarScope*);
   ~SdlDisplay();
 
   bool getVulkanRequirements(VulkanRequirements*) final;
   bool getVulkanDevice(VkInstance, VkPhysicalDevice*) final;
   bool createSession(GpuInstance*) final;
+  void setUserInterface(UserInterface*) final;
   const Avatar* getAvatar(World*) final;
   void destroySession() final;
 
@@ -34,10 +38,10 @@ class SdlDisplay : public DisplayInterface {
   }
   VkFormat getDepthFormat() final { return depth_format; }
 
-  void pollEvents(DisplayPollEventsInfo*) final;
-  void beginFrame(DisplayBeginFrameInfo*) final;
+  void pollEvents(PollEventsInfo*) final;
+  void beginFrame(BeginFrameInfo*) final;
   void acquireViewports(types::vector<Viewport*>*) final;
-  void endFrame(DisplayBeginFrameInfo*) final;
+  void endFrame(BeginFrameInfo*) final;
 
   SDL_Window* window = nullptr;
 
@@ -53,7 +57,9 @@ class SdlDisplay : public DisplayInterface {
   SdlViewport* main_viewport = nullptr;
 
  private:
-  GpuInstance* gpu;
+  const CVarScope* cvars;
+
+  UserInterface* ui = nullptr;
 
   // TODO(marceline-cramer) Move this into GpuInstance
   uint32_t present_queue_family;

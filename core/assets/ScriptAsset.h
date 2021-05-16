@@ -23,7 +23,7 @@ class ScriptAsset : public Asset {
   explicit ScriptAsset(ScriptEnvironment* scripts) : scripts(scripts) {}
   ~ScriptAsset();
 
-  ComponentScript* createInstance(World*, EntityId) const;
+  wasm_module_t* getModule() const { return script_module; }
 
  protected:
   // Asset implementation

@@ -3,8 +3,12 @@
 
 #include "core/ui/UserInterface.h"
 
+#include "core/components/internal/PointerComponent.h"
+#include "core/components/internal/WorldTransform.h"
 #include "core/cvars/CVarScope.h"
+#include "core/cvars/FileCVar.h"
 #include "core/cvars/StringCVar.h"
+#include "core/displays/Viewport.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
@@ -13,13 +17,19 @@
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
+#include "core/renderer/DebugDrawList.h"
 #include "core/renderer/Renderer.h"
 #include "core/scripting/environment/UiScriptEnvironment.h"
 #include "core/scripting/instance/UiScript.h"
 #include "core/shaders/panel.frag.h"
 #include "core/shaders/panel.vert.h"
-#include "core/ui/GlyphStyle.h"
-#include "core/ui/UiPanel.h"
+#include "core/shaders/ui_draw.frag.h"
+#include "core/shaders/ui_draw.vert.h"
+#include "core/ui/UiDrawList.h"
+#include "core/ui/glyph/GlyphLoader.h"
+#include "core/ui/glyph/GlyphStyle.h"
+#include "core/ui/panels/UiPanel.h"
+#include "core/world/World.h"
 #include "log/log.h"
 
 namespace mondradiko {
@@ -28,16 +38,19 @@ namespace core {
 void UserInterface::initCVars(CVarScope* cvars) {
   CVarScope* ui = cvars->addChild("ui");
 
-  ui->addValue<StringCVar>("script_path");
+  ui->addValue<FileCVar>("script_path");
+  ui->addValue<StringCVar>("panel_impl");
 }
 
 UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
-                             GlyphLoader* glyphs, Renderer* renderer)
+                             GlyphLoader* glyphs, Renderer* renderer,
+                             World* world)
     : cvars(_cvars->getChild("ui")),
       fs(fs),
       glyphs(glyphs),
       gpu(renderer->getGpu()),
-      renderer(renderer) {
+      renderer(renderer),
+      world(world) {
   log_zone;
 
   {
@@ -46,32 +59,15 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     scripts = new UiScriptEnvironment(this);
   }
 
-  {
-    log_zone_named("Load UI script module");
-
-    auto script_path = cvars->get<StringCVar>("script_path").str();
-
-    types::vector<char> script_data;
-    if (!fs->loadBinaryFile(script_path, &script_data)) {
-      log_ftl("Failed to load UI script file");
-    }
-
-    script_module = scripts->loadBinaryModule(script_data);
-    if (script_module == nullptr) {
-      log_ftl("Failed to load UI script module");
-    }
-  }
-
-  {
-    log_zone_named("Instantiate UI script");
-
-    ui_script = new UiScript(scripts, script_module);
-  }
-
   {  // Temp panel
     UiPanel* temp_panel = new UiPanel(glyphs, scripts);
-    ui_script->bindPanel(temp_panel);
     panels.push_back(temp_panel);
+  }
+
+  {
+    log_zone_named("Load initial UI script");
+
+    loadUiScript();
   }
 
   {
@@ -83,6 +79,12 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     panel_fragment_shader =
         new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_panel_frag,
                       sizeof(shaders_panel_frag));
+    ui_vertex_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_VERTEX_BIT, shaders_ui_draw_vert,
+                      sizeof(shaders_ui_draw_vert));
+    ui_fragment_shader =
+        new GpuShader(gpu, VK_SHADER_STAGE_FRAGMENT_BIT, shaders_ui_draw_frag,
+                      sizeof(shaders_ui_draw_frag));
   }
 
   {
@@ -140,9 +142,22 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     GpuPipeline::AttributeDescriptions attribute_descriptions;
 
     panel_pipeline = new GpuPipeline(
-        gpu, panel_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getTransparentSubpass(), panel_vertex_shader,
+        gpu, panel_pipeline_layout, renderer->getMainRenderPass(),
+        renderer->getOverlaySubpass(), panel_vertex_shader,
         panel_fragment_shader, vertex_bindings, attribute_descriptions);
+  }
+
+  {
+    log_zone_named("Create UI pipeline");
+
+    auto vertex_bindings = UiDrawList::Vertex::getVertexBindings();
+    auto attribute_descriptions =
+        UiDrawList::Vertex::getAttributeDescriptions();
+
+    ui_pipeline = new GpuPipeline(
+        gpu, panel_pipeline_layout, renderer->getMainRenderPass(),
+        renderer->getOverlaySubpass(), ui_vertex_shader, ui_fragment_shader,
+        vertex_bindings, attribute_descriptions);
   }
 
   {
@@ -152,24 +167,36 @@ UserInterface::UserInterface(const CVarScope* _cvars, Filesystem* fs,
     auto attribute_descriptions = GlyphInstance::getAttributeDescriptions();
 
     glyph_pipeline = new GpuPipeline(
-        gpu, glyph_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getTransparentSubpass(), glyphs->getVertexShader(),
+        gpu, glyph_pipeline_layout, renderer->getMainRenderPass(),
+        renderer->getOverlaySubpass(), glyphs->getVertexShader(),
         glyphs->getFragmentShader(), vertex_bindings, attribute_descriptions);
+  }
+
+  {
+    log_zone_named("Create UI draw list");
+
+    current_draw = new UiDrawList;
   }
 }
 
 UserInterface::~UserInterface() {
   log_zone;
 
+  if (current_draw != nullptr) delete current_draw;
+
   if (glyph_pipeline != nullptr) delete glyph_pipeline;
   if (glyph_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, glyph_pipeline_layout, nullptr);
   if (glyph_set_layout != nullptr) delete glyph_set_layout;
 
+  if (ui_pipeline != nullptr) delete ui_pipeline;
+
   if (panel_pipeline != nullptr) delete panel_pipeline;
   if (panel_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, panel_pipeline_layout, nullptr);
   if (panel_layout != nullptr) delete panel_layout;
+  if (ui_vertex_shader != nullptr) delete ui_vertex_shader;
+  if (ui_fragment_shader != nullptr) delete ui_fragment_shader;
   if (panel_vertex_shader != nullptr) delete panel_vertex_shader;
   if (panel_fragment_shader != nullptr) delete panel_fragment_shader;
 
@@ -182,18 +209,148 @@ UserInterface::~UserInterface() {
   if (scripts != nullptr) delete scripts;
 }
 
+void UserInterface::loadUiScript() {
+  log_zone;
+
+  UiScript* old_script = ui_script;
+
+  {
+    log_zone_named("Load UI script module");
+
+    auto script_path = cvars->get<FileCVar>("script_path").getPath();
+
+    log_msg_fmt("Loading UI script from: %s", script_path.c_str());
+
+    types::vector<char> script_data;
+    if (!fs->loadBinaryFile(script_path, &script_data)) {
+      log_ftl("Failed to load UI script file");
+    }
+
+    script_module = scripts->loadBinaryModule(script_data);
+    if (script_module == nullptr) {
+      log_ftl("Failed to load UI script module");
+    }
+  }
+
+  {
+    log_zone_named("Instantiate UI script");
+
+    ui_script = new UiScript(scripts, script_module);
+  }
+
+  {
+    log_zone_named("Bind to panels");
+
+    auto panel_impl = cvars->get<StringCVar>("panel_impl").str();
+
+    for (auto panel : panels) {
+      panel->bindUiScript(ui_script, panel_impl);
+    }
+  }
+
+  {
+    log_zone_named("Destroy old UI script");
+
+    if (old_script != nullptr) delete old_script;
+  }
+}
+
 void UserInterface::displayMessage(const char* message) {
   ui_script->handleMessage(message);
 }
 
-bool UserInterface::update(double dt) {
+bool UserInterface::update(double dt, DebugDrawList* debug_draw) {
   log_zone;
 
-  ui_script->update(dt);
+  auto pointers_view = world->registry.view<PointerComponent>();
+  for (auto e : pointers_view) {
+    auto& pointer = pointers_view.get(e);
+
+    PointerComponent::State pointer_state = pointer.getState();
+    pointer._dirty = false;
+
+    glm::mat4 world_transform(1.0);
+    if (world->registry.has<WorldTransform>(e)) {
+      world_transform = world->registry.get<WorldTransform>(e).getTransform();
+    }
+
+    auto position = world_transform * glm::vec4(pointer.getPosition(), 1.0);
+    auto direction = world_transform * glm::vec4(pointer.getDirection(), 0.0);
+
+    double nearest_factor = -1.0;
+    UiPanel* nearest = nullptr;
+
+    // Find nearest panel
+    for (auto panel : panels) {
+      if (panel == nullptr) continue;
+
+      // Test collision
+      double d = panel->getRayIntersectFactor(position, direction);
+      if (d > 0.0) {
+        if (d < nearest_factor || nearest_factor < 0.0) {
+          nearest_factor = d;
+          nearest = panel;
+        }
+      }
+    }
+
+    if (nearest != nullptr) {
+      auto coords = nearest->getRayIntersectCoords(position, direction);
+
+      glm::vec3 color;  // Used for debug draw
+      switch (pointer_state) {
+        case PointerComponent::State::Hover: {
+          nearest->onHover(coords);
+          color = glm::vec3(0.5, 0.5, 1.0);
+          break;
+        }
+
+        case PointerComponent::State::Select: {
+          nearest->onSelect(coords);
+          color = glm::vec3(0.0, 1.0, 0.0);
+          break;
+        }
+
+        case PointerComponent::State::Drag: {
+          nearest->onDrag(coords);
+          color = glm::vec3(0.0, 0.0, 1.0);
+          break;
+        }
+
+        case PointerComponent::State::Deselect: {
+          nearest->onDeselect(coords);
+          color = glm::vec3(1.0, 0.0, 0.0);
+          break;
+        }
+      }
+
+      // Draw X indicator at the collision point
+      if (debug_draw != nullptr) {
+        auto plane_transform = nearest->getPlaneTransform();
+        glm::vec2 x_size(0.01, 0.01);
+        glm::vec3 x_offset = nearest->getNormal() * glm::vec3(0.01);
+
+        // Generate the vertices of the X
+        glm::vec3 tr = plane_transform * glm::vec4(coords + x_size, 0.0, 1.0);
+        glm::vec3 bl = plane_transform * glm::vec4(coords - x_size, 0.0, 1.0);
+
+        x_size.x = -x_size.x;
+
+        glm::vec3 tl = plane_transform * glm::vec4(coords + x_size, 0.0, 1.0);
+        glm::vec3 br = plane_transform * glm::vec4(coords - x_size, 0.0, 1.0);
+
+        // Draw the X
+        debug_draw->drawLine(tr + x_offset, bl + x_offset, color);
+        debug_draw->drawLine(tl + x_offset, br + x_offset, color);
+      }
+    }
+  }
+
+  current_draw->clear();
 
   for (auto panel : panels) {
     if (panel != nullptr) {
-      panel->update(dt);
+      panel->update(dt, current_draw);
     }
   }
 
@@ -212,6 +369,10 @@ void UserInterface::createFrameData(uint32_t frame_count) {
                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     frame.styles = new GpuVector(gpu, sizeof(GlyphStyleUniform),
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    frame.ui_draw_vertices = new GpuVector(gpu, sizeof(UiDrawList::Vertex),
+                                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    frame.ui_draw_indices = new GpuVector(gpu, sizeof(UiDrawList::Index),
+                                          VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
   }
 }
 
@@ -222,14 +383,16 @@ void UserInterface::destroyFrameData() {
     if (frame.panels != nullptr) delete frame.panels;
     if (frame.glyph_instances != nullptr) delete frame.glyph_instances;
     if (frame.styles != nullptr) delete frame.styles;
+    if (frame.ui_draw_vertices != nullptr) delete frame.ui_draw_vertices;
+    if (frame.ui_draw_indices != nullptr) delete frame.ui_draw_indices;
   }
 }
 
-void UserInterface::beginFrame(uint32_t frame_index,
+void UserInterface::beginFrame(uint32_t frame_index, uint32_t viewport_count,
                                GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  renderer->addPassToPhase(RenderPhase::Transparent, this);
+  renderer->addPassToPhase(RenderPhase::Overlay, this);
 
   current_frame = frame_index;
   auto& frame = frame_data[current_frame];
@@ -238,11 +401,13 @@ void UserInterface::beginFrame(uint32_t frame_index,
   GlyphStyleList styles;
   types::unordered_map<GlyphStyle*, uint32_t> style_indices;
   GlyphString test_string;
+  types::vector<PanelUniform> panel_uniforms;
 
   for (auto panel : panels) {
     PanelUniform panel_uniform{};
     panel->writeUniform(&panel_uniform);
-    frame.panels->writeElement(frame.panel_count, panel_uniform);
+    panel_uniforms.emplace_back(panel_uniform);
+
     frame.panel_count++;
 
     auto panel_styles = panel->getStyles();
@@ -262,16 +427,21 @@ void UserInterface::beginFrame(uint32_t frame_index,
     }
   }
 
-  frame.glyph_count = 0;
+  frame.panels->writeData(0, panel_uniforms);
 
-  for (uint32_t i = 0; i < test_string.size(); i++) {
-    frame.glyph_instances->writeElement(frame.glyph_count, test_string[i]);
-    frame.glyph_count++;
-  }
+  frame.ui_draw_count =
+      current_draw->writeData(frame.ui_draw_vertices, frame.ui_draw_indices);
+
+  frame.glyph_count = test_string.size();
+  frame.glyph_instances->writeData(0, test_string);
+
+  types::vector<GlyphStyleUniform> style_uniforms(styles.size());
 
   for (uint32_t i = 0; i < styles.size(); i++) {
-    frame.styles->writeElement(i, styles[i]->getUniform());
+    style_uniforms[i] = styles[i]->getUniform();
   }
+
+  frame.styles->writeData(0, style_uniforms);
 
   frame.panels_descriptor = descriptor_pool->allocate(panel_layout);
   frame.panels_descriptor->updateStorageBuffer(0, frame.panels);
@@ -283,77 +453,64 @@ void UserInterface::beginFrame(uint32_t frame_index,
 }
 
 void UserInterface::renderViewport(
-    RenderPhase phase, VkCommandBuffer command_buffer,
+    VkCommandBuffer command_buffer, uint32_t viewport_index, RenderPhase phase,
     const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 
   auto& frame = frame_data[current_frame];
 
   {
-    log_zone_named("Render panels");
+    log_zone_named("Render panels and UI draw");
+
+    GraphicsState gs;
 
     {
-      GraphicsState graphics_state;
-
-      GraphicsState::InputAssemblyState input_assembly_state{};
-      input_assembly_state.primitive_topology =
+      gs = GraphicsState::CreateGenericOpaque();
+      gs.input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::TriangleStrip;
-      input_assembly_state.primitive_restart_enable =
-          GraphicsState::BoolFlag::False;
-      graphics_state.input_assembly_state = input_assembly_state;
-
-      GraphicsState::RasterizatonState rasterization_state{};
-      rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-      rasterization_state.cull_mode = GraphicsState::CullMode::None;
-      graphics_state.rasterization_state = rasterization_state;
-
-      GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::True;
-      depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Less;
-      graphics_state.depth_state = depth_state;
-
-      GraphicsState::ColorBlendState color_blend_state{};
-      color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
-      graphics_state.color_blend_state = color_blend_state;
-
-      panel_pipeline->cmdBind(command_buffer, graphics_state);
+      gs.rasterization_state.cull_mode = GraphicsState::CullMode::None;
+      gs.multisample_state.rasterization_samples =
+          renderer->getCurrentViewport(viewport_index)->getSampleCount();
+      gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+      gs.color_blend_state.blend_mode =
+          GraphicsState::BlendMode::AlphaPremultiplied;
+      panel_pipeline->cmdBind(command_buffer, gs);
     }
 
     viewport_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 0);
     frame.panels_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 1);
     vkCmdDraw(command_buffer, 4, frame.panel_count, 0, 0);
+
+    {
+      gs.input_assembly_state.primitive_topology =
+          GraphicsState::PrimitiveTopology::TriangleList;
+      ui_pipeline->cmdBind(command_buffer, gs);
+    }
+
+    VkBuffer vertex_buffers[] = {frame.ui_draw_vertices->getBuffer()};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+    vkCmdBindIndexBuffer(command_buffer, frame.ui_draw_indices->getBuffer(), 0,
+                         VK_INDEX_TYPE_UINT32);
+    viewport_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 0);
+    frame.panels_descriptor->cmdBind(command_buffer, panel_pipeline_layout, 1);
+    vkCmdDrawIndexed(command_buffer, frame.ui_draw_count, 1, 0, 0, 0);
   }
 
   {
     log_zone_named("Render glyphs");
 
     {
-      GraphicsState graphics_state;
-
-      GraphicsState::InputAssemblyState input_assembly_state{};
-      input_assembly_state.primitive_topology =
+      auto gs = GraphicsState::CreateGenericOpaque();
+      gs.input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::TriangleStrip;
-      input_assembly_state.primitive_restart_enable =
-          GraphicsState::BoolFlag::False;
-      graphics_state.input_assembly_state = input_assembly_state;
-
-      GraphicsState::RasterizatonState rasterization_state{};
-      rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-      rasterization_state.cull_mode = GraphicsState::CullMode::None;
-      graphics_state.rasterization_state = rasterization_state;
-
-      GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::True;
-      depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Less;
-      graphics_state.depth_state = depth_state;
-
-      GraphicsState::ColorBlendState color_blend_state{};
-      color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
-      graphics_state.color_blend_state = color_blend_state;
-
-      glyph_pipeline->cmdBind(command_buffer, graphics_state);
+      gs.rasterization_state.cull_mode = GraphicsState::CullMode::None;
+      gs.multisample_state.rasterization_samples =
+          renderer->getCurrentViewport(viewport_index)->getSampleCount();
+      gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+      gs.color_blend_state.blend_mode =
+          GraphicsState::BlendMode::AlphaPremultiplied;
+      glyph_pipeline->cmdBind(command_buffer, gs);
     }
 
     viewport_descriptor->cmdBind(command_buffer, glyph_pipeline_layout, 0);

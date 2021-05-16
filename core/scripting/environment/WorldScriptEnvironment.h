@@ -4,11 +4,27 @@
 #pragma once
 
 #include "core/scripting/environment/ScriptEnvironment.h"
+#include "types/containers/string.h"
 
 namespace mondradiko {
 namespace core {
 
-class WorldScriptEnvironment : public ScriptEnvironment {};
+// Forward declarations
+class World;
+class WorldScript;
+
+class WorldScriptEnvironment : public ScriptEnvironment {
+ public:
+  WorldScriptEnvironment(World*, const types::string&);
+  ~WorldScriptEnvironment();
+
+  void update(double);
+
+ private:
+  World* const world;
+
+  WorldScript* _instance = nullptr;
+};
 
 }  // namespace core
 }  // namespace mondradiko

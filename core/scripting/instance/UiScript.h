@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/scripting/instance/ScriptInstance.h"
+#include "lib/include/glm_headers.h"
 
 namespace mondradiko {
 namespace core {
@@ -15,9 +16,7 @@ class UiScript : public ScriptInstance {
  public:
   UiScript(ScriptEnvironment*, wasm_module_t*);
 
-  uint32_t bindPanel(UiPanel*);
   void handleMessage(const types::string&);
-  void update(double);
 
  private:
 };

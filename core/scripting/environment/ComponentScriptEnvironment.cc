@@ -16,19 +16,28 @@
 namespace mondradiko {
 namespace core {
 
-ComponentScriptEnvironment::ComponentScriptEnvironment(AssetPool* asset_pool,
-                                                       World* world)
-    : asset_pool(asset_pool), world(world) {
+ComponentScriptEnvironment::ComponentScriptEnvironment(World* world)
+    : asset_pool(world->asset_pool), world(world) {
   log_zone;
 
   asset_pool->initializeAssetType<ScriptAsset>(this);
 
-  PointLightComponent::linkScriptApi(this, world);
-  TransformComponent::linkScriptApi(this, world);
-  ScriptEntity::linkScriptApi(world);
+  world->registry.on_destroy<ScriptComponent>()
+      .connect<&onScriptComponentDestroy>();
+
+  linkEnvironment(this, world);
 }
 
-ComponentScriptEnvironment::~ComponentScriptEnvironment() {
+ComponentScriptEnvironment::~ComponentScriptEnvironment() { log_zone; }
+
+void ComponentScriptEnvironment::linkEnvironment(ScriptEnvironment* scripts,
+                                                 World* world) {
+  PointLightComponent::linkScriptApi(scripts, world);
+  TransformComponent::linkScriptApi(scripts, world);
+  ScriptEntity::linkScriptApi(scripts, world);
+}
+
+void ComponentScriptEnvironment::update(double dt) {
   log_zone;
 
   auto script_view = world->registry.view<ScriptComponent>();
@@ -36,64 +45,50 @@ ComponentScriptEnvironment::~ComponentScriptEnvironment() {
   for (auto& e : script_view) {
     auto& script = script_view.get(e);
 
-    if (script.script_instance != nullptr) {
-      delete script.script_instance;
-      script.script_instance = nullptr;
-    }
+    if (script._script_instance == nullptr) continue;
+    if (!script._script_instance->getAsset()) continue;
+
+    script._script_instance->update(dt);
   }
 }
 
-void ComponentScriptEnvironment::update(double dt) {
-  auto script_view = world->registry.view<ScriptComponent>();
-
-  for (auto& e : script_view) {
-    auto& script = script_view.get(e);
-
-    if (!script.getScriptAsset()) continue;
-
-    script.script_instance->update(dt);
-  }
-}
-
-void ComponentScriptEnvironment::updateScript(EntityId entity,
-                                              AssetId script_id,
-                                              const uint8_t* data,
-                                              size_t data_size) {
+void ComponentScriptEnvironment::instantiateScript(EntityId entity,
+                                                   AssetId script_id,
+                                                   const types::string& impl) {
   log_zone;
 
   EntityRegistry* registry = &world->registry;
 
-  // Ensure the entity exists
   if (!registry->valid(entity)) {
-    entity = registry->create(entity);
+    log_err_fmt("Cannot instantiate script on nonexistent entity %d", entity);
+    return;
   }
 
-  bool needs_initialization = false;
-
-  const AssetHandle<ScriptAsset>& script_asset =
-      asset_pool->load<ScriptAsset>(script_id);
-
-  // Destroy the old ScriptInstance if necessary
   if (registry->has<ScriptComponent>(entity)) {
-    ScriptComponent& old_script = registry->get<ScriptComponent>(entity);
-    if (old_script.script_asset != script_asset) {
-      delete old_script.script_instance;
-      needs_initialization = true;
-    }
-  } else {
-    needs_initialization = true;
+    log_err_fmt("Entity %d already has a ScriptComponent", entity);
+    return;
   }
 
-  ScriptComponent& script_component =
-      registry->get_or_emplace<ScriptComponent>(entity);
+  log_msg_fmt("%lu", sizeof(ComponentScript));
 
-  if (needs_initialization) {
-    script_component.script_instance =
-        script_asset->createInstance(world, entity);
+  auto asset = asset_pool->load<ScriptAsset>(script_id);
+  auto instance = new ComponentScript(this, world, asset, entity, impl);
+
+  auto& component = registry->emplace<ScriptComponent>(entity);
+  component._script_impl = impl;
+  component._script_instance = instance;
+
+  instance->construct();
+}
+
+void ComponentScriptEnvironment::onScriptComponentDestroy(
+    EntityRegistry& registry, EntityId id) {
+  auto& script = registry.get<ScriptComponent>(id);
+
+  if (script._script_instance != nullptr) {
+    delete script._script_instance;
+    script._script_instance = nullptr;
   }
-
-  script_component.script_asset = script_asset;
-  script_component.script_instance->updateData(data, data_size);
 }
 
 }  // namespace core

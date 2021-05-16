@@ -10,8 +10,9 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
+class CompositePass;
 class CVarScope;
-class DisplayInterface;
+class Display;
 class GpuBuffer;
 class GpuDescriptorPool;
 class GpuDescriptorSetLayout;
@@ -23,7 +24,7 @@ class Renderer {
  public:
   static void initCVars(CVarScope*);
 
-  Renderer(const CVarScope*, DisplayInterface*, GpuInstance*);
+  Renderer(const CVarScope*, Display*, GpuInstance*);
   ~Renderer();
 
   void addRenderPass(RenderPass*);
@@ -39,33 +40,50 @@ class Renderer {
   GpuInstance* getGpu() { return gpu; }
   GpuDescriptorSetLayout* getViewportLayout() { return viewport_layout; }
 
+  Viewport* getCurrentViewport(uint32_t viewport_index) {
+    return frames_in_flight[current_frame].viewports[viewport_index];
+  }
+
   // TODO(marceline-cramer) Wrapper class for subpass manipulation
-  VkRenderPass getViewportRenderPass() const { return render_pass; }
+  VkRenderPass getMainRenderPass() const { return _main_rp; }
   uint32_t getDepthSubpass() { return 0; }
-  uint32_t getForwardSubpass() { return 1; }
-  uint32_t getTransparentSubpass() { return 2; }
+  uint32_t getOverlaySubpass() { return 1; }
+  uint32_t getForwardSubpass() { return 2; }
+  uint32_t getTransparentSubpass() { return 3; }
+
+  VkRenderPass getCompositeRenderPass() const { return _composite_rp; }
+  uint32_t getCompositeSubpass() { return 0; }
 
   GpuImage* getErrorImage() { return error_image; }
 
  private:
   const CVarScope* cvars;
-  DisplayInterface* display;
+  Display* display;
   GpuInstance* gpu;
 
-  VkRenderPass render_pass = VK_NULL_HANDLE;
+  VkRenderPass _main_rp = VK_NULL_HANDLE;
+  VkRenderPass _composite_rp = VK_NULL_HANDLE;
 
   GpuDescriptorSetLayout* viewport_layout = nullptr;
+
+  CompositePass* composite_pass = nullptr;
 
   types::vector<RenderPass*> render_passes;
 
   struct PipelinedFrameData {
     // TODO(marceline-cramer) Use command pool per frame, per thread
-    VkCommandBuffer command_buffer;
+    VkCommandBuffer main_commands;
     VkSemaphore on_render_finished;
+
+    VkCommandBuffer composite_commands;
+    VkSemaphore on_composite_finished;
+
     VkFence is_in_use;
 
+    types::vector<Viewport*> viewports;
+
     GpuDescriptorPool* descriptor_pool;
-    GpuVector* viewports;
+    GpuVector* viewport_data;
 
     using PassList = types::vector<RenderPass*>;
     static constexpr auto PhaseNum = static_cast<size_t>(RenderPhase::MAX);

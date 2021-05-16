@@ -3,11 +3,13 @@
 
 #include "core/renderer/OverlayPass.h"
 
+#include "core/components/internal/PointerComponent.h"
 #include "core/components/internal/WorldTransform.h"
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/components/synchronized/ShapeComponent.h"
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/CVarScope.h"
+#include "core/displays/Viewport.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
 #include "core/gpu/GpuDescriptorSetLayout.h"
@@ -17,7 +19,6 @@
 #include "core/gpu/GraphicsState.h"
 #include "core/renderer/DebugDrawList.h"
 #include "core/renderer/Renderer.h"
-#include "core/ui/GlyphLoader.h"
 #include "core/world/World.h"
 #include "log/log.h"
 #include "shaders/debug.frag.h"
@@ -30,10 +31,12 @@ void OverlayPass::initCVars(CVarScope* cvars) {
   CVarScope* debug = cvars->addChild("debug");
 
   debug->addValue<BoolCVar>("enabled");
+  debug->addValue<BoolCVar>("draw_grid");
   debug->addValue<BoolCVar>("draw_lights");
   debug->addValue<BoolCVar>("draw_lights_aoe");
   debug->addValue<BoolCVar>("draw_shapes");
   debug->addValue<BoolCVar>("draw_transforms");
+  debug->addValue<BoolCVar>("draw_pointers");
 }
 
 OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
@@ -82,8 +85,8 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
         DebugDrawList::Vertex::getAttributeDescriptions();
 
     debug_pipeline = new GpuPipeline(
-        gpu, debug_pipeline_layout, renderer->getViewportRenderPass(),
-        renderer->getForwardSubpass(), debug_vertex_shader,
+        gpu, debug_pipeline_layout, renderer->getMainRenderPass(),
+        renderer->getOverlaySubpass(), debug_vertex_shader,
         debug_fragment_shader, vertex_bindings, attribute_descriptions);
   }
 }
@@ -120,11 +123,11 @@ void OverlayPass::destroyFrameData() {
   }
 }
 
-void OverlayPass::beginFrame(uint32_t frame_index,
+void OverlayPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
                              GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
-  renderer->addPassToPhase(RenderPhase::Forward, this);
+  renderer->addPassToPhase(RenderPhase::Overlay, this);
 
   current_frame = frame_index;
   auto& frame = frame_data[current_frame];
@@ -133,7 +136,28 @@ void OverlayPass::beginFrame(uint32_t frame_index,
 
   if (!cvars->get<BoolCVar>("enabled")) return;
 
-  DebugDrawList debug_draw;
+  if (cvars->get<BoolCVar>("draw_grid")) {
+    int grid_width = 10;
+    int grid_height = 10;
+    float grid_space = 1.0;
+    glm::vec4 color = glm::vec4(0.0, 1.0, 0.0, 1.0);
+
+    // X lines
+    for (int x = -grid_width; x <= grid_width; x++) {
+      float y = grid_height * grid_space;
+      glm::vec3 start = glm::vec3(x * grid_space, 0.0, y);
+      glm::vec3 end = glm::vec3(x * grid_space, 0.0, -y);
+      _debug_draw.drawLine(start, end, color);
+    }
+
+    // Y lines
+    for (int y = -grid_height; y <= grid_height; y++) {
+      float x = grid_width * grid_space;
+      glm::vec3 start = glm::vec3(x, 0.0, y * grid_space);
+      glm::vec3 end = glm::vec3(-x, 0.0, y * grid_space);
+      _debug_draw.drawLine(start, end, color);
+    }
+  }
 
   if (cvars->get<BoolCVar>("draw_transforms")) {
     log_zone_named("Draw transforms");
@@ -148,9 +172,9 @@ void OverlayPass::beginFrame(uint32_t frame_index,
       glm::vec3 y_axis = transform * glm::vec4(0.0, 1.0, 0.0, 1.0);
       glm::vec3 z_axis = transform * glm::vec4(0.0, 0.0, 1.0, 1.0);
 
-      debug_draw.drawLine(origin, x_axis, glm::vec3(1.0, 0.0, 0.0));
-      debug_draw.drawLine(origin, y_axis, glm::vec3(0.0, 1.0, 0.0));
-      debug_draw.drawLine(origin, z_axis, glm::vec3(0.0, 0.0, 1.0));
+      _debug_draw.drawLine(origin, x_axis, glm::vec3(1.0, 0.0, 0.0));
+      _debug_draw.drawLine(origin, y_axis, glm::vec3(0.0, 1.0, 0.0));
+      _debug_draw.drawLine(origin, z_axis, glm::vec3(0.0, 0.0, 1.0));
     }
   }
 
@@ -173,7 +197,7 @@ void OverlayPass::beginFrame(uint32_t frame_index,
 
       const AnyShape& any_shape = shape.getShape()->getAnyShape();
 
-      AnyShape::debugDraw(&any_shape, world_transform, color, &debug_draw);
+      AnyShape::debugDraw(&any_shape, world_transform, color, &_debug_draw);
     }
   }
 
@@ -197,7 +221,7 @@ void OverlayPass::beginFrame(uint32_t frame_index,
       glm::vec3 position =
           world_transform * glm::vec4(glm::vec3(uniform.position), 1.0);
 
-      debug_draw.drawIcosahedron(position, 0.1, color);
+      _debug_draw.drawIcosahedron(position, 0.1, color);
     }
   }
 
@@ -217,16 +241,44 @@ void OverlayPass::beginFrame(uint32_t frame_index,
       }
 
       const auto& aoe = point_light.getAreaOfEffect();
-      SphereShape::debugDraw(&aoe, world_transform, color, &debug_draw);
+      SphereShape::debugDraw(&aoe, world_transform, color, &_debug_draw);
+    }
+  }
+
+  if (cvars->get<BoolCVar>("draw_pointers")) {
+    auto pointers_view = world->registry.view<PointerComponent>();
+
+    for (auto e : pointers_view) {
+      auto& pointer = pointers_view.get(e);
+
+      glm::mat4 world_transform(1.0);
+      if (world->registry.has<WorldTransform>(e)) {
+        world_transform = world->registry.get<WorldTransform>(e).getTransform();
+      }
+
+      glm::vec3 position = pointer.getPosition();
+      glm::vec3 direction = position + pointer.getDirection() * glm::vec3(10.0);
+
+      glm::vec3 start_pos = world_transform * glm::vec4(position, 1.0);
+      glm::vec3 start_color = glm::vec3(0.0, 1.0, 1.0);
+
+      glm::vec3 end_pos = world_transform * glm::vec4(direction, 1.0);
+      glm::vec3 end_color = glm::vec3(0.5, 0.5, 0.5);
+
+      auto start_vertex = _debug_draw.makeVertex(start_pos, start_color);
+      auto end_vertex = _debug_draw.makeVertex(end_pos, end_color);
+
+      _debug_draw.drawLine(start_vertex, end_vertex);
     }
   }
 
   frame.index_count =
-      debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
+      _debug_draw.writeData(frame.debug_vertices, frame.debug_indices);
+  _debug_draw.clear();
 }
 
-void OverlayPass::renderViewport(RenderPhase phase,
-                                 VkCommandBuffer command_buffer,
+void OverlayPass::renderViewport(VkCommandBuffer command_buffer,
+                                 uint32_t viewport_index, RenderPhase phase,
                                  const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 
@@ -236,27 +288,13 @@ void OverlayPass::renderViewport(RenderPhase phase,
     log_zone_named("Render debug");
 
     {
-      GraphicsState graphics_state;
-
-      GraphicsState::InputAssemblyState input_assembly_state{};
-      input_assembly_state.primitive_topology =
+      auto gs = GraphicsState::CreateGenericOpaque();
+      gs.input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::LineList;
-      input_assembly_state.primitive_restart_enable =
-          GraphicsState::BoolFlag::False;
-      graphics_state.input_assembly_state = input_assembly_state;
-
-      GraphicsState::RasterizatonState rasterization_state{};
-      rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-      rasterization_state.cull_mode = GraphicsState::CullMode::None;
-      graphics_state.rasterization_state = rasterization_state;
-
-      GraphicsState::DepthState depth_state{};
-      depth_state.test_enable = GraphicsState::BoolFlag::False;
-      depth_state.write_enable = GraphicsState::BoolFlag::False;
-      depth_state.compare_op = GraphicsState::CompareOp::Always;
-      graphics_state.depth_state = depth_state;
-
-      debug_pipeline->cmdBind(command_buffer, graphics_state);
+      gs.multisample_state.rasterization_samples =
+          renderer->getCurrentViewport(viewport_index)->getSampleCount();
+      gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+      debug_pipeline->cmdBind(command_buffer, gs);
     }
 
     // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout

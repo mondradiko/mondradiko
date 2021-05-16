@@ -8,6 +8,7 @@
 #include "core/components/scriptable/PointLightComponent.h"
 #include "core/components/synchronized/MeshRendererComponent.h"
 #include "core/cvars/CVarScope.h"
+#include "core/displays/Viewport.h"
 #include "core/gpu/GpuBuffer.h"
 #include "core/gpu/GpuDescriptorPool.h"
 #include "core/gpu/GpuDescriptorSet.h"
@@ -127,17 +128,17 @@ MeshPass::MeshPass(Renderer* renderer, World* world)
     auto attribute_descriptions = MeshVertex::getAttributeDescriptions();
 
     depth_pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, pipeline_layout, renderer->getMainRenderPass(),
         renderer->getDepthSubpass(), depth_vertex_shader, depth_fragment_shader,
         vertex_bindings, attribute_descriptions);
 
     forward_pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, pipeline_layout, renderer->getMainRenderPass(),
         renderer->getForwardSubpass(), forward_vertex_shader,
         forward_fragment_shader, vertex_bindings, attribute_descriptions);
 
     transparent_pipeline = new GpuPipeline(
-        gpu, pipeline_layout, renderer->getViewportRenderPass(),
+        gpu, pipeline_layout, renderer->getMainRenderPass(),
         renderer->getTransparentSubpass(), forward_vertex_shader,
         forward_fragment_shader, vertex_bindings, attribute_descriptions);
   }
@@ -228,7 +229,7 @@ void MeshPass::destroyFrameData() {
   }
 }
 
-void MeshPass::beginFrame(uint32_t frame_index,
+void MeshPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
                           GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
@@ -259,11 +260,7 @@ void MeshPass::beginFrame(uint32_t frame_index,
     }
   }
 
-  {
-    for (uint32_t i = 0; i < point_light_uniforms.size(); i++) {
-      frame.point_lights->writeElement(i, point_light_uniforms[i]);
-    }
-  }
+  frame.point_lights->writeData(0, point_light_uniforms);
 
   types::unordered_map<AssetId, uint32_t> material_assets;
   types::vector<MaterialUniform> frame_materials;
@@ -344,28 +341,22 @@ void MeshPass::beginFrame(uint32_t frame_index,
     target_commands->push_back(cmd);
   }
 
-  for (uint32_t i = 0; i < frame_materials.size(); i++) {
-    frame.material_buffer->writeElement(i, frame_materials[i]);
-  }
-
+  frame.material_buffer->writeData(0, frame_materials);
   frame.material_descriptor = descriptor_pool->allocate(material_layout);
   frame.material_descriptor->updateStorageBuffer(0, frame.material_buffer);
 
-  for (uint32_t i = 0; i < frame_meshes.size(); i++) {
-    frame.mesh_buffer->writeElement(i, frame_meshes[i]);
-  }
-
+  frame.mesh_buffer->writeData(0, frame_meshes);
   frame.mesh_descriptor = descriptor_pool->allocate(mesh_layout);
   frame.mesh_descriptor->updateStorageBuffer(0, frame.mesh_buffer);
   frame.mesh_descriptor->updateStorageBuffer(1, frame.point_lights);
 }
 
-void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
+void MeshPass::renderViewport(VkCommandBuffer command_buffer,
+                              uint32_t viewport_index, RenderPhase phase,
                               const GpuDescriptorSet* viewport_descriptor) {
   log_zone;
 
   auto& frame = frame_data[current_frame];
-  GraphicsState graphics_state;
   GpuPipeline* current_pipeline;
 
   MeshPassCommandList* pass_commands;
@@ -375,52 +366,21 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
     pass_commands = &frame.forward_commands;
   }
 
-  GraphicsState::InputAssemblyState input_assembly_state{};
-  input_assembly_state.primitive_topology =
-      GraphicsState::PrimitiveTopology::TriangleList;
-  input_assembly_state.primitive_restart_enable =
-      GraphicsState::BoolFlag::False;
-  graphics_state.input_assembly_state = input_assembly_state;
+  auto gs = GraphicsState::CreateGenericOpaque();
 
-  GraphicsState::RasterizatonState rasterization_state{};
-  rasterization_state.polygon_mode = GraphicsState::PolygonMode::Fill;
-  rasterization_state.cull_mode = GraphicsState::CullMode::Back;
-  graphics_state.rasterization_state = rasterization_state;
+  gs.rasterization_state.cull_mode = GraphicsState::CullMode::Back;
+  gs.multisample_state.rasterization_samples =
+      renderer->getCurrentViewport(viewport_index)->getSampleCount();
 
   if (phase == RenderPhase::Depth) {
     current_pipeline = depth_pipeline;
-
-    GraphicsState::DepthState depth_state{};
-    depth_state.test_enable = GraphicsState::BoolFlag::True;
-    depth_state.write_enable = GraphicsState::BoolFlag::True;
-    depth_state.compare_op = GraphicsState::CompareOp::Less;
-    graphics_state.depth_state = depth_state;
-
-    GraphicsState::ColorBlendState color_blend_state{};
-    graphics_state.color_blend_state = color_blend_state;
   } else if (phase == RenderPhase::Forward) {
     current_pipeline = forward_pipeline;
-
-    GraphicsState::DepthState depth_state{};
-    depth_state.test_enable = GraphicsState::BoolFlag::True;
-    depth_state.write_enable = GraphicsState::BoolFlag::False;
-    depth_state.compare_op = GraphicsState::CompareOp::Equal;
-    graphics_state.depth_state = depth_state;
-
-    GraphicsState::ColorBlendState color_blend_state{};
-    graphics_state.color_blend_state = color_blend_state;
+    gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+    gs.depth_state.compare_op = GraphicsState::CompareOp::Equal;
   } else {
     current_pipeline = transparent_pipeline;
-
-    GraphicsState::DepthState depth_state{};
-    depth_state.test_enable = GraphicsState::BoolFlag::True;
-    depth_state.write_enable = GraphicsState::BoolFlag::False;
-    depth_state.compare_op = GraphicsState::CompareOp::Less;
-    graphics_state.depth_state = depth_state;
-
-    GraphicsState::ColorBlendState color_blend_state{};
-    color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
-    graphics_state.color_blend_state = color_blend_state;
+    gs.color_blend_state.blend_mode = GraphicsState::BlendMode::AlphaBlend;
   }
 
   // TODO(marceline-cramer) GpuPipeline + GpuPipelineLayout
@@ -434,11 +394,11 @@ void MeshPass::renderViewport(RenderPhase phase, VkCommandBuffer command_buffer,
   vkCmdBindIndexBuffer(command_buffer, index_pool->getBuffer(), 0,
                        VK_INDEX_TYPE_UINT32);
 
-  current_pipeline->cmdBind(command_buffer, graphics_state);
+  current_pipeline->cmdBind(command_buffer, gs);
   executeMeshCommands(command_buffer, pass_commands->single_sided);
 
-  graphics_state.rasterization_state.cull_mode = GraphicsState::CullMode::None;
-  current_pipeline->cmdBind(command_buffer, graphics_state);
+  gs.rasterization_state.cull_mode = GraphicsState::CullMode::None;
+  current_pipeline->cmdBind(command_buffer, gs);
   executeMeshCommands(command_buffer, pass_commands->double_sided);
 }
 

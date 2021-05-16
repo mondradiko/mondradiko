@@ -47,7 +47,7 @@ void log(const char* file_path, int line, LogLevel level, const char* message) {
   header << prefix << formatPath(file_path) << ":" << line << "]";
 
   g_log_lock.lock();
-  std::cerr << std::left << std::setw(55) << header.str();
+  std::cerr << std::left << std::setw(70) << header.str();
   std::cerr << message << "\x1b[0m" << std::endl;
   g_log_lock.unlock();
 

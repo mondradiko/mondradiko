@@ -11,7 +11,43 @@ namespace mondradiko {
 namespace core {
 
 GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
-                   uint32_t height, uint32_t level_num,
+                   uint32_t height, VkImageUsageFlags image_usage_flags,
+                   VmaMemoryUsage memory_usage)
+    : gpu(gpu),
+      format(format),
+      layout(VK_IMAGE_LAYOUT_UNDEFINED),
+      width(width),
+      height(height),
+      level_num(1) {
+  VkImageCreateInfo image_ci{};
+  image_ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  image_ci.imageType = VK_IMAGE_TYPE_2D;
+  image_ci.format = format;
+
+  VkExtent3D image_extent{};
+  image_extent.width = width;
+  image_extent.height = height;
+  image_extent.depth = 1;
+  image_ci.extent = image_extent;
+
+  image_ci.mipLevels = level_num;
+  image_ci.arrayLayers = 1;
+  image_ci.samples = VK_SAMPLE_COUNT_1_BIT;
+  image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+  image_ci.usage = image_usage_flags;
+  image_ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  image_ci.initialLayout = layout;
+
+  VmaAllocationCreateInfo alloc_ci{};
+  alloc_ci.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
+  alloc_ci.usage = memory_usage;
+
+  _createImage(&image_ci, &alloc_ci);
+  _createView();
+}
+
+GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
+                   uint32_t height, GraphicsState::SampleCount sample_count,
                    VkImageUsageFlags image_usage_flags,
                    VmaMemoryUsage memory_usage)
     : gpu(gpu),
@@ -19,36 +55,32 @@ GpuImage::GpuImage(GpuInstance* gpu, VkFormat format, uint32_t width,
       layout(VK_IMAGE_LAYOUT_UNDEFINED),
       width(width),
       height(height),
-      level_num(level_num) {
-  VkImageCreateInfo imageCreateInfo{};
-  imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-  imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-  imageCreateInfo.format = format;
+      level_num(1) {
+  VkImageCreateInfo image_ci{};
+  image_ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  image_ci.imageType = VK_IMAGE_TYPE_2D;
+  image_ci.format = format;
 
   VkExtent3D image_extent{};
   image_extent.width = width;
   image_extent.height = height;
   image_extent.depth = 1;
-  imageCreateInfo.extent = image_extent;
+  image_ci.extent = image_extent;
 
-  imageCreateInfo.mipLevels = level_num;
-  imageCreateInfo.arrayLayers = 1;
-  imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-  imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-  imageCreateInfo.usage = image_usage_flags;
-  imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  imageCreateInfo.initialLayout = layout;
+  image_ci.mipLevels = level_num;
+  image_ci.arrayLayers = 1;
+  image_ci.samples = GraphicsState::CreateVkSampleCount(sample_count);
+  image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+  image_ci.usage = image_usage_flags;
+  image_ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  image_ci.initialLayout = layout;
 
-  VmaAllocationCreateInfo allocationCreateInfo{};
-  allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
-  allocationCreateInfo.usage = memory_usage;
+  VmaAllocationCreateInfo alloc_ci{};
+  alloc_ci.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
+  alloc_ci.usage = memory_usage;
 
-  if (vmaCreateImage(gpu->allocator, &imageCreateInfo, &allocationCreateInfo,
-                     &image, &allocation, &allocation_info) != VK_SUCCESS) {
-    log_ftl("Failed to allocate Vulkan image.");
-  }
-
-  createView();
+  _createImage(&image_ci, &alloc_ci);
+  _createView();
 }
 
 GpuImage::~GpuImage() {
@@ -103,7 +135,15 @@ void GpuImage::transitionLayout(VkImageLayout targetLayout) {
   gpu->endSingleTimeCommands(commandBuffer);
 }
 
-void GpuImage::createView() {
+void GpuImage::_createImage(VkImageCreateInfo* image_ci,
+                            VmaAllocationCreateInfo* alloc_ci) {
+  if (vmaCreateImage(gpu->allocator, image_ci, alloc_ci, &image, &allocation,
+                     &allocation_info) != VK_SUCCESS) {
+    log_ftl("Failed to allocate Vulkan image");
+  }
+}
+
+void GpuImage::_createView() {
   VkImageAspectFlags aspect_mask;
 
   switch (format) {

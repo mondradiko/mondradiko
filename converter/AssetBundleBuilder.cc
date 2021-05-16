@@ -99,6 +99,22 @@ AssetResult AssetBundleBuilder::addAsset(
   return AssetResult::Success;
 }
 
+AssetResult AssetBundleBuilder::addBundleExport(const std::string& alias,
+                                                AssetId id) {
+  auto iter = used_ids.find(id);
+  if (iter == used_ids.end()) {
+    log_err_fmt("Attempted to export asset with unrecognized ID 0x%0x", id);
+    return AssetResult::BadContents;
+  }
+
+  AssetToExport asset_export{};
+  asset_export.alias = alias;
+  asset_export.id = id;
+  exported_assets.push_back(asset_export);
+
+  return AssetResult::Success;
+}
+
 AssetResult AssetBundleBuilder::addInitialPrefab(AssetId prefab) {
   initial_prefabs.push_back(prefab);
   return AssetResult::Success;
@@ -145,6 +161,18 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
     lump_offsets.push_back(lump_entry.Finish());
   }
 
+  std::vector<flatbuffers::Offset<assets::BundleExport>> bundle_exports;
+  for (auto& exported_asset : exported_assets) {
+    auto alias_offset = fbb.CreateString(exported_asset.alias);
+
+    assets::BundleExportBuilder bundle_export(fbb);
+    bundle_export.add_alias(alias_offset);
+    bundle_export.add_id(exported_asset.id);
+
+    bundle_exports.push_back(bundle_export.Finish());
+  }
+
+  auto bundle_exports_offset = fbb.CreateVector(bundle_exports);
   auto initial_prefabs_offset = fbb.CreateVector(
       reinterpret_cast<const uint32_t*>(initial_prefabs.data()),
       initial_prefabs.size());
@@ -154,6 +182,7 @@ AssetResult AssetBundleBuilder::buildBundle(const char* registry_name) {
   registry_builder.add_major_version(MONDRADIKO_VERSION_MAJOR);
   registry_builder.add_minor_version(MONDRADIKO_VERSION_MINOR);
   registry_builder.add_patch_version(MONDRADIKO_VERSION_PATCH);
+  registry_builder.add_exports(bundle_exports_offset);
   registry_builder.add_initial_prefabs(initial_prefabs_offset);
   registry_builder.add_lumps(lumps_offset);
 

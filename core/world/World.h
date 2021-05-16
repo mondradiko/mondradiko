@@ -25,11 +25,10 @@ namespace core {
 
 // Forward declarations
 class Filesystem;
-class WorldScriptEnvironment;
 
 class World : public StaticScriptObject<World> {
  public:
-  World(AssetPool*, Filesystem*, WorldScriptEnvironment*);
+  World(AssetPool*, Filesystem*);
   ~World();
 
   void initializePrefabs();
@@ -71,6 +70,7 @@ class World : public StaticScriptObject<World> {
   //
   wasm_trap_t* spawnEntity(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
   wasm_trap_t* spawnEntityAt(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
+  wasm_trap_t* spawnPrefab(ScriptInstance*, const wasm_val_t[], wasm_val_t[]);
 
   // TODO(marceline-cramer) Blech, restore World privacy
   // Move event callbacks to private

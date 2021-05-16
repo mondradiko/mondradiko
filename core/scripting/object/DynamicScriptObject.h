@@ -15,7 +15,7 @@ class DynamicScriptObject {
   static void linkScriptApi(ScriptEnvironment*);
 
   explicit DynamicScriptObject(ScriptEnvironment* scripts) : scripts(scripts) {
-    _object_id = scripts->storeInRegistry(this);
+    _object_id = scripts->storeInRegistry(static_cast<T*>(this));
   }
 
   ~DynamicScriptObject() { scripts->removeFromRegistry(_object_id); }

@@ -33,7 +33,8 @@ void splitString(types::vector<types::string>* split,
   }
 }
 
-OpenXrDisplay::OpenXrDisplay() {
+OpenXrDisplay::OpenXrDisplay(const CVarScope* parent_cvars)
+    : Display(parent_cvars) {
   log_zone;
 
   {
@@ -127,8 +128,6 @@ OpenXrDisplay::OpenXrDisplay() {
 OpenXrDisplay::~OpenXrDisplay() {
   log_zone;
 
-  destroySession();
-
   if (enable_validation_layers && debug_messenger != VK_NULL_HANDLE)
     ext_xrDestroyDebugUtilsMessengerEXT(debug_messenger);
 
@@ -182,7 +181,7 @@ bool OpenXrDisplay::createSession(GpuInstance* _gpu) {
     format_options[i] = static_cast<VkFormat>(format_codes[i]);
   }
 
-  types::vector<VkFormat> format_candidates = {VK_FORMAT_R8G8B8A8_SRGB,
+  types::vector<VkFormat> format_candidates = {VK_FORMAT_R8G8B8_UNORM,
                                                VK_FORMAT_R8G8B8A8_UNORM};
 
   if (!gpu->findFormatFromOptions(&format_options, &format_candidates,
@@ -260,7 +259,7 @@ bool OpenXrDisplay::getVulkanDevice(VkInstance vk_instance,
   return true;
 }
 
-void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
+void OpenXrDisplay::pollEvents(PollEventsInfo* poll_info) {
   log_zone;
 
   XrEventDataBuffer event{};
@@ -283,7 +282,13 @@ void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
             beginInfo.type = XR_TYPE_SESSION_BEGIN_INFO;
             beginInfo.primaryViewConfigurationType =
                 XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-            xrBeginSession(session, &beginInfo);
+            XrResult session_result = xrBeginSession(session, &beginInfo);
+
+            if (session_result != XR_SUCCESS) {
+              log_err("Failed to begin session");
+              break;
+            }
+
             createViewports(poll_info->renderer);
 
             break;
@@ -359,7 +364,7 @@ void OpenXrDisplay::pollEvents(DisplayPollEventsInfo* poll_info) {
   }
 }
 
-void OpenXrDisplay::beginFrame(DisplayBeginFrameInfo* frame_info) {
+void OpenXrDisplay::beginFrame(BeginFrameInfo* frame_info) {
   log_zone;
 
   current_frame_state = XrFrameState{};
@@ -404,7 +409,7 @@ void OpenXrDisplay::acquireViewports(types::vector<Viewport*>* acquired) {
   }
 }
 
-void OpenXrDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
+void OpenXrDisplay::endFrame(BeginFrameInfo* frame_info) {
   XrCompositionLayerBaseHeader* layer = nullptr;
   XrCompositionLayerProjection projection_layer{};
   projection_layer.type = XR_TYPE_COMPOSITION_LAYER_PROJECTION;
@@ -435,9 +440,16 @@ void OpenXrDisplay::endFrame(DisplayBeginFrameInfo* frame_info) {
 
 void OpenXrDisplay::createViewports(Renderer* renderer) {
   uint32_t viewport_count;
-  xrEnumerateViewConfigurationViews(instance, system_id,
-                                    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
-                                    0, &viewport_count, nullptr);
+  XrResult result = xrEnumerateViewConfigurationViews(
+      instance, system_id, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0,
+      &viewport_count, nullptr);
+
+  if (result == XR_ERROR_VIEW_CONFIGURATION_TYPE_UNSUPPORTED) {
+    log_ftl("Stereo view configuration is unsupported");
+  } else if (result != XR_SUCCESS) {
+    log_ftl("Failed to list view configurations");
+  }
+
   types::vector<XrViewConfigurationView> view_configurations(viewport_count);
   xrEnumerateViewConfigurationViews(
       instance, system_id, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,

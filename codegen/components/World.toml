@@ -20,3 +20,11 @@ dependencies = ["Entity"]
     x = "double"
     y = "double"
     z = "double"
+
+  [methods.spawnPrefab]
+  param_list = ["prefab_alias"]
+  brief = "Temporary method for easy prefab spawning."
+  return_class = "Entity"
+
+    [methods.spawnPrefab.params]
+    prefab_alias = "string"

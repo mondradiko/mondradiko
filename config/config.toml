@@ -6,18 +6,41 @@ update_rate = 20.0
 username = "ExampleUsername"
 metaverse_provider = ""
 
+[displays]
+antialiasing = "none"
+
+[displays.sdl]
+camera_speed = 5.0
+
 [glyphs]
-font_path = "/usr/share/fonts/mononoki/mononoki-Regular.ttf"
+font_path = "mononoki-Regular.ttf"
 sdf_scale = 2.0
 sdf_border = 1.0
 sdf_range = 4.0
 
+[gpu]
+
+# WARNING: Disabling this also disables Vulkan error logging,
+# meaning that the maintainers will not be able to help you if
+# you run into GPU bugs. However, disabling Vulkan validation
+# can also improve CPU-side performance by speeding up Vulkan calls.
+enable_validation = true
+
+[renderer]
+
+# Calls vkQueueWaitIdle after every submit.
+# Stops Monado from flickering, but stalls the CPU.
+queue_stall = false
+
 [renderer.debug]
 enabled = true
+draw_grid = false
 draw_lights = true
 draw_lights_aoe = false
 draw_shapes = true
 draw_transforms = true
+draw_pointers = true
 
 [ui]
 script_path = "ui_script.wasm"
+panel_impl = "PanelImpl"

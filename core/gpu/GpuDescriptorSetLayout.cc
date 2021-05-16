@@ -54,6 +54,16 @@ void GpuDescriptorSetLayout::addDynamicUniformBuffer(uint32_t buffer_size) {
   buffer_sizes.push_back(buffer_size);
 }
 
+void GpuDescriptorSetLayout::addInputAttachment() {
+  VkDescriptorSetLayoutBinding ia_binding{};
+  ia_binding.binding = static_cast<uint32_t>(layout_bindings.size());
+  ia_binding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+  ia_binding.descriptorCount = 1;
+  ia_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+  layout_bindings.push_back(ia_binding);
+}
+
 VkDescriptorSetLayout GpuDescriptorSetLayout::getSetLayout() {
   if (set_layout == VK_NULL_HANDLE) {
     uint32_t sampler_index = 0;

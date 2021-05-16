@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "core/gpu/GraphicsState.h"
 #include "lib/include/vulkan_headers.h"
 
 namespace mondradiko {
@@ -14,12 +15,15 @@ class GpuInstance;
 
 class GpuImage {
  public:
-  GpuImage(GpuInstance*, VkFormat, uint32_t, uint32_t, uint32_t,
-           VkImageUsageFlags, VmaMemoryUsage);
+  GpuImage(GpuInstance*, VkFormat, uint32_t, uint32_t, VkImageUsageFlags,
+           VmaMemoryUsage);
+  GpuImage(GpuInstance*, VkFormat, uint32_t, uint32_t,
+           GraphicsState::SampleCount, VkImageUsageFlags, VmaMemoryUsage);
   ~GpuImage();
 
   void transitionLayout(VkImageLayout);
 
+  void updateLayout(VkImageLayout new_layout) { layout = new_layout; }
   VkImageLayout getLayout() const { return layout; }
   VkImage getImage() const { return image; }
   VkImageView getView() const { return view; }
@@ -40,7 +44,8 @@ class GpuImage {
   VkImage image = VK_NULL_HANDLE;
   VkImageView view = VK_NULL_HANDLE;
 
-  void createView();
+  void _createImage(VkImageCreateInfo*, VmaAllocationCreateInfo*);
+  void _createView();
 };
 
 }  // namespace core

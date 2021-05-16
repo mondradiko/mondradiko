@@ -5,6 +5,8 @@
 
 #include <cstdint>
 
+#include "lib/include/vulkan_headers.h"
+
 namespace mondradiko {
 namespace core {
 
@@ -56,7 +58,13 @@ struct GraphicsState {
     DecrementAndWrap = (1 << 7)
   };
 
-  enum BlendMode : FlagData { Opaque = (1 << 0), AlphaBlend = (1 << 1) };
+  using SampleCount = FlagData;  // Bitfield of power-of-two sample counts
+
+  enum BlendMode : FlagData {
+    Opaque = (1 << 0),
+    AlphaBlend = (1 << 1),
+    AlphaPremultiplied = (1 << 2)
+  };
 
   struct InputAssemblyState {
     PrimitiveTopology primitive_topology;
@@ -68,6 +76,13 @@ struct GraphicsState {
     CullMode cull_mode;
   } rasterization_state;
 
+  struct MultisampleState {
+    SampleCount rasterization_samples;
+    BoolFlag sample_shading_enable;
+    BoolFlag alpha_to_coverage_enable;
+    BoolFlag alpha_to_one_enable;
+  } multisample_state;
+
   struct DepthState {
     BoolFlag test_enable;
     BoolFlag write_enable;
@@ -77,6 +92,30 @@ struct GraphicsState {
   struct ColorBlendState {
     BlendMode blend_mode = BlendMode::Opaque;
   } color_blend_state;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Vulkan enum helpers
+  //////////////////////////////////////////////////////////////////////////////
+  static VkBool32 CreateVkBool(BoolFlag);
+  static VkCompareOp CreateVkCompareOp(CompareOp);
+  static VkPrimitiveTopology CreateVkPrimitiveTopology(PrimitiveTopology);
+  static VkPolygonMode CreateVkPolygonMode(PolygonMode);
+  static VkCullModeFlags CreateVkCullMode(CullMode);
+  static VkSampleCountFlagBits CreateVkSampleCount(SampleCount);
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Vulkan structure helpers
+  //////////////////////////////////////////////////////////////////////////////
+  VkPipelineInputAssemblyStateCreateInfo createVkInputAssemblyState() const;
+  VkPipelineRasterizationStateCreateInfo createVkRasterizationState() const;
+  VkPipelineMultisampleStateCreateInfo createVkMultisampleState() const;
+  VkPipelineDepthStencilStateCreateInfo createVkDepthStencilState() const;
+  VkPipelineColorBlendAttachmentState createVkColorBlendState() const;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Creation helpers
+  //////////////////////////////////////////////////////////////////////////////
+  static GraphicsState CreateGenericOpaque();
 };
 
 }  // namespace core

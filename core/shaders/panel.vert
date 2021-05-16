@@ -12,6 +12,7 @@ layout(set = 0, binding = 0) uniform CameraUniform {
 struct PanelUniform {
   mat4 transform;
   vec4 color;
+  vec2 size;
 };
 
 layout(set = 1, binding = 0) buffer readonly PanelDescriptor {
@@ -30,7 +31,8 @@ layout(location = 0) out vec4 fragColor;
 void main() {
   PanelUniform panel = panels.panels[gl_InstanceIndex];
 
-  vec4 vert_position = vec4(vert_positions[gl_VertexIndex], 0.0, 1.0);
+  vec4 vert_position = vec4(vert_positions[gl_VertexIndex] * panel.size, 0.0, 1.0);
   gl_Position = camera.projection * camera.view * panel.transform * vert_position;
   fragColor = panel.color;
+  fragColor.rgb *= fragColor.a;
 }

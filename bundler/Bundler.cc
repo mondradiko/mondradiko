@@ -6,9 +6,9 @@
 #include <string>
 
 #include "converter/ConverterInterface.h"
-#include "converter/PrefabBuilder.h"
 #include "converter/ShapeConverter.h"
 #include "converter/prefab/BinaryGltfConverter.h"
+#include "converter/prefab/PrefabBuilder.h"
 #include "converter/prefab/TextGltfConverter.h"
 #include "converter/script/WasmConverter.h"
 #include "log/log.h"
@@ -31,13 +31,23 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
     owned_converters.push_back(text_gltf_converter);
     addConverter("gltf", text_gltf_converter);
 
-    auto wasm_converter = new WasmConverter(this);
-    owned_converters.push_back(wasm_converter);
-    addConverter("wat", wasm_converter);
+    auto binary_wasm_converter =
+        new WasmConverter(this, assets::ScriptType::WasmBinary);
+    owned_converters.push_back(binary_wasm_converter);
+    addConverter("wasm", binary_wasm_converter);
 
     auto shape_converter = new ShapeConverter(this);
     owned_converters.push_back(shape_converter);
     addConverter("shape", shape_converter);
+
+    auto prefab_builder = new PrefabBuilder(this);
+    owned_converters.push_back(prefab_builder);
+    addConverter("prefab", prefab_builder);
+
+    auto text_wasm_converter =
+        new WasmConverter(this, assets::ScriptType::WasmText);
+    owned_converters.push_back(text_wasm_converter);
+    addConverter("wat", text_wasm_converter);
   }
 
   if (std::filesystem::is_directory(manifest_path)) {
@@ -56,7 +66,6 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
   log_dbg_fmt("Bundler bundle dir: %s", bundle_root.string().c_str());
 
   bundle_builder = new AssetBundleBuilder(bundle_root);
-  prefab_builder = new PrefabBuilder;
 
   manifest = toml::parse(manifest_path);
 
@@ -86,7 +95,6 @@ Bundler::~Bundler() {
   }
 
   if (bundle_builder != nullptr) delete bundle_builder;
-  if (prefab_builder != nullptr) delete prefab_builder;
 }
 
 assets::AssetId Bundler::addAsset(
@@ -180,19 +188,8 @@ void Bundler::bundle() {
     }
   }
 
-  const auto prefabs = toml::find<toml::array>(manifest, "prefabs");
-
-  for (const auto& prefab_table : prefabs) {
-    const auto& prefab = prefab_table.as_table();
-
-    assets::AssetId prefab_id = prefab_builder->buildPrefab(this, prefab);
-
-    auto iter = prefab.find("initial_prefab");
-    if (iter != prefab.end()) {
-      if (prefab.at("initial_prefab").as_boolean()) {
-        bundle_builder->addInitialPrefab(prefab_id);
-      }
-    }
+  for (auto& iter : asset_aliases) {
+    bundle_builder->addBundleExport(iter.first, iter.second);
   }
 
   bundle_builder->buildBundle("registry.bin");

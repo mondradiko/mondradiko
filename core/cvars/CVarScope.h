@@ -3,16 +3,22 @@
 
 #pragma once
 
+#include <filesystem>
+#include <type_traits>
+
 #include "lib/include/toml_headers.h"
 #include "log/log.h"
 #include "types/containers/map.h"
 #include "types/containers/string.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
 
 // Forward declarations
 class CVarValueInterface;
+class FileCVar;
+class Filesystem;
 
 class CVarScope {
  public:
@@ -23,7 +29,8 @@ class CVarScope {
   CVarScope* addChild(const types::string&);
   const CVarScope* getChild(const types::string&) const;
 
-  void loadConfig(const toml::value&);
+  void loadConfig(const toml::value&, const std::filesystem::path&);
+  void loadConfigFromFile(Filesystem*, const std::filesystem::path&);
   void saveConfig(toml::value*);
 
   const CVarScope* getParent() const { return parent; }
@@ -31,6 +38,9 @@ class CVarScope {
   types::string getValuePath(const types::string&) const;
 
   using KeyType = types::string;
+
+  void addFile(const KeyType&);
+  std::filesystem::path getFile(const KeyType&);
 
   template <class ValueType, typename... Args>
   void addValue(const KeyType& key, Args&&... args) {
@@ -42,6 +52,10 @@ class CVarScope {
 
     ValueType* new_value = new ValueType(args...);
     values.emplace(key, new_value);
+
+    if constexpr (std::is_base_of<FileCVar, ValueType>::value) {
+      _file_cvars.push_back(new_value);
+    }
   }
 
   template <class ValueType>
@@ -64,6 +78,7 @@ class CVarScope {
   types::string scope_path;
   types::map<types::string, CVarScope*> children;
   types::map<KeyType, CVarValueInterface*> values;
+  types::vector<FileCVar*> _file_cvars;
 };
 
 }  // namespace core

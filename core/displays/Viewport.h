@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <memory>
+
+#include "core/gpu/GpuImage.h"
 #include "lib/include/glm_headers.h"
 #include "lib/include/vulkan_headers.h"
 #include "types/containers/vector.h"
@@ -11,7 +14,7 @@ namespace mondradiko {
 namespace core {
 
 // Forward declarations
-class DisplayInterface;
+class Display;
 class GpuImage;
 class GpuInstance;
 class Renderer;
@@ -44,18 +47,32 @@ struct ViewportImage {
 
 class Viewport {
  public:
-  Viewport(DisplayInterface* display, GpuInstance* gpu, Renderer* renderer)
+  Viewport(Display* display, GpuInstance* gpu, Renderer* renderer)
       : display(display), gpu(gpu), renderer(renderer) {}
   virtual ~Viewport() { _destroyImages(); }
 
+  uint32_t getSampleCount() { return _sample_count; }
+  GpuImage* getHdrImage() { return _hdr_image.get(); }
+  GpuImage* getOverlayImage() { return _overlay_image.get(); }
+  GpuImage* getDepthImage() { return _depth_image.get(); }
+
   /**
-   * @brief Begins a viewport's final render pass on a command buffer.
+   * @brief Begins a render pass on this viewport's framebuffer.
    * @param command_buffer Command buffer to record on.
    * @param render_pass Render pass to be begin.
    *
    * @note This method is implemented in the Viewport base class.
    */
-  void beginRenderPass(VkCommandBuffer, VkRenderPass);
+  void beginRender(VkCommandBuffer, VkRenderPass);
+
+  /**
+   * @brief Begins compositing on this viewport's framebuffer.
+   * @param command_buffer Command buffer to record on.
+   * @param render_pass Render pass to be begin.
+   *
+   * @note This method is implemented in the Viewport base class.
+   */
+  void beginComposite(VkCommandBuffer, VkRenderPass);
 
   /**
    * @brief Acquires a Viewport swapchain's image.
@@ -149,11 +166,20 @@ class Viewport {
   uint32_t _image_height;
 
  private:
-  DisplayInterface* display;
+  Display* display;
   GpuInstance* gpu;
   Renderer* renderer;
 
-  GpuImage* _depth_image;
+  uint32_t _sample_count;
+
+  std::unique_ptr<GpuImage> _hdr_msaa;
+  std::unique_ptr<GpuImage> _hdr_image;
+  std::unique_ptr<GpuImage> _overlay_msaa;
+  std::unique_ptr<GpuImage> _overlay_image;
+  std::unique_ptr<GpuImage> _depth_msaa;
+  std::unique_ptr<GpuImage> _depth_image;
+
+  VkFramebuffer _framebuffer = VK_NULL_HANDLE;
   uint32_t _current_image_index = 0;
 };
 

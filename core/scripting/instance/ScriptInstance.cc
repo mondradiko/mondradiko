@@ -9,17 +9,33 @@
 #include "core/scripting/environment/ScriptEnvironment.h"
 #include "log/log.h"
 #include "types/containers/string.h"
+#include "types/containers/vector.h"
 
 namespace mondradiko {
 namespace core {
 
+ScriptInstance::ScriptInstance(ScriptEnvironment* scripts) : scripts(scripts) {}
+
 ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
                                wasm_module_t* script_module)
     : scripts(scripts) {
+  initializeScript(script_module);
+}
+
+ScriptInstance::~ScriptInstance() { terminateScript(); }
+
+void ScriptInstance::initializeScript(wasm_module_t* script_module) {
+  wasmtime_linker_t* linker = wasmtime_linker_new(scripts->getStore());
+  initializeScriptFromLinker(script_module, linker);
+  wasmtime_linker_delete(linker);
+}
+
+void ScriptInstance::initializeScriptFromLinker(wasm_module_t* script_module,
+                                                wasmtime_linker_t* linker) {
+  terminateScript();
+
   wasmtime_error_t* module_error = nullptr;
   wasm_trap_t* module_trap = nullptr;
-
-  types::vector<wasm_extern_t*> module_imports;
 
   {
     log_zone_named("Link module imports");
@@ -28,6 +44,13 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
     wasm_module_imports(script_module, &required_imports);
 
     for (uint32_t i = 0; i < required_imports.size; i++) {
+      const wasm_name_t* import_module =
+          wasm_importtype_module(required_imports.data[i]);
+      types::string module_string(import_module->data, import_module->size);
+
+      // Skip over WASI imports (they should be linked externally)
+      if (module_string == "wasi_snapshot_preview1") continue;
+
       const wasm_name_t* import_name =
           wasm_importtype_name(required_imports.data[i]);
 
@@ -38,25 +61,28 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
 
       if (binding_func == nullptr) {
         log_err_fmt("Script binding \"%s\" is missing", binding_name.c_str());
-        binding_func = scripts->getInterruptFunc();
+        continue;
       }
 
-      module_imports.push_back(wasm_func_as_extern(binding_func));
-    }
-
-    wasm_importtype_vec_delete(&required_imports);
-  }
-
-  {
-    log_zone_named("Create module instance");
-
-    module_error = wasmtime_instance_new(
-        scripts->getStore(), script_module, module_imports.data(),
-        module_imports.size(), &_module_instance, &module_trap);
-    if (scripts->handleError(module_error, module_trap)) {
-      log_ftl("Failed to instantiate module");
+      wasmtime_linker_define(linker, import_module, import_name,
+                             wasm_func_as_extern(binding_func));
     }
   }
+
+  wasm_instance_t* script_instance;
+  module_error = wasmtime_linker_instantiate(linker, script_module,
+                                             &script_instance, &module_trap);
+  if (scripts->handleError(module_error, module_trap)) {
+    log_ftl("Failed to instantiate Wasm instance");
+  }
+
+  initializeScriptRaw(script_module, script_instance);
+}
+
+void ScriptInstance::initializeScriptRaw(wasm_module_t* script_module,
+                                         wasm_instance_t* script_instance) {
+  terminateScript();
+  _module_instance = script_instance;
 
   {
     log_zone_named("Get module exports");
@@ -83,15 +109,11 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
           wasm_func_t* callback = wasm_extern_as_func(exported);
           types::string callback_name(export_name->data, export_name->size);
           addCallback(callback_name, callback);
-
-          log_inf_fmt("Imported callback %s", callback_name.c_str());
-          log_inf_fmt("Param arity: %zu", wasm_func_param_arity(callback));
-          log_inf_fmt("Result arity: %zu", wasm_func_result_arity(callback));
-
           break;
         }
 
         case WASM_EXTERN_MEMORY: {
+          log_dbg("h");
           _memory = wasm_extern_as_memory(exported);
           break;
         }
@@ -119,10 +141,21 @@ ScriptInstance::ScriptInstance(ScriptEnvironment* scripts,
   }
 }
 
-ScriptInstance::~ScriptInstance() {
+void ScriptInstance::terminateScript() {
   if (_module_instance != nullptr) {
     wasm_extern_vec_delete(&_instance_externs);
     wasm_instance_delete(_module_instance);
+
+    _memory = nullptr;
+
+    _callbacks.clear();
+
+    _new_func = nullptr;
+    _pin_func = nullptr;
+    _unpin_func = nullptr;
+    _collect_func = nullptr;
+
+    _module_instance = nullptr;
   }
 }
 
@@ -206,6 +239,7 @@ bool ScriptInstance::AS_new(uint32_t size, uint32_t id, uint32_t* ptr) {
 
   if (!runFunction(_new_func, args.data(), args.size(), &ptr_result, 1)) {
     log_err("Failed to allocate AssemblyScript object");
+    *ptr = 0;
     return false;
   }
 
@@ -214,6 +248,11 @@ bool ScriptInstance::AS_new(uint32_t size, uint32_t id, uint32_t* ptr) {
 }
 
 bool ScriptInstance::AS_pin(uint32_t ptr) {
+  if (ptr == 0) {
+    log_err("Attempted to pin null object");
+    return false;
+  }
+
   wasm_val_t ptr_arg;
   ptr_arg.kind = WASM_I32;
   ptr_arg.of.i32 = ptr;
@@ -229,6 +268,11 @@ bool ScriptInstance::AS_pin(uint32_t ptr) {
 }
 
 bool ScriptInstance::AS_unpin(uint32_t ptr) {
+  if (ptr == 0) {
+    log_err("Attempted to unpin null object");
+    return false;
+  }
+
   wasm_val_t ptr_arg;
   ptr_arg.kind = WASM_I32;
   ptr_arg.of.i32 = ptr;
@@ -253,6 +297,37 @@ bool ScriptInstance::AS_collect() {
 ////////////////////////////////////////////////////////////////////////////////
 // AssemblyScript object management helpers
 ////////////////////////////////////////////////////////////////////////////////
+
+bool ScriptInstance::AS_construct(const types::string& object_name,
+                                  const wasm_val_t* args, size_t arg_num,
+                                  uint32_t* ptr) {
+  types::string constructor_name = object_name + "#constructor";
+
+  wasm_func_t* constructor_func = getCallback(constructor_name);
+  if (constructor_func == nullptr) {
+    log_err_fmt("Object %s does not export constructor", object_name.c_str());
+    return false;
+  }
+
+  types::vector<wasm_val_t> constructor_args(1 + arg_num);
+
+  auto& this_arg = constructor_args[0];
+  this_arg.kind = WASM_I32;
+  this_arg.of.i32 = 0;  // Passing 0 to a constructor allocates a new object
+
+  memcpy(&constructor_args[1], args, arg_num * sizeof(wasm_val_t));
+
+  wasm_val_t this_result;
+
+  if (runFunction(constructor_func, constructor_args.data(),
+                  constructor_args.size(), &this_result, 1)) {
+    *ptr = this_result.of.i32;
+    return true;
+  } else {
+    log_err_fmt("Failed to construct %s", object_name.c_str());
+    return false;
+  }
+}
 
 ASObjectHeader* ScriptInstance::AS_getHeader(uint32_t ptr) {
   if (_memory == nullptr) {

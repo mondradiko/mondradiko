@@ -8,6 +8,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(shaders)
 spirv_shaders(SHADER_HEADERS
+  shaders/composite.vert
+  shaders/composite.frag
   shaders/debug.frag
   shaders/debug.vert
   shaders/glyph.frag
@@ -18,6 +20,8 @@ spirv_shaders(SHADER_HEADERS
   shaders/mesh_forward.vert
   shaders/panel.frag
   shaders/panel.vert
+  shaders/ui_draw.frag
+  shaders/ui_draw.vert
 )
 
 #
@@ -40,6 +44,7 @@ set(MONDRADIKO_CORE_SRC
   components/synchronized/RelationshipComponent.cc
   components/synchronized/RigidBodyComponent.cc
   cvars/CVarScope.cc
+  displays/Display.cc
   displays/OpenXrDisplay.cc
   displays/OpenXrViewport.cc
   displays/SdlDisplay.cc
@@ -56,7 +61,9 @@ set(MONDRADIKO_CORE_SRC
   gpu/GpuInstance.cc
   gpu/GpuPipeline.cc
   gpu/GpuShader.cc
+  gpu/GraphicsState.cc
   physics/Physics.cc
+  renderer/CompositePass.cc
   renderer/DebugDrawList.cc
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
@@ -64,6 +71,7 @@ set(MONDRADIKO_CORE_SRC
   scripting/environment/ComponentScriptEnvironment.cc
   scripting/environment/ScriptEnvironment.cc
   scripting/environment/UiScriptEnvironment.cc
+  scripting/environment/WorldScriptEnvironment.cc
   scripting/instance/ComponentScript.cc
   scripting/instance/ScriptInstance.cc
   scripting/instance/UiScript.cc
@@ -71,9 +79,10 @@ set(MONDRADIKO_CORE_SRC
   network/NetworkServer.cc
   shapes/AnyShape.cc
   shapes/SphereShape.cc
-  ui/GlyphLoader.cc
-  ui/GlyphStyle.cc
-  ui/UiPanel.cc
+  ui/glyph/GlyphLoader.cc
+  ui/glyph/GlyphStyle.cc
+  ui/panels/UiPanel.cc
+  ui/UiDrawList.cc
   ui/UserInterface.cc
   world/ScriptEntity.cc
   world/World.cc
