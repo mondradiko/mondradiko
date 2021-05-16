@@ -36,6 +36,8 @@ queue_stall = false
 enabled = true
 draw_grid = false
 draw_lights = true
+draw_lights_aoe = false
+draw_shapes = true
 draw_transforms = true
 draw_pointers = true
 

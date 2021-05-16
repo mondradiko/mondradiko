@@ -17,7 +17,7 @@
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
-#include "core/renderer/DebugDraw.h"
+#include "core/renderer/DebugDrawList.h"
 #include "core/renderer/Renderer.h"
 #include "core/scripting/environment/UiScriptEnvironment.h"
 #include "core/scripting/instance/UiScript.h"

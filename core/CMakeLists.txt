@@ -33,6 +33,7 @@ set(MONDRADIKO_CORE_SRC
   assets/MeshAsset.cc
   assets/PrefabAsset.cc
   assets/ScriptAsset.cc
+  assets/ShapeAsset.cc
   assets/TextureAsset.cc
   avatars/Avatar.cc
   avatars/SpectatorAvatar.cc
@@ -63,7 +64,7 @@ set(MONDRADIKO_CORE_SRC
   gpu/GraphicsState.cc
   physics/Physics.cc
   renderer/CompositePass.cc
-  renderer/DebugDraw.cc
+  renderer/DebugDrawList.cc
   renderer/MeshPass.cc
   renderer/OverlayPass.cc
   renderer/Renderer.cc
@@ -76,6 +77,8 @@ set(MONDRADIKO_CORE_SRC
   scripting/instance/UiScript.cc
   network/NetworkClient.cc
   network/NetworkServer.cc
+  shapes/AnyShape.cc
+  shapes/SphereShape.cc
   ui/glyph/GlyphLoader.cc
   ui/glyph/GlyphStyle.cc
   ui/panels/UiPanel.cc

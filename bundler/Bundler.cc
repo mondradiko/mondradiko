@@ -6,6 +6,7 @@
 #include <string>
 
 #include "converter/ConverterInterface.h"
+#include "converter/ShapeConverter.h"
 #include "converter/prefab/BinaryGltfConverter.h"
 #include "converter/prefab/PrefabBuilder.h"
 #include "converter/prefab/TextGltfConverter.h"
@@ -34,6 +35,10 @@ Bundler::Bundler(const std::filesystem::path& _manifest_path)
         new WasmConverter(this, assets::ScriptType::WasmBinary);
     owned_converters.push_back(binary_wasm_converter);
     addConverter("wasm", binary_wasm_converter);
+
+    auto shape_converter = new ShapeConverter(this);
+    owned_converters.push_back(shape_converter);
+    addConverter("shape", shape_converter);
 
     auto prefab_builder = new PrefabBuilder(this);
     owned_converters.push_back(prefab_builder);

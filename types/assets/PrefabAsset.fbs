@@ -24,6 +24,10 @@ table ScriptPrefab {
   script_impl:string;
 }
 
+struct ShapePrefab {
+  shape_asset:uint32;
+}
+
 struct TransformPrefab {
   position:Vec3;
   orientation:Quaternion;
@@ -36,6 +40,7 @@ table PrefabAsset {
   point_light:PointLightPrefab;
   rigid_body:RigidBodyPrefab;
   script:ScriptPrefab;
+  shape:ShapePrefab;
   transform:TransformPrefab;
 }
 

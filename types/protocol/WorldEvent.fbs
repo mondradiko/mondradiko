@@ -8,6 +8,7 @@ include "PointLightComponent.fbs";
 include "RelationshipComponent.fbs";
 include "RigidBodyComponent.fbs";
 include "ScriptData.fbs";
+include "ShapeComponent.fbs";
 include "TransformComponent.fbs";
 
 namespace mondradiko.protocol;
@@ -23,6 +24,7 @@ table UpdateComponents {
   point_light:[PointLightComponent];
   relationship:[RelationshipComponent];
   rigid_body:[RigidBodyComponent];
+  shape:[ShapeComponent];
   transform:[TransformComponent];
 }
 

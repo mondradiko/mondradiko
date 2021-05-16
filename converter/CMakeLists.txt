@@ -8,6 +8,7 @@ set(CONVERTER_SRC
   prefab/TextGltfConverter.cc
   script/WasmConverter.cc
   AssetBundleBuilder.cc
+  ShapeConverter.cc
 )
 
 add_library(mondradiko-converter STATIC ${CONVERTER_SRC})

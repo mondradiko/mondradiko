@@ -11,6 +11,7 @@ flatc_schemas(ASSET_HEADERS
   assets/Registry.fbs
   assets/ScriptAsset.fbs
   assets/SerializedAsset.fbs
+  assets/ShapeAsset.fbs
   assets/TextureAsset.fbs
   assets/types.fbs
 )
@@ -23,6 +24,7 @@ flatc_schemas(PROTOCOL_HEADERS
   protocol/RelationshipComponent.fbs
   protocol/RigidBodyComponent.fbs
   protocol/ServerEvent.fbs
+  protocol/ShapeComponent.fbs
   protocol/SpectatorAvatar.fbs
   protocol/TransformComponent.fbs
   protocol/ScriptData.fbs

@@ -80,6 +80,14 @@ class DebugDrawList {
    */
   void drawLine(const glm::vec3&, const glm::vec3&, const glm::vec3&);
 
+  /**
+   * @brief Draws an icosahedron.
+   * @param center The center of the icosahedron.
+   * @param radius The radius of the icosahedron.
+   * @param color The color of the icosahedron.
+   */
+  void drawIcosahedron(const glm::vec3&, double, const glm::vec3&);
+
   //////////////////////////////////////////////////////////////////////////////
   // Render commands
   //////////////////////////////////////////////////////////////////////////////

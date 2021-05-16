@@ -5,7 +5,7 @@
 
 #include <array>
 
-#include "core/renderer/DebugDraw.h"
+#include "core/renderer/DebugDrawList.h"
 #include "core/renderer/RenderPass.h"
 #include "types/containers/vector.h"
 
@@ -53,7 +53,8 @@ class OverlayPass : public RenderPass {
   VkPipelineLayout debug_pipeline_layout = VK_NULL_HANDLE;
   GpuShader* debug_vertex_shader = nullptr;
   GpuShader* debug_fragment_shader = nullptr;
-  GpuPipeline* debug_pipeline = nullptr;
+  GpuPipeline* depth_debug_pipeline = nullptr;
+  GpuPipeline* overlay_debug_pipeline = nullptr;
 
   DebugDrawList _debug_draw;
 

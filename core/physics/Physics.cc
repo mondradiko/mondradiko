@@ -3,8 +3,11 @@
 
 #include "core/physics/Physics.h"
 
+#include "core/assets/AssetPool.h"
+#include "core/assets/ShapeAsset.h"
 #include "core/components/internal/WorldTransform.h"
 #include "core/components/synchronized/RigidBodyComponent.h"
+#include "core/components/synchronized/ShapeComponent.h"
 #include "core/world/World.h"
 #include "log/log.h"
 
@@ -29,20 +32,20 @@ Physics::Physics(World* world) : world(world) {
 
   log_inf_fmt("Bullet Physics: %.2f %s precision", 0.01f * btGetVersion(),
               btIsDoublePrecision() ? "double" : "single");
-
-  default_shape = new btSphereShape(1.0);
 }
 
 Physics::~Physics() {
   log_zone;
-
-  if (default_shape != nullptr) delete default_shape;
 
   if (dynamics_world != nullptr) delete dynamics_world;
   if (solver != nullptr) delete solver;
   if (broadphase != nullptr) delete broadphase;
   if (dispatcher != nullptr) delete dispatcher;
   if (collision_configuration != nullptr) delete collision_configuration;
+}
+
+void Physics::initializeAssets(AssetPool* asset_pool) {
+  asset_pool->initializeAssetType<ShapeAsset>();
 }
 
 void Physics::update(double dt) {
@@ -55,13 +58,19 @@ void Physics::update(double dt) {
   {
     log_zone_named("Refresh dead RigidBodys");
 
-    auto rigid_body_view = registry.view<RigidBodyComponent>();
+    auto rigid_bodies = registry.group<RigidBodyComponent, ShapeComponent>();
 
-    for (auto e : rigid_body_view) {
-      auto& rigid_body = rigid_body_view.get(e);
+    for (auto e : rigid_bodies) {
+      auto& rigid_body = rigid_bodies.get<RigidBodyComponent>(e);
+      auto& shape = rigid_bodies.get<ShapeComponent>(e);
+
+      if (!shape.isLoaded()) continue;
 
       if (rigid_body._rigid_body == nullptr) {
         float body_mass = rigid_body._data.mass();
+
+        btCollisionShape* collision_shape =
+            shape.getShape()->getCollisionShape();
 
         // TODO(marceline-cramer) RigidBodyComponent sets its own transform
         btTransform body_transform;
@@ -70,10 +79,10 @@ void Physics::update(double dt) {
         btMotionState* motion_state = new btDefaultMotionState(body_transform);
 
         btVector3 body_inertia;
-        default_shape->calculateLocalInertia(body_mass, body_inertia);
+        collision_shape->calculateLocalInertia(body_mass, body_inertia);
 
         btRigidBody::btRigidBodyConstructionInfo ci(
-            body_mass, motion_state, default_shape, body_inertia);
+            body_mass, motion_state, collision_shape, body_inertia);
         btRigidBody* new_body = new btRigidBody(ci);
 
         rigid_body._rigid_body = new_body;
@@ -91,6 +100,9 @@ void Physics::update(double dt) {
 
     for (auto e : rigid_body_view) {
       auto& rigid_body = rigid_body_view.get(e);
+
+      if (rigid_body._rigid_body == nullptr) continue;
+
       auto new_transform = rigid_body.makeWorldTransform();
       registry.emplace_or_replace<WorldTransform>(e, new_transform);
     }

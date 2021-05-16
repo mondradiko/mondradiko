@@ -6,6 +6,7 @@
 #include "core/components/internal/PointerComponent.h"
 #include "core/components/internal/WorldTransform.h"
 #include "core/components/scriptable/PointLightComponent.h"
+#include "core/components/synchronized/ShapeComponent.h"
 #include "core/cvars/BoolCVar.h"
 #include "core/cvars/CVarScope.h"
 #include "core/displays/Viewport.h"
@@ -16,7 +17,7 @@
 #include "core/gpu/GpuShader.h"
 #include "core/gpu/GpuVector.h"
 #include "core/gpu/GraphicsState.h"
-#include "core/renderer/DebugDraw.h"
+#include "core/renderer/DebugDrawList.h"
 #include "core/renderer/Renderer.h"
 #include "core/world/World.h"
 #include "log/log.h"
@@ -32,6 +33,8 @@ void OverlayPass::initCVars(CVarScope* cvars) {
   debug->addValue<BoolCVar>("enabled");
   debug->addValue<BoolCVar>("draw_grid");
   debug->addValue<BoolCVar>("draw_lights");
+  debug->addValue<BoolCVar>("draw_lights_aoe");
+  debug->addValue<BoolCVar>("draw_shapes");
   debug->addValue<BoolCVar>("draw_transforms");
   debug->addValue<BoolCVar>("draw_pointers");
 }
@@ -75,13 +78,18 @@ OverlayPass::OverlayPass(const CVarScope* cvars, const GlyphLoader* glyphs,
   }
 
   {
-    log_zone_named("Create debug pipeline");
+    log_zone_named("Create debug pipelines");
 
     auto vertex_bindings = DebugDrawList::Vertex::getVertexBindings();
     auto attribute_descriptions =
         DebugDrawList::Vertex::getAttributeDescriptions();
 
-    debug_pipeline = new GpuPipeline(
+    depth_debug_pipeline = new GpuPipeline(
+        gpu, debug_pipeline_layout, renderer->getMainRenderPass(),
+        renderer->getDepthSubpass(), debug_vertex_shader, debug_fragment_shader,
+        vertex_bindings, attribute_descriptions);
+
+    overlay_debug_pipeline = new GpuPipeline(
         gpu, debug_pipeline_layout, renderer->getMainRenderPass(),
         renderer->getOverlaySubpass(), debug_vertex_shader,
         debug_fragment_shader, vertex_bindings, attribute_descriptions);
@@ -93,7 +101,8 @@ OverlayPass::~OverlayPass() {
 
   if (debug_vertex_shader != nullptr) delete debug_vertex_shader;
   if (debug_fragment_shader != nullptr) delete debug_fragment_shader;
-  if (debug_pipeline != nullptr) delete debug_pipeline;
+  if (overlay_debug_pipeline != nullptr) delete overlay_debug_pipeline;
+  if (depth_debug_pipeline != nullptr) delete depth_debug_pipeline;
   if (debug_pipeline_layout != VK_NULL_HANDLE)
     vkDestroyPipelineLayout(gpu->device, debug_pipeline_layout, nullptr);
 }
@@ -124,6 +133,7 @@ void OverlayPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
                              GpuDescriptorPool* descriptor_pool) {
   log_zone;
 
+  renderer->addPassToPhase(RenderPhase::Depth, this);
   renderer->addPassToPhase(RenderPhase::Overlay, this);
 
   current_frame = frame_index;
@@ -132,8 +142,6 @@ void OverlayPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
   frame.index_count = 0;
 
   if (!cvars->get<BoolCVar>("enabled")) return;
-
-  DebugDrawList debug_draw;
 
   if (cvars->get<BoolCVar>("draw_grid")) {
     int grid_width = 10;
@@ -159,6 +167,8 @@ void OverlayPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
   }
 
   if (cvars->get<BoolCVar>("draw_transforms")) {
+    log_zone_named("Draw transforms");
+
     auto transform_view = world->registry.view<WorldTransform>();
 
     for (auto& e : transform_view) {
@@ -175,11 +185,38 @@ void OverlayPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
     }
   }
 
+  if (cvars->get<BoolCVar>("draw_shapes")) {
+    log_zone_named("Draw shapes");
+
+    auto shapes_view = world->registry.view<ShapeComponent>();
+
+    for (auto e : shapes_view) {
+      auto& shape = shapes_view.get(e);
+
+      if (!shape.isLoaded()) continue;
+
+      glm::vec3 color = glm::vec3(0.8, 0.8, 1.0);
+
+      glm::mat4 world_transform(1.0);
+      if (world->registry.has<WorldTransform>(e)) {
+        world_transform = world->registry.get<WorldTransform>(e).getTransform();
+      }
+
+      const AnyShape& any_shape = shape.getShape()->getAnyShape();
+
+      AnyShape::debugDraw(&any_shape, world_transform, color, &_debug_draw);
+    }
+  }
+
   if (cvars->get<BoolCVar>("draw_lights")) {
+    log_zone_named("Draw point lights");
+
     auto point_lights_view = world->registry.view<PointLightComponent>();
 
     for (auto e : point_lights_view) {
       auto& point_light = point_lights_view.get(e);
+
+      glm::vec3 color = point_light.getSaturatedColor();
 
       glm::mat4 world_transform(1.0);
       if (world->registry.has<WorldTransform>(e)) {
@@ -191,9 +228,27 @@ void OverlayPass::beginFrame(uint32_t frame_index, uint32_t viewport_count,
       glm::vec3 position =
           world_transform * glm::vec4(glm::vec3(uniform.position), 1.0);
 
-      glm::vec3 line_space(0.0, 0.1, 0.0);
-      glm::vec3 color(1.0, 1.0, 1.0);
-      _debug_draw.drawLine(position - line_space, position + line_space, color);
+      _debug_draw.drawIcosahedron(position, 0.1, color);
+    }
+  }
+
+  if (cvars->get<BoolCVar>("draw_lights_aoe")) {
+    log_zone_named("Draw point light areas of effect");
+
+    auto point_lights_view = world->registry.view<PointLightComponent>();
+
+    for (auto e : point_lights_view) {
+      auto& point_light = point_lights_view.get(e);
+
+      glm::vec3 color = point_light.getSaturatedColor();
+
+      glm::mat4 world_transform(1.0);
+      if (world->registry.has<WorldTransform>(e)) {
+        world_transform = world->registry.get<WorldTransform>(e).getTransform();
+      }
+
+      const auto& aoe = point_light.getAreaOfEffect();
+      SphereShape::debugDraw(&aoe, world_transform, color, &_debug_draw);
     }
   }
 
@@ -239,13 +294,26 @@ void OverlayPass::renderViewport(VkCommandBuffer command_buffer,
   {
     log_zone_named("Render debug");
 
+    GpuPipeline* debug_pipeline;
+
+    if (phase == RenderPhase::Depth) {
+      debug_pipeline = depth_debug_pipeline;
+    } else {
+      debug_pipeline = overlay_debug_pipeline;
+    }
+
     {
       auto gs = GraphicsState::CreateGenericOpaque();
       gs.input_assembly_state.primitive_topology =
           GraphicsState::PrimitiveTopology::LineList;
       gs.multisample_state.rasterization_samples =
           renderer->getCurrentViewport(viewport_index)->getSampleCount();
-      gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+
+      if (phase != RenderPhase::Depth) {
+        gs.depth_state.write_enable = GraphicsState::BoolFlag::False;
+        gs.depth_state.compare_op = GraphicsState::CompareOp::Equal;
+      }
+
       debug_pipeline->cmdBind(command_buffer, gs);
     }
 
