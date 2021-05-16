@@ -3,7 +3,7 @@ name = "Mondradiko Example World: Fireflies"
 compression = "LZ4"
 
 [[assets]]
-file = "../../assets/Sponza/Sponza.gltf"
+file = "../../assets/models/Sponza/Sponza.gltf"
 alias = "scene"
 initial_prefab = true
 

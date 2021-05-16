@@ -3,11 +3,11 @@ name = "Mondradiko Example World: Sponza"
 compression = "LZ4"
 
 [[assets]]
-file = "../../assets/Sponza/Sponza.gltf"
+file = "../../assets/models/Sponza/Sponza.gltf"
 alias = "Sponza"
 
 [[assets]]
-file = "../../assets/Arisu/Arisu.vrm"
+file = "../../assets/models/Arisu/Arisu.vrm"
 alias = "Arisu"
 
 [[assets]]
