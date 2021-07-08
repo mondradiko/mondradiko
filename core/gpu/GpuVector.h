@@ -23,7 +23,7 @@ class GpuVector : public GpuBuffer {
       size_t uniform_alignment = gpu->physical_device_properties.limits
                                      .minUniformBufferOffsetAlignment;
       element_granularity =
-          (element_size / uniform_alignment) + uniform_alignment;
+          (element_size / uniform_alignment + 1) * uniform_alignment;
     } else {
       element_granularity = element_size;
     }
